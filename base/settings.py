@@ -4,7 +4,10 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 # ... other settings ...
+INTERNAL_IPS = ['127.0.0.1', 'localhost']
+
 
 ROOT_URLCONF = 'base.urls'
 WSGI_APPLICATION = 'base.wsgi.application'
@@ -36,6 +39,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 TEMPLATES = [
@@ -57,10 +61,8 @@ TEMPLATES = [
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
@@ -76,6 +78,8 @@ DATABASES = {
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media') 
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -94,4 +98,3 @@ LOGGING = {
         },
     },
 }
-INTERNAL_IPS = ['127.0.0.1']
