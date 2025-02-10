@@ -5,13 +5,13 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'wbptgy^ob2*s=l*_!xovhq#+oha86pio*60xz5r@i#&@kk2xo('  # Secret key directly in settings.py (not recommended for production)
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-secret-key')
 
 # DEBUG settings (turn off in production)
-DEBUG = True  # Set this to False in production
+DEBUG = False
 
 # ALLOWED_HOSTS for production and development
-ALLOWED_HOSTS = ['localhost', '*']  # Update this with your domain in production (e.g., 'yourdomain.com')
+ALLOWED_HOSTS = ['denrargao.pythonanywhere.com']
 
 # Internal IPs for Django Debug Toolbar
 INTERNAL_IPS = ['127.0.0.1', 'localhost']
