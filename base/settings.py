@@ -42,13 +42,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Debug Toolbar (only in development)
-if DEBUG:
-    INSTALLED_APPS.append('debug_toolbar')
-    # Add debug toolbar middleware only if it's not already in MIDDLEWARE
-    if 'debug_toolbar.middleware.DebugToolbarMiddleware' not in MIDDLEWARE:
-        MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
-
 # Templates configuration
 TEMPLATES = [
     {
@@ -98,15 +91,15 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'django_errors.log',
         },
-        'console': {  # Optional: print logs to the console in development
-            'level': 'DEBUG',
+        'console': {
+            'level': 'ERROR',
             'class': 'logging.StreamHandler',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['file', 'console'],  # Log to file and console
-            'level': 'DEBUG' if DEBUG else 'ERROR',
+            'handlers': ['file', 'console'],
+            'level': 'ERROR',
             'propagate': True,
         },
     },
