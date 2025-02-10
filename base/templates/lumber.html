@@ -1,0 +1,823 @@
+{% load static %}
+{% load form_filters %}  <!-- Load custom filters -->
+{% load widget_tweaks %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CENRO Argao - Lumber Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        .modal-open {
+            overflow: hidden;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        #notificationModal {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Add smooth transition for validation info */
+        .validation-info {
+            transition: all 0.3s ease-in-out;
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .validation-info:not(.hidden) {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Make form labels more readable */
+        .form-group label {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* Style form inputs */
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            font-size: 1rem;
+            padding: 0.5rem;
+            width: 100%;
+            border-radius: 0.375rem;
+            border: 1px solid #D1D5DB;
+        }
+
+        /* Hover effect for inputs */
+        .form-group input:hover,
+        .form-group select:hover,
+        .form-group textarea:hover {
+            border-color: #9CA3AF;
+        }
+
+        /* Focus effect for inputs */
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563EB;
+            ring: 2px;
+            ring-color: #93C5FD;
+        }
+    </style>
+</head>
+<body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO</span>
+                       </div>
+                    <!-- Navigation Links -->
+                    <div class="hidden sm:ml-8 sm:flex sm:space-x-8">
+                        <a href="{% url 'dashboard' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Dashboard
+                        </a>
+                        <a href="{% url 'cutting' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Cutting
+                        </a>
+                        <a href="{% url 'lumber' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Lumber
+                        </a>
+                        <a href="{% url 'chainsaw' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Chainsaw
+                        </a>
+                        <a href="{% url 'wood' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Wood
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="text-m text-gray-800">
+                        Welcome, {{ request.user.username }}
+                    </div>
+                    <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
+                        Sign Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-6 shadow-md">
+        <div class="max-w-7xl mx-auto px-4">
+            <h1 class="text-3xl font-bold mb-2">Lumber Management</h1>
+            <p class="text-sm opacity-90">Manage and track lumber records</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Form Section -->
+        <div class="max-w-5xl mx-auto bg-white p-8 mt-8 shadow-xl rounded-lg">
+            <h2 class="text-2xl font-bold mb-6">Add New Lumber Record</h2>
+            <form method="POST" id="lumberForm" class="space-y-6">
+                {% csrf_token %}
+                
+                <style>
+                    input, select, textarea {
+                        background-color: #f8fafc;
+                        border: 1px solid #e2e8f0;
+                        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+                        padding: 0.5rem;
+                        border-radius: 0.375rem;
+                        width: 100%;
+                        color: #4B5563;
+                    }
+                    input::placeholder, select::placeholder, textarea::placeholder {
+                        color: #6B7280;
+                        opacity: 0.8;
+                    }
+                    input:focus, select:focus, textarea:focus {
+                        border-color: #3b82f6;
+                        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                        outline: none;
+                    }
+                    .form-input {
+                        @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                               focus:border-blue-500 focus:ring-blue-500 
+                               bg-gray-50 text-gray-900;
+                    }
+                    input[type="date"] {
+                        padding: 0.4rem;
+                        color: #4B5563;
+                    }
+                    select {
+                        background-color: #f8fafc;
+                        padding: 0.4rem;
+                        color: #4B5563;
+                    }
+                    input:hover, select:hover, textarea:hover {
+                        border-color: #60A5FA;
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    }
+                </style>
+
+                <!-- Global Messages -->
+                {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                    <div class="{% if message.tags == 'success' %}bg-green-100 border-l-4 border-green-500 text-green-700{% else %}bg-red-100 border-l-4 border-red-500 text-red-700{% endif %} p-4 mb-2">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Basic Information -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">No.*</label>
+                        {{ form.no|add_class:"form-input"|attr:"placeholder:Enter number" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Trade Name*</label>
+                        {{ form.trade_name|add_class:"form-input"|attr:"placeholder:Enter trade name" }}
+                    </div>
+                </div>
+
+                <!-- Owner Details -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Owner Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Manager/Owner*</label>
+                            {{ form.manager_owner|add_class:"form-input"|attr:"placeholder:Enter manager/owner name" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Contact No.*</label>
+                            {{ form.contact_no|add_class:"form-input"|attr:"placeholder:Enter contact number" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Gender*</label>
+                            {{ form.gender|add_class:"form-input" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Permit Details -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Permit Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Permit No.*</label>
+                            {{ form.permit_no|add_class:"form-input"|attr:"placeholder:Enter permit number" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
+                            {{ form.date_issued|add_class:"form-input" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
+                            {{ form.expiry_date|add_class:"form-input" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Details -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Location Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Barangay*</label>
+                            {{ form.brgy|add_class:"form-input"|attr:"placeholder:Enter barangay" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Municipality*</label>
+                            {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Province*</label>
+                            {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Details -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Source/Supplier*</label>
+                            {{ form.source_supplier|add_class:"form-input"|attr:"placeholder:Enter source/supplier" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Volume (cubic meter)*</label>
+                            {{ form.volume_cubic_meter|add_class:"form-input"|attr:"placeholder:Enter volume" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Species*</label>
+                            {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species" }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end mt-6">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
+                        Save Record
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Records Table -->
+        <div class="bg-white shadow-xl rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-600 to-blue-600">
+                <h3 class="text-xl font-semibold text-white mb-4">
+                    Lumber Records
+                </h3>
+                <div class="flex items-center justify-between space-x-4">
+                    <!-- Search Bar -->
+                    <div class="relative flex-1 max-w-md">
+                        <input type="text" 
+                               id="searchInput" 
+                               placeholder="Search records..." 
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700"
+                        >
+                        <span class="absolute right-3 top-2.5 text-gray-400">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </span>
+                        <!-- Updated validation message element to match chainsaw template -->
+                        <div id="searchValidation" class="absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md hidden"></div>
+                    </div>
+                    <!-- Export Button -->
+                    <button onclick="exportTableToCSV('lumber_records.csv')" 
+                            class="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition duration-200 flex items-center space-x-2 shadow-sm">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        <span>Export CSV</span>
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <div class="mb-4">
+                    {% for record in lumber_records %}
+                        {% if record.is_expiring_soon and not record.is_expired %}
+                            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
+                                Warning: Permit {{ record.permit_no }} for {{ record.trade_name }} will expire in {{ record.days_remaining }} days
+                            </div>
+                        {% elif record.is_expired %}
+                            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
+                                Alert: Permit {{ record.permit_no }} for {{ record.trade_name }} has expired
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <table class="min-w-full text-sm text-left text-gray-500">
+                    <thead class="bg-gray-50 text-gray-700">
+                        <tr>
+                            <th class="px-6 py-4 font-semibold">No.</th>
+                            <th class="px-6 py-4 font-semibold">Trade Name</th>
+                            <th class="px-6 py-4 font-semibold">Manager/Owner</th>
+                            <th class="px-6 py-4 font-semibold">Contact No.</th>
+                            <th class="px-6 py-4 font-semibold">Gender</th>
+                            <th class="px-6 py-4 font-semibold">Location</th>
+                            <th class="px-6 py-4 font-semibold">Permit No.</th>
+                            <th class="px-6 py-4 font-semibold">Date Issued</th>
+                            <th class="px-6 py-4 font-semibold">Expiry Date</th>
+                            <th class="px-6 py-4 font-semibold">Source/Supplier</th>
+                            <th class="px-6 py-4 font-semibold">Volume (m³)</th>
+                            <th class="px-6 py-4 font-semibold">Species</th>
+                            <th class="px-6 py-4 font-semibold">Status</th>
+                            <th class="px-6 py-4 font-semibold">Days Remaining</th>
+                            <th class="px-6 py-4 font-semibold">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-black-200">
+                        {% for record in lumber_records %}
+                        <tr class="hover:bg-black-50 transition-colors duration-150">
+                            <td class="px-6 py-4">{{ record.no }}</td>
+                            <td class="px-6 py-4">{{ record.trade_name }}</td>
+                            <td class="px-6 py-4">{{ record.manager_owner }}</td>
+                            <td class="px-6 py-4">{{ record.contact_no }}</td>
+                            <td class="px-6 py-4">{{ record.get_gender_display }}</td>
+                            <td class="px-6 py-4">{{ record.brgy }}, {{ record.municipality }}, {{ record.province }}</td>
+                            <td class="px-6 py-4">{{ record.permit_no }}</td>
+                            <td class="px-6 py-4">{{ record.date_issued|format_date }}</td>
+                            <td class="px-6 py-4">{{ record.expiry_date|format_date }}</td>
+                            <td class="px-6 py-4">{{ record.source_supplier }}</td>
+                            <td class="px-6 py-4">{{ record.volume_cubic_meter|format_decimal }}</td>
+                            <td class="px-6 py-4">{{ record.species }}</td>
+                            <td class="px-6 py-4">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    {% if record.is_expired %}
+                                        bg-red-100 text-red-800
+                                    {% elif record.is_expiring_soon %}
+                                        bg-yellow-100 text-yellow-800
+                                    {% else %}
+                                        bg-green-100 text-green-800
+                                    {% endif %}">
+                                    {{ record.status }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if record.is_expired %}
+                                    <span class="text-red-600 font-medium">Expired</span>
+                                {% else %}
+                                    <span {% if record.is_expiring_soon %}text-yellow-600{% else %}text-gray-900{% endif %} font-medium">
+                                        {{ record.days_remaining }} days
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="{% url 'edit_recordlumber' record.id %}" class="text-blue-600 hover:text-blue-800 font-medium">Edit</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white mt-auto py-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+        </div>
+    </footer>
+
+    <!-- Modal Backdrop -->
+    <div id="notificationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+        <!-- Modal Content -->
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
+                    <!-- Warning Icon -->
+                    <svg class="h-6 w-6 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Expiring Permits Alert</h3>
+                <div class="mt-2 px-7 py-3">
+                    <div class="text-sm text-gray-500 max-h-60 overflow-y-auto">
+                        {% for record in lumber_records %}
+                            {% if record.expiry_warning %}
+                            <div class="mb-3 p-3 bg-yellow-50 rounded-lg text-left">
+                                <p class="text-yellow-700">
+                                    <span class="font-semibold">{{ record.trade_name }}</span><br>
+                                    Permit No: {{ record.permit_no }}<br>
+                                    Expires: {{ record.expiry_date|date:"F d, Y" }}
+                                </p>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="closeModal" class="px-4 py-2 bg-yellow-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Component (replaces the Success Notification) -->
+    <div id="notification" class="hidden fixed top-4 right-4 px-6 py-3 rounded shadow-lg transition-opacity duration-300">
+        <span id="notificationMessage"></span>
+        <button onclick="this.parentElement.classList.add('hidden')" class="ml-2 font-bold">&times;</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('notificationModal');
+            const closeButton = document.getElementById('closeModal');
+            
+            // Check if there are any expiring records and notification hasn't been shown
+            const hasExpiringRecords = "{{ any_expiring_records }}" === "True";
+            const notificationShown = sessionStorage.getItem('notificationShown');
+            
+            if (hasExpiringRecords && !notificationShown) {
+                // Show modal on page load
+                modal.classList.remove('hidden');
+                // Store in session that user has seen the notification
+                sessionStorage.setItem('notificationShown', 'true');
+            }
+            
+            // Close modal when clicking close button
+            closeButton.addEventListener('click', function() {
+                modal.classList.add('hidden');
+            });
+            
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+            
+            // Close modal with ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                    modal.classList.add('hidden');
+                }
+            });
+            // Show validation info on input focus
+            const formGroups = document.querySelectorAll('.form-group');
+            
+            formGroups.forEach(group => {
+                const input = group.querySelector('input, select, textarea');
+                const validationInfo = group.querySelector('.validation-info');
+                
+                if (input && validationInfo) {
+                    input.addEventListener('focus', () => {
+                        // Hide all other validation infos first
+                        document.querySelectorAll('.validation-info').forEach(info => {
+                            info.classList.add('hidden');
+                        });
+                        // Show this validation info
+                        validationInfo.classList.remove('hidden');
+                    });
+                }
+            });
+
+            // Hide validation info when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.form-group')) {
+                    document.querySelectorAll('.validation-info').forEach(info => {
+                        info.classList.add('hidden');
+                    });
+                }
+            });
+
+            // Get the form element
+            const form = document.getElementById('lumberForm');
+            
+            // Define required fields and their labels
+            const requiredFields = [
+                { name: 'no', label: 'No.' },
+                { name: 'trade_name', label: 'Trade Name' },
+                { name: 'manager_owner', label: 'Manager/Owner' },
+                { name: 'contact_no', label: 'Contact No.' },
+                { name: 'gender', label: 'Gender' },
+                { name: 'permit_no', label: 'Permit No.' },
+                { name: 'date_issued', label: 'Date Issued' },
+                { name: 'expiry_date', label: 'Expiry Date' },
+                { name: 'source_supplier', label: 'Source/Supplier' },
+                { name: 'volume_cubic_meter', label: 'Volume' },
+                { name: 'species', label: 'Species' },
+                { name: 'brgy', label: 'Barangay' },
+                { name: 'municipality', label: 'Municipality' },
+                { name: 'province', label: 'Province' }
+            ];
+
+            // Add form submission handler
+            form.addEventListener('submit', function(e) {
+                let hasError = false;
+                let firstErrorField = null;
+
+                // Check each required field
+                requiredFields.forEach(field => {
+                    const input = form.querySelector(`[name="${field.name}"]`);
+                    const errorDiv = input.parentElement.querySelector('.error-message') || 
+                                   document.createElement('div');
+                    
+                    errorDiv.className = 'error-message text-red-500 text-sm mt-1';
+                    
+                    // Remove any existing error styling
+                    input.classList.remove('border-red-500');
+                    errorDiv.textContent = '';
+
+                    // Check if field is empty
+                    if (!input.value.trim()) {
+                        hasError = true;
+                        input.classList.add('border-red-500');
+                        errorDiv.textContent = `${field.label} is required`;
+                        
+                        if (!input.parentElement.querySelector('.error-message')) {
+                            input.parentElement.appendChild(errorDiv);
+                        }
+                        
+                        if (!firstErrorField) {
+                            firstErrorField = input;
+                        }
+                    }
+                });
+
+                // If there are errors, prevent form submission and show error message
+                if (hasError) {
+                    e.preventDefault();
+                    showNotification('Please fill in all required fields', 'error');
+                    
+                    // Scroll to first error field
+                    if (firstErrorField) {
+                        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+
+            // Add real-time validation for each field
+            requiredFields.forEach(field => {
+                const input = form.querySelector(`[name="${field.name}"]`);
+                
+                input.addEventListener('blur', function() {
+                    const errorDiv = this.parentElement.querySelector('.error-message') || 
+                                   document.createElement('div');
+                    errorDiv.className = 'error-message text-red-500 text-sm mt-1';
+                    
+                    if (!this.value.trim()) {
+                        this.classList.add('border-red-500');
+                        errorDiv.textContent = `${field.label} is required`;
+                        if (!this.parentElement.querySelector('.error-message')) {
+                            this.parentElement.appendChild(errorDiv);
+                        }
+                    } else {
+                        this.classList.remove('border-red-500');
+                        errorDiv.remove();
+                    }
+                });
+
+                // Clear error styling on input
+                input.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        this.classList.remove('border-red-500');
+                        const errorDiv = this.parentElement.querySelector('.error-message');
+                        if (errorDiv) {
+                            errorDiv.remove();
+                        }
+                    }
+                });
+            });
+
+            // Updated notification function
+            function showNotification(message, type) {
+                const notification = document.getElementById('notification');
+                const notificationMessage = document.getElementById('notificationMessage');
+                
+                // Set message
+                notificationMessage.textContent = message;
+                
+                // Set styles based on type
+                if (type === 'success') {
+                    notification.classList.remove('bg-red-500');
+                    notification.classList.add('bg-green-500', 'text-white');
+                } else {
+                    notification.classList.remove('bg-green-500');
+                    notification.classList.add('bg-red-500', 'text-white');
+                }
+            });
+
+            // Call this for messages
+            {% if messages %}
+                {% for message in messages %}
+                    showNotification("{{ message }}", "{{ message.tags }}");
+                {% endfor %}
+            {% endif %}
+
+            // Add this new code for number validation
+            document.addEventListener('DOMContentLoaded', function() {
+                const noInput = document.querySelector('[name="no"]');
+                const noError = document.getElementById('noError');
+                const form = document.getElementById('lumberForm');
+                
+                // Create an array of existing numbers from the table
+                const existingNumbers = Array.from(document.querySelectorAll('tbody tr')).map(
+                    row => row.cells[0].textContent.trim()
+                );
+
+                noInput.addEventListener('change', function() {
+                    const value = this.value.trim();
+                    if (existingNumbers.includes(value)) {
+                        noError.classList.remove('hidden');
+                        this.classList.add('border-red-500');
+                    } else {
+                        noError.classList.add('hidden');
+                        this.classList.remove('border-red-500');
+                    }
+                });
+
+                form.addEventListener('submit', function(e) {
+                    const value = noInput.value.trim();
+                    if (existingNumbers.includes(value)) {
+                        e.preventDefault();
+                        noError.classList.remove('hidden');
+                        noInput.classList.add('border-red-500');
+                        showNotification('Record number already exists!', 'error');
+                    }
+                });
+            });
+
+            // Show a toast notification for form submission
+            const form = document.getElementById('lumberForm');
+            
+            form.addEventListener('submit', function() {
+                // Show loading state
+                const submitButton = form.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.innerHTML = 'Saving...';
+            });
+
+            const tradeName = document.querySelector('[name="trade_name"]');
+            const permitNo = document.querySelector('[name="permit_no"]');
+
+            // Validate trade name
+            if (tradeName) {
+                tradeName.addEventListener('blur', function() {
+                    if (this.value.trim() === "") {
+                        this.setCustomValidity('Trade name cannot be empty');
+                    } else {
+                        this.setCustomValidity('');
+                    }
+                });
+            }
+
+            // Validate permit number
+            if (permitNo) {
+                permitNo.addEventListener('blur', function() {
+                    const permitValue = this.value.trim();
+                    
+                    // Check if the permit number is numeric and at least 6 digits long
+                    if (!/^\d{6,}$/.test(permitValue)) {
+                        this.setCustomValidity('Permit number must be numeric and at least 6 digits long');
+                    } else {
+                        this.setCustomValidity('');
+                    }
+                });
+            }
+
+            // Date validation
+            const dateIssued = document.querySelector('[name="date_issued"]');
+            const expiryDate = document.querySelector('[name="expiry_date"]');
+            
+            if (dateIssued && expiryDate) {
+                expiryDate.addEventListener('change', function() {
+                    const issued = new Date(dateIssued.value);
+                    const expiry = new Date(this.value);
+                    const maxDate = new Date(issued);
+                    maxDate.setFullYear(maxDate.getFullYear() + 5);
+
+                    if (expiry < issued) {
+                        this.setCustomValidity('Expiry date cannot be earlier than date issued');
+                    } else if (expiry > maxDate) {
+                        this.setCustomValidity('Expiry date cannot be more than 5 years from date issued');
+                    } else {
+                        this.setCustomValidity('');
+                    }
+                });
+            }
+
+            // Phone number validation
+            const contactNo = document.querySelector('[name="contact_no"]');
+            if (contactNo) {
+                contactNo.addEventListener('input', function() {
+                    const phonePattern = /^\+?[0-9]{10,15}$/;
+                    if (this.value && !phonePattern.test(this.value)) {
+                        this.setCustomValidity('Please enter a valid phone number');
+                    } else {
+                        this.setCustomValidity('');
+                    }
+                });
+            }
+
+            // Enhanced search functionality
+            const searchInput = document.getElementById('searchInput');
+            const searchValidation = document.getElementById('searchValidation');
+            
+            if (searchInput) {
+                let debounceTimer;
+
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    
+                    debounceTimer = setTimeout(() => {
+                        const searchTerm = this.value.toLowerCase().trim();
+                        const rows = document.querySelectorAll('tbody tr');
+                        let visibleCount = 0;
+                        
+                        // Clear validation if search is empty
+                        if (searchTerm === '') {
+                            searchValidation.style.display = 'none';
+                            rows.forEach(row => row.style.display = '');
+                            return;
+                        }
+
+                        rows.forEach(row => {
+                            // Get all cells in the row
+                            const cells = row.querySelectorAll('td');
+                            let shouldShow = false;
+                            
+                            cells.forEach(cell => {
+                                const cellText = cell.textContent.toLowerCase().trim();
+                                if (cellText.includes(searchTerm)) {
+                                    shouldShow = true;
+                                }
+                            });
+                            
+                            row.style.display = shouldShow ? '' : 'none';
+                            if (shouldShow) visibleCount++;
+                        });
+                        
+                        // Update validation message with appropriate styling
+                        if (visibleCount > 0) {
+                            searchValidation.textContent = `Found ${visibleCount} matching record${visibleCount !== 1 ? 's' : ''}`;
+                            searchValidation.className = 'absolute mt-1 text-sm font-medium text-green-600 bg-green-50 px-2 py-1 rounded-md';
+                        } else {
+                            searchValidation.textContent = 'No matches found';
+                            searchValidation.className = 'absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md';
+                        }
+                        searchValidation.style.display = 'block';
+                    }, 300);
+                });
+
+                // Clear validation on focus if empty
+                searchInput.addEventListener('focus', function() {
+                    if (!this.value.trim()) {
+                        searchValidation.style.display = 'none';
+                    }
+                });
+            }
+
+        function exportTableToCSV(filename) {
+            const table = document.querySelector('table');
+            const rows = table.querySelectorAll('tr');
+            let csv = [];
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = [], cols = rows[i].querySelectorAll('td, th');
+                
+                for (let j = 0; j < cols.length; j++) {
+                    // Get the text content and clean it up
+                    let data = cols[j].textContent.replace(/(\r\n|\n|\r)/gm, '').trim();
+                    // Escape double quotes and wrap field in quotes
+                    data = data.replace(/"/g, '""');
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(','));
+            }
+            
+            const csvString = csv.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (navigator.msSaveBlob) {
+                navigator.msSaveBlob(blob, filename);
+            } else {
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute('download', filename);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+    </script>
+</body>
+</html>

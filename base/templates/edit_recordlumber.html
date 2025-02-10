@@ -1,0 +1,237 @@
+{% load static %}
+{% load form_filters %}  <!-- Load custom filters -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CENRO Argao - Lumber Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        .modal-open {
+            overflow: hidden;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        #notificationModal {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO</span>
+                       </div>
+                    <!-- Navigation Links -->
+                    <div class="hidden sm:ml-8 sm:flex sm:space-x-8">
+                        <a href="{% url 'dashboard' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Dashboard
+                        </a>
+                        <a href="{% url 'cutting' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Cutting
+                        </a>
+                        <a href="{% url 'lumber' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Lumber
+                        </a>
+                        <a href="{% url 'chainsaw' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Chainsaw
+                        </a>
+                        <a href="{% url 'wood' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Wood
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="text-m text-gray-800">
+                        Welcome, {{ request.user.username }}
+                    </div>
+                    <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
+                        Sign Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-2xl mx-auto p-6 my-8 bg-white rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Lumber Edit Record</h2>
+        
+        <form id="lumberEditForm" method="POST" class="space-y-6">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Date -->
+                <div>
+                    <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input type="date" id="date" name="date" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <!-- Lumber Type -->
+                <div>
+                    <label for="lumberType" class="block text-sm font-medium text-gray-700 mb-1">Lumber Type</label>
+                    <select id="lumberType" name="lumberType" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Select type</option>
+                        <option value="pine">Pine</option>
+                        <option value="oak">Oak</option>
+                        <option value="maple">Maple</option>
+                        <option value="cedar">Cedar</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <!-- Dimensions -->
+                <div>
+                    <label for="dimensions" class="block text-sm font-medium text-gray-700 mb-1">Dimensions</label>
+                    <input type="text" id="dimensions" name="dimensions" placeholder="e.g., 2x4x8" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <!-- Quantity -->
+                <div>
+                    <label for="quantity" class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                    <input type="number" id="quantity" name="quantity" min="1" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <!-- Grade -->
+                <div>
+                    <label for="grade" class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+                    <select id="grade" name="grade" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Select grade</option>
+                        <option value="select">Select</option>
+                        <option value="1">No. 1</option>
+                        <option value="2">No. 2</option>
+                        <option value="3">No. 3</option>
+                    </select>
+                </div>
+
+                <!-- Storage Location -->
+                <div>
+                    <label for="location" class="block text-sm font-medium text-gray-700 mb-1">Storage Location</label>
+                    <input type="text" id="location" name="location" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div>
+                <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea id="notes" name="notes" rows="4"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+
+            <!-- Editor Name -->
+            <div>
+                <label for="editor" class="block text-sm font-medium text-gray-700 mb-1">Editor Name</label>
+                <input type="text" id="editor" name="editor" required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-end">
+                <button type="submit"
+                    class="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                    Save Record
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div id="modalIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 id="modalTitle" class="text-lg leading-6 font-medium text-gray-900 mt-4">Success!</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p id="modalMessage" class="text-sm text-gray-500">Record has been successfully updated.</p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="closeModal" class="px-4 py-2 bg-blue-600 text-white text-base font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('lumberEditForm');
+            const modal = document.getElementById('notificationModal');
+            const closeModal = document.getElementById('closeModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+            const modalIcon = document.getElementById('modalIcon');
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                try {
+                    const formData = new FormData(form);
+                    const response = await fetch('', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                        }
+                    });
+
+                    if (response.ok) {
+                        showModal('Success!', 'Record has been successfully updated.', 'success');
+                        setTimeout(() => {
+                            window.location.href = '{% url "lumber" %}';
+                        }, 2000);
+                    } else {
+                        showModal('Error!', 'Failed to update record. Please try again.', 'error');
+                    }
+                } catch (error) {
+                    showModal('Error!', 'An unexpected error occurred. Please try again.', 'error');
+                }
+            });
+
+            closeModal.addEventListener('click', function() {
+                modal.classList.add('hidden');
+                document.body.classList.remove('modal-open');
+            });
+
+            function showModal(title, message, type) {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                
+                if (type === 'error') {
+                    modalIcon.innerHTML = `
+                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    `;
+                    modalIcon.classList.remove('bg-green-100');
+                    modalIcon.classList.add('bg-red-100');
+                }
+
+                modal.classList.remove('hidden');
+                document.body.classList.add('modal-open');
+            }
+        });
+    </script>
+</body>
+</html>

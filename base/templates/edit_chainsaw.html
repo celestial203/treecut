@@ -1,0 +1,263 @@
+{% load static %}
+{% load form_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CENRO Argao - Edit Chainsaw Registration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO</span>
+                    </div>
+                    <!-- Navigation Links -->
+                    <div class="hidden sm:ml-8 sm:flex sm:space-x-8">
+                        <a href="{% url 'dashboard' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Dashboard
+                        </a>
+                        <a href="{% url 'cutting' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Cutting
+                        </a>
+                        <a href="{% url 'lumber' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Lumber
+                        </a>
+                        <a href="{% url 'chainsaw' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Chainsaw
+                        </a>
+                        <a href="{% url 'wood' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Wood
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="text-m text-gray-800">
+                        Welcome, {{ request.user.username }}
+                    </div>
+                    <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
+                        Sign Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-6 shadow-md">
+        <div class="max-w-7xl mx-auto px-4">
+            <h1 class="text-3xl font-bold mb-2">Edit Chainsaw Registration</h1>
+            <p class="text-sm opacity-90">Update chainsaw registration information</p>
+        </div>
+    </div>
+
+    <!-- Edit Form Section -->
+    <div class="max-w-4xl mx-auto bg-white p-8 mt-8 shadow-xl rounded-lg">
+        <form method="POST" id="editChainsawForm" class="space-y-6" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Basic Information -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">No:</label>
+                    {{ form.no }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Year:</label>
+                    {{ form.year }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Region:</label>
+                    {{ form.region }}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">PENRO:</label>
+                    {{ form.penro }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">CENRO:</label>
+                    {{ form.cenro }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Province:</label>
+                    {{ form.province }}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Name:</label>
+                    {{ form.name }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Municipality/City:</label>
+                    {{ form.municipality }}
+                </div>
+            </div>
+
+            <!-- Additional Details -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Purpose:</label>
+                    {{ form.purpose }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date of Acquisition:</label>
+                    {{ form.date_acquisition }}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">CTPO/PTPR/TENURE #:</label>
+                    {{ form.ctpo_number }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Brand:</label>
+                    {{ form.brand }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Model:</label>
+                    {{ form.model }}
+                </div>
+            </div>
+
+            <!-- Technical Details -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Serial #:</label>
+                    {{ form.serial_number }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Color:</label>
+                    {{ form.color }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Horse Power:</label>
+                    {{ form.horse_power }}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Maximum Length of Guidebar:</label>
+                    {{ form.guidebar_length }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">DENR Sticker #:</label>
+                    {{ form.denr_sticker }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Status of Registration:</label>
+                    {{ form.registration_status }}
+                </div>
+            </div>
+
+            <!-- Dates -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date Issued:</label>
+                    {{ form.date_issued }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Expiry Date:</label>
+                    {{ form.expiry_date }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date of Renewal:</label>
+                    {{ form.date_renewal }}
+                </div>
+            </div>
+
+            <!-- File Upload Section -->
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700">Files:</label>
+                
+                <!-- Current File Display -->
+                {% if chainsaw.file %}
+                <div class="mb-2">
+                    <p class="text-sm text-gray-600">Current file: 
+                        <a href="{{ chainsaw.file.url }}" class="text-blue-600 hover:text-blue-800" target="_blank">
+                            {{ chainsaw.file.name|slice:"10:" }}
+                        </a>
+                    </p>
+                    <label class="inline-flex items-center mt-1">
+                        <input type="checkbox" name="file-clear" id="file-clear" class="form-checkbox">
+                        <span class="ml-2 text-sm text-gray-600">Clear current file</span>
+                    </label>
+                </div>
+                {% endif %}
+                
+                <!-- New File Upload -->
+                <div class="mt-1">
+                    <input type="file" 
+                           name="file" 
+                           id="{{ form.file.id_for_label }}"
+                           class="block w-full text-sm text-gray-500
+                                  file:mr-4 file:py-2 file:px-4
+                                  file:rounded-full file:border-0
+                                  file:text-sm file:font-semibold
+                                  file:bg-blue-50 file:text-blue-700
+                                  hover:file:bg-blue-100"
+                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                    {% if form.file.errors %}
+                    <p class="text-red-500 text-xs mt-1">{{ form.file.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'chainsaw' %}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                    Cancel
+                </a>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Update Registration
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add Tailwind classes to all form inputs
+            const inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                input.classList.add('mt-1', 'block', 'w-full', 'rounded-lg', 'border-gray-300', 'shadow-sm', 'focus:border-green-500', 'focus:ring-green-500', 'transition', 'duration-150');
+            });
+
+            // Form validation
+            const form = document.getElementById('editChainsawForm');
+            form.addEventListener('submit', function(event) {
+                const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
+                let isValid = true;
+
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        isValid = false;
+                        field.classList.add('border-red-500');
+                    } else {
+                        field.classList.remove('border-red-500');
+                    }
+                });
+
+                if (!isValid) {
+                    event.preventDefault();
+                    alert('Please fill in all required fields');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

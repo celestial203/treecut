@@ -1,0 +1,751 @@
+{% load static %}
+{% load form_filters %} 
+{% load widget_tweaks %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CENRO Argao - Wood Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Input field styles */
+        input, select, textarea {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            padding: 8px 12px;  /* Adjusted padding to match */
+            height: 42px;      /* Fixed height for uniformity */
+            border-radius: 8px;
+            width: 100%;
+            color: #4B5563;
+            font-size: 14px;   /* Standardized font size */
+            line-height: 1.5;
+        }
+
+        input::placeholder {
+            color: #9CA3AF;
+            opacity: 1;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+
+        .form-input {
+            @apply mt-1 block w-full rounded-lg border-gray-200
+                   focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
+                   bg-white text-gray-900;
+            height: 42px !important;  /* Force consistent height */
+        }
+
+        /* Label styles */
+        label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        /* Section headers */
+        h3 {
+            color: #111827;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        /* Remove number input spinners */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        /* Date input specific styles */
+        input[type="date"] {
+            height: 42px;
+            padding: 8px 12px;
+            color: #4B5563;
+        }
+
+        /* Select field styles */
+        select {
+            height: 42px;
+            padding: 8px 12px;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.25em 1.25em;
+            padding-right: 2.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Hover states */
+        input:hover, select:hover, textarea:hover {
+            border-color: #d1d5db;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Error states */
+        .error {
+            border-color: #ef4444;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        /* Form group spacing */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        /* Grid gap adjustments */
+        .gap-6 {
+            gap: 16px;
+        }
+    </style>
+</head>
+<body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO</span>
+                    </div>
+                    <!-- Navigation Links -->
+                    <div class="hidden sm:ml-8 sm:flex sm:space-x-8">
+                        <a href="{% url 'dashboard' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Dashboard
+                        </a>
+                        <a href="{% url 'cutting' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Cutting
+                        </a>
+                        <a href="{% url 'lumber' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Lumber
+                        </a>
+                        <a href="{% url 'chainsaw' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Chainsaw
+                        </a>
+                        <a href="{% url 'wood' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Wood
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="text-m text-gray-800">
+                        Welcome, {{ request.user.username }}
+                    </div>
+                    <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
+                        Sign Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages Section -->
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% endif %} mb-4">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Header Section -->
+    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-6 shadow-md">
+        <div class="max-w-7xl mx-auto px-4">
+            <h1 class="text-3xl font-bold mb-2">Wood Input Data Form</h1>
+            <p class="text-sm opacity-90">Enter new wood information</p>
+        </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="max-w-5xl mx-auto bg-white p-8 mt-8 shadow-xl rounded-lg">
+        <h2 class="text-2xl font-bold mb-6">Add New Wood Record</h2>
+        {% if form.errors %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <strong class="font-bold">Please correct the following errors:</strong>
+            <ul class="list-disc list-inside">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        <form id="woodForm" method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Basic Information -->
+            <div class="grid grid-cols-1 gap-6">
+                <!-- Name and Type -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Name*</label>
+                        {{ form.name|add_class:"form-input"|attr:"placeholder:Enter name" }}
+                        {{ form.name.errors }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Type*</label>
+                        {{ form.type|add_class:"form-input"|attr:"placeholder:Enter type" }}
+                        {{ form.type.errors }}
+                    </div>
+                </div>
+
+                <!-- Integrated and WPP -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Integrated*</label>
+                        {{ form.integrated|add_class:"form-input" }}
+                        {{ form.integrated.errors }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">WPP Number*</label>
+                        {{ form.wpp_number|add_class:"form-input"|attr:"placeholder:Enter WPP number" }}
+                        {{ form.wpp_number.errors }}
+                    </div>
+                </div>
+
+                <!-- Location Details -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">LOCATION</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Business*</label>
+                            {{ form.business|add_class:"form-input"|attr:"placeholder:Enter business name" }}
+                            {{ form.business.errors }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Plant*</label>
+                            {{ form.plant|add_class:"form-input"|attr:"placeholder:Enter plant name" }}
+                            {{ form.plant.errors }}
+                        </div>
+                    </div>
+                </div>
+                 <!-- DRC and ALR -->
+                 <div class="mt-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">DRC (cu.m)*</label>
+                            {{ form.drc|add_class:"form-input"|attr:"placeholder:Enter DRC value" }}
+                            {{ form.drc.errors }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">ALR (m³)</label>
+                            {{ form.alr|add_class:"form-input"|attr:"readonly:readonly" }}
+                            {{ form.alr.errors }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coordinates -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">COORDINATES</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Longitude*</label>
+                            {{ form.longitude|add_class:"form-input"|attr:"placeholder:Enter longitude" }}
+                            {{ form.longitude.errors }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Latitude*</label>
+                            {{ form.latitude|add_class:"form-input"|attr:"placeholder:Enter latitude" }}
+                            {{ form.latitude.errors }}
+                        </div>
+                    </div>
+                </div>
+
+            
+
+                <!-- Volume Contracted -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">VOLUME CONTRACTED</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Local*</label>
+                            {{ form.local_volume|add_class:"form-input"|attr:"placeholder:Enter local volume" }}
+                            {{ form.local_volume.errors }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Imported*</label>
+                            {{ form.imported_volume|add_class:"form-input"|attr:"placeholder:Enter imported volume" }}
+                            {{ form.imported_volume.errors }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rest of your existing fields... -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Name & Address of Supplier*</label>
+                        {{ form.supplier_info|add_class:"form-input"|attr:"placeholder:Enter supplier information" }}
+                        {{ form.supplier_info.errors }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Area*</label>
+                        {{ form.area|add_class:"form-input"|attr:"placeholder:Enter area" }}
+                        {{ form.area.errors }}
+                    </div>
+                </div>
+
+                <!-- Dates and Status -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
+                        {{ form.date_issued|add_class:"form-input" }}
+                        {{ form.date_issued.errors }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date Released*</label>
+                        {{ form.date_released|add_class:"form-input" }}
+                        {{ form.date_released.errors }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
+                        {{ form.expiry_date|add_class:"form-input" }}
+                        {{ form.expiry_date.errors }}
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700">Approved By*</label>
+                    {{ form.approved_by|add_class:"form-input"|attr:"placeholder:Enter approver's name" }}
+                    {{ form.approved_by.errors }}
+                </div>
+
+            </div>
+
+            <div class="flex justify-end mt-6">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
+                    Save Record
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Adding Records Table Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white shadow-xl rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-600 to-blue-600">
+                <h3 class="text-xl font-semibold text-white mb-4">
+                    Wood Records
+                </h3>
+                <div class="flex items-center justify-between space-x-4">
+                    <!-- Search Bar -->
+                    <div class="relative flex-1 max-w-md">
+                        <input type="text" 
+                               id="searchInput" 
+                               placeholder="Search records..." 
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700"
+                        >
+                        <span class="absolute right-3 top-2.5 text-gray-400">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </span>
+                        <!-- Updated validation message element with red styling -->
+                        <div id="searchValidation" class="absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md hidden"></div>
+                    </div>
+                    <!-- Export Button -->
+                    <button onclick="exportTableToCSV('wood_records.csv')" 
+                            class="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition duration-200 flex items-center space-x-2 shadow-sm">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        <span>Export to CSV</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Expiry Warnings -->
+            <div class="p-4">
+                {% for record in wood_records %}
+                    {% if record.is_expiring_soon and not record.is_expired %}
+                        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2 rounded">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm">
+                                        Warning: Record for <strong>{{ record.name }}</strong> will expire in {{ record.days_remaining }} days 
+                                        ({{ record.years_remaining }} years, {{ record.months_remaining }} months remaining)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% elif record.is_expired %}
+                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2 rounded">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm">
+                                        Alert: Record for <strong>{{ record.name }}</strong> has expired 
+                                        (Expired {{ record.days_since_expiry }} days ago)
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No.</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name & Address of Supplier</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">WPP Number</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plant</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Longitude</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Latitude</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Local Volume</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Imported Volume</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Issued</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Released</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry Date</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for record in wood_records %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ forloop.counter }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ record.name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.type }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.supplier_info }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.wpp_number }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.business }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.plant }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.longitude }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.latitude }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.local_volume }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.imported_volume }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.date_issued|date:"F d, Y" }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.date_released|date:"F d, Y" }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ record.expiry_date|date:"F d, Y" }}
+                                <div class="text-xs mt-1">
+                                    {% if record.is_expired %}
+                                        <span class="text-red-600">Expired {{ record.days_since_expiry }} days ago</span>
+                                    {% else %}
+                                    
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    {% if record.is_expired %}
+                                        bg-red-100 text-red-800
+                                    {% elif record.is_expiring_soon %}
+                                        bg-yellow-100 text-yellow-800
+                                    {% else %}
+                                        bg-green-100 text-green-800
+                                    {% endif %}">
+                                    {% if record.is_expired %}
+                                        Expired
+                                    {% elif record.is_expiring_soon %}
+                                        Expiring Soon
+                                    {% else %}
+                                        Active
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="{% url 'edit_wood' record.id %}" class="text-blue-600 hover:text-blue-900">Edit</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Replace the existing noResultsMessage div with this enhanced version -->
+    <div id="noResultsMessage" class="hidden p-8 text-center">
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div class="flex items-center justify-center">
+                <svg class="h-6 w-6 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <span class="text-yellow-800">No records found matching your search.</span>
+            </div>
+            <p class="text-yellow-600 text-sm mt-2">Try adjusting your search term or check for typos.</p>
+        </div>
+    </div>
+    <footer class="bg-blue-900 text-white mt-auto py-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+        </div>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Calculate ALR function
+            function calculateALR() {
+                const drcInput = document.querySelector('input[name="drc"]');
+                const alrInput = document.querySelector('input[name="alr"]');
+                
+                if (drcInput && drcInput.value) {
+                    const drc = parseFloat(drcInput.value);
+                    const alr = (drc * 290 * 0.80).toFixed(2);
+                    alrInput.value = alr;
+                } else if (alrInput) {
+                    alrInput.value = '';
+                }
+            }
+
+            // Add event listener for DRC input
+            const drcInput = document.querySelector('input[name="drc"]');
+            if (drcInput) {
+                drcInput.addEventListener('input', calculateALR);
+                // Initial calculation if DRC has a value
+                calculateALR();
+            }
+
+            // Form validation and submission
+            const form = document.querySelector('#woodForm');
+            form.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default submission temporarily
+                
+                // Recalculate ALR before submission
+                calculateALR();
+                
+                let isValid = true;
+                
+                // Basic required field validation
+                const requiredFields = form.querySelectorAll('[required]');
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        isValid = false;
+                        field.classList.add('error');
+                    }
+                });
+
+                // If everything is valid, submit the form
+                if (isValid) {
+                    form.submit();
+                } else {
+                    alert('Please fill in all required fields');
+                }
+            });
+
+            // Remove error class on input
+            document.querySelectorAll('.form-input').forEach(input => {
+                input.addEventListener('input', function() {
+                    this.classList.remove('error');
+                });
+            });
+
+            // Enhanced search functionality
+            const searchInput = document.getElementById('searchInput');
+            const noResultsMessage = document.getElementById('noResultsMessage');
+            const searchValidation = document.getElementById('searchValidation');
+            
+            if (searchInput) {
+                let debounceTimer;
+
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    
+                    // Show "Searching..." message while typing
+                    searchValidation.textContent = 'Searching...';
+                    searchValidation.className = 'absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md';
+                    searchValidation.style.display = 'block';
+
+                    debounceTimer = setTimeout(() => {
+                        const searchTerm = this.value.toLowerCase().trim();
+                        const rows = document.querySelectorAll('tbody tr');
+                        let hasResults = false;
+                        let visibleCount = 0;
+                        
+                        // Hide validation message if search is empty
+                        if (searchTerm === '') {
+                            searchValidation.style.display = 'none';
+                            noResultsMessage.classList.add('hidden');
+                            rows.forEach(row => row.style.display = '');
+                            return;
+                        }
+
+                        rows.forEach(row => {
+                            const nameCell = row.querySelector('td:nth-child(2)');
+                            const wppNumberCell = row.querySelector('td:nth-child(5)');
+                            const businessCell = row.querySelector('td:nth-child(6)');
+                            
+                            let shouldShow = false;
+                            
+                            if (nameCell && wppNumberCell && businessCell) {
+                                const name = nameCell.textContent.toLowerCase();
+                                const wppNumber = wppNumberCell.textContent.toLowerCase();
+                                const business = businessCell.textContent.toLowerCase();
+                                
+                                if (name.includes(searchTerm) || 
+                                    wppNumber.includes(searchTerm) || 
+                                    business.includes(searchTerm)) {
+                                    shouldShow = true;
+                                    hasResults = true;
+                                    visibleCount++;
+                                }
+                            }
+                            
+                            row.style.display = shouldShow ? '' : 'none';
+                        });
+                        
+                        // Update validation message - now always in red
+                        if (hasResults) {
+                            searchValidation.textContent = `Found ${visibleCount} matching record${visibleCount !== 1 ? 's' : ''}`;
+                            searchValidation.className = 'absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md';
+                            noResultsMessage.classList.add('hidden');
+                        } else {
+                            searchValidation.textContent = 'No matches found';
+                            searchValidation.className = 'absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md';
+                            noResultsMessage.classList.remove('hidden');
+                        }
+                    }, 300);
+                });
+
+                // Clear validation on focus
+                searchInput.addEventListener('focus', function() {
+                    if (!this.value) {
+                        searchValidation.style.display = 'none';
+                    }
+                });
+            }
+
+            // Enhanced date validation and notification
+            function validateDatesAndNotify() {
+                const dateIssuedInput = document.querySelector('input[name="date_issued"]');
+                const expiryDateInput = document.querySelector('input[name="expiry_date"]');
+                
+                if (dateIssuedInput && expiryDateInput && dateIssuedInput.value && expiryDateInput.value) {
+                    const dateIssued = new Date(dateIssuedInput.value);
+                    const expiryDate = new Date(expiryDateInput.value);
+                    const today = new Date();
+
+                    // Calculate remaining time
+                    const totalDays = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+                    const years = Math.floor(totalDays / 365);
+                    const months = Math.floor((totalDays % 365) / 30);
+                    const days = Math.floor((totalDays % 365) % 30);
+
+                    // Create notification message
+                    let message = '';
+                    if (totalDays < 0) {
+                        message = `This record has expired ${Math.abs(totalDays)} days ago`;
+                    } else {
+                        message = `Time remaining: ${years} years, ${months} months, and ${days} days`;
+                    }
+
+                    // Show notification
+                    const notificationDiv = document.createElement('div');
+                    notificationDiv.className = totalDays < 0 ? 'bg-red-100 text-red-700 p-4 mb-4 rounded' : 'bg-blue-100 text-blue-700 p-4 mb-4 rounded';
+                    notificationDiv.textContent = message;
+
+                    // Remove any existing notification
+                    const existingNotification = document.querySelector('.expiry-notification');
+                    if (existingNotification) {
+                        existingNotification.remove();
+                    }
+
+                    // Add new notification after the expiry date input
+                    notificationDiv.classList.add('expiry-notification');
+                    expiryDateInput.parentElement.appendChild(notificationDiv);
+                }
+            }
+
+            // Add event listeners for date changes
+            const dateInputs = document.querySelectorAll('input[type="date"]');
+            dateInputs.forEach(input => {
+                input.addEventListener('change', validateDatesAndNotify);
+            });
+
+            // Initial validation
+            validateDatesAndNotify();
+        });
+
+        function exportTableToCSV(filename) {
+            const table = document.querySelector('table');
+            const rows = table.querySelectorAll('tr');
+            const csv = [];
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = [], cols = rows[i].querySelectorAll('td, th');
+                
+                for (let j = 0; j < cols.length; j++) {
+                    // Get the text content and clean it up
+                    let data = cols[j].textContent.replace(/(\r\n|\n|\r)/gm, '').trim();
+                    // Remove multiple spaces
+                    data = data.replace(/\s+/g, ' ');
+                    // Escape quotes and wrap in quotes if contains comma
+                    if (data.includes(',')) {
+                        data = '"' + data.replace(/"/g, '""') + '"';
+                    }
+                    row.push(data);
+                }
+                
+                csv.push(row.join(','));
+            }
+
+            // Create and download the CSV file
+            const csvContent = csv.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            
+            if (navigator.msSaveBlob) { // IE 10+
+                navigator.msSaveBlob(blob, filename);
+            } else {
+                const link = document.createElement('a');
+                if (link.download !== undefined) {
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', filename);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
