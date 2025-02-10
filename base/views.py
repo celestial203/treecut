@@ -284,3 +284,6 @@ def edit_wood(request, pk):
         form = WoodForm(instance=wood)
     return render(request, 'edit_wood.html', {'form': form, 'wood': wood})
 
+def login_page(request):
+    return render(request, 'login.html')
+

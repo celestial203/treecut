@@ -1,9 +1,11 @@
+from django.contrib import admin
 from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
     path('', views.login_view, name='login'),  # Root URL redirects to login
-    path('login/', views.login_view, name='login'),
+    path('login/', views.login_view, name='login'),  # Keep this for explicit login URL
     path('logout/', views.logout_view, name='logout'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('cutting/', views.cutting, name='cutting'),
