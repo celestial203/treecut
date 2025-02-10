@@ -27,9 +27,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'base',
     'widget_tweaks',
-    'debug_toolbar',  # Debug toolbar for development only
+    'base',
 ]
 
 # Middleware configuration
@@ -41,8 +40,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'debug_toolbar.middleware.DebugToolbarMiddleware' if DEBUG else '',
 ]
+
+# Debug Toolbar (only in development)
+if DEBUG:
+    INSTALLED_APPS.append('debug_toolbar')
+    # Add debug toolbar middleware only if it's not already in MIDDLEWARE
+    if 'debug_toolbar.middleware.DebugToolbarMiddleware' not in MIDDLEWARE:
+        MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
 
 # Templates configuration
 TEMPLATES = [
@@ -106,12 +111,4 @@ LOGGING = {
         },
     },
 }
-
-# Debug Toolbar (only in development)
-if DEBUG:
-    INSTALLED_APPS.append('debug_toolbar')
-    MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # Set this to False in production
 
