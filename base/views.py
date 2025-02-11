@@ -174,7 +174,7 @@ def chainsaw(request):
     else:
         form = ChainsawForm()
 
-    chainsaw_records = Chainsaw.objects.all().order_by('-date_issued')
+    chainsaw_records = Chainsaw.objects.all().order_by('-date_acquired')
     
     context = {
         'form': form,
