@@ -76,7 +76,6 @@
         <h2 class="text-2xl font-bold mb-6">Add New Chainsaw Record</h2>
         <form method="POST" id="chainsawForm" class="space-y-6" enctype="multipart/form-data">
             {% csrf_token %}
-            {% load widget_tweaks %}
             
             <style>
                 input, select, textarea {
@@ -133,141 +132,121 @@
                 </div>
             </div>
 
-            <!-- Location Details -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Location Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">PENRO*</label>
-                        {{ form.penro|add_class:"form-input"|attr:"placeholder:Enter PENRO" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">CENRO*</label>
-                        {{ form.cenro|add_class:"form-input"|attr:"placeholder:Enter CENRO" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Province*</label>
-                        {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province" }}
-                    </div>
+            <!-- Location and Office Details -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">PENRO*</label>
+                    {{ form.penro|add_class:"form-input"|attr:"placeholder:Enter PENRO" }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">CENRO*</label>
+                    {{ form.cenro|add_class:"form-input"|attr:"placeholder:Enter CENRO" }}
                 </div>
             </div>
 
-            <!-- Owner Details -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Owner Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Name*</label>
-                        {{ form.name|add_class:"form-input"|attr:"placeholder:Enter owner name" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Municipality/City*</label>
-                        {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality/city" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Province*</label>
-                        {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province" }}
-                    </div>
+            <!-- Personal Information -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Name*</label>
+                    {{ form.name|add_class:"form-input"|attr:"placeholder:Enter name" }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Municipality/City*</label>
+                    {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality" }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Province*</label>
+                    {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province" }}
+                </div>
+            </div>
+
+            <!-- Purpose and Registration -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Purpose/Use of Chainsaw*</label>
+                    {{ form.purpose|add_class:"form-input"|attr:"placeholder:Enter purpose" }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date of Acquisition*</label>
+                    {{ form.date_acquired|add_class:"form-input"|attr:"type:date" }}
+                </div>
+            </div>
+
+            <!-- Registration Numbers -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Certificate of Registration Number*</label>
+                    {{ form.cert_reg_number|add_class:"form-input"|attr:"placeholder:Enter registration number" }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">CTPO/PTPR/Tenure Number*</label>
+                    {{ form.ctpo_number|add_class:"form-input"|attr:"placeholder:Enter CTPO number" }}
                 </div>
             </div>
 
             <!-- Chainsaw Details -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Chainsaw Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Brand*</label>
-                        {{ form.brand|add_class:"form-input"|attr:"placeholder:Enter brand" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Model*</label>
-                        {{ form.model|add_class:"form-input"|attr:"placeholder:Enter model" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Serial Number*</label>
-                        {{ form.serial_number|add_class:"form-input"|attr:"placeholder:Enter serial number" }}
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Brand*</label>
+                    {{ form.brand|add_class:"form-input"|attr:"placeholder:Enter brand" }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Model*</label>
+                    {{ form.model|add_class:"form-input"|attr:"placeholder:Enter model" }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Serial Number*</label>
+                    {{ form.serial_number|add_class:"form-input"|attr:"placeholder:Enter serial number" }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Color*</label>
+                    {{ form.color|add_class:"form-input"|attr:"placeholder:Enter color" }}
                 </div>
             </div>
 
-            <!-- Additional Chainsaw Information -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Chainsaw Information</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Purpose/Use of Chainsaw*</label>
-                        {{ form.purpose|add_class:"form-input" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Date of Acquisition*</label>
-                        {{ form.date_acquired|add_class:"form-input"|attr:"type:date" }}
-                    </div>
+            <!-- Dates and Status -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
+                    {{ form.date_issued|add_class:"form-input"|attr:"type:date" }}
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Certificate of Registration Number*</label>
-                        {{ form.cert_reg_number|add_class:"form-input"|attr:"placeholder:Enter registration number" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Color*</label>
-                        {{ form.color|add_class:"form-input"|attr:"placeholder:Enter color" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Status of Registration*</label>
-                        {{ form.registration_status|add_class:"form-input" }}
-                    </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
+                    {{ form.expiry_date|add_class:"form-input"|attr:"type:date" }}
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Status of Registration*</label>
+                    {{ form.registration_status|add_class:"form-input" }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date of Renewal</label>
+                    {{ form.date_renewal|add_class:"form-input"|attr:"type:date" }}
+                </div>
+            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Date of Renewal</label>
-                        {{ form.date_renewal|add_class:"form-input" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Horse Power*</label>
-                        {{ form.horse_power|add_class:"form-input"|attr:"placeholder:Enter horse power" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Max. Length of Guidebar (inches)*</label>
-                        {{ form.guidebar_length|add_class:"form-input"|attr:"placeholder:Enter length in inches" }}
-                    </div>
+            <!-- Technical Details -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Horse Power*</label>
+                    {{ form.horse_power|add_class:"form-input"|attr:"placeholder:Enter horse power" }}
                 </div>
-
-                <div class="mt-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Maximum Length of Guidebar (inches)*</label>
+                    {{ form.guidebar_length|add_class:"form-input"|attr:"placeholder:Enter length" }}
+                </div>
+                <div>
                     <label class="block text-sm font-medium text-gray-700">DENR Sticker Number*</label>
-                    {{ form.denr_sticker|add_class:"form-input"|attr:"placeholder:Enter DENR sticker number" }}
-                </div>
-            </div>
-
-            <!-- Permit Details -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Permit Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">CTPO Number*</label>
-                        {{ form.ctpo_number|add_class:"form-input"|attr:"placeholder:Enter CTPO number" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
-                        {{ form.date_issued|add_class:"form-input" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
-                        {{ form.expiry_date|add_class:"form-input" }}
-                    </div>
+                    {{ form.denr_sticker|add_class:"form-input"|attr:"placeholder:Enter sticker number" }}
                 </div>
             </div>
 
             <!-- File Upload -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Documentation</h3>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Upload Files</label>
-                    {{ form.file|add_class:"form-input" }}
-                </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Attach File</label>
+                {{ form.file|add_class:"form-input" }}
             </div>
 
+            <!-- Submit Button -->
             <div class="flex justify-end mt-6">
                 <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
                     Save Record
@@ -349,6 +328,7 @@
                             <th class="px-6 py-4 font-semibold">Expiry Date</th>
                             <th class="px-6 py-4 font-semibold">Days Remaining</th>
                             <th class="px-6 py-4 font-semibold">File</th>
+                            <th class="px-6 py-4 font-semibold">Status</th>
                             <th class="px-6 py-4 font-semibold">Actions</th>
                         </tr>
                     </thead>
@@ -396,6 +376,15 @@
                                     </a>
                                 {% else %}
                                     <span class="text-gray-400">No file</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if record.is_expired %}
+                                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Expired</span>
+                                {% elif record.is_expiring_soon %}
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Expiring Soon</span>
+                                {% else %}
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Active</span>
                                 {% endif %}
                             </td>
                             <td class="px-6 py-4">
