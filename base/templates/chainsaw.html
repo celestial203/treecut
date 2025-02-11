@@ -310,23 +310,28 @@
                     <thead class="bg-gray-50 text-gray-700">
                         <tr>
                             <th class="px-6 py-4 font-semibold">No.</th>
+                            <th class="px-6 py-4 font-semibold">Year</th>
+                            <th class="px-6 py-4 font-semibold">Region</th>
+                            <th class="px-6 py-4 font-semibold">PENRO</th>
+                            <th class="px-6 py-4 font-semibold">CENRO</th>
                             <th class="px-6 py-4 font-semibold">Name</th>
                             <th class="px-6 py-4 font-semibold">Municipality/City</th>
+                            <th class="px-6 py-4 font-semibold">Province</th>
+                            <th class="px-6 py-4 font-semibold">Purpose/Use</th>
+                            <th class="px-6 py-4 font-semibold">Date Acquired</th>
+                            <th class="px-6 py-4 font-semibold">Cert. Reg. #</th>
+                            <th class="px-6 py-4 font-semibold">CTPO/PTPR/Tenure #</th>
                             <th class="px-6 py-4 font-semibold">Brand</th>
                             <th class="px-6 py-4 font-semibold">Model</th>
                             <th class="px-6 py-4 font-semibold">Serial #</th>
-                            <th class="px-6 py-4 font-semibold">Purpose</th>
-                            <th class="px-6 py-4 font-semibold">Date Acquired</th>
-                            <th class="px-6 py-4 font-semibold">Cert. Reg. #</th>
                             <th class="px-6 py-4 font-semibold">Color</th>
-                            <th class="px-6 py-4 font-semibold">Registration Status</th>
+                            <th class="px-6 py-4 font-semibold">Date Issued</th>
+                            <th class="px-6 py-4 font-semibold">Expiry Date</th>
+                            <th class="px-6 py-4 font-semibold">Status of Registration</th>
                             <th class="px-6 py-4 font-semibold">Date of Renewal</th>
                             <th class="px-6 py-4 font-semibold">Horse Power</th>
                             <th class="px-6 py-4 font-semibold">Guidebar Length</th>
                             <th class="px-6 py-4 font-semibold">DENR Sticker #</th>
-                            <th class="px-6 py-4 font-semibold">Date Issued</th>
-                            <th class="px-6 py-4 font-semibold">Expiry Date</th>
-                            <th class="px-6 py-4 font-semibold">Days Remaining</th>
                             <th class="px-6 py-4 font-semibold">File</th>
                             <th class="px-6 py-4 font-semibold">Status</th>
                             <th class="px-6 py-4 font-semibold">Actions</th>
@@ -336,31 +341,28 @@
                         {% for record in chainsaw_records %}
                         <tr class="hover:bg-gray-50 transition-colors duration-150">
                             <td class="px-6 py-4">{{ record.no }}</td>
+                            <td class="px-6 py-4">{{ record.year }}</td>
+                            <td class="px-6 py-4">{{ record.region }}</td>
+                            <td class="px-6 py-4">{{ record.penro }}</td>
+                            <td class="px-6 py-4">{{ record.cenro }}</td>
                             <td class="px-6 py-4">{{ record.name }}</td>
                             <td class="px-6 py-4">{{ record.municipality }}</td>
-                            <td class="px-6 py-4">{{ record.brand }}</td>
-                            <td class="px-6 py-4">{{ record.model }}</td>
-                            <td class="px-6 py-4">{{ record.serial_number }}</td>
+                            <td class="px-6 py-4">{{ record.province }}</td>
                             <td class="px-6 py-4">{{ record.purpose }}</td>
                             <td class="px-6 py-4">{{ record.date_acquired|date:"F d, Y" }}</td>
                             <td class="px-6 py-4">{{ record.cert_reg_number }}</td>
+                            <td class="px-6 py-4">{{ record.ctpo_number }}</td>
+                            <td class="px-6 py-4">{{ record.brand }}</td>
+                            <td class="px-6 py-4">{{ record.model }}</td>
+                            <td class="px-6 py-4">{{ record.serial_number }}</td>
                             <td class="px-6 py-4">{{ record.color }}</td>
+                            <td class="px-6 py-4">{{ record.date_issued|date:"F d, Y" }}</td>
+                            <td class="px-6 py-4">{{ record.expiry_date|date:"F d, Y" }}</td>
                             <td class="px-6 py-4">{{ record.registration_status }}</td>
                             <td class="px-6 py-4">{{ record.date_renewal|date:"F d, Y" }}</td>
                             <td class="px-6 py-4">{{ record.horse_power }}</td>
                             <td class="px-6 py-4">{{ record.guidebar_length }}"</td>
                             <td class="px-6 py-4">{{ record.denr_sticker }}</td>
-                            <td class="px-6 py-4">{{ record.date_issued|date:"F d, Y" }}</td>
-                            <td class="px-6 py-4">{{ record.expiry_date|date:"F d, Y" }}</td>
-                            <td class="px-6 py-4">
-                                {% if record.is_expired %}
-                                    <span class="text-red-600 font-medium">Expired</span>
-                                {% else %}
-                                    <span class="{% if record.is_expiring_soon %}text-yellow-600{% else %}text-gray-900{% endif %} font-medium">
-                                        {{ record.days_remaining }} days
-                                    </span>
-                                {% endif %}
-                            </td>
                             <td class="px-6 py-4">
                                 {% if record.file %}
                                     <a href="{{ record.file.url }}" 
