@@ -275,125 +275,82 @@ class Cutting(models.Model):
         return 'Active'
 
 class Chainsaw(models.Model):
-    no = models.CharField(max_length=50, unique=True, verbose_name="Chainsaw Number", null=True, blank=True)
-    year = models.IntegerField(verbose_name="Year of Manufacture", null=True, blank=True)
-    region = models.CharField(max_length=100, verbose_name="Region", null=True, blank=True)
-    penro = models.CharField(max_length=100, verbose_name="PENRO", null=True, blank=True)
-    cenro = models.CharField(max_length=100, verbose_name="CENRO", null=True, blank=True)
-    province = models.CharField(max_length=100, verbose_name="Province", null=True, blank=True)
-    name = models.CharField(max_length=200, verbose_name="Chainsaw Name", null=True, blank=True)
-    municipality = models.CharField(max_length=100, verbose_name="Municipality", null=True, blank=True)
-    date_acquisition = models.DateField(verbose_name="Date of Acquisition", null=True, blank=True)
-    ctpo_number = models.CharField(max_length=100, verbose_name="CTPO Number", null=True, blank=True)
-
     PURPOSE_CHOICES = [
-        ('cutting_private_plantation_commercial', 'Cutting in Private Plantation for Commercial Use'),
-        ('cutting_tenure_area_personal_non_commercial', 'Cutting in Tenure Area for Personal/Non-Commercial Use'),
+        ('CUTTING IN PRIVATE PLANTATION FOR COMMERCIAL USE', 'CUTTING IN PRIVATE PLANTATION FOR COMMERCIAL USE'),
+        ('CUTTING IN TENURE AREA FOR PERSONAL/NON COMMERCIAL USE', 'CUTTING IN TENURE AREA FOR PERSONAL/NON COMMERCIAL USE'),
     ]
-    purpose = models.CharField(
-        max_length=100, 
-        verbose_name="Purpose", 
-        choices=PURPOSE_CHOICES, 
-        null=True, 
-        blank=True
-    )
+
+    REGISTRATION_STATUS_CHOICES = [
+        ('RENEWED', 'RENEWED'),
+        ('FOR RENEWAL', 'FOR RENEWAL'),
+        ('EXPIRED', 'EXPIRED'),
+    ]
+
+    # Basic Information
+    no = models.CharField(max_length=50)
+    year = models.IntegerField()
+    region = models.CharField(max_length=50)
     
-    # Changed brand field to remove default='Unknown'
-    brand = models.CharField(max_length=200, verbose_name="Brand", null=True, blank=True)
-    model = models.CharField(max_length=100, verbose_name="Model", null=True, blank=True)
-    serial_number = models.CharField(max_length=100, verbose_name="Serial Number", null=True, blank=True)
-    color = models.CharField(max_length=50, verbose_name="Color", null=True, blank=True)
-    horse_power = models.IntegerField(verbose_name="Horse Power", null=True, blank=True)
-    guidebar_length = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Guidebar Length (inches)", null=True, blank=True)
-    denr_sticker = models.CharField(max_length=100, verbose_name="DENR Sticker Number", null=True, blank=True)
-    registration_status = models.CharField(max_length=50, verbose_name="Registration Status", null=True, blank=True)
-    date_issued = models.DateField(verbose_name="Date Issued", null=True, blank=True)
-    expiry_date = models.DateField(verbose_name="Expiry Date", null=True, blank=True)
-    date_renewal = models.DateField(verbose_name="Date of Renewal", null=True, blank=True)
-
-    def get_file_path(instance, filename):
-        # Get the file extension
-        ext = filename.split('.')[-1]
-        # Create a new filename using the chainsaw number and original extension
-        new_filename = f"chainsaw_{instance.no}.{ext}"
-        # Return the complete path
-        return os.path.join('chainsaw_files', new_filename)
-
-    file = models.FileField(
-        upload_to=get_file_path,
-        null=True,
-        blank=True,
-        verbose_name='Upload File'
-    )
-
-    # Add created_by field
-    created_by = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True
-    )
-
-    class Meta:
-        verbose_name = "Chainsaw"
-        verbose_name_plural = "Chainsaws"
-
-    def __str__(self):
-        return f"{self.name} ({self.no})"
-
-    def clean(self):
-        # TCP number validation
-        if self.no:
-            chainsaw_pattern = re.compile(r'^[A-Za-z0-9-]+$')
-            if not chainsaw_pattern.match(self.no):
-                raise ValidationError({'no': 'Chainsaw number can only contain letters, numbers, and hyphens.'})
-
-        # Horse power validation
-        if self.horse_power is not None and self.horse_power <= 0:
-            raise ValidationError({'horse_power': 'Horse power must be greater than 0.'})
-
-        # Volume validations
-        if self.guidebar_length is not None and self.guidebar_length <= 0:
-            raise ValidationError({'guidebar_length': 'Guidebar length must be greater than 0.'})
-
-        # Expiry date validation
-        if self.expiry_date and self.expiry_date < timezone.now().date():
-            raise ValidationError({'expiry_date': 'Expiry date cannot be in the past.'})
-
-    def save(self, *args, **kwargs):
-        # Remove full_clean to allow saving with partial data
-        if self.no:
-            self.no = self.no.upper()
-        if self.name:
-            self.name = self.name.upper()
-        if self.brand:
-            self.brand = self.brand.upper()
-        
-        super().save(*args, **kwargs)
+    # Location Details
+    penro = models.CharField(max_length=100)
+    cenro = models.CharField(max_length=100)
+    province = models.CharField(max_length=100)
+    
+    # Owner Details
+    name = models.CharField(max_length=200)
+    municipality = models.CharField(max_length=100)
+    
+    # Chainsaw Details
+    brand = models.CharField(max_length=100)
+    model = models.CharField(max_length=100)
+    serial_number = models.CharField(max_length=100)
+    
+    # Additional Chainsaw Information
+    purpose = models.CharField(max_length=100, choices=PURPOSE_CHOICES)
+    date_acquired = models.DateField()
+    cert_reg_number = models.CharField(max_length=100)
+    color = models.CharField(max_length=50)
+    registration_status = models.CharField(max_length=50, choices=REGISTRATION_STATUS_CHOICES)
+    date_renewal = models.DateField(null=True, blank=True)
+    horse_power = models.CharField(max_length=50)
+    guidebar_length = models.CharField(max_length=50)
+    denr_sticker = models.CharField(max_length=100)
+    
+    # Permit Details
+    ctpo_number = models.CharField(max_length=100)
+    date_issued = models.DateField()
+    expiry_date = models.DateField()
+    
+    # File Upload
+    file = models.FileField(upload_to='chainsaw_files/', null=True, blank=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     @property
     def days_remaining(self):
         if self.expiry_date:
-            remaining = (self.expiry_date - timezone.now().date()).days
-            return max(remaining, 0)  # Don't show negative days
+            today = timezone.now().date()
+            delta = self.expiry_date - today
+            return max(0, delta.days)
         return 0
 
     @property
-    def is_expiring_soon(self):
-        remaining = self.days_remaining
-        return 0 < remaining <= 10  # Warning when 10 days or less remaining
-
-    @property
     def is_expired(self):
-        return self.days_remaining <= 0
+        if self.expiry_date:
+            return timezone.now().date() > self.expiry_date
+        return False
 
     @property
-    def status(self):
-        if self.is_expired:
-            return 'Expired'
-        elif self.is_expiring_soon:
-            return 'Expiring Soon'
-        return 'Active'
+    def is_expiring_soon(self):
+        if self.expiry_date:
+            days = self.days_remaining
+            return 0 < days <= 30
+        return False
+
+    def __str__(self):
+        return f"{self.name} - {self.serial_number}"
 
 class Wood(models.Model):
     name = models.CharField(max_length=200, null=True, blank=True)
