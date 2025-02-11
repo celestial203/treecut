@@ -1,23 +1,21 @@
-from pathlib import Path
 import os
+from pathlib import Path
 from django.contrib import admin
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-secret-key')
+SECRET_KEY = 'your-secret-key-here'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # Set to False in production
+DEBUG = True
 
 # ALLOWED_HOSTS configuration
 if DEBUG:
-    # Development settings
     ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 else:
-    # Production settings
-    ALLOWED_HOSTS = ['your-domain.com']  # Replace with your actual domain
+    ALLOWED_HOSTS = ['your-domain.com']
 
 # Internal IPs for Django Debug Toolbar
 INTERNAL_IPS = ['127.0.0.1', 'localhost']
@@ -52,7 +50,7 @@ MIDDLEWARE = [
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -66,13 +64,16 @@ TEMPLATES = [
 ]
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Media files
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Database settings (use SQLite for development)
 DATABASES = {
@@ -110,15 +111,4 @@ LOGGING = {
         },
     },
 }
-
-# Move the admin customization to the end of the file
-# after all apps are loaded
-def ready():
-    # Admin customization
-    admin.site.site_header = "CENRO ARGAO Administration"
-    admin.site.site_title = "CENRO ARGAO Admin Portal"
-    admin.site.index_title = "Welcome to CENRO ARGAO Admin Portal"
-
-# Call ready() at the end of the file
-ready()
 

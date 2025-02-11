@@ -1,6 +1,5 @@
 from django.apps import AppConfig
+from django.contrib import admin
 
-
-class BaseConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'base'
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
