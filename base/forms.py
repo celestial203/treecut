@@ -240,44 +240,39 @@ class CuttingForm(forms.ModelForm):
 
 # ChainsawForm
 class ChainsawForm(forms.ModelForm):
-    PURPOSE_CHOICES = [
-        ('cutting_private_plantation_commercial', 'Cutting in Private Plantation for Commercial Use'),
-        ('cutting_tenure_area_personal_non_commercial', 'Cutting in Tenure Area for Personal/Non-Commercial Use'),
-    ]
-    purpose = forms.ChoiceField(choices=PURPOSE_CHOICES)
-
     class Meta:
         model = Chainsaw
         fields = [
-            'no', 'year', 'region', 'penro', 'cenro', 'province',
-            'name', 'municipality', 'purpose', 'date_acquisition',
-            'ctpo_number', 'brand', 'model', 'serial_number',
-            'color', 'horse_power', 'guidebar_length', 'denr_sticker',
-            'registration_status', 'date_issued', 'expiry_date',
-            'date_renewal', 'file'
+            'no', 'year', 'region',
+            'penro', 'cenro', 'province',
+            'name', 'municipality',
+            'brand', 'model', 'serial_number',
+            'purpose', 'date_acquired',
+            'cert_reg_number', 'color',
+            'registration_status', 'date_renewal',
+            'horse_power', 'guidebar_length',
+            'denr_sticker',
+            'ctpo_number', 'date_issued', 'expiry_date',
+            'file'
         ]
         widgets = {
-            'date_acquisition': forms.DateInput(attrs={'type': 'date'}),
+            'date_acquired': forms.DateInput(attrs={'type': 'date'}),
+            'date_renewal': forms.DateInput(attrs={'type': 'date'}),
             'date_issued': forms.DateInput(attrs={'type': 'date'}),
             'expiry_date': forms.DateInput(attrs={'type': 'date'}),
-            'date_renewal': forms.DateInput(attrs={'type': 'date'}),
+            'purpose': forms.Select(attrs={'class': 'form-select'}),
+            'registration_status': forms.Select(attrs={'class': 'form-select'}),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Make all fields not required by default
-        for field in self.fields:
-            self.fields[field].required = False
-
-    def clean_file(self):
-        file = self.cleaned_data.get('file')
-        if file:
-            # Add file validation if needed
-            allowed_types = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword',
-                           'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
-            if file.content_type not in allowed_types:
-                raise forms.ValidationError('Invalid file type. Please upload PDF, DOC, DOCX, JPG or PNG files only.')
-        return file
+    def clean(self):
+        cleaned_data = super().clean()
+        date_issued = cleaned_data.get('date_issued')
+        expiry_date = cleaned_data.get('expiry_date')
+        
+        if date_issued and expiry_date and expiry_date < date_issued:
+            raise forms.ValidationError("Expiry date cannot be earlier than date issued.")
+        
+        return cleaned_data
 
 # WoodForm
 class WoodForm(forms.ModelForm):

@@ -274,6 +274,10 @@ class Cutting(models.Model):
             return 'Expiring Soon'
         return 'Active'
 
+def chainsaw_file_path(instance, filename):
+    # Generate file path: chainsaw_files/YYYY/MM/filename
+    return f'chainsaw_files/{timezone.now().year}/{timezone.now().month}/{filename}'
+
 class Chainsaw(models.Model):
     PURPOSE_CHOICES = [
         ('CUTTING IN PRIVATE PLANTATION FOR COMMERCIAL USE', 'CUTTING IN PRIVATE PLANTATION FOR COMMERCIAL USE'),
@@ -322,7 +326,7 @@ class Chainsaw(models.Model):
     expiry_date = models.DateField()
     
     # File Upload
-    file = models.FileField(upload_to='chainsaw_files/', null=True, blank=True)
+    file = models.FileField(upload_to=chainsaw_file_path, null=True, blank=True, verbose_name='Upload File')
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
