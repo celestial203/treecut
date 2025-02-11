@@ -171,6 +171,47 @@
         input[type="date"]:valid::before {
             display: none;
         }
+
+        /* Style file input */
+        input[type="file"] {
+            padding: 0.375rem;
+        }
+        input[type="file"]::-webkit-file-upload-button {
+            padding: 0.5rem 1rem;
+            margin-right: 1rem;
+            background-color: #E5E7EB;
+            border: none;
+            border-radius: 0.375rem;
+            color: #374151;
+            cursor: pointer;
+        }
+        input[type="file"]::-webkit-file-upload-button:hover {
+            background-color: #D1D5DB;
+        }
+
+        /* Remove the previous date input styles and add these new ones */
+        .date-input {
+            position: relative;
+            background-color: #f8fafc;
+        }
+
+        .date-input::-webkit-calendar-picker-indicator {
+            background: transparent;
+            bottom: 0;
+            color: transparent;
+            cursor: pointer;
+            height: auto;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: auto;
+        }
+
+        /* Remove the previous ::before pseudo-element styles for date inputs */
+        input[type="date"]::before {
+            content: none;
+        }
     </style>
 </head>
 <body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
@@ -245,15 +286,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">No.* *</label>
-                        {{ form.no|add_class:"form-input"|attr:"placeholder:Enter number"|attr:"required" }}
+                        <input type="text" name="no" class="form-input" placeholder="Enter number" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Trade Name* *</label>
-                        {{ form.trade_name|add_class:"form-input"|attr:"placeholder:Enter trade name"|attr:"required" }}
+                        <input type="text" name="trade_name" class="form-input" placeholder="Enter trade name" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Manager/Owner* *</label>
-                        {{ form.manager_owner|add_class:"form-input"|attr:"placeholder:Enter manager/owner name"|attr:"required" }}
+                        <input type="text" name="manager_owner" class="form-input" placeholder="Enter manager/owner name" required>
                     </div>
                 </div>
 
@@ -261,11 +302,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Contact No.* *</label>
-                        {{ form.contact_no|add_class:"form-input"|attr:"placeholder:Enter contact number"|attr:"required" }}
+                        <input type="tel" name="contact_no" class="form-input" placeholder="Enter contact number" pattern="^(09|\+639)\d{9}$" title="Please enter a valid Philippine mobile number" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Gender* *</label>
-                        {{ form.gender|add_class:"form-input"|attr:"required" }}
+                        <select name="gender" class="form-input" required>
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
                     </div>
                 </div>
 
@@ -273,15 +318,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Barangay* *</label>
-                        {{ form.brgy|add_class:"form-input"|attr:"placeholder:Enter barangay"|attr:"required" }}
+                        <input type="text" name="brgy" class="form-input" placeholder="Enter barangay" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Municipality* *</label>
-                        {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality"|attr:"required" }}
+                        <input type="text" name="municipality" class="form-input" placeholder="Enter municipality" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Province* *</label>
-                        {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province"|attr:"required" }}
+                        <input type="text" name="province" class="form-input" placeholder="Enter province" required>
                     </div>
                 </div>
 
@@ -289,15 +334,27 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Permit No.* *</label>
-                        {{ form.permit_no|add_class:"form-input"|attr:"placeholder:Enter permit number"|attr:"required" }}
+                        <input type="text" name="permit_no" class="form-input" placeholder="Enter permit number" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Date Issued* *</label>
-                        {{ form.date_issued|add_class:"form-input"|attr:"type:date"|attr:"required"|attr:"placeholder:dd/mm/yyyy" }}
+                        <input type="text" 
+                               name="date_issued" 
+                               class="form-input date-input"
+                               placeholder="dd/mm/yyyy"
+                               onfocus="(this.type='date')"
+                               onblur="if(!this.value)this.type='text'"
+                               required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Expiry Date* *</label>
-                        {{ form.expiry_date|add_class:"form-input"|attr:"type:date"|attr:"required"|attr:"placeholder:dd/mm/yyyy" }}
+                        <input type="text" 
+                               name="expiry_date" 
+                               class="form-input date-input"
+                               placeholder="dd/mm/yyyy"
+                               onfocus="(this.type='date')"
+                               onblur="if(!this.value)this.type='text'"
+                               required>
                     </div>
                 </div>
 
@@ -305,22 +362,22 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Source/Supplier* *</label>
-                        {{ form.source_supplier|add_class:"form-input"|attr:"placeholder:Enter source/supplier"|attr:"required" }}
+                        <input type="text" name="source_supplier" class="form-input" placeholder="Enter source/supplier" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Volume (cubic meter)* *</label>
-                        {{ form.volume_cubic_meter|add_class:"form-input"|attr:"placeholder:Enter volume"|attr:"required"|attr:"type:number"|attr:"step:0.01"|attr:"min:0.01" }}
+                        <input type="number" name="volume_cubic_meter" class="form-input" placeholder="Enter volume" step="0.01" min="0.01" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Species* *</label>
-                        {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species"|attr:"required" }}
+                        <input type="text" name="species" class="form-input" placeholder="Enter species" required>
                     </div>
                 </div>
 
                 <!-- File Upload -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Attach File *</label>
-                    {{ form.file|add_class:"form-input" }}
+                    <input type="file" name="file" class="form-input" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                 </div>
 
                 <!-- Submit Button -->
@@ -843,6 +900,24 @@
                     }
                 });
             }
+
+            // Convert date inputs to show placeholder
+            const dateInputs = document.querySelectorAll('.date-input');
+            
+            dateInputs.forEach(input => {
+                // Keep the input as text type initially to show placeholder
+                input.type = 'text';
+                
+                input.addEventListener('focus', function() {
+                    this.type = 'date';
+                });
+                
+                input.addEventListener('blur', function() {
+                    if (!this.value) {
+                        this.type = 'text';
+                    }
+                });
+            });
 
         function exportTableToCSV(filename) {
             const table = document.querySelector('table');
