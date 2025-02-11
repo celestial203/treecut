@@ -17,7 +17,7 @@ if DEBUG:
     ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 else:
     # Production settings
-    ALLOWED_HOSTS = ['your-domain.com', 'www.your-domain.com']  # Replace with your actual domain
+    ALLOWED_HOSTS = ['your-domain.com']  # Replace with your actual domain
 
 # Internal IPs for Django Debug Toolbar
 INTERNAL_IPS = ['127.0.0.1', 'localhost']
@@ -111,12 +111,14 @@ LOGGING = {
     },
 }
 
-# Add these lines to customize admin interface
-ADMIN_SITE_HEADER = "CENRO ARGAO Administration"
-ADMIN_SITE_TITLE = "CENRO ARGAO Admin Portal"
-ADMIN_INDEX_TITLE = "Welcome to CENRO ARGAO Admin Portal"
+# Move the admin customization to the end of the file
+# after all apps are loaded
+def ready():
+    # Admin customization
+    admin.site.site_header = "CENRO ARGAO Administration"
+    admin.site.site_title = "CENRO ARGAO Admin Portal"
+    admin.site.index_title = "Welcome to CENRO ARGAO Admin Portal"
 
-admin.site.site_header = ADMIN_SITE_HEADER
-admin.site.site_title = ADMIN_SITE_TITLE
-admin.site.index_title = ADMIN_INDEX_TITLE
+# Call ready() at the end of the file
+ready()
 

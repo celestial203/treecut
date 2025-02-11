@@ -12,40 +12,17 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Lumber(models.Model):
-    no = models.CharField(max_length=50, unique=True)
-    trade_name = models.CharField(max_length=200, verbose_name="Trade Name", null=True, blank=True)
-    manager_owner = models.CharField(max_length=200, verbose_name="Manager/Owner", null=True, blank=True)
-    contact_no = models.CharField(max_length=50, verbose_name="Contact No.", null=True, blank=True)
-    gender = models.CharField(max_length=1, choices=[('M', 'Male'), ('F', 'Female')], verbose_name="Gender", null=True, blank=True)
-    
-    # Location fields
-    brgy = models.CharField(max_length=100, verbose_name="Barangay", null=True, blank=True)
-    municipality = models.CharField(max_length=100, verbose_name="Municipality", null=True, blank=True)
-    province = models.CharField(max_length=100, verbose_name="Province", null=True, blank=True)
-    
-    # Permit details
-    permit_no = models.CharField(max_length=50, verbose_name="Permit No.", null=True, blank=True)
-    date_issued = models.DateField(verbose_name="Date Issued", null=True, blank=True)
-    expiry_date = models.DateField(verbose_name="Expiry Date", null=True, blank=True)
-    
-    # Additional details
-    source_supplier = models.CharField(max_length=200, verbose_name="Source/Supplier", null=True, blank=True)
-    volume_cubic_meter = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Volume (cubic meter)", null=True, blank=True)
-    species = models.CharField(max_length=100, verbose_name="Species", null=True, blank=True)
-    remarks = models.TextField(blank=True, null=True, verbose_name="Remarks")
-    
-    # Metadata
+    no = models.CharField(max_length=50)
+    trade_name = models.CharField(max_length=200)
+    manager_owner = models.CharField(max_length=200)
+    permit_no = models.CharField(max_length=100)
+    date_issued = models.DateField()
+    expiry_date = models.DateField()
+    volume_cubic_meter = models.DecimalField(max_digits=10, decimal_places=2)
+    species = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = "Lumber"
-        verbose_name_plural = "Lumber Records"
-        constraints = [
-            models.UniqueConstraint(fields=['trade_name', 'permit_no'], name='unique_trade_permit')
-        ]
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return f"{self.trade_name} - {self.permit_no}"
@@ -64,17 +41,6 @@ class Lumber(models.Model):
         if not self.expiry_date:
             raise ValidationError({'expiry_date': 'Expiry date is required.'})
 
-        # Contact number validation
-        if self.contact_no:
-            phone_pattern = re.compile(r'^\+?[0-9]{10,15}$')
-            if not phone_pattern.match(self.contact_no):
-                raise ValidationError({'contact_no': 'Invalid contact number format. Please enter a valid phone number.'})
-
-        # Volume validation
-        if self.volume_cubic_meter is not None:
-            if self.volume_cubic_meter <= 0:
-                raise ValidationError({'volume_cubic_meter': 'Volume must be greater than 0.'})
-
         # Permit number validation
         if self.permit_no:
             permit_pattern = re.compile(r'^[A-Za-z0-9-]+$')
@@ -92,10 +58,6 @@ class Lumber(models.Model):
         no_pattern = re.compile(r'^[A-Za-z0-9-]+$')
         if not no_pattern.match(self.no):
             raise ValidationError({'no': 'Number can only contain letters, numbers, and hyphens.'})
-
-        # Location validations
-        if any([self.brgy, self.municipality, self.province]) and not all([self.brgy, self.municipality, self.province]):
-            raise ValidationError('All location fields (Barangay, Municipality, and Province) must be filled if any one is provided.')
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -142,44 +104,18 @@ class UserProfile(models.Model):
         return self.user.username
 
 class Cutting(models.Model):
-    tcp_no = models.CharField(max_length=50, unique=True, verbose_name="TCP Number")
-    permittee = models.CharField(max_length=200, verbose_name="Permittee")
-    rep_by = models.CharField(max_length=200, verbose_name="Representative")
-    location = models.CharField(max_length=200, verbose_name="Location")
-    permit_issue_date = models.DateField(verbose_name="Permit Issue Date")
-    
-    # Property Details
-    tct_oct_no = models.CharField(max_length=100, verbose_name="TCT/OCT Number", null=True, blank=True)
-    tax_dec_no = models.CharField(max_length=100, verbose_name="Tax Declaration Number", null=True, blank=True)
-    lot_no = models.CharField(max_length=100, verbose_name="Lot Number", null=True, blank=True)
-    area = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Area (ha.)", null=True, blank=True)
-    
-    # Tree Details
-    species_name = models.CharField(max_length=200, verbose_name="Species Name")
-    no_of_trees = models.IntegerField(verbose_name="Number of Trees")
-    gross_volume = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Gross Volume (cu.m.)")
-    total_volume_granted = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total Volume Granted (cu.m.)")
-    
-    # Metadata
+    tcp_no = models.CharField(max_length=100)
+    permittee = models.CharField(max_length=200)
+    location = models.CharField(max_length=200)
+    permit_issue_date = models.DateField()
+    species_name = models.CharField(max_length=100)
+    no_of_trees = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(
-        User, 
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True
-    )
-
-    # Add a database field for days_remaining
-    _days_remaining = models.IntegerField(default=0, db_column='days_remaining')
-
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = "Tree Cutting Permit"
-        verbose_name_plural = "Tree Cutting Permits"
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return f"TCP-{self.tcp_no} - {self.permittee}"
+        return f"{self.permittee} - {self.tcp_no}"
 
     def clean(self):
         super().clean()
@@ -206,26 +142,6 @@ class Cutting(models.Model):
             errors['no_of_trees'] = 'Number of trees is required.'
         elif self.no_of_trees <= 0:
             errors['no_of_trees'] = 'Number of trees must be greater than 0.'
-
-        # Volume validations
-        try:
-            if self.gross_volume is None:
-                errors['gross_volume'] = 'Gross volume is required.'
-            elif self.gross_volume <= 0:
-                errors['gross_volume'] = 'Gross volume must be greater than 0.'
-
-            if self.total_volume_granted is None:
-                errors['total_volume_granted'] = 'Total volume granted is required.'
-            elif self.total_volume_granted <= 0:
-                errors['total_volume_granted'] = 'Total volume granted must be greater than 0.'
-            elif self.total_volume_granted > self.gross_volume:
-                errors['total_volume_granted'] = 'Total volume granted cannot exceed gross volume.'
-        except TypeError:
-            # Handle case where values are not numeric
-            if 'gross_volume' not in errors:
-                errors['gross_volume'] = 'Gross volume must be a number.'
-            if 'total_volume_granted' not in errors:
-                errors['total_volume_granted'] = 'Total volume granted must be a number.'
 
         if errors:
             raise ValidationError(errors)
@@ -309,7 +225,7 @@ class Chainsaw(models.Model):
     model = models.CharField(max_length=100)
     serial_number = models.CharField(max_length=100)
     
-    # Additional Chainsaw Information
+    # Additional Information
     purpose = models.CharField(max_length=100, choices=PURPOSE_CHOICES)
     date_acquired = models.DateField()
     cert_reg_number = models.CharField(max_length=100)
@@ -326,11 +242,14 @@ class Chainsaw(models.Model):
     expiry_date = models.DateField()
     
     # File Upload
-    file = models.FileField(upload_to=chainsaw_file_path, null=True, blank=True, verbose_name='Upload File')
+    file = models.FileField(upload_to='chainsaw_files/', null=True, blank=True)
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.serial_number}"
 
     @property
     def days_remaining(self):
@@ -352,9 +271,6 @@ class Chainsaw(models.Model):
             days = self.days_remaining
             return 0 < days <= 30
         return False
-
-    def __str__(self):
-        return f"{self.name} - {self.serial_number}"
 
 class Wood(models.Model):
     name = models.CharField(max_length=200, null=True, blank=True)
