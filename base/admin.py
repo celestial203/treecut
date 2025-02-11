@@ -52,10 +52,41 @@ class CuttingAdmin(admin.ModelAdmin):
 
 @admin.register(Chainsaw)
 class ChainsawAdmin(admin.ModelAdmin):
-    list_display = ('no', 'name', 'brand', 'model', 'serial_number', 'date_issued', 'expiry_date')
-    list_filter = ('date_issued', 'expiry_date')
-    search_fields = ('no', 'name', 'brand', 'serial_number')
+    list_display = ('name', 'serial_number', 'brand', 'model', 'purpose', 'registration_status', 'date_issued', 'expiry_date')
+    list_filter = ('registration_status', 'purpose', 'brand')
+    search_fields = ('name', 'serial_number', 'brand', 'model')
     date_hierarchy = 'date_issued'
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('no', 'year', 'region')
+        }),
+        ('Location Details', {
+            'fields': ('penro', 'cenro', 'province')
+        }),
+        ('Owner Details', {
+            'fields': ('name', 'municipality')
+        }),
+        ('Chainsaw Details', {
+            'fields': ('brand', 'model', 'serial_number')
+        }),
+        ('Additional Information', {
+            'fields': ('purpose', 'date_acquired', 'cert_reg_number', 'color', 
+                      'registration_status', 'date_renewal', 'horse_power', 
+                      'guidebar_length', 'denr_sticker')
+        }),
+        ('Permit Details', {
+            'fields': ('ctpo_number', 'date_issued', 'expiry_date')
+        }),
+        ('Documentation', {
+            'fields': ('file',)
+        })
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj:  # editing an existing object
+            return ('created_at', 'updated_at')
+        return ()
 
 @admin.register(Wood)
 class WoodAdmin(admin.ModelAdmin):

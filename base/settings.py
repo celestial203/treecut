@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from django.contrib import admin
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -7,11 +8,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-secret-key')
 
-# DEBUG settings (turn off in production)
-DEBUG = False
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True  # Set to False in production
 
-# ALLOWED_HOSTS for production and development
-ALLOWED_HOSTS = ['denrargao.pythonanywhere.com', 'localhost', '127.0.0.1']
+# ALLOWED_HOSTS configuration
+if DEBUG:
+    # Development settings
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+else:
+    # Production settings
+    ALLOWED_HOSTS = ['your-domain.com', 'www.your-domain.com']  # Replace with your actual domain
 
 # Internal IPs for Django Debug Toolbar
 INTERNAL_IPS = ['127.0.0.1', 'localhost']
@@ -104,4 +110,13 @@ LOGGING = {
         },
     },
 }
+
+# Add these lines to customize admin interface
+ADMIN_SITE_HEADER = "CENRO ARGAO Administration"
+ADMIN_SITE_TITLE = "CENRO ARGAO Admin Portal"
+ADMIN_INDEX_TITLE = "Welcome to CENRO ARGAO Admin Portal"
+
+admin.site.site_header = ADMIN_SITE_HEADER
+admin.site.site_title = ADMIN_SITE_TITLE
+admin.site.index_title = ADMIN_INDEX_TITLE
 
