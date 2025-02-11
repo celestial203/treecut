@@ -159,6 +159,18 @@
             border-color: #60A5FA;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
+        /* Add specific styling for date inputs to show the placeholder */
+        input[type="date"]::before {
+            content: attr(placeholder);
+            position: absolute;
+            color: #6B7280;
+        }
+
+        input[type="date"]:focus::before,
+        input[type="date"]:valid::before {
+            display: none;
+        }
     </style>
 </head>
 <body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
@@ -229,89 +241,89 @@
                 </div>
                 {% endif %}
 
-                <!-- Basic Information -->
+                <!-- First Row -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">No.*</label>
-                        {{ form.no|add_class:"form-input"|attr:"placeholder:Enter number"|attr:"required"|attr:"pattern:^[0-9]+$" }}
-                        <div id="noError" class="hidden mt-1 text-sm text-red-600">This number already exists</div>
+                        <label class="block text-sm font-medium text-gray-700">No.* *</label>
+                        {{ form.no|add_class:"form-input"|attr:"placeholder:Enter number"|attr:"required" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Trade Name*</label>
+                        <label class="block text-sm font-medium text-gray-700">Trade Name* *</label>
                         {{ form.trade_name|add_class:"form-input"|attr:"placeholder:Enter trade name"|attr:"required" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Manager/Owner*</label>
+                        <label class="block text-sm font-medium text-gray-700">Manager/Owner* *</label>
                         {{ form.manager_owner|add_class:"form-input"|attr:"placeholder:Enter manager/owner name"|attr:"required" }}
                     </div>
                 </div>
 
-                <!-- Contact and Gender -->
+                <!-- Second Row -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Contact No.*</label>
-                        {{ form.contact_no|add_class:"form-input"|attr:"placeholder:Enter contact number"|attr:"required"|attr:"pattern:^(09|\+639)\d{9}$"|attr:"title:Please enter a valid Philippine mobile number" }}
+                        <label class="block text-sm font-medium text-gray-700">Contact No.* *</label>
+                        {{ form.contact_no|add_class:"form-input"|attr:"placeholder:Enter contact number"|attr:"required" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Gender*</label>
+                        <label class="block text-sm font-medium text-gray-700">Gender* *</label>
                         {{ form.gender|add_class:"form-input"|attr:"required" }}
                     </div>
                 </div>
 
-                <!-- Location Details -->
+                <!-- Third Row -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Barangay*</label>
+                        <label class="block text-sm font-medium text-gray-700">Barangay* *</label>
                         {{ form.brgy|add_class:"form-input"|attr:"placeholder:Enter barangay"|attr:"required" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Municipality*</label>
+                        <label class="block text-sm font-medium text-gray-700">Municipality* *</label>
                         {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality"|attr:"required" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Province*</label>
+                        <label class="block text-sm font-medium text-gray-700">Province* *</label>
                         {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province"|attr:"required" }}
                     </div>
                 </div>
 
-                <!-- Permit Details -->
+                <!-- Fourth Row -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Permit No.*</label>
-                        {{ form.permit_no|add_class:"form-input"|attr:"placeholder:Enter permit number"|attr:"required"|attr:"pattern:^\d{6,}$"|attr:"title:Permit number must be at least 6 digits" }}
+                        <label class="block text-sm font-medium text-gray-700">Permit No.* *</label>
+                        {{ form.permit_no|add_class:"form-input"|attr:"placeholder:Enter permit number"|attr:"required" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
-                        {{ form.date_issued|add_class:"form-input"|attr:"type:date"|attr:"required" }}
+                        <label class="block text-sm font-medium text-gray-700">Date Issued* *</label>
+                        {{ form.date_issued|add_class:"form-input"|attr:"type:date"|attr:"required"|attr:"placeholder:dd/mm/yyyy" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
-                        {{ form.expiry_date|add_class:"form-input"|attr:"type:date"|attr:"required" }}
+                        <label class="block text-sm font-medium text-gray-700">Expiry Date* *</label>
+                        {{ form.expiry_date|add_class:"form-input"|attr:"type:date"|attr:"required"|attr:"placeholder:dd/mm/yyyy" }}
                     </div>
                 </div>
 
-                <!-- Additional Details -->
+                <!-- Fifth Row -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Source/Supplier*</label>
+                        <label class="block text-sm font-medium text-gray-700">Source/Supplier* *</label>
                         {{ form.source_supplier|add_class:"form-input"|attr:"placeholder:Enter source/supplier"|attr:"required" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Volume (cubic meter)*</label>
+                        <label class="block text-sm font-medium text-gray-700">Volume (cubic meter)* *</label>
                         {{ form.volume_cubic_meter|add_class:"form-input"|attr:"placeholder:Enter volume"|attr:"required"|attr:"type:number"|attr:"step:0.01"|attr:"min:0.01" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Species*</label>
+                        <label class="block text-sm font-medium text-gray-700">Species* *</label>
                         {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species"|attr:"required" }}
                     </div>
                 </div>
 
                 <!-- File Upload -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Attach File</label>
+                    <label class="block text-sm font-medium text-gray-700">Attach File *</label>
                     {{ form.file|add_class:"form-input" }}
                 </div>
 
+                <!-- Submit Button -->
                 <div class="flex justify-end mt-6">
                     <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
                         Save Record
