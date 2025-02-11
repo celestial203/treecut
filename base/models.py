@@ -195,6 +195,7 @@ def chainsaw_file_path(instance, filename):
     return f'chainsaw_files/{timezone.now().year}/{timezone.now().month}/{filename}'
 
 class Chainsaw(models.Model):
+    
     PURPOSE_CHOICES = [
         ('CUTTING IN PRIVATE PLANTATION FOR COMMERCIAL USE', 'CUTTING IN PRIVATE PLANTATION FOR COMMERCIAL USE'),
         ('CUTTING IN TENURE AREA FOR PERSONAL/NON COMMERCIAL USE', 'CUTTING IN TENURE AREA FOR PERSONAL/NON COMMERCIAL USE'),
@@ -227,7 +228,7 @@ class Chainsaw(models.Model):
     
     # Additional Information
     purpose = models.CharField(max_length=100, choices=PURPOSE_CHOICES)
-    date_acquired = models.DateField()
+    date_acquired = models.DateField(null=True, blank=True)
     cert_reg_number = models.CharField(max_length=100)
     color = models.CharField(max_length=50)
     registration_status = models.CharField(max_length=50, choices=REGISTRATION_STATUS_CHOICES)
