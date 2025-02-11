@@ -11,7 +11,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'your-secret-key')
 DEBUG = False
 
 # ALLOWED_HOSTS for production and development
-ALLOWED_HOSTS = ['denrargao.pythonanywhere.com']
+ALLOWED_HOSTS = ['denrargao.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 # Internal IPs for Django Debug Toolbar
 INTERNAL_IPS = ['127.0.0.1', 'localhost']

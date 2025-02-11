@@ -186,6 +186,56 @@
                 </div>
             </div>
 
+            <!-- Additional Chainsaw Information -->
+            <div class="mt-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Chainsaw Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Purpose/Use of Chainsaw*</label>
+                        {{ form.purpose|add_class:"form-input" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date of Acquisition*</label>
+                        {{ form.date_acquired|add_class:"form-input" }}
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Certificate of Registration Number*</label>
+                        {{ form.cert_reg_number|add_class:"form-input"|attr:"placeholder:Enter registration number" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Color*</label>
+                        {{ form.color|add_class:"form-input"|attr:"placeholder:Enter color" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Status of Registration*</label>
+                        {{ form.registration_status|add_class:"form-input" }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date of Renewal</label>
+                        {{ form.date_renewal|add_class:"form-input" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Horse Power*</label>
+                        {{ form.horse_power|add_class:"form-input"|attr:"placeholder:Enter horse power" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Max. Length of Guidebar (inches)*</label>
+                        {{ form.guidebar_length|add_class:"form-input"|attr:"placeholder:Enter length in inches" }}
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700">DENR Sticker Number*</label>
+                    {{ form.denr_sticker|add_class:"form-input"|attr:"placeholder:Enter DENR sticker number" }}
+                </div>
+            </div>
+
             <!-- Permit Details -->
             <div class="mt-6">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Permit Details</h3>
@@ -280,8 +330,15 @@
                             <th class="px-6 py-4 font-semibold">Brand</th>
                             <th class="px-6 py-4 font-semibold">Model</th>
                             <th class="px-6 py-4 font-semibold">Serial #</th>
+                            <th class="px-6 py-4 font-semibold">Purpose</th>
+                            <th class="px-6 py-4 font-semibold">Date Acquired</th>
+                            <th class="px-6 py-4 font-semibold">Cert. Reg. #</th>
+                            <th class="px-6 py-4 font-semibold">Color</th>
+                            <th class="px-6 py-4 font-semibold">Registration Status</th>
+                            <th class="px-6 py-4 font-semibold">Date of Renewal</th>
+                            <th class="px-6 py-4 font-semibold">Horse Power</th>
+                            <th class="px-6 py-4 font-semibold">Guidebar Length</th>
                             <th class="px-6 py-4 font-semibold">DENR Sticker #</th>
-                            <th class="px-6 py-4 font-semibold">Status</th>
                             <th class="px-6 py-4 font-semibold">Date Issued</th>
                             <th class="px-6 py-4 font-semibold">Expiry Date</th>
                             <th class="px-6 py-4 font-semibold">Days Remaining</th>
@@ -298,19 +355,15 @@
                             <td class="px-6 py-4">{{ record.brand }}</td>
                             <td class="px-6 py-4">{{ record.model }}</td>
                             <td class="px-6 py-4">{{ record.serial_number }}</td>
+                            <td class="px-6 py-4">{{ record.purpose }}</td>
+                            <td class="px-6 py-4">{{ record.date_acquired|date:"F d, Y" }}</td>
+                            <td class="px-6 py-4">{{ record.cert_reg_number }}</td>
+                            <td class="px-6 py-4">{{ record.color }}</td>
+                            <td class="px-6 py-4">{{ record.registration_status }}</td>
+                            <td class="px-6 py-4">{{ record.date_renewal|date:"F d, Y" }}</td>
+                            <td class="px-6 py-4">{{ record.horse_power }}</td>
+                            <td class="px-6 py-4">{{ record.guidebar_length }}"</td>
                             <td class="px-6 py-4">{{ record.denr_sticker }}</td>
-                            <td class="px-6 py-4">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    {% if record.is_expired %}
-                                        bg-red-100 text-red-800
-                                    {% elif record.is_expiring_soon %}
-                                        bg-yellow-100 text-yellow-800
-                                    {% else %}
-                                        bg-green-100 text-green-800
-                                    {% endif %}">
-                                    {{ record.registration_status }}
-                                </span>
-                            </td>
                             <td class="px-6 py-4">{{ record.date_issued|date:"F d, Y" }}</td>
                             <td class="px-6 py-4">{{ record.expiry_date|date:"F d, Y" }}</td>
                             <td class="px-6 py-4">
