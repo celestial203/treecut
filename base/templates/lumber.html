@@ -122,6 +122,43 @@
             content: " *";
             @apply text-red-500;
         }
+
+        input, select, textarea {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            width: 100%;
+            color: #4B5563;
+        }
+        input::placeholder, select::placeholder, textarea::placeholder {
+            color: #6B7280;
+            opacity: 0.8;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        .form-input {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                   focus:border-blue-500 focus:ring-blue-500 
+                   bg-gray-50 text-gray-900;
+        }
+        input[type="date"] {
+            padding: 0.4rem;
+            color: #4B5563;
+        }
+        select {
+            background-color: #f8fafc;
+            padding: 0.4rem;
+            color: #4B5563;
+        }
+        input:hover, select:hover, textarea:hover {
+            border-color: #60A5FA;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
@@ -178,7 +215,7 @@
         <!-- Form Section -->
         <div class="max-w-5xl mx-auto bg-white p-8 mt-8 shadow-xl rounded-lg">
             <h2 class="text-2xl font-bold mb-6">Add New Lumber Record</h2>
-            <form method="POST" id="lumberForm" class="space-y-6">
+            <form method="POST" id="lumberForm" class="space-y-6" enctype="multipart/form-data">
                 {% csrf_token %}
                 
                 <!-- Global Messages -->
@@ -193,27 +230,27 @@
                 {% endif %}
 
                 <!-- Basic Information -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">No.*</label>
-                        {{ form.no|add_class:"form-input"|attr:"placeholder:Enter number"|attr:"required"|attr:"pattern:^[0-9]+$"|attr:"title:Please enter a valid number" }}
+                        {{ form.no|add_class:"form-input"|attr:"placeholder:Enter number"|attr:"required"|attr:"pattern:^[0-9]+$" }}
                         <div id="noError" class="hidden mt-1 text-sm text-red-600">This number already exists</div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Trade Name*</label>
-                        {{ form.trade_name|add_class:"form-input"|attr:"placeholder:Enter trade name"|attr:"required"|attr:"minlength:2"|attr:"maxlength:100" }}
+                        {{ form.trade_name|add_class:"form-input"|attr:"placeholder:Enter trade name"|attr:"required" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Manager/Owner*</label>
+                        {{ form.manager_owner|add_class:"form-input"|attr:"placeholder:Enter manager/owner name"|attr:"required" }}
                     </div>
                 </div>
 
-                <!-- Owner Details -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Manager/Owner*</label>
-                        {{ form.manager_owner|add_class:"form-input"|attr:"placeholder:Enter manager/owner name"|attr:"required"|attr:"pattern:^[a-zA-Z\s.'-]+$"|attr:"title:Please enter a valid name" }}
-                    </div>
+                <!-- Contact and Gender -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Contact No.*</label>
-                        {{ form.contact_no|add_class:"form-input"|attr:"placeholder:Enter contact number (e.g., 09123456789)"|attr:"required"|attr:"pattern:^(09|\+639)\d{9}$"|attr:"title:Please enter a valid Philippine mobile number" }}
+                        {{ form.contact_no|add_class:"form-input"|attr:"placeholder:Enter contact number"|attr:"required"|attr:"pattern:^(09|\+639)\d{9}$"|attr:"title:Please enter a valid Philippine mobile number" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Gender*</label>
@@ -225,15 +262,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Barangay*</label>
-                        {{ form.brgy|add_class:"form-input"|attr:"placeholder:Enter barangay"|attr:"required"|attr:"pattern:^[a-zA-Z\s.'-]+$"|attr:"title:Please enter a valid barangay name" }}
+                        {{ form.brgy|add_class:"form-input"|attr:"placeholder:Enter barangay"|attr:"required" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Municipality*</label>
-                        {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality"|attr:"required"|attr:"pattern:^[a-zA-Z\s.'-]+$"|attr:"title:Please enter a valid municipality name" }}
+                        {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality"|attr:"required" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Province*</label>
-                        {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province"|attr:"required"|attr:"pattern:^[a-zA-Z\s.'-]+$"|attr:"title:Please enter a valid province name" }}
+                        {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province"|attr:"required" }}
                     </div>
                 </div>
 
@@ -257,16 +294,22 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Source/Supplier*</label>
-                        {{ form.source_supplier|add_class:"form-input"|attr:"placeholder:Enter source/supplier"|attr:"required"|attr:"minlength:2"|attr:"maxlength:100" }}
+                        {{ form.source_supplier|add_class:"form-input"|attr:"placeholder:Enter source/supplier"|attr:"required" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Volume (cubic meter)*</label>
-                        {{ form.volume_cubic_meter|add_class:"form-input"|attr:"placeholder:Enter volume"|attr:"required"|attr:"type:number"|attr:"step:0.01"|attr:"min:0.01"|attr:"title:Please enter a valid volume greater than 0" }}
+                        {{ form.volume_cubic_meter|add_class:"form-input"|attr:"placeholder:Enter volume"|attr:"required"|attr:"type:number"|attr:"step:0.01"|attr:"min:0.01" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Species*</label>
-                        {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species"|attr:"required"|attr:"pattern:^[a-zA-Z\s.'-]+$"|attr:"title:Please enter a valid species name" }}
+                        {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species"|attr:"required" }}
                     </div>
+                </div>
+
+                <!-- File Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Attach File</label>
+                    {{ form.file|add_class:"form-input" }}
                 </div>
 
                 <div class="flex justify-end mt-6">
