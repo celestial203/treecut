@@ -309,14 +309,16 @@
                 <!-- Expiry Warnings -->
                 <div class="mb-4">
                     {% for record in chainsaw_records %}
-                        {% if record.is_expiring_soon and not record.is_expired %}
-                            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
-                                Warning: Registration {{ record.no }} for {{ record.name }} will expire in {{ record.days_remaining }} days
-                            </div>
-                        {% elif record.is_expired %}
-                            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
-                                Alert: Registration {{ record.no }} for {{ record.name }} has expired
-                            </div>
+                        {% if record.expiry_date %}
+                            {% if record.is_expiring_soon and not record.is_expired %}
+                                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
+                                    Warning: Registration {{ record.no }} for {{ record.name }} will expire in {{ record.days_remaining }} days
+                                </div>
+                            {% elif record.is_expired %}
+                                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
+                                    Alert: Registration {{ record.no }} for {{ record.name }} has expired
+                                </div>
+                            {% endif %}
                         {% endif %}
                     {% endfor %}
                 </div>

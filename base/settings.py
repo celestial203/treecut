@@ -92,21 +92,29 @@ LOGOUT_REDIRECT_URL = 'login'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'file': {
-            'level': 'ERROR',
+            'level': 'WARNING',  # Lower the level to catch more issues
             'class': 'logging.FileHandler',
             'filename': BASE_DIR / 'django_errors.log',
+            'formatter': 'verbose',
         },
         'console': {
-            'level': 'ERROR',
+            'level': 'WARNING',
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
     'loggers': {
         'django': {
             'handlers': ['file', 'console'],
-            'level': 'ERROR',
+            'level': 'WARNING',
             'propagate': True,
         },
     },
