@@ -155,7 +155,7 @@
             <!-- Owner Details -->
             <div class="mt-6">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Owner Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Name*</label>
                         {{ form.name|add_class:"form-input"|attr:"placeholder:Enter owner name" }}
@@ -163,6 +163,10 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Municipality/City*</label>
                         {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality/city" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Province*</label>
+                        {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province" }}
                     </div>
                 </div>
             </div>
