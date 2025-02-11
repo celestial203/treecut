@@ -95,7 +95,7 @@ class ChainsawForm(forms.ModelForm):
             'horse_power', 'guidebar_length',
             'denr_sticker',
             'ctpo_number', 'date_issued', 'expiry_date',
-            'file'
+            'file', 'municipality', 'province'
         ]
         widgets = {
             'date_acquired': forms.DateInput(attrs={'type': 'date'}),
