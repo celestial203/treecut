@@ -192,83 +192,71 @@
                 </div>
 
                 <!-- Owner Details -->
-                <div class="mt-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Owner Details</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Manager/Owner*</label>
-                            {{ form.manager_owner|add_class:"form-input"|attr:"placeholder:Enter manager/owner name" }}
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Contact No.*</label>
-                            {{ form.contact_no|add_class:"form-input"|attr:"placeholder:Enter contact number" }}
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Gender*</label>
-                            {{ form.gender|add_class:"form-input" }}
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Manager/Owner*</label>
+                        {{ form.manager_owner|add_class:"form-input"|attr:"placeholder:Enter manager/owner name" }}
                     </div>
-                </div>
-
-                <!-- Permit Details -->
-                <div class="mt-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Permit Details</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Permit No.*</label>
-                            {{ form.permit_no|add_class:"form-input"|attr:"placeholder:Enter permit number" }}
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
-                            {{ form.date_issued|add_class:"form-input" }}
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
-                            {{ form.expiry_date|add_class:"form-input" }}
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Contact No.*</label>
+                        {{ form.contact_no|add_class:"form-input"|attr:"placeholder:Enter contact number" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Gender*</label>
+                        {{ form.gender|add_class:"form-input" }}
                     </div>
                 </div>
 
                 <!-- Location Details -->
-                <div class="mt-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Location Details</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Barangay*</label>
-                            {{ form.brgy|add_class:"form-input"|attr:"placeholder:Enter barangay" }}
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Municipality*</label>
-                            {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality" }}
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Province*</label>
-                            {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province" }}
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Barangay*</label>
+                        {{ form.brgy|add_class:"form-input"|attr:"placeholder:Enter barangay" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Municipality*</label>
+                        {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Province*</label>
+                        {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province" }}
+                    </div>
+                </div>
+
+                <!-- Permit Details -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Permit No.*</label>
+                        {{ form.permit_no|add_class:"form-input"|attr:"placeholder:Enter permit number" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
+                        {{ form.date_issued|add_class:"form-input" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
+                        {{ form.expiry_date|add_class:"form-input" }}
                     </div>
                 </div>
 
                 <!-- Additional Details -->
-                <div class="mt-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Details</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Source/Supplier*</label>
-                            {{ form.source_supplier|add_class:"form-input"|attr:"placeholder:Enter source/supplier" }}
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Volume (cubic meter)*</label>
-                            {{ form.volume_cubic_meter|add_class:"form-input"|attr:"placeholder:Enter volume" }}
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Species*</label>
-                            {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species" }}
-                        </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Source/Supplier*</label>
+                        {{ form.source_supplier|add_class:"form-input"|attr:"placeholder:Enter source/supplier" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Volume (cubic meter)*</label>
+                        {{ form.volume_cubic_meter|add_class:"form-input"|attr:"placeholder:Enter volume" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Species*</label>
+                        {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species" }}
                     </div>
                 </div>
 
                 <div class="flex justify-end mt-6">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200">
                         Save Record
                     </button>
                 </div>
