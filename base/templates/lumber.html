@@ -70,6 +70,58 @@
             ring: 2px;
             ring-color: #93C5FD;
         }
+
+        .form-input {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                   focus:border-blue-500 focus:ring-blue-500 
+                   bg-gray-50 text-gray-900;
+            padding: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .form-input:hover {
+            @apply border-blue-400;
+        }
+
+        .form-input:focus {
+            @apply ring-2 ring-blue-200;
+        }
+
+        .form-input:invalid {
+            @apply border-red-300;
+        }
+
+        .form-input:invalid:focus {
+            @apply ring-red-200;
+        }
+
+        /* Custom styling for date inputs */
+        input[type="date"].form-input {
+            @apply p-2;
+        }
+
+        /* Custom styling for select inputs */
+        select.form-input {
+            @apply pr-8;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Error message styling */
+        .error-message {
+            @apply mt-1 text-sm text-red-600;
+        }
+
+        /* Required field indicator */
+        label:after {
+            content: " *";
+            @apply text-red-500;
+        }
     </style>
 </head>
 <body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
@@ -129,45 +181,6 @@
             <form method="POST" id="lumberForm" class="space-y-6">
                 {% csrf_token %}
                 
-                <style>
-                    input, select, textarea {
-                        background-color: #f8fafc;
-                        border: 1px solid #e2e8f0;
-                        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-                        padding: 0.5rem;
-                        border-radius: 0.375rem;
-                        width: 100%;
-                        color: #4B5563;
-                    }
-                    input::placeholder, select::placeholder, textarea::placeholder {
-                        color: #6B7280;
-                        opacity: 0.8;
-                    }
-                    input:focus, select:focus, textarea:focus {
-                        border-color: #3b82f6;
-                        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-                        outline: none;
-                    }
-                    .form-input {
-                        @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
-                               focus:border-blue-500 focus:ring-blue-500 
-                               bg-gray-50 text-gray-900;
-                    }
-                    input[type="date"] {
-                        padding: 0.4rem;
-                        color: #4B5563;
-                    }
-                    select {
-                        background-color: #f8fafc;
-                        padding: 0.4rem;
-                        color: #4B5563;
-                    }
-                    input:hover, select:hover, textarea:hover {
-                        border-color: #60A5FA;
-                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                    }
-                </style>
-
                 <!-- Global Messages -->
                 {% if messages %}
                 <div class="mb-4">
@@ -183,11 +196,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">No.*</label>
-                        {{ form.no|add_class:"form-input"|attr:"placeholder:Enter number" }}
+                        {{ form.no|add_class:"form-input"|attr:"placeholder:Enter number"|attr:"required"|attr:"pattern:^[0-9]+$"|attr:"title:Please enter a valid number" }}
+                        <div id="noError" class="hidden mt-1 text-sm text-red-600">This number already exists</div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Trade Name*</label>
-                        {{ form.trade_name|add_class:"form-input"|attr:"placeholder:Enter trade name" }}
+                        {{ form.trade_name|add_class:"form-input"|attr:"placeholder:Enter trade name"|attr:"required"|attr:"minlength:2"|attr:"maxlength:100" }}
                     </div>
                 </div>
 
@@ -195,15 +209,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Manager/Owner*</label>
-                        {{ form.manager_owner|add_class:"form-input"|attr:"placeholder:Enter manager/owner name" }}
+                        {{ form.manager_owner|add_class:"form-input"|attr:"placeholder:Enter manager/owner name"|attr:"required"|attr:"pattern:^[a-zA-Z\s.'-]+$"|attr:"title:Please enter a valid name" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Contact No.*</label>
-                        {{ form.contact_no|add_class:"form-input"|attr:"placeholder:Enter contact number" }}
+                        {{ form.contact_no|add_class:"form-input"|attr:"placeholder:Enter contact number (e.g., 09123456789)"|attr:"required"|attr:"pattern:^(09|\+639)\d{9}$"|attr:"title:Please enter a valid Philippine mobile number" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Gender*</label>
-                        {{ form.gender|add_class:"form-input" }}
+                        {{ form.gender|add_class:"form-input"|attr:"required" }}
                     </div>
                 </div>
 
@@ -211,15 +225,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Barangay*</label>
-                        {{ form.brgy|add_class:"form-input"|attr:"placeholder:Enter barangay" }}
+                        {{ form.brgy|add_class:"form-input"|attr:"placeholder:Enter barangay"|attr:"required"|attr:"pattern:^[a-zA-Z\s.'-]+$"|attr:"title:Please enter a valid barangay name" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Municipality*</label>
-                        {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality" }}
+                        {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality"|attr:"required"|attr:"pattern:^[a-zA-Z\s.'-]+$"|attr:"title:Please enter a valid municipality name" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Province*</label>
-                        {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province" }}
+                        {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province"|attr:"required"|attr:"pattern:^[a-zA-Z\s.'-]+$"|attr:"title:Please enter a valid province name" }}
                     </div>
                 </div>
 
@@ -227,15 +241,15 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Permit No.*</label>
-                        {{ form.permit_no|add_class:"form-input"|attr:"placeholder:Enter permit number" }}
+                        {{ form.permit_no|add_class:"form-input"|attr:"placeholder:Enter permit number"|attr:"required"|attr:"pattern:^\d{6,}$"|attr:"title:Permit number must be at least 6 digits" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
-                        {{ form.date_issued|add_class:"form-input" }}
+                        {{ form.date_issued|add_class:"form-input"|attr:"type:date"|attr:"required" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
-                        {{ form.expiry_date|add_class:"form-input" }}
+                        {{ form.expiry_date|add_class:"form-input"|attr:"type:date"|attr:"required" }}
                     </div>
                 </div>
 
@@ -243,20 +257,20 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Source/Supplier*</label>
-                        {{ form.source_supplier|add_class:"form-input"|attr:"placeholder:Enter source/supplier" }}
+                        {{ form.source_supplier|add_class:"form-input"|attr:"placeholder:Enter source/supplier"|attr:"required"|attr:"minlength:2"|attr:"maxlength:100" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Volume (cubic meter)*</label>
-                        {{ form.volume_cubic_meter|add_class:"form-input"|attr:"placeholder:Enter volume" }}
+                        {{ form.volume_cubic_meter|add_class:"form-input"|attr:"placeholder:Enter volume"|attr:"required"|attr:"type:number"|attr:"step:0.01"|attr:"min:0.01"|attr:"title:Please enter a valid volume greater than 0" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Species*</label>
-                        {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species" }}
+                        {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species"|attr:"required"|attr:"pattern:^[a-zA-Z\s.'-]+$"|attr:"title:Please enter a valid species name" }}
                     </div>
                 </div>
 
                 <div class="flex justify-end mt-6">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
                         Save Record
                     </button>
                 </div>
