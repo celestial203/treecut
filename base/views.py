@@ -225,22 +225,26 @@ def view_cutting(request, pk):
 def add_cutting_record(request, tcp_no):
     parent_tcp = get_object_or_404(Cutting, tcp_no=tcp_no)
     
-    # Calculate remaining balance
-    used_volume = CuttingRecord.objects.filter(parent_tcp=parent_tcp).aggregate(
-        total=Sum('calculated_volume')
-    )['total'] or 0
+    # Get all records ordered by date
+    volume_records = CuttingRecord.objects.filter(parent_tcp=parent_tcp).order_by('-date_added')
     
-    remaining_balance = parent_tcp.total_volume_granted - used_volume
+    # Calculate running balance for each record
+    running_balance = parent_tcp.total_volume_granted
+    for record in volume_records:
+        record.running_balance = running_balance
+        running_balance -= record.calculated_volume
+    
+    remaining_balance = running_balance
 
     if request.method == 'POST':
         volume = float(request.POST.get('volume', 0))
-        calculated_volume = volume * 0.30
+        calculated_volume = volume + (volume * 0.30)
 
         if calculated_volume <= remaining_balance:
             CuttingRecord.objects.create(
                 parent_tcp=parent_tcp,
                 species=request.POST.get('species'),
-                no_of_trees=request.POST.get('no_of_trees'),
+                no_of_trees=int(request.POST.get('no_of_trees')),
                 volume=volume,
                 calculated_volume=calculated_volume,
                 remarks=request.POST.get('remarks', '')
@@ -253,7 +257,7 @@ def add_cutting_record(request, tcp_no):
     context = {
         'parent_tcp': parent_tcp,
         'remaining_balance': remaining_balance,
-        'volume_records': CuttingRecord.objects.filter(parent_tcp=parent_tcp).order_by('-date_added')
+        'volume_records': volume_records
     }
     return render(request, 'add_cutting_record.html', context)
 
