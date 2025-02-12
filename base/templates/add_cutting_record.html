@@ -12,137 +12,144 @@
 </head>
 <body class="bg-gray-50">
     <div class="max-w-4xl mx-auto bg-white p-8 mt-8 shadow-lg rounded-lg">
+        <h2 class="text-2xl font-bold mb-6">Add Cutting Record</h2>
+
+        <!-- TCP Information -->
         <div class="mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Add Cutting Record</h2>
             <p class="text-gray-600">TCP No. {{ parent_tcp.tcp_no }}</p>
             <p class="text-gray-600">Date Issued: {{ parent_tcp.permit_issue_date|date:"m-d-Y" }}</p>
             <p class="text-gray-600">Expiry: {{ parent_tcp.expiry_date|date:"m-d-Y" }}</p>
-            <p class="text-gray-600 mt-2">Permittee: {{ parent_tcp.permittee }}</p>
+            <p class="text-gray-600 mt-2">Permittee: {{ parent_tcp.permittee }} {% if parent_tcp.rep_by %}RISP By: {{ parent_tcp.rep_by }}{% endif %}</p>
         </div>
 
-        <!-- Current Balance Information -->
+        <!-- Volume Information Box -->
         <div class="bg-blue-50 p-4 rounded-lg mb-6">
             <h3 class="font-semibold text-blue-800">Volume Information</h3>
             <div class="grid grid-cols-2 gap-4 mt-2">
                 <div>
-                    <p class="text-sm text-blue-600">Total Volume Granted:</p>
-                    <p class="font-medium">{{ parent_tcp.total_volume_granted }} cu.m</p>
+                    <p class="text-sm text-gray-600">Total Volume Granted:</p>
+                    <p class="font-semibold">{{ parent_tcp.total_volume_granted }} cu.m</p>
                 </div>
                 <div>
-                    <p class="text-sm text-blue-600">Remaining Balance:</p>
-                    <p class="font-medium" id="remainingBalance">{{ remaining_balance }} cu.m</p>
-                    {% if remaining_balance <= 0 %}
-                        <p class="text-red-600 font-bold">Already Consumed!</p>
-                    {% endif %}
+                    <p class="text-sm text-gray-600">Remaining Balance:</p>
+                    <p class="font-semibold">{{ remaining_balance }} cu.m</p>
                 </div>
             </div>
         </div>
 
-        <!-- Add Record Form -->
         <form method="POST" id="addRecordForm" class="space-y-6">
             {% csrf_token %}
             
-            <!-- Species and Number of Trees -->
-            <div class="grid grid-cols-2 gap-6">
+            <!-- Species and Trees -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Species*</label>
-                    {{ form.species|add_class:"form-input w-full rounded-md"|attr:"placeholder:Enter species" }}
+                    <input type="text" name="species" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Number of Trees*</label>
-                    {{ form.no_of_trees|add_class:"form-input w-full rounded-md"|attr:"placeholder:Enter number of trees" }}
+                    <input type="number" name="no_of_trees" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                 </div>
             </div>
 
-            <!-- Volume Calculation -->
-            <div class="grid grid-cols-2 gap-6">
+            <!-- Volume Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Volume (cu.m)*</label>
-                    <input type="number" step="0.01" id="inputVolume" name="volume" 
-                           class="form-input w-full rounded-md" 
-                           placeholder="Enter volume">
+                    <input type="number" step="0.01" name="volume" id="inputVolume" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Calculated Volume (30%)</label>
-                    <input type="text" id="calculatedVolume" readonly 
-                           class="form-input w-full rounded-md bg-gray-50">
+                    <input type="number" step="0.01" id="calculatedVolume" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50" readonly>
                 </div>
+            </div>
+
+            <!-- Running Balance -->
+            <div class="bg-blue-50 p-4 rounded-lg mt-4">
+                <p class="text-sm text-gray-600">Current Remaining Balance: <span id="currentBalance">{{ remaining_balance }}</span> cu.m</p>
+                <p class="text-sm text-gray-600">After This Entry: <span id="newBalance" class="font-semibold">{{ remaining_balance }}</span> cu.m</p>
             </div>
 
             <!-- Remarks -->
             <div>
                 <label class="block text-sm font-medium text-gray-700">Remarks</label>
-                {{ form.remarks|add_class:"form-input w-full rounded-md"|attr:"rows:3"|attr:"placeholder:Enter remarks" }}
+                <textarea name="remarks" rows="3" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
             </div>
 
+            <!-- Buttons -->
             <div class="flex justify-end space-x-4">
-                <a href="{% url 'cutting' %}" 
-                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+                <a href="/cutting/" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600">
                     Cancel
                 </a>
-                <button type="submit" 
-                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                        {% if remaining_balance <= 0 %}disabled{% endif %}>
-                    Save Record
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                    Add
                 </button>
             </div>
         </form>
 
         <!-- Volume Breakdown -->
         <div class="mt-8">
-            <h3 class="font-semibold text-gray-800 mb-4">Volume Breakdown</h3>
-            <div class="bg-white shadow overflow-hidden rounded-lg">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Species</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trees</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Volume</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Remarks</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for record in volume_records %}
-                        <tr>
-                            <td class="px-6 py-4">{{ record.date_added|date:"m-d-Y" }}</td>
-                            <td class="px-6 py-4">{{ record.species }}</td>
-                            <td class="px-6 py-4">{{ record.no_of_trees }}</td>
-                            <td class="px-6 py-4">{{ record.volume }} cu.m</td>
-                            <td class="px-6 py-4">{{ record.remarks }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            <h3 class="text-lg font-semibold mb-4">Volume Breakdown</h3>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                    <tr>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase">Species</th>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase">Trees</th>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase">Volume</th>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase">Calculated (30%)</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for record in volume_records %}
+                    <tr>
+                        <td class="px-6 py-4">{{ record.date_added|date:"m-d-Y" }}</td>
+                        <td class="px-6 py-4">{{ record.species }}</td>
+                        <td class="px-6 py-4">{{ record.no_of_trees }}</td>
+                        <td class="px-6 py-4">{{ record.volume }}</td>
+                        <td class="px-6 py-4">{{ record.calculated_volume }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
     <script>
-        // Calculate 30% of input volume
+        // Initialize variables
         const inputVolume = document.getElementById('inputVolume');
         const calculatedVolume = document.getElementById('calculatedVolume');
-        const remainingBalance = {{ remaining_balance|default:0 }};
+        const currentBalanceSpan = document.getElementById('currentBalance');
+        const newBalanceSpan = document.getElementById('newBalance');
+        let remainingBalance = {{ remaining_balance|default:0 }};
 
         inputVolume.addEventListener('input', function() {
             const volume = parseFloat(this.value) || 0;
+            // Calculate 30% of the input volume
             const calculated = volume * 0.30;
             calculatedVolume.value = calculated.toFixed(2);
 
-            // Check if calculated volume exceeds remaining balance
-            if (calculated > remainingBalance) {
+            // Calculate new remaining balance
+            const newBalance = remainingBalance - calculated;
+            newBalanceSpan.textContent = newBalance.toFixed(2);
+
+            // Visual feedback if exceeding remaining balance
+            if (newBalance < 0) {
                 this.classList.add('border-red-500');
+                newBalanceSpan.classList.add('text-red-600');
                 alert('Warning: Volume exceeds remaining balance!');
             } else {
                 this.classList.remove('border-red-500');
+                newBalanceSpan.classList.remove('text-red-600');
             }
         });
 
         // Form validation
         document.getElementById('addRecordForm').addEventListener('submit', function(event) {
-            const volume = parseFloat(calculatedVolume.value) || 0;
+            const calculated = parseFloat(calculatedVolume.value) || 0;
+            const newBalance = remainingBalance - calculated;
             
-            if (volume > remainingBalance) {
+            if (newBalance < 0) {
                 event.preventDefault();
                 alert('Cannot exceed remaining balance!');
             }

@@ -3,12 +3,13 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .forms import LoginForm, LumberForm, CuttingForm, ChainsawForm, WoodForm
-from .models import Lumber, Cutting, Chainsaw, Wood
+from .models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord
 from datetime import datetime, timedelta
 from django.utils import timezone
 import os
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db.models import Sum
 
 # Login view
 def login_view(request):
@@ -223,9 +224,36 @@ def view_cutting(request, pk):
 
 def add_cutting_record(request, tcp_no):
     parent_tcp = get_object_or_404(Cutting, tcp_no=tcp_no)
-    # Add your logic for adding cutting records
+    
+    # Calculate remaining balance
+    used_volume = CuttingRecord.objects.filter(parent_tcp=parent_tcp).aggregate(
+        total=Sum('calculated_volume')
+    )['total'] or 0
+    
+    remaining_balance = parent_tcp.total_volume_granted - used_volume
+
+    if request.method == 'POST':
+        volume = float(request.POST.get('volume', 0))
+        calculated_volume = volume * 0.30
+
+        if calculated_volume <= remaining_balance:
+            CuttingRecord.objects.create(
+                parent_tcp=parent_tcp,
+                species=request.POST.get('species'),
+                no_of_trees=request.POST.get('no_of_trees'),
+                volume=volume,
+                calculated_volume=calculated_volume,
+                remarks=request.POST.get('remarks', '')
+            )
+            messages.success(request, 'Cutting record added successfully!')
+            return redirect('cutting')
+        else:
+            messages.error(request, 'Volume exceeds remaining balance!')
+
     context = {
-        'parent_tcp': parent_tcp
+        'parent_tcp': parent_tcp,
+        'remaining_balance': remaining_balance,
+        'volume_records': CuttingRecord.objects.filter(parent_tcp=parent_tcp).order_by('-date_added')
     }
     return render(request, 'add_cutting_record.html', context)
 
