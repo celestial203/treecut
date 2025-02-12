@@ -824,3 +824,16 @@ Traceback (most recent call last):
     raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
 django.template.exceptions.TemplateSyntaxError: Invalid filter: 'multiply'
 ERROR 2025-02-12 10:21:24,774 basehttp "GET /cutting/add-record/C-Argao%2012262024-157/ HTTP/1.1" 500 197552
+ERROR 2025-02-12 10:24:12,666 log Internal Server Error: /cutting/add-record/C-Argao 12262024-157/
+Traceback (most recent call last):
+  File "C:\Users\TENEBRO FAMILY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\TENEBRO FAMILY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\TENEBRO FAMILY\Desktop\tree\Treecut\base\views.py", line 235, in add_cutting_record
+    record.thirty_percent = record.volume * 0.3
+                            ~~~~~~~~~~~~~~^~~~~
+TypeError: unsupported operand type(s) for *: 'decimal.Decimal' and 'float'
+ERROR 2025-02-12 10:24:12,672 basehttp "GET /cutting/add-record/C-Argao%2012262024-157/ HTTP/1.1" 500 71301

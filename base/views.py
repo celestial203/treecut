@@ -10,6 +10,7 @@ import os
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
+from decimal import Decimal
 
 # Login view
 def login_view(request):
@@ -232,14 +233,14 @@ def add_cutting_record(request, tcp_no):
     running_balance = parent_tcp.total_volume_granted
     for record in volume_records:
         record.running_balance = running_balance
-        record.thirty_percent = record.volume * 0.3
+        record.thirty_percent = record.volume * Decimal('0.3')
         running_balance -= record.calculated_volume
     
     remaining_balance = running_balance
 
     if request.method == 'POST':
-        volume = float(request.POST.get('volume', 0))
-        calculated_volume = volume + (volume * 0.30)
+        volume = Decimal(request.POST.get('volume', '0'))
+        calculated_volume = volume + (volume * Decimal('0.30'))
 
         if calculated_volume <= remaining_balance:
             CuttingRecord.objects.create(
