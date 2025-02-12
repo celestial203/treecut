@@ -233,14 +233,15 @@ def add_cutting_record(request, tcp_no):
     running_balance = parent_tcp.total_volume_granted
     for record in volume_records:
         record.running_balance = running_balance
-        record.thirty_percent = record.volume * Decimal('0.3')
+        record.thirty_percent = record.volume * Decimal('0.30')
         running_balance -= record.calculated_volume
     
     remaining_balance = running_balance
 
     if request.method == 'POST':
         volume = Decimal(request.POST.get('volume', '0'))
-        calculated_volume = volume + (volume * Decimal('0.30'))
+        # New calculation: volume * 30% + volume
+        calculated_volume = (volume * Decimal('30')) + volume
 
         if calculated_volume <= remaining_balance:
             CuttingRecord.objects.create(
