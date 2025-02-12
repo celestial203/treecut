@@ -7,112 +7,169 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Cutting Record - CENRO Argao</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Form styling */
+        input, select, textarea {
+            @apply mt-1 block w-full rounded-lg border-gray-300 shadow-sm 
+                   focus:border-blue-500 focus:ring-blue-500 
+                   bg-gray-50 text-gray-900;
+            padding: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        input:hover, select:hover, textarea:hover {
+            @apply border-blue-400;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            @apply ring-2 ring-blue-200;
+        }
+
+        /* Required field indicator */
+        label.required:after {
+            content: " *";
+            @apply text-red-500;
+        }
+
+        /* Error message styling */
+        .error-message {
+            @apply mt-1 text-sm text-red-600;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="max-w-4xl mx-auto bg-white p-8 mt-8 shadow-xl rounded-lg">
-        <h2 class="text-2xl font-bold mb-6">Edit Cutting Record</h2>
-        
-        <form method="POST" class="space-y-6">
-            {% csrf_token %}
-            
-            <!-- Basic Information -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">TCP No.*</label>
-                    {{ form.tcp_no }}
+<body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 min-h-screen py-8">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-lg mb-8">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-gray-800">CENRO-ARGAO</span>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Permittee*</label>
-                    {{ form.permittee }}
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'cutting' %}" class="text-gray-600 hover:text-blue-600">Back to Records</a>
                 </div>
             </div>
+        </div>
+    </nav>
 
-            <!-- Location and Property Information -->
-            <div class="mt-6">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header Card -->
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Edit Cutting Record</h2>
+            <p class="text-gray-600 mt-1">Update the information for this cutting permit record</p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white p-8 rounded-lg shadow-lg">
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Basic Information -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Location*</label>
-                        {{ form.location }}
+                        <label class="block text-sm font-medium text-gray-700 required">TCP No.</label>
+                        {{ form.tcp_no|attr:"class:form-input" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">TCT/OCT No.*</label>
-                        {{ form.tct_oct_no }}
+                        <label class="block text-sm font-medium text-gray-700 required">Permittee</label>
+                        {{ form.permittee|attr:"class:form-input" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Tax Declaration No.*</label>
-                        {{ form.tax_dec_no }}
+                        <label class="block text-sm font-medium text-gray-700 required">Date Issued</label>
+                        {{ form.permit_issue_date|attr:"class:form-input"|attr:"type:date" }}
                     </div>
                 </div>
-            </div>
 
-            <!-- Property Details -->
-            <div class="mt-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Lot No.*</label>
-                        {{ form.lot_no }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Area (ha.)*</label>
-                        {{ form.area }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Trees and Species Information -->
-            <div class="mt-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Number of Trees*</label>
-                        {{ form.no_of_trees }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Species*</label>
-                        {{ form.species }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Volume Information -->
-            <div class="mt-6">
+                <!-- Location Information -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Total Volume Granted (cu.m.)*</label>
-                        {{ form.total_volume_granted }}
+                        <label class="block text-sm font-medium text-gray-700 required">Location</label>
+                        {{ form.location|attr:"class:form-input" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Gross Volume (cu.m.)*</label>
-                        {{ form.gross_volume }}
+                        <label class="block text-sm font-medium text-gray-700 required">TCT/OCT No.</label>
+                        {{ form.tct_oct_no|attr:"class:form-input" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Tax Declaration No.</label>
+                        {{ form.tax_dec_no|attr:"class:form-input" }}
+                    </div>
+                </div>
+
+                <!-- Property Details -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Lot No.</label>
+                        {{ form.lot_no|attr:"class:form-input" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Area (ha.)</label>
+                        {{ form.area|attr:"class:form-input" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Representative</label>
+                        {{ form.rep_by|attr:"class:form-input" }}
+                    </div>
+                </div>
+
+                <!-- Trees and Species Information -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Number of Trees</label>
+                        {{ form.no_of_trees|attr:"class:form-input" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Species</label>
+                        {{ form.species|attr:"class:form-input" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Purpose</label>
+                        {{ form.purpose|attr:"class:form-input" }}
+                    </div>
+                </div>
+
+                <!-- Volume Information -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Total Volume Granted (cu.m.)</label>
+                        {{ form.total_volume_granted|attr:"class:form-input" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Gross Volume (cu.m.)</label>
+                        {{ form.gross_volume|attr:"class:form-input"|attr:"id:grossVolume"|attr:"oninput:calculateNetVolume()" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Net Volume (cu.m.)</label>
-                        <input type="text" id="netVolume" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50" readonly>
+                        <input type="text" id="netVolume" class="form-input bg-gray-100" readonly>
                     </div>
                 </div>
-            </div>
 
-            <!-- Buttons -->
-            <div class="flex justify-end space-x-4 mt-6">
-                <a href="/cutting/" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600">
-                    Cancel
-                </a>
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-                    Save Changes
-                </button>
-            </div>
-        </form>
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-4 pt-6 border-t">
+                    <a href="{% url 'cutting' %}" 
+                       class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
         // Calculate Net Volume automatically (70% of Gross Volume)
-        const grossVolumeInput = document.getElementById('grossVolume');
-        const netVolumeInput = document.getElementById('netVolume');
-
-        grossVolumeInput.addEventListener('input', function() {
-            const grossVolume = parseFloat(this.value) || 0;
+        function calculateNetVolume() {
+            const grossVolume = parseFloat(document.getElementById('grossVolume').value) || 0;
             const netVolume = grossVolume * 0.70;
-            netVolumeInput.value = netVolume.toFixed(2);
-        });
+            document.getElementById('netVolume').value = netVolume.toFixed(2);
+        }
+
+        // Calculate initial net volume on page load
+        document.addEventListener('DOMContentLoaded', calculateNetVolume);
     </script>
 </body>
 </html>

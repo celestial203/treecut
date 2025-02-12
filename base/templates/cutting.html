@@ -1,5 +1,4 @@
 {% load static %}
-{% load form_filters %} 
 {% load widget_tweaks %}
 
 <!DOCTYPE html>
@@ -7,9 +6,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CENRO Argao - Tree Cutting Management</title>
+    <title>CENRO Argao - Cutting Records</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        .modal-open {
+            overflow: hidden;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        #notificationModal {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Add smooth transition for validation info */
+        .validation-info {
+            transition: all 0.3s ease-in-out;
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .validation-info:not(.hidden) {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Make form labels more readable */
+        .form-group label {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* Style form inputs */
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            font-size: 1rem;
+            padding: 0.5rem;
+            width: 100%;
+            border-radius: 0.375rem;
+            border: 1px solid #D1D5DB;
+        }
+
+        /* Hover effect for inputs */
+        .form-group input:hover,
+        .form-group select:hover,
+        .form-group textarea:hover {
+            border-color: #9CA3AF;
+        }
+
+        /* Focus effect for inputs */
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563EB;
+            ring: 2px;
+            ring-color: #93C5FD;
+        }
+
+        .form-input {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                   focus:border-blue-500 focus:ring-blue-500 
+                   bg-gray-50 text-gray-900;
+            padding: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .form-input:hover {
+            @apply border-blue-400;
+        }
+
+        .form-input:focus {
+            @apply ring-2 ring-blue-200;
+        }
+
+        .form-input:invalid {
+            @apply border-red-300;
+        }
+
+        .form-input:invalid:focus {
+            @apply ring-red-200;
+        }
+
+        /* Custom styling for date inputs */
+        input[type="date"].form-input {
+            @apply p-2;
+        }
+
+        /* Custom styling for select inputs */
+        select.form-input {
+            @apply pr-8;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Error message styling */
+        .error-message {
+            @apply mt-1 text-sm text-red-600;
+        }
+
+        /* Required field indicator */
+        label:after {
+            content: " *";
+            @apply text-red-500;
+        }
+
+        input, select, textarea {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            width: 100%;
+            color: #4B5563;
+        }
+        input::placeholder, select::placeholder, textarea::placeholder {
+            color: #6B7280;
+            opacity: 0.8;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        .form-input {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                   focus:border-blue-500 focus:ring-blue-500 
+                   bg-gray-50 text-gray-900;
+        }
+        input[type="date"] {
+            padding: 0.4rem;
+            color: #4B5563;
+        }
+        select {
+            background-color: #f8fafc;
+            padding: 0.4rem;
+            color: #4B5563;
+        }
+        input:hover, select:hover, textarea:hover {
+            border-color: #60A5FA;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Add specific styling for date inputs to show the placeholder */
+        input[type="date"]::before {
+            content: attr(placeholder);
+            position: absolute;
+            color: #6B7280;
+        }
+
+        input[type="date"]:focus::before,
+        input[type="date"]:valid::before {
+            display: none;
+        }
+
+        /* Style file input */
+        input[type="file"] {
+            padding: 0.375rem;
+        }
+        input[type="file"]::-webkit-file-upload-button {
+            padding: 0.5rem 1rem;
+            margin-right: 1rem;
+            background-color: #E5E7EB;
+            border: none;
+            border-radius: 0.375rem;
+            color: #374151;
+            cursor: pointer;
+        }
+        input[type="file"]::-webkit-file-upload-button:hover {
+            background-color: #D1D5DB;
+        }
+
+        /* Remove the previous date input styles and add these new ones */
+        .date-input {
+            position: relative;
+            background-color: #f8fafc;
+        }
+
+        .date-input::-webkit-calendar-picker-indicator {
+            background: transparent;
+            bottom: 0;
+            color: transparent;
+            cursor: pointer;
+            height: auto;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: auto;
+        }
+
+        /* Remove the previous ::before pseudo-element styles for date inputs */
+        input[type="date"]::before {
+            content: none;
+        }
+    </style>
 </head>
 <body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
     <!-- Navigation Bar -->
@@ -17,16 +219,14 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex">
-                    <!-- Logo -->
                     <div class="flex-shrink-0 flex items-center">
-                        <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO</span>
+                        <span class="ml-2 text-xl font-bold text-gray-800">CENRO-ARGAO</span>
                     </div>
-                    <!-- Navigation Links -->
                     <div class="hidden sm:ml-8 sm:flex sm:space-x-8">
                         <a href="{% url 'dashboard' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
                             Dashboard
                         </a>
-                        <a href="{% url 'cutting' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                        <a href="{% url 'cutting' %}" class="border-b-2 border-blue-600 text-blue-600 inline-flex items-center px-3 pt-1 text-m font-medium">
                             Cutting
                         </a>
                         <a href="{% url 'lumber' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
@@ -52,162 +252,95 @@
         </div>
     </nav>
 
-    <!-- Add this after the navigation bar -->
-    {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-                <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% endif %} mb-4">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <!-- Rest of your content -->
+    <!-- Header -->
     <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-6 shadow-md">
         <div class="max-w-7xl mx-auto px-4">
-            <h1 class="text-3xl font-bold mb-2">Tree Cutting Permit Form</h1>
-            <p class="text-sm opacity-90">Enter new cutting permit information</p>
+            <h1 class="text-3xl font-bold mb-2">Cutting Records</h1>
+            <p class="text-sm opacity-90">Manage tree cutting permits and records</p>
         </div>
     </div>
 
+    <!-- Add New Record Form -->
     <div class="max-w-5xl mx-auto bg-white p-8 mt-8 shadow-xl rounded-lg">
-        <h2 class="text-2xl font-bold mb-6">Add New Cutting Record</h2>
-        <form method="POST" id="cuttingForm" class="space-y-6">
+        <h2 class="text-2xl font-bold mb-6">Add New Record</h2>
+        <form method="POST" class="space-y-6">
             {% csrf_token %}
             
-            <style>
-                input, select, textarea {
-                    background-color: #f8fafc;
-                    border: 1px solid #e2e8f0;
-                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-                    padding: 0.5rem;
-                    border-radius: 0.375rem;
-                    width: 100%;
-                    color: #4B5563;  /* Darker text color */
-                }
-                input::placeholder, select::placeholder, textarea::placeholder {
-                    color: #6B7280;  /* Darker placeholder color */
-                    opacity: 0.8;    /* Make placeholder more visible */
-                }
-                input:focus, select:focus, textarea:focus {
-                    border-color: #3b82f6;
-                    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-                    outline: none;
-                }
-                .form-input {
-                    @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
-                           focus:border-blue-500 focus:ring-blue-500 
-                           bg-gray-50 text-gray-900;
-                }
-                /* Specific styles for date inputs */
-                input[type="date"] {
-                    padding: 0.4rem;
-                    color: #4B5563;
-                }
-                /* Specific styles for select dropdowns */
-                select {
-                    background-color: #f8fafc;
-                    padding: 0.4rem;
-                    color: #4B5563;
-                }
-                /* Add hover effect */
-                input:hover, select:hover, textarea:hover {
-                    border-color: #60A5FA;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                }
-            </style>
-
-            <!-- Basic Information -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Form Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- TCP No. -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">TCP No.*</label>
-                    {{ form.tcp_no|add_class:"mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"|attr:"placeholder:Enter TCP number" }}
+                    <label class="block text-sm font-medium text-gray-700 mb-1">TCP No.*</label>
+                    {{ form.tcp_no|add_class:"form-input"|attr:"placeholder:Enter TCP number" }}
                 </div>
+                <!-- Permittee -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Permittee*</label>
-                    {{ form.permittee|add_class:"mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"|attr:"placeholder:Enter permittee name" }}
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Permittee*</label>
+                    {{ form.permittee|add_class:"form-input"|attr:"placeholder:Enter permittee name" }}
+                </div>
+                <!-- Location -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Location*</label>
+                    {{ form.location|add_class:"form-input"|attr:"placeholder:Enter location" }}
                 </div>
             </div>
 
-            <!-- Location and Property Information -->
-            <div class="mt-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Location*</label>
-                        {{ form.location|add_class:"mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"|attr:"placeholder:Enter location" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">TCT/OCT No.*</label>
-                        {{ form.tct_oct_no|add_class:"mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"|attr:"placeholder:Enter TCT/OCT number" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Tax Declaration No.*</label>
-                        {{ form.tax_dec_no|add_class:"mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"|attr:"placeholder:Enter tax declaration number" }}
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- TCT/OCT No. -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">TCT/OCT No.*</label>
+                    {{ form.tct_oct_no|add_class:"form-input"|attr:"placeholder:Enter TCT/OCT number" }}
+                </div>
+
+                <!-- Date Issued -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date Issued*</label>
+                    {{ form.permit_issue_date|add_class:"form-input date-input"|attr:"type:date"|attr:"max:2025-12-31"|attr:"min:2000-01-01"|attr:"required" }}
+                </div>
+                <!-- Tax Dec. No. -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tax Dec. No.*</label>
+                    {{ form.tax_dec_no|add_class:"form-input"|attr:"placeholder:Enter tax declaration number" }}
+                </div>
+                <!-- No. of Trees -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">No. of Trees*</label>
+                    {{ form.no_of_trees|add_class:"form-input"|attr:"placeholder:Enter number of trees" }}
                 </div>
             </div>
 
-            <!-- Property Details -->
-            <div class="mt-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Lot No.*</label>
-                        {{ form.lot_no|add_class:"mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"|attr:"placeholder:Enter lot number" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Area (ha.)*</label>
-                        {{ form.area|add_class:"mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"|attr:"placeholder:Enter area in hectares"|attr:"type:number"|attr:"step:0.01" }}
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Total Volume -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Total Volume Granted*</label>
+                    {{ form.total_volume_granted|add_class:"form-input"|attr:"placeholder:Enter total volume" }}
+                </div>
+                <!-- Species -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Species*</label>
+                    {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species" }}
+                </div>
+                <!-- Representative -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Representative</label>
+                    {{ form.rep_by|add_class:"form-input"|attr:"placeholder:Enter representative name" }}
                 </div>
             </div>
 
-            <!-- Trees and Species Information -->
-            <div class="mt-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Number of Trees*</label>
-                        {{ form.no_of_trees|add_class:"mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"|attr:"placeholder:Enter number of trees"|attr:"type:number" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Species*</label>
-                        {{ form.species|add_class:"mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"|attr:"placeholder:Enter species name" }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Volume Information -->
-            <div class="mt-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Total Volume Granted (cu.m.)*</label>
-                        {{ form.total_volume_granted|add_class:"mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"|attr:"placeholder:Enter total volume granted"|attr:"type:number"|attr:"step:0.01" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Gross Volume (cu.m.)*</label>
-                        {{ form.gross_volume|add_class:"mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"|attr:"id:grossVolume"|attr:"placeholder:Enter gross volume"|attr:"type:number"|attr:"step:0.01" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Net Volume (cu.m.)</label>
-                        <input type="text" id="netVolume" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50" readonly>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex justify-end mt-6">
+            <div class="flex justify-end pt-4">
                 <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
-                    Save Record
+                    Add Record
                 </button>
             </div>
         </form>
     </div>
 
-    <!-- Adding Records Table Section -->
+    <!-- Records Table -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="bg-white shadow-xl rounded-lg overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-600 to-blue-600">
                 <h3 class="text-xl font-semibold text-white mb-4">
-                    Tree Cutting Records
+                    Existing Records
                 </h3>
                 <div class="flex items-center justify-between space-x-4">
                     <!-- Search Bar -->
@@ -215,15 +348,12 @@
                         <input type="text" 
                                id="searchInput" 
                                placeholder="Search records..." 
-                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700"
-                        >
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700">
                         <span class="absolute right-3 top-2.5 text-gray-400">
                             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </span>
-                        <!-- Updated validation message element -->
-                        <div id="searchValidation" class="absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md hidden"></div>
                     </div>
                     <!-- Export Button -->
                     <button onclick="exportTableToCSV('cutting_records.csv')" 
@@ -236,77 +366,74 @@
                 </div>
             </div>
             <div class="overflow-x-auto">
-                <div class="mb-4">
-                    {% for record in cutting_records %}
-                        {% if record.is_expiring_soon and not record.is_expired %}
-                            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
-                                Warning: Permit {{ record.tcp_no }} for {{ record.permittee }} will expire in {{ record.days_remaining }} days
-                            </div>
-                        {% elif record.is_expired %}
-                            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
-                                Alert: Permit {{ record.tcp_no }} for {{ record.permittee }} has expired
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
                 <table class="min-w-full text-sm text-left text-gray-500">
                     <thead class="bg-gray-50 text-gray-700">
                         <tr>
-                            <th class="px-6 py-4 font-semibold">TCP Number</th>
-                            <th class="px-6 py-4 font-semibold">Date Issued</th>
+                            <th class="px-6 py-4 font-semibold">TCP No.</th>
                             <th class="px-6 py-4 font-semibold">Permittee</th>
-                            <th class="px-6 py-4 font-semibold">Representative</th>
-                            <th class="px-6 py-4 font-semibold">Species</th>
+                            <th class="px-6 py-4 font-semibold">Location</th>
+                            <th class="px-6 py-4 font-semibold">TCT/OCT No.</th>
+                            <th class="px-6 py-4 font-semibold">Tax Dec. No.</th>
+                            <th class="px-6 py-4 font-semibold">Date Issued</th>
                             <th class="px-6 py-4 font-semibold">No. of Trees</th>
-                            <th class="px-6 py-4 font-semibold">Volume (cu.m)</th>
-                            <th class="px-6 py-4 font-semibold">Status</th>
-                            <th class="px-6 py-4 font-semibold">Days Remaining</th>
+                            <th class="px-6 py-4 font-semibold">Total Volume</th>
                             <th class="px-6 py-4 font-semibold">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
-                        {% for record in cutting_records %}
-                        <tr class="hover:bg-gray-50 transition-colors duration-150">
-                            <td class="px-6 py-4">{{ record.tcp_no }}</td>
-                            <td class="px-6 py-4">{{ record.permit_issue_date|date:"m-d-Y" }}</td>
-                            <td class="px-6 py-4">{{ record.permittee }}</td>
-                            <td class="px-6 py-4">{{ record.rep_by }}</td>
-                            <td class="px-6 py-4">{{ record.species }}</td>
-                            <td class="px-6 py-4">{{ record.no_of_trees }}</td>
-                            <td class="px-6 py-4">{{ record.total_volume_granted }}</td>
-                            <td class="px-6 py-4">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    {% if record.is_expired %}
-                                        bg-red-100 text-red-800
-                                    {% elif record.is_expiring_soon %}
-                                        bg-yellow-100 text-yellow-800
-                                    {% else %}
-                                        bg-green-100 text-green-800
-                                    {% endif %}">
-                                    {{ record.status }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                {% if record.is_expired %}
-                                    <span class="text-red-600 font-medium">Expired</span>
-                                {% else %}
-                                    <span class="{% if record.is_expiring_soon %}text-yellow-600{% else %}text-gray-900{% endif %} font-medium">
-                                        {{ record.days_remaining }} days
-                                    </span>
-                                {% endif %}
-                            </td>
-                            <td class="px-6 py-4 space-x-2">
-                                <a href="{% url 'edit_cutting' record.id %}" class="text-blue-600 hover:text-blue-800 font-medium">Edit</a>
-                                <a href="{% url 'view_cutting' record.id %}" class="text-green-600 hover:text-green-800 font-medium">View</a>
-                                <a href="{% url 'add_cutting_record' record.tcp_no %}" class="text-purple-600 hover:text-purple-800 font-medium">Add Record</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
+                        {% if cuttings %}
+                            {% for cutting in cuttings %}
+                            <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                <td class="px-6 py-4">{{ cutting.tcp_no }}</td>
+                                <td class="px-6 py-4">{{ cutting.permittee }}</td>
+                                <td class="px-6 py-4">{{ cutting.location|default:"-" }}</td>
+                                <td class="px-6 py-4">{{ cutting.tct_oct_no|default:"-" }}</td>
+                                <td class="px-6 py-4">{{ cutting.tax_dec_no|default:"-" }}</td>
+                                <td class="px-6 py-4">{{ cutting.permit_issue_date|date:"M d, Y" }}</td>
+                                <td class="px-6 py-4">{{ cutting.no_of_trees }}</td>
+                                <td class="px-6 py-4">{{ cutting.total_volume_granted }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex space-x-3">
+                                        <a href="{% url 'add_cutting_record' tcp_no=cutting.tcp_no %}" 
+                                           class="text-blue-600 hover:text-blue-900 font-medium flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                            </svg>
+                                            Add
+                                        </a>
+                                        <a href="{% url 'view_cutting' cutting.id %}" 
+                                           class="text-green-600 hover:text-green-900 font-medium flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
+                                            View
+                                        </a>
+                                        <a href="{% url 'edit_cutting' cutting.id %}" 
+                                           class="text-amber-600 hover:text-amber-900 font-medium flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                            Edit
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    No records found. Add a new record above.
+                                </td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
     <footer class="bg-blue-900 text-white mt-auto py-6">
         <div class="max-w-7xl mx-auto text-center">
             <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
@@ -314,152 +441,62 @@
         </div>
     </footer>
 
+    <!-- Search and Export Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Add Tailwind classes to all form inputs
+            // Form input styling
             const inputs = document.querySelectorAll('input, select, textarea');
             inputs.forEach(input => {
-                input.classList.add('mt-1', 'block', 'w-full', 'rounded-lg', 'border-gray-300', 'shadow-sm', 'focus:border-green-500', 'focus:ring-green-500', 'transition', 'duration-150');
+                input.classList.add(
+                    'mt-1',
+                    'block',
+                    'w-full',
+                    'rounded-lg',
+                    'border-gray-300',
+                    'shadow-sm',
+                    'focus:border-blue-500',
+                    'focus:ring-blue-500',
+                    'bg-gray-50',
+                    'text-gray-900'
+                );
             });
 
-            // Form validation
-            const form = document.querySelector('#cuttingForm');
-            form.addEventListener('submit', function(event) {
-                let isValid = true;
-
-                // Required fields to validate
-                const requiredFields = [
-                    'tcp_no', 'permittee', 'location', 'tct_oct_no', 'tax_dec_no',
-                    'lot_no', 'area', 'no_of_trees', 'species', 'total_volume_granted',
-                    'gross_volume'
-                ];
-
-                requiredFields.forEach(fieldName => {
-                    const field = document.querySelector(`[name="${fieldName}"]`);
-                    if (!field.value.trim()) {
-                        isValid = false;
-                        field.classList.add('border-red-500');
-                    } else {
-                        field.classList.remove('border-red-500');
-                    }
-                });
-
-                // Validate numeric fields
-                const numericFields = ['area', 'no_of_trees', 'total_volume_granted', 'gross_volume'];
-                numericFields.forEach(fieldName => {
-                    const field = document.querySelector(`[name="${fieldName}"]`);
-                    const value = parseFloat(field.value);
-                    if (isNaN(value) || value <= 0) {
-                        isValid = false;
-                        field.classList.add('border-red-500');
-                    }
-                });
-
-                if (!isValid) {
-                    event.preventDefault();
-                    alert('Please fill in all required fields correctly.');
-                }
-            });
-
-            // Enhanced search functionality
+            // Search functionality
             const searchInput = document.getElementById('searchInput');
-            const searchValidation = document.getElementById('searchValidation');
-            
             if (searchInput) {
-                let debounceTimer;
-
                 searchInput.addEventListener('input', function() {
-                    clearTimeout(debounceTimer);
+                    const searchTerm = this.value.toLowerCase();
+                    const rows = document.querySelectorAll('tbody tr');
                     
-                    debounceTimer = setTimeout(() => {
-                        const searchTerm = this.value.toLowerCase().trim();
-                        const rows = document.querySelectorAll('tbody tr');
-                        let visibleCount = 0;
-                        
-                        // Clear validation if search is empty
-                        if (searchTerm === '') {
-                            searchValidation.style.display = 'none';
-                            rows.forEach(row => row.style.display = '');
-                            return;
-                        }
-
-                        rows.forEach(row => {
-                            // Get all cells in the row
-                            const cells = row.querySelectorAll('td');
-                            let shouldShow = false;
-                            
-                            cells.forEach(cell => {
-                                const cellText = cell.textContent.toLowerCase().trim();
-                                if (cellText.includes(searchTerm)) {
-                                    shouldShow = true;
-                                }
-                            });
-                            
-                            row.style.display = shouldShow ? '' : 'none';
-                            if (shouldShow) visibleCount++;
-                        });
-                        
-                        // Update validation message with appropriate styling
-                        if (visibleCount > 0) {
-                            searchValidation.textContent = `Found ${visibleCount} matching record${visibleCount !== 1 ? 's' : ''}`;
-                            searchValidation.className = 'absolute mt-1 text-sm font-medium text-green-600 bg-green-50 px-2 py-1 rounded-md';
-                        } else {
-                            searchValidation.textContent = 'No matches found';
-                            searchValidation.className = 'absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md';
-                        }
-                        searchValidation.style.display = 'block';
-                    }, 300);
-                });
-
-                // Clear validation on focus if empty
-                searchInput.addEventListener('focus', function() {
-                    if (!this.value.trim()) {
-                        searchValidation.style.display = 'none';
-                    }
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        row.style.display = text.includes(searchTerm) ? '' : 'none';
+                    });
                 });
             }
-
-            // Calculate Net Volume automatically (70% of Gross Volume)
-            const grossVolumeInput = document.getElementById('grossVolume');
-            const netVolumeInput = document.getElementById('netVolume');
-
-            grossVolumeInput.addEventListener('input', function() {
-                const grossVolume = parseFloat(this.value) || 0;
-                const netVolume = grossVolume * 0.70;
-                netVolumeInput.value = netVolume.toFixed(2);
-            });
         });
 
         function exportTableToCSV(filename) {
             const table = document.querySelector('table');
-            const rows = table.querySelectorAll('tr');
             let csv = [];
+            const rows = table.querySelectorAll('tr');
             
             for (let i = 0; i < rows.length; i++) {
                 const row = [], cols = rows[i].querySelectorAll('td, th');
                 
-                for (let j = 0; j < cols.length; j++) {
-                    // Get the text content and clean it up
-                    let data = cols[j].textContent.replace(/(\r\n|\n|\r)/gm, '').trim();
-                    // Escape double quotes and wrap field in quotes
-                    data = data.replace(/"/g, '""');
-                    row.push('"' + data + '"');
-                }
-                csv.push(row.join(','));
+                for (let j = 0; j < cols.length; j++) 
+                    row.push(cols[j].innerText);
+                
+                csv.push(row.join(','));        
             }
-            
-            const csvString = csv.join('\n');
-            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            if (navigator.msSaveBlob) {
-                navigator.msSaveBlob(blob, filename);
-            } else {
-                link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', filename);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }
+
+            const csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
+            const downloadLink = document.createElement('a');
+            downloadLink.download = filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
         }
     </script>
 </body>

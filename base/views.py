@@ -4,7 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from base.forms import LoginForm, LumberForm, CuttingForm, ChainsawForm, WoodForm, CuttingRecordForm
 from base.models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from django.utils import timezone
 import os
 from django.conf import settings
@@ -59,9 +59,13 @@ def cutting(request):
     if request.method == 'POST':
         form = CuttingForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'TCP added successfully!')
-            return redirect('cutting')
+            permit_date = form.cleaned_data.get('permit_issue_date')
+            if permit_date and permit_date > date.today():
+                messages.error(request, 'Date issued cannot be in the future')
+            else:
+                form.save()
+                messages.success(request, 'Record added successfully')
+                return redirect('cutting')
     else:
         form = CuttingForm()
 

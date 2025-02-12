@@ -68,67 +68,60 @@ class LumberForm(forms.ModelForm):
 # CuttingForm
 class CuttingForm(forms.ModelForm):
     permit_issue_date = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date'}),
-        initial=date.today
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'max': '2025-12-31',
+            'min': '2000-01-01',
+        }),
+        required=True
     )
-    expiry_date = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date'}),
-        initial=date.today
-    )
+
+    def clean_permit_issue_date(self):
+        permit_date = self.cleaned_data.get('permit_issue_date')
+        if permit_date:
+            if permit_date > date.today():
+                raise forms.ValidationError("Date issued cannot be in the future")
+            if permit_date.year < 2000:
+                raise forms.ValidationError("Date issued cannot be before year 2000")
+        return permit_date
+
+    def clean_gross_volume(self):
+        gross_volume = self.cleaned_data.get('gross_volume')
+        if gross_volume and gross_volume <= 0:
+            raise forms.ValidationError("Gross volume must be greater than 0")
+        return gross_volume
 
     class Meta:
         model = Cutting
         fields = [
-            'tcp_no', 
+            'tcp_no',
             'permittee',
+            'permit_issue_date',
             'location',
             'tct_oct_no',
             'tax_dec_no',
             'lot_no',
             'area',
+            'rep_by',
             'no_of_trees',
             'species',
             'total_volume_granted',
             'gross_volume',
-            'net_volume',
-            'permit_issue_date',
-            'expiry_date',
-            'rep_by'
         ]
         widgets = {
-            'tcp_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter TCP number'}),
-            'permittee': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter permittee name'}),
-            'location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter location'}),
-            'tct_oct_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter TCT/OCT number'}),
-            'tax_dec_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter tax declaration number'}),
-            'lot_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter lot number'}),
-            'area': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Enter area in hectares'}),
-            'no_of_trees': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Enter number of trees'}),
-            'species': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter species'}),
-            'total_volume_granted': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Enter total volume granted'}),
-            'gross_volume': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Enter gross volume'}),
-            'net_volume': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Enter net volume'}),
-            'rep_by': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter representative name'}),
+            'tcp_no': forms.TextInput(attrs={'class': 'form-input'}),
+            'permittee': forms.TextInput(attrs={'class': 'form-input'}),
+            'location': forms.TextInput(attrs={'class': 'form-input'}),
+            'tct_oct_no': forms.TextInput(attrs={'class': 'form-input'}),
+            'tax_dec_no': forms.TextInput(attrs={'class': 'form-input'}),
+            'lot_no': forms.TextInput(attrs={'class': 'form-input'}),
+            'area': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.01'}),
+            'rep_by': forms.TextInput(attrs={'class': 'form-input'}),
+            'no_of_trees': forms.NumberInput(attrs={'class': 'form-input'}),
+            'species': forms.TextInput(attrs={'class': 'form-input'}),
+            'total_volume_granted': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.01'}),
+            'gross_volume': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.01'}),
         }
-
-    def clean(self):
-        cleaned_data = super().clean()
-        gross_volume = cleaned_data.get('gross_volume')
-        total_volume_granted = cleaned_data.get('total_volume_granted')
-
-        if gross_volume and total_volume_granted:
-            if gross_volume < 0:
-                raise forms.ValidationError("Gross volume cannot be negative")
-            if total_volume_granted < 0:
-                raise forms.ValidationError("Total volume granted cannot be negative")
-
-        permit_issue_date = cleaned_data.get('permit_issue_date')
-        if permit_issue_date:
-            expiry_date = permit_issue_date + timedelta(days=50)
-            if expiry_date < timezone.now().date():
-                raise forms.ValidationError("Permit has expired")
-
-        return cleaned_data
 
 # ChainsawForm
 class ChainsawForm(forms.ModelForm):

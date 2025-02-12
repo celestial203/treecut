@@ -1168,3 +1168,7 @@ Traceback (most recent call last):
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 django.db.utils.OperationalError: no such column: base_cutting.expiry_date
 ERROR 2025-02-12 12:02:39,677 basehttp "GET /cutting/ HTTP/1.1" 500 191448
+WARNING 2025-02-12 14:33:02,623 basehttp "GET /static/images/denr-logo.png HTTP/1.1" 404 1920
+WARNING 2025-02-12 14:33:52,864 basehttp "GET /static/images/denr-logo.png HTTP/1.1" 404 1920
+WARNING 2025-02-12 14:33:55,193 basehttp "GET /static/images/denr-logo.png HTTP/1.1" 404 1920
+WARNING 2025-02-12 14:36:00,817 basehttp "GET /static/images/denr-logo.png HTTP/1.1" 404 1920
