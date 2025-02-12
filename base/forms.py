@@ -80,10 +80,8 @@ class CuttingForm(forms.ModelForm):
     def clean_tcp_no(self):
         tcp_no = self.cleaned_data.get('tcp_no')
         if tcp_no:
-            # Ensure TCP number follows format (e.g., C-Argao-123456789)
             if not tcp_no.startswith('C-Argao-'):
                 raise forms.ValidationError("TCP No. must start with 'C-Argao-'")
-            # Remove any instance being updated from the unique check
             existing = Cutting.objects.filter(tcp_no=tcp_no)
             if self.instance:
                 existing = existing.exclude(pk=self.instance.pk)
@@ -105,7 +103,7 @@ class CuttingForm(forms.ModelForm):
         if area is not None:
             if area <= 0:
                 raise forms.ValidationError("Area must be greater than 0")
-            if area > 1000:  # Example maximum area limit
+            if area > 1000:
                 raise forms.ValidationError("Area cannot exceed 1000 hectares")
         return area
 
@@ -114,7 +112,7 @@ class CuttingForm(forms.ModelForm):
         if trees is not None:
             if trees <= 0:
                 raise forms.ValidationError("Number of trees must be greater than 0")
-            if trees > 10000:  # Example maximum limit
+            if trees > 10000:
                 raise forms.ValidationError("Number of trees seems unusually high")
         return trees
 
@@ -123,7 +121,7 @@ class CuttingForm(forms.ModelForm):
         if gross_volume is not None:
             if gross_volume <= 0:
                 raise forms.ValidationError("Gross volume must be greater than 0")
-            if gross_volume > 10000:  # Example maximum limit
+            if gross_volume > 10000:
                 raise forms.ValidationError("Gross volume seems unusually high")
         return gross_volume
 
@@ -132,20 +130,13 @@ class CuttingForm(forms.ModelForm):
         if volume is not None:
             if volume <= 0:
                 raise forms.ValidationError("Total volume granted must be greater than 0")
-            if volume > 10000:  # Example maximum limit
+            if volume > 10000:
                 raise forms.ValidationError("Total volume granted seems unusually high")
         return volume
 
     def clean(self):
         cleaned_data = super().clean()
         gross_volume = cleaned_data.get('gross_volume')
-        total_volume_granted = cleaned_data.get('total_volume_granted')
-
-        if gross_volume and total_volume_granted:
-            if gross_volume > total_volume_granted:
-                raise forms.ValidationError(
-                    "Gross volume cannot exceed total volume granted"
-                )
 
         # Calculate net volume (70% of gross volume)
         if gross_volume:
