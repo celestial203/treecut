@@ -125,35 +125,53 @@
                     {{ form.tcp_no|add_class:"form-input"|attr:"placeholder:Enter TCP number" }}
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Permit Issue Date*</label>
-                    {{ form.permit_issue_date|add_class:"form-input"|attr:"type:date" }}
+                    <label class="block text-sm font-medium text-gray-700">Permittee*</label>
+                    {{ form.permittee|add_class:"form-input"|attr:"placeholder:Enter permittee name" }}
                 </div>
             </div>
 
-            <!-- Permittee Information -->
+            <!-- Location and Property Information -->
             <div class="mt-6">
-                <div class="grid grid-cols-1 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Permittee*</label>
-                        {{ form.permittee|add_class:"form-input"|attr:"placeholder:Enter permittee name" }}
+                        <label class="block text-sm font-medium text-gray-700">Location*</label>
+                        {{ form.location|add_class:"form-input"|attr:"placeholder:Enter location" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Representative</label>
-                        {{ form.rep_by|add_class:"form-input"|attr:"placeholder:Enter representative name" }}
+                        <label class="block text-sm font-medium text-gray-700">TCT/OCT No.*</label>
+                        {{ form.tct_oct_no|add_class:"form-input"|attr:"placeholder:Enter TCT/OCT number" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tax Declaration No.*</label>
+                        {{ form.tax_dec_no|add_class:"form-input"|attr:"placeholder:Enter tax declaration number" }}
                     </div>
                 </div>
             </div>
 
-            <!-- Species and Trees Information -->
+            <!-- Property Details -->
             <div class="mt-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Species*</label>
-                        {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species name" }}
+                        <label class="block text-sm font-medium text-gray-700">Lot No.*</label>
+                        {{ form.lot_no|add_class:"form-input"|attr:"placeholder:Enter lot number" }}
                     </div>
                     <div>
+                        <label class="block text-sm font-medium text-gray-700">Area (ha.)*</label>
+                        {{ form.area|add_class:"form-input"|attr:"placeholder:Enter area in hectares"|attr:"type:number"|attr:"step:0.01" }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trees and Species Information -->
+            <div class="mt-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
                         <label class="block text-sm font-medium text-gray-700">Number of Trees*</label>
-                        {{ form.no_of_trees|add_class:"form-input"|attr:"placeholder:Enter number of trees" }}
+                        {{ form.no_of_trees|add_class:"form-input"|attr:"placeholder:Enter number of trees"|attr:"type:number" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Species*</label>
+                        {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species name" }}
                     </div>
                 </div>
             </div>
@@ -163,11 +181,11 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Total Volume Granted (cu.m.)*</label>
-                        {{ form.total_volume_granted|add_class:"form-input"|attr:"placeholder:Enter total volume granted" }}
+                        {{ form.total_volume_granted|add_class:"form-input"|attr:"placeholder:Enter total volume granted"|attr:"type:number"|attr:"step:0.01" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Gross Volume (cu.m.)*</label>
-                        {{ form.gross_volume|add_class:"form-input"|attr:"id:grossVolume"|attr:"placeholder:Enter gross volume" }}
+                        {{ form.gross_volume|add_class:"form-input"|attr:"id:grossVolume"|attr:"placeholder:Enter gross volume"|attr:"type:number"|attr:"step:0.01" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Net Volume (cu.m.)</label>
@@ -309,17 +327,27 @@
             form.addEventListener('submit', function(event) {
                 let isValid = true;
 
-                // Validate TCP Number
-                const tcpNo = document.querySelector('input[name="tcp_no"]');
-                if (!tcpNo.value.trim() || !/^[A-Za-z0-9-]+$/.test(tcpNo.value)) {
-                    isValid = false;
-                    tcpNo.classList.add('border-red-500');
-                }
+                // Required fields to validate
+                const requiredFields = [
+                    'tcp_no', 'permittee', 'location', 'tct_oct_no', 'tax_dec_no',
+                    'lot_no', 'area', 'no_of_trees', 'species', 'total_volume_granted',
+                    'gross_volume'
+                ];
 
-                // Validate Numbers
-                const numericFields = ['no_of_trees', 'gross_volume', 'total_volume_granted'];
+                requiredFields.forEach(fieldName => {
+                    const field = document.querySelector(`[name="${fieldName}"]`);
+                    if (!field.value.trim()) {
+                        isValid = false;
+                        field.classList.add('border-red-500');
+                    } else {
+                        field.classList.remove('border-red-500');
+                    }
+                });
+
+                // Validate numeric fields
+                const numericFields = ['area', 'no_of_trees', 'total_volume_granted', 'gross_volume'];
                 numericFields.forEach(fieldName => {
-                    const field = document.querySelector(`input[name="${fieldName}"]`);
+                    const field = document.querySelector(`[name="${fieldName}"]`);
                     const value = parseFloat(field.value);
                     if (isNaN(value) || value <= 0) {
                         isValid = false;
@@ -327,18 +355,9 @@
                     }
                 });
 
-                // Validate Required Fields
-                const requiredFields = form.querySelectorAll('input[required], select[required]');
-                requiredFields.forEach(field => {
-                    if (!field.value.trim()) {
-                        isValid = false;
-                        field.classList.add('border-red-500');
-                    }
-                });
-
                 if (!isValid) {
                     event.preventDefault();
-                    alert('Please check the form for errors.');
+                    alert('Please fill in all required fields correctly.');
                 }
             });
 
