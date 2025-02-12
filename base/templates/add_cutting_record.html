@@ -148,8 +148,8 @@
 
         inputVolume.addEventListener('input', function() {
             const volume = parseFloat(this.value) || 0;
-            // Calculate 30% of the volume
-            const calculatedVol = volume * 0.30;  // Changed to only use 30% of volume
+            // Calculate volume + 30% of volume
+            const calculatedVol = volume + (volume * 0.30);  // Changed to add 30% to the original volume
             calculatedVolume.value = calculatedVol.toFixed(2);
 
             // Calculate new remaining balance
