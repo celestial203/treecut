@@ -30,7 +30,7 @@
         /* Required field indicator */
         label.required:after {
             content: " *";
-            @apply text-red-500;
+            color: #EF4444;
         }
     </style>
 </head>
@@ -78,7 +78,7 @@
         <!-- Header Card -->
         <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
             <h2 class="text-2xl font-bold text-gray-800">Edit Cutting Record</h2>
-            <p class="text-gray-600 mt-1">Update the information for TCP No. {{ form.tcp_no.value }}</p>
+            <p class="text-gray-600 mt-1">Editing TCP No. {{ cutting.tcp_no }}</p>
         </div>
 
         <!-- Form Card -->
@@ -90,77 +90,96 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 required">TCP No.</label>
-                        {{ form.tcp_no|attr:"class:form-input" }}
+                        {{ form.tcp_no|add_class:"form-input" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 required">Permittee</label>
-                        {{ form.permittee|attr:"class:form-input" }}
+                        {{ form.permittee|add_class:"form-input" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Location</label>
+                        {{ form.location|add_class:"form-input" }}
+                    </div>
+                </div>
+
+                <!-- Property Information -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">TCT/OCT No.</label>
+                        {{ form.tct_oct_no|add_class:"form-input" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 required">Date Issued</label>
-                        {{ form.permit_issue_date|attr:"class:form-input"|attr:"type:date" }}
+                        {{ form.permit_issue_date|add_class:"form-input"|attr:"type:date" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Tax Dec. No.</label>
+                        {{ form.tax_dec_no|add_class:"form-input" }}
                     </div>
                 </div>
 
-                <!-- Location Information -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Location</label>
-                        {{ form.location|attr:"class:form-input" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">TCT/OCT No.</label>
-                        {{ form.tct_oct_no|attr:"class:form-input" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Tax Declaration No.</label>
-                        {{ form.tax_dec_no|attr:"class:form-input" }}
-                    </div>
-                </div>
-
-                <!-- Property Details -->
+                <!-- Additional Property Details -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 required">Lot No.</label>
-                        {{ form.lot_no|attr:"class:form-input" }}
+                        {{ form.lot_no|add_class:"form-input" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 required">Area (ha.)</label>
-                        {{ form.area|attr:"class:form-input"|attr:"step:0.01" }}
+                        {{ form.area|add_class:"form-input"|attr:"step:0.01" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Representative</label>
-                        {{ form.rep_by|attr:"class:form-input" }}
+                        {{ form.rep_by|add_class:"form-input" }}
                     </div>
                 </div>
 
-                <!-- Trees and Species Information -->
+                <!-- Trees and Volume Information -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 required">Number of Trees</label>
-                        {{ form.no_of_trees|attr:"class:form-input" }}
+                        {{ form.no_of_trees|add_class:"form-input" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 required">Species</label>
-                        {{ form.species|attr:"class:form-input" }}
+                        {{ form.species|add_class:"form-input" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Total Volume Granted (cu.m.)</label>
-                        {{ form.total_volume_granted|attr:"class:form-input"|attr:"step:0.01" }}
+                        <label class="block text-sm font-medium text-gray-700 required">Total Volume Granted</label>
+                        {{ form.total_volume_granted|add_class:"form-input"|attr:"step:0.01" }}
                     </div>
                 </div>
 
-                <!-- Volume Information -->
+                <!-- Volume Calculations -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Gross Volume (cu.m.)</label>
-                        {{ form.gross_volume|attr:"class:form-input"|attr:"id:grossVolume"|attr:"oninput:calculateNetVolume()"|attr:"step:0.01" }}
+                        <label class="block text-sm font-medium text-gray-700 required">Gross Volume</label>
+                        {{ form.gross_volume|add_class:"form-input"|attr:"step:0.01"|attr:"id:grossVolume"|attr:"oninput:calculateNetVolume()" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Net Volume (cu.m.)</label>
+                        <label class="block text-sm font-medium text-gray-700">Net Volume</label>
                         <input type="text" id="netVolume" class="form-input bg-gray-100" readonly>
                     </div>
                 </div>
+
+                <!-- Form Errors -->
+                {% if form.errors %}
+                    <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-red-800">Please correct the following errors:</h3>
+                                <div class="mt-2 text-sm text-red-700">
+                                    {{ form.errors }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
 
                 <!-- Action Buttons -->
                 <div class="flex justify-end space-x-4 pt-6 border-t">

@@ -206,7 +206,6 @@ def edit_recordlumber(request, pk):
 @login_required
 def edit_cutting(request, pk):
     cutting = get_object_or_404(Cutting, pk=pk)
-    
     if request.method == 'POST':
         form = CuttingForm(request.POST, instance=cutting)
         if form.is_valid():
@@ -216,6 +215,8 @@ def edit_cutting(request, pk):
                 return redirect('view_cutting', pk=cutting.pk)
             except Exception as e:
                 messages.error(request, f'Error updating record: {str(e)}')
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = CuttingForm(instance=cutting)
     
@@ -225,18 +226,30 @@ def edit_cutting(request, pk):
     })
 
 def view_cutting(request, pk):
-    cutting = get_object_or_404(Cutting, pk=pk)
-    cutting_records = CuttingRecord.objects.filter(parent_tcp=cutting)
-    
-    # Calculate net volume
-    net_volume = cutting.gross_volume * Decimal('0.7') if cutting.gross_volume else None
-    
-    context = {
-        'cutting': cutting,
-        'cutting_records': cutting_records,
-        'net_volume': net_volume,
-    }
-    return render(request, 'view_cutting.html', context)
+    try:
+        cutting = get_object_or_404(Cutting, pk=pk)
+        cutting_records = CuttingRecord.objects.filter(parent_tcp=cutting)
+        
+        # Calculate net volume
+        net_volume = cutting.gross_volume * Decimal('0.7') if cutting.gross_volume else None
+
+        # Get the last update timestamp
+        last_updated = cutting.updated_at if hasattr(cutting, 'updated_at') else None
+        
+        # Add success message if coming from edit
+        if request.GET.get('edited'):
+            messages.success(request, f'Record for TCP No. {cutting.tcp_no} was successfully updated.')
+        
+        context = {
+            'cutting': cutting,
+            'cutting_records': cutting_records,
+            'net_volume': net_volume,
+            'last_updated': last_updated
+        }
+        return render(request, 'view_cutting.html', context)
+    except Exception as e:
+        messages.error(request, f'Error viewing record: {str(e)}')
+        return redirect('cutting')
 
 @login_required
 def add_cutting_record(request, tcp_no):
