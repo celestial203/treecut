@@ -102,7 +102,32 @@
         </div>
 
         <!-- Header -->
-        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-6">
+                    <div class="rounded-md {% if message.tags == 'success' %}bg-green-50{% else %}bg-red-50{% endif %} p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                {% if message.tags == 'success' %}
+                                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                {% else %}
+                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                    </svg>
+                                {% endif %}
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm {% if message.tags == 'success' %}text-green-800{% else %}text-red-800{% endif %}">
+                                    {{ message }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
 
         <!-- TCP Information Card -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -249,30 +274,28 @@
         const currentBalanceSpan = document.getElementById('currentBalance');
         const newBalanceSpan = document.getElementById('newBalance');
         let remainingBalance = {{ remaining_balance|default:0 }};
-        let isFirstEntry = {% if volume_records.exists %}false{% else %}true{% endif %};
+        let isFirstEntry = {% if is_first_entry %}true{% else %}false{% endif %};
 
         inputVolume.addEventListener('input', function() {
             const volume = parseFloat(this.value) || 0;
-            
-            // Calculate volume + 30% of volume
-            const calculatedVol = volume + (volume * 0.30);
-            calculatedVolume.value = calculatedVol.toFixed(2);
-
-            // Set current balance display
-            currentBalanceSpan.textContent = remainingBalance.toFixed(2);
-            
-            // Calculate new remaining balance
             let newBalance;
+            
             if (isFirstEntry) {
-                // For first entry, show calculated volume as remaining balance
+                // For first entry: Add 30% to volume
+                const calculatedVol = volume + (volume * 0.30);
+                calculatedVolume.value = calculatedVol.toFixed(2);
                 newBalance = calculatedVol;
             } else {
-                // For subsequent entries, subtract original volume from remaining balance
+                // For subsequent entries: Just subtract from remaining
+                calculatedVolume.value = volume.toFixed(2);
                 newBalance = remainingBalance - volume;
             }
+            
+            // Update displays
+            currentBalanceSpan.textContent = remainingBalance.toFixed(2);
             newBalanceSpan.textContent = newBalance.toFixed(2);
 
-            // Add realtime feedback with colors
+            // Add visual feedback for negative balance
             if (newBalance < 0) {
                 newBalanceSpan.classList.add('text-red-600');
                 newBalanceSpan.classList.remove('text-blue-600');
@@ -281,47 +304,39 @@
                 newBalanceSpan.classList.remove('text-red-600');
             }
 
-            // Optional: Add a display for the calculations
-            const calculationDetails = document.createElement('div');
+            // Show calculation details
+            const calculationDetails = document.getElementById('calculationDetails');
             calculationDetails.innerHTML = `
                 <div class="text-sm text-gray-600 mt-2">
-                    Original Volume: ${volume.toFixed(2)} cu.m<br>
-                    30% Addition: ${(volume * 0.30).toFixed(2)} cu.m<br>
-                    Total Calculated: ${calculatedVol.toFixed(2)} cu.m<br>
-                    New Balance: ${newBalance.toFixed(2)} cu.m
+                    ${isFirstEntry ? 
+                        `Original Volume: ${volume.toFixed(2)} cu.m<br>
+                        30% Addition: ${(volume * 0.30).toFixed(2)} cu.m<br>
+                        Total: ${newBalance.toFixed(2)} cu.m` 
+                        : 
+                        `Current Balance: ${remainingBalance.toFixed(2)} cu.m<br>
+                        Volume to Deduct: ${volume.toFixed(2)} cu.m<br>
+                        New Balance: ${newBalance.toFixed(2)} cu.m`
+                    }
                 </div>
             `;
-
-            // Update or add the calculation details to the page
-            const existingDetails = document.getElementById('calculationDetails');
-            if (existingDetails) {
-                existingDetails.replaceWith(calculationDetails);
-            } else {
-                calculatedVolume.parentNode.appendChild(calculationDetails);
-            }
-            calculationDetails.id = 'calculationDetails';
         });
 
         // Form validation
         document.getElementById('addRecordForm').addEventListener('submit', function(event) {
             const volume = parseFloat(inputVolume.value) || 0;
             
-            if (isFirstEntry) {
-                // For first entry, no validation needed
-                return true;
-            } else {
-                // For subsequent entries, check if volume exceeds remaining balance
+            if (!isFirstEntry) {
                 if (volume > remainingBalance) {
                     event.preventDefault();
                     alert('Volume exceeds remaining balance!');
                     return false;
                 }
-            }
-            
-            if (remainingBalance <= 0) {
-                event.preventDefault();
-                alert('No more volume remaining!');
-                return false;
+                
+                if (remainingBalance <= 0) {
+                    event.preventDefault();
+                    alert('Cannot add record. Balance is already zero!');
+                    return false;
+                }
             }
             return true;
         });

@@ -233,6 +233,37 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        /* Add visual feedback for updates */
+        .updated {
+            transition: background-color 0.3s ease;
+            background-color: #e8f4ff !important;
+        }
+        
+        /* Style for readonly net volume field */
+        #netVolume {
+            background-color: #f8fafc;
+            color: #4B5563;
+            cursor: default;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            outline: none;
+        }
+
+        input[type="number"]:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        input[readonly] {
+            background-color: #f9fafb;
+            cursor: default;
+        }
     </style>
 </head>
 <body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
@@ -293,7 +324,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 required">TCP No.</label>
-                        {{ form.tcp_no|add_class:"form-input"|attr:"placeholder:Enter TCP number" }}
+                        {{ form.tcp_no|add_class:"form-input"|attr:"placeholder:Enter TCP number (e.g. C-Argao-123)"|attr:"pattern:C-Argao-.*"|attr:"title:TCP number must start with C-Argao-"|attr:"id:tcpNo" }}
+                        <div id="tcpValidationMessage" class="validation-message mt-1 text-sm text-red-600 hidden"></div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 required">Permittee</label>
@@ -357,11 +389,24 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 required">Gross Volume</label>
-                        {{ form.gross_volume|add_class:"form-input"|attr:"placeholder:Enter gross volume"|attr:"step:0.01"|attr:"id:grossVolume"|attr:"oninput:calculateNetVolume()" }}
+                        <input type="number" 
+                               id="grossVolume" 
+                               name="gross_volume" 
+                               class="form-input" 
+                               placeholder="Enter gross volume" 
+                               step="0.01" 
+                               oninput="calculateNetVolume()" 
+                               value="{{ form.gross_volume.value|default:'' }}">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Net Volume</label>
-                        {{ form.net_volume|add_class:"form-input bg-gray-100"|attr:"id:netVolume"|attr:"readonly" }}
+                        <input type="number" 
+                               id="netVolume" 
+                               name="net_volume" 
+                               class="form-input bg-gray-50" 
+                               readonly 
+                               placeholder="Net volume"
+                               value="{{ form.net_volume.value|default:'' }}">
                     </div>
                 </div>
 
@@ -663,49 +708,34 @@
         }
 
         function calculateNetVolume() {
-            // Get the gross volume input
-            const grossVolumeInput = document.getElementById('grossVolume');
-            const grossVolume = parseFloat(grossVolumeInput?.value) || 0;
+            const grossVolume = document.getElementById('grossVolume').value;
+            const netVolume = document.getElementById('netVolume');
             
-            // Calculate net volume (70% of gross volume)
-            const netVolume = grossVolume * 0.70;
-            
-            // Get the net volume input
-            const netVolumeInput = document.getElementById('netVolume');
-            
-            if (netVolumeInput) {
-                // Set the value and ensure it has the correct name attribute
-                netVolumeInput.value = netVolume.toFixed(2);
-                netVolumeInput.name = 'net_volume';
-                netVolumeInput.setAttribute('value', netVolume.toFixed(2));
+            if (grossVolume && !isNaN(grossVolume)) {
+                // Calculate net volume as 70% of gross volume
+                const grossVal = parseFloat(grossVolume);
+                const netVal = grossVal * (70/100); // Multiply by 70%
+                netVolume.value = netVal.toFixed(2);
                 
-                // Log the values for debugging
-                console.log('Gross Volume:', grossVolume);
-                console.log('Net Volume:', netVolume.toFixed(2));
-                console.log('Net Volume Input Value:', netVolumeInput.value);
+                // Add visual feedback
+                netVolume.classList.add('updated');
+                setTimeout(() => {
+                    netVolume.classList.remove('updated');
+                }, 300);
+
+                // Log calculation for verification
+                console.log(`Gross Volume: ${grossVal}`);
+                console.log(`Calculation: ${grossVal} × 70% = ${netVal}`);
             } else {
-                console.error('Net volume input not found!');
+                netVolume.value = '';
             }
         }
 
-        // Initialize calculation on page load
+        // Calculate on page load if gross volume exists
         document.addEventListener('DOMContentLoaded', function() {
-            const grossVolumeInput = document.getElementById('grossVolume');
-            const netVolumeInput = document.getElementById('netVolume');
-            
-            if (grossVolumeInput && netVolumeInput) {
-                // Initial calculation if gross volume exists
-                if (grossVolumeInput.value) {
-                    calculateNetVolume();
-                }
-                
-                // Add event listeners for changes
-                grossVolumeInput.addEventListener('input', calculateNetVolume);
-                grossVolumeInput.addEventListener('change', calculateNetVolume);
-                
-                // Log initial state
-                console.log('Initial gross volume:', grossVolumeInput.value);
-                console.log('Initial net volume:', netVolumeInput.value);
+            const grossVolume = document.getElementById('grossVolume');
+            if (grossVolume.value) {
+                calculateNetVolume();
             }
         });
 
@@ -720,6 +750,47 @@
             for (let pair of formData.entries()) {
                 console.log(pair[0] + ': ' + pair[1]);
             }
+        });
+
+        // Add TCP Number validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const tcpInput = document.getElementById('tcpNo');
+            const tcpValidationMessage = document.getElementById('tcpValidationMessage');
+            
+            function validateTCP(value) {
+                if (!value.startsWith('C-Argao-')) {
+                    return 'TCP number must start with C-Argao-';
+                }
+                return '';
+            }
+
+            tcpInput.addEventListener('input', function() {
+                const error = validateTCP(this.value);
+                if (error) {
+                    tcpValidationMessage.textContent = error;
+                    tcpValidationMessage.classList.remove('hidden');
+                    tcpValidationMessage.classList.add('show');
+                    this.setCustomValidity(error);
+                } else {
+                    tcpValidationMessage.classList.remove('show');
+                    tcpValidationMessage.classList.add('hidden');
+                    this.setCustomValidity('');
+                }
+            });
+
+            // Add form submission validation
+            document.querySelector('form').addEventListener('submit', function(e) {
+                const tcpValue = tcpInput.value;
+                const error = validateTCP(tcpValue);
+                
+                if (error) {
+                    e.preventDefault();
+                    tcpValidationMessage.textContent = error;
+                    tcpValidationMessage.classList.remove('hidden');
+                    tcpValidationMessage.classList.add('show');
+                    tcpInput.focus();
+                }
+            });
         });
     </script>
 </body>

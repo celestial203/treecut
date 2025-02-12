@@ -228,7 +228,7 @@ def edit_cutting(request, pk):
 def view_cutting(request, pk):
     try:
         cutting = get_object_or_404(Cutting, pk=pk)
-        cutting_records = CuttingRecord.objects.filter(parent_tcp=cutting)
+        cutting_records = CuttingRecord.objects.filter(tcp=cutting)
         
         # Calculate net volume
         net_volume = cutting.gross_volume * Decimal('0.7') if cutting.gross_volume else None
@@ -254,44 +254,60 @@ def view_cutting(request, pk):
 @login_required
 def add_cutting_record(request, tcp_no):
     parent_tcp = get_object_or_404(Cutting, tcp_no=tcp_no)
-    volume_records = CuttingRecord.objects.filter(parent_tcp=parent_tcp).order_by('-date_added')
+    cutting_records = CuttingRecord.objects.filter(parent_tcp=parent_tcp).order_by('date_added')
     
-    # Calculate initial remaining balance
-    initial_volume = parent_tcp.total_volume_granted
-    
-    if not volume_records.exists():
-        remaining_balance = initial_volume
+    # Calculate remaining balance
+    if cutting_records.exists():
+        remaining_balance = cutting_records.last().remaining_balance
+        is_first_entry = False
     else:
-        remaining_balance = volume_records.first().remaining_balance
-
+        remaining_balance = 0
+        is_first_entry = True
+    
     if request.method == 'POST':
-        form = CuttingRecordForm(request.POST)
-        if form.is_valid():
-            volume = form.cleaned_data['volume']
-            calculated_volume = volume + (volume * Decimal('0.30'))
-            
-            if not volume_records.exists():
-                new_remaining = initial_volume - volume
-            else:
-                new_remaining = remaining_balance - volume
-            
-            if new_remaining >= 0:
-                record = form.save(commit=False)
-                record.parent_tcp = parent_tcp
-                record.calculated_volume = calculated_volume
-                record._remaining_balance = new_remaining
-                record.save()
-                messages.success(request, 'Cutting record added successfully!')
-                return redirect('add_cutting_record', tcp_no=tcp_no)
-            else:
-                messages.error(request, 'Volume exceeds remaining balance!')
+        species = request.POST.get('species')
+        no_of_trees = request.POST.get('no_of_trees')
+        volume = float(request.POST.get('volume', 0))
+        remarks = request.POST.get('remarks')
 
+        # Calculate volumes
+        if is_first_entry:
+            # For first entry: volume + 30% = initial balance
+            calculated_volume = volume + (volume * 0.30)
+            new_remaining_balance = calculated_volume
+        else:
+            # For subsequent entries: just subtract volume from remaining balance
+            calculated_volume = volume
+            new_remaining_balance = remaining_balance - volume
+
+        # Validate if there's enough remaining balance
+        if not is_first_entry and (new_remaining_balance < 0 or remaining_balance <= 0):
+            messages.error(request, 'Cannot add record. Volume exceeds remaining balance or balance is already zero.')
+            return redirect('add_cutting_record', tcp_no=tcp_no)
+
+        # Create new cutting record
+        cutting_record = CuttingRecord.objects.create(
+            parent_tcp=parent_tcp,
+            species=species,
+            no_of_trees=no_of_trees,
+            volume=volume,
+            calculated_volume=calculated_volume,
+            remaining_balance=new_remaining_balance,
+            remarks=remarks
+        )
+        
+        messages.success(request, 'Record added successfully!')
+        return redirect('cutting')
+    
     context = {
         'parent_tcp': parent_tcp,
+        'volume_records': cutting_records,  # Keep as volume_records for template compatibility
         'remaining_balance': remaining_balance,
-        'volume_records': volume_records,
-        'form': CuttingRecordForm()
+        'is_first_entry': is_first_entry,
+        'formatted_issue_date': parent_tcp.permit_issue_date.strftime('%b %d, %Y') if parent_tcp.permit_issue_date else '',
+        'formatted_expiry_date': parent_tcp.expiry_date.strftime('%b %d, %Y') if hasattr(parent_tcp, 'expiry_date') and parent_tcp.expiry_date else '',
     }
+    
     return render(request, 'add_cutting_record.html', context)
 
 ###FOR CHAINSAW####
