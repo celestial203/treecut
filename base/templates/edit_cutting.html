@@ -211,7 +211,16 @@
         }
 
         // Calculate initial net volume on page load
-        document.addEventListener('DOMContentLoaded', calculateNetVolume);
+        document.addEventListener('DOMContentLoaded', () => {
+            calculateNetVolume();
+            
+            // Check if there's a success message
+            const messages = document.querySelectorAll('.bg-green-100');
+            if (messages.length > 0) {
+                // Show alert
+                alert('Record successfully updated!');
+            }
+        });
     </script>
 </body>
 </html>

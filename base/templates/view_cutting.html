@@ -186,5 +186,17 @@
         </div>
         {% endif %}
     </div>
+
+    <script>
+        // Check for success messages on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if there's a success message
+            const messages = document.querySelectorAll('.bg-green-100');
+            if (messages.length > 0) {
+                // Show alert
+                alert('Record successfully updated!');
+            }
+        });
+    </script>
 </body>
 </html>
