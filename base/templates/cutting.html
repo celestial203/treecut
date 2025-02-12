@@ -339,7 +339,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Net Volume</label>
-                        <input type="text" id="netVolume" class="form-input bg-gray-100" readonly>
+                        {{ form.net_volume|add_class:"form-input bg-gray-100"|attr:"id:netVolume"|attr:"readonly" }}
                     </div>
                 </div>
 
@@ -528,12 +528,41 @@
 
         function calculateNetVolume() {
             const grossVolume = parseFloat(document.getElementById('grossVolume').value) || 0;
-            const netVolume = grossVolume * 0.70;
-            document.getElementById('netVolume').value = netVolume.toFixed(2);
+            const netVolume = grossVolume * 0.70; // 70% of gross volume
+            
+            // Update both the display and form field
+            const netVolumeInput = document.getElementById('netVolume');
+            if (netVolumeInput) {
+                netVolumeInput.value = netVolume.toFixed(2);
+            }
+
+            // Also update the hidden form field if it exists
+            const hiddenNetVolume = document.querySelector('input[name="net_volume"]');
+            if (hiddenNetVolume) {
+                hiddenNetVolume.value = netVolume.toFixed(2);
+            }
+
+            console.log('Gross Volume:', grossVolume);
+            console.log('Calculated Net Volume:', netVolume.toFixed(2));
         }
 
-        // Calculate initial net volume on page load
-        document.addEventListener('DOMContentLoaded', calculateNetVolume);
+        // Calculate net volume whenever gross volume changes
+        document.addEventListener('DOMContentLoaded', function() {
+            const grossVolumeInput = document.getElementById('grossVolume');
+            if (grossVolumeInput) {
+                // Initial calculation
+                calculateNetVolume();
+                
+                // Add event listeners
+                grossVolumeInput.addEventListener('input', calculateNetVolume);
+                grossVolumeInput.addEventListener('change', calculateNetVolume);
+            }
+        });
+
+        // Ensure net volume is calculated before form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            calculateNetVolume();
+        });
     </script>
 </body>
 </html>
