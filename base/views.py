@@ -230,11 +230,10 @@ def add_cutting_record(request, tcp_no):
     
     # Calculate initial remaining balance
     initial_volume = parent_tcp.total_volume_granted
-    initial_calculated = initial_volume + (initial_volume * Decimal('0.30'))
     
-    # For first entry or no records yet
+    # If no records exist, show the total volume granted
     if not volume_records.exists():
-        remaining_balance = initial_calculated
+        remaining_balance = initial_volume
     else:
         # For subsequent entries, get the last record's remaining balance
         remaining_balance = volume_records.first().remaining_balance
@@ -256,7 +255,7 @@ def add_cutting_record(request, tcp_no):
                 record = form.save(commit=False)
                 record.parent_tcp = parent_tcp
                 record.calculated_volume = calculated_volume
-                record.remaining_balance = new_remaining
+                record._remaining_balance = new_remaining  # Use _remaining_balance instead
                 record.save()
                 messages.success(request, 'Cutting record added successfully!')
                 return redirect('add_cutting_record', tcp_no=tcp_no)

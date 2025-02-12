@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 import re
 import os
+from decimal import Decimal
 
 # models.py
 from django.db import models
@@ -331,26 +332,32 @@ class Wood(models.Model):
         return 'Active'
 
 class CuttingRecord(models.Model):
-    parent_tcp = models.ForeignKey(Cutting, on_delete=models.CASCADE, related_name='volume_records')
+    parent_tcp = models.ForeignKey(Cutting, on_delete=models.CASCADE)
     date_added = models.DateTimeField(auto_now_add=True)
     species = models.CharField(max_length=100)
     no_of_trees = models.IntegerField()
-    volume = models.DecimalField(max_digits=10, decimal_places=2)  # Original volume
-    calculated_volume = models.DecimalField(max_digits=10, decimal_places=2)  # 30% of volume
+    volume = models.DecimalField(max_digits=10, decimal_places=2)
+    calculated_volume = models.DecimalField(max_digits=10, decimal_places=2)
+    _remaining_balance = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        db_column='remaining_balance',
+        default=Decimal('0.00')  # Add default value
+    )
     remarks = models.TextField(blank=True, null=True)
-
-    class Meta:
-        ordering = ['-date_added']
-
-    def save(self, *args, **kwargs):
-        # Calculate 30% of volume before saving
-        self.calculated_volume = self.volume * 0.30
-        super().save(*args, **kwargs)
 
     @property
     def remaining_balance(self):
-        """Calculate remaining balance for the parent TCP"""
-        total_used = self.parent_tcp.volume_records.aggregate(
-            total=models.Sum('calculated_volume')
-        )['total'] or 0
-        return self.parent_tcp.total_volume_granted - total_used
+        return self._remaining_balance
+
+    @remaining_balance.setter
+    def remaining_balance(self, value):
+        self._remaining_balance = value
+
+    def save(self, *args, **kwargs):
+        if not self.calculated_volume:
+            self.calculated_volume = self.volume + (self.volume * Decimal('0.30'))
+        super().save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['-date_added']

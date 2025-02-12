@@ -981,3 +981,19 @@ Traceback (most recent call last):
     raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
 django.template.exceptions.TemplateSyntaxError: Invalid filter: 'multiply'
 ERROR 2025-02-12 11:40:46,499 basehttp "GET /cutting/view/1/ HTTP/1.1" 500 195748
+ERROR 2025-02-12 11:46:14,920 log Internal Server Error: /cutting/add-record/C-Argao 12262024-157/
+Traceback (most recent call last):
+  File "C:\Users\TENEBRO FAMILY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\TENEBRO FAMILY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\TENEBRO FAMILY\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\TENEBRO FAMILY\Desktop\tree\Treecut\base\views.py", line 258, in add_cutting_record
+    record.remaining_balance = new_remaining
+    ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: property 'remaining_balance' of 'CuttingRecord' object has no setter
+ERROR 2025-02-12 11:46:14,958 basehttp "POST /cutting/add-record/C-Argao%2012262024-157/ HTTP/1.1" 500 78927
