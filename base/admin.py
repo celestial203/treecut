@@ -51,7 +51,7 @@ class CuttingAdmin(admin.ModelAdmin):
         'status'
     ]
     search_fields = ['tcp_no', 'permittee', 'species']
-    list_filter = ['permit_issue_date', 'status']
+    list_filter = ['permit_issue_date']
     date_hierarchy = 'permit_issue_date'
     readonly_fields = ('created_at', 'updated_at')
 

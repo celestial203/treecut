@@ -5,173 +5,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CENRO Argao - Edit Tree Cutting Record</title>
+    <title>Edit Cutting Record - CENRO Argao</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 </head>
-<body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
-    <!-- Navigation Bar -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <!-- Logo -->
-                    <div class="flex-shrink-0 flex items-center">
-                        <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO</span>
-                    </div>
-                    <!-- Navigation Links -->
-                    <div class="hidden sm:ml-8 sm:flex sm:space-x-8">
-                        <a href="{% url 'dashboard' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
-                            Dashboard
-                        </a>
-                        <a href="{% url 'cutting' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
-                            Cutting
-                        </a>
-                        <a href="{% url 'lumber' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
-                            Lumber
-                        </a>
-                        <a href="{% url 'chainsaw' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
-                            Chainsaw
-                        </a>
-                        <a href="{% url 'wood' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
-                            Wood
-                        </a>
-                    </div>
-                </div>
-                <div class="flex items-center">
-                    <div class="text-m text-gray-800">
-                        Welcome, {{ request.user.username }}
-                    </div>
-                    <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
-                        Sign Out
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Page Header -->
-    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-6 shadow-md">
-        <div class="max-w-7xl mx-auto px-4">
-            <h1 class="text-3xl font-bold mb-2">Edit Tree Cutting Record</h1>
-            <p class="text-sm opacity-90">Update cutting permit information</p>
-        </div>
-    </div>
-
-    <!-- Edit Form -->
+<body class="bg-gray-100">
     <div class="max-w-4xl mx-auto bg-white p-8 mt-8 shadow-xl rounded-lg">
+        <h2 class="text-2xl font-bold mb-6">Edit Cutting Record</h2>
+        
         <form method="POST" class="space-y-6">
             {% csrf_token %}
             
-            {% if messages %}
-            <div class="mb-4">
-                {% for message in messages %}
-                <div class="{% if message.tags == 'success' %}bg-green-100 border-l-4 border-green-500 text-green-700{% else %}bg-red-100 border-l-4 border-red-500 text-red-700{% endif %} p-4 mb-2">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <!-- Form Fields -->
+            <!-- Basic Information -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- TCP Number -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">TCP Number</label>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">TCP No.*</label>
                     {{ form.tcp_no }}
-                    {% if form.tcp_no.errors %}
-                    <div class="text-red-500 text-sm mt-1">{{ form.tcp_no.errors }}</div>
-                    {% endif %}
                 </div>
-
-                <!-- Permit Issue Date -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Issue Date</label>
-                    {{ form.permit_issue_date }}
-                    {% if form.permit_issue_date.errors %}
-                    <div class="text-red-500 text-sm mt-1">{{ form.permit_issue_date.errors }}</div>
-                    {% endif %}
-                </div>
-
-                <!-- Permittee -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Permittee</label>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Permittee*</label>
                     {{ form.permittee }}
-                    {% if form.permittee.errors %}
-                    <div class="text-red-500 text-sm mt-1">{{ form.permittee.errors }}</div>
-                    {% endif %}
                 </div>
+            </div>
 
-                <!-- Representative -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Representative</label>
-                    {{ form.rep_by }}
-                    {% if form.rep_by.errors %}
-                    <div class="text-red-500 text-sm mt-1">{{ form.rep_by.errors }}</div>
-                    {% endif %}
+            <!-- Location and Property Information -->
+            <div class="mt-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Location*</label>
+                        {{ form.location }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">TCT/OCT No.*</label>
+                        {{ form.tct_oct_no }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tax Declaration No.*</label>
+                        {{ form.tax_dec_no }}
+                    </div>
                 </div>
+            </div>
 
-                <!-- Location -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Location</label>
-                    {{ form.location }}
-                    {% if form.location.errors %}
-                    <div class="text-red-500 text-sm mt-1">{{ form.location.errors }}</div>
-                    {% endif %}
+            <!-- Property Details -->
+            <div class="mt-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Lot No.*</label>
+                        {{ form.lot_no }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Area (ha.)*</label>
+                        {{ form.area }}
+                    </div>
                 </div>
+            </div>
 
-                <!-- Area -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Area (ha.)</label>
-                    {{ form.area }}
-                    {% if form.area.errors %}
-                    <div class="text-red-500 text-sm mt-1">{{ form.area.errors }}</div>
-                    {% endif %}
+            <!-- Trees and Species Information -->
+            <div class="mt-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Number of Trees*</label>
+                        {{ form.no_of_trees }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Species*</label>
+                        {{ form.species }}
+                    </div>
                 </div>
+            </div>
 
-                <!-- Species Name -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Species Name</label>
-                    {{ form.species_name }}
-                    {% if form.species_name.errors %}
-                    <div class="text-red-500 text-sm mt-1">{{ form.species_name.errors }}</div>
-                    {% endif %}
-                </div>
-
-                <!-- Number of Trees -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Number of Trees</label>
-                    {{ form.no_of_trees }}
-                    {% if form.no_of_trees.errors %}
-                    <div class="text-red-500 text-sm mt-1">{{ form.no_of_trees.errors }}</div>
-                    {% endif %}
-                </div>
-
-                <!-- Gross Volume -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Gross Volume (cu.m.)</label>
-                    {{ form.gross_volume }}
-                    {% if form.gross_volume.errors %}
-                    <div class="text-red-500 text-sm mt-1">{{ form.gross_volume.errors }}</div>
-                    {% endif %}
-                </div>
-
-                <!-- Total Volume Granted -->
-                <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700">Total Volume Granted (cu.m.)</label>
-                    {{ form.total_volume_granted }}
-                    {% if form.total_volume_granted.errors %}
-                    <div class="text-red-500 text-sm mt-1">{{ form.total_volume_granted.errors }}</div>
-                    {% endif %}
+            <!-- Volume Information -->
+            <div class="mt-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Total Volume Granted (cu.m.)*</label>
+                        {{ form.total_volume_granted }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Gross Volume (cu.m.)*</label>
+                        {{ form.gross_volume }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Net Volume (cu.m.)</label>
+                        <input type="text" id="netVolume" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm bg-gray-50" readonly>
+                    </div>
                 </div>
             </div>
 
             <!-- Buttons -->
             <div class="flex justify-end space-x-4 mt-6">
-                <a href="{% url 'cutting' %}" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                <a href="/cutting/" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600">
                     Cancel
                 </a>
-                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
                     Save Changes
                 </button>
             </div>
@@ -179,57 +104,14 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add Tailwind classes to form inputs
-            const inputs = document.querySelectorAll('input, select, textarea');
-            inputs.forEach(input => {
-                input.classList.add('mt-1', 'block', 'w-full', 'rounded-lg', 'border-gray-300', 'shadow-sm', 'focus:border-green-500', 'focus:ring-green-500', 'transition', 'duration-150');
-            });
+        // Calculate Net Volume automatically (70% of Gross Volume)
+        const grossVolumeInput = document.getElementById('grossVolume');
+        const netVolumeInput = document.getElementById('netVolume');
 
-            // Form validation
-            const form = document.querySelector('form');
-            form.addEventListener('submit', function(event) {
-                const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
-                let isValid = true;
-
-                requiredFields.forEach(field => {
-                    if (!field.value.trim()) {
-                        isValid = false;
-                        field.classList.add('border-red-500');
-                    } else {
-                        field.classList.remove('border-red-500');
-                    }
-                });
-
-                if (!isValid) {
-                    event.preventDefault();
-                    alert('Please fill in all required fields');
-                }
-            });
-
-            // Number validation
-            const numericInputs = document.querySelectorAll('input[type="number"]');
-            numericInputs.forEach(input => {
-                input.addEventListener('input', function() {
-                    if (this.value < 0) {
-                        this.value = 0;
-                    }
-                });
-            });
-
-            // Date validation
-            const dateInput = document.querySelector('input[type="date"]');
-            if (dateInput) {
-                dateInput.addEventListener('change', function() {
-                    const selectedDate = new Date(this.value);
-                    const today = new Date();
-                    
-                    if (selectedDate > today) {
-                        alert('Issue date cannot be in the future');
-                        this.value = '';
-                    }
-                });
-            }
+        grossVolumeInput.addEventListener('input', function() {
+            const grossVolume = parseFloat(this.value) || 0;
+            const netVolume = grossVolume * 0.70;
+            netVolumeInput.value = netVolume.toFixed(2);
         });
     </script>
 </body>

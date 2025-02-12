@@ -104,19 +104,19 @@ class UserProfile(models.Model):
         return self.user.username
 
 class Cutting(models.Model):
-    tcp_no = models.CharField(max_length=100)
-    permittee = models.CharField(max_length=200)
-    location = models.CharField(max_length=200)
-    tct_oct_no = models.CharField(max_length=100)
-    tax_dec_no = models.CharField(max_length=100)
-    lot_no = models.CharField(max_length=100)
-    area = models.DecimalField(max_digits=10, decimal_places=2)
-    no_of_trees = models.IntegerField()
-    species = models.CharField(max_length=100)
-    total_volume_granted = models.DecimalField(max_digits=10, decimal_places=2)
-    gross_volume = models.DecimalField(max_digits=10, decimal_places=2)
-    permit_issue_date = models.DateField()
-    rep_by = models.CharField(max_length=200, null=True, blank=True)  # Optional representative field
+    tcp_no = models.CharField(max_length=100, default='')
+    permittee = models.CharField(max_length=200, default='')
+    location = models.CharField(max_length=200, default='')
+    tct_oct_no = models.CharField(max_length=100, default='')
+    tax_dec_no = models.CharField(max_length=100, default='')
+    lot_no = models.CharField(max_length=100, default='')
+    area = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    no_of_trees = models.IntegerField(default=0)
+    species = models.CharField(max_length=100, default='')
+    total_volume_granted = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    gross_volume = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    permit_issue_date = models.DateField(null=True, blank=True)
+    rep_by = models.CharField(max_length=200, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -125,19 +125,16 @@ class Cutting(models.Model):
 
     @property
     def net_volume(self):
-        """Calculate net volume (70% of gross volume)"""
         return self.gross_volume * 0.70 if self.gross_volume else 0
 
     @property
     def expiry_date(self):
-        """Calculate expiry date (50 days from permit issue date)"""
         if self.permit_issue_date:
             return self.permit_issue_date + timedelta(days=50)
         return None
 
     @property
     def days_remaining(self):
-        """Calculate days remaining until expiry"""
         if self.expiry_date:
             delta = self.expiry_date - timezone.now().date()
             return delta.days
@@ -145,18 +142,15 @@ class Cutting(models.Model):
 
     @property
     def is_expiring_soon(self):
-        """Check if permit is expiring within 30 days"""
         remaining = self.days_remaining
         return 0 < remaining <= 30
 
     @property
     def is_expired(self):
-        """Check if permit has expired"""
         return self.days_remaining <= 0
 
     @property
     def status(self):
-        """Get the current status of the permit"""
         if self.is_expired:
             return 'Expired'
         elif self.is_expiring_soon:

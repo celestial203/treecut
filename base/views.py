@@ -54,29 +54,21 @@ def dashboard(request):
 
 @login_required
 def cutting(request):
+    cutting_records = Cutting.objects.all().order_by('-created_at')
+    form = CuttingForm()
+
     if request.method == 'POST':
         form = CuttingForm(request.POST)
         if form.is_valid():
-            cutting = form.save(commit=False)
-            cutting.created_by = request.user
-            cutting.save()
-            cutting.update_days_remaining()  # Update days remaining after saving
-            messages.success(request, 'Cutting permit added successfully.')
+            cutting = form.save()
+            messages.success(request, 'Cutting record added successfully!')
             return redirect('cutting')
         else:
-            messages.error(request, 'Error saving cutting permit. Please check the form.')
-            print(form.errors)  # For debugging
-    else:
-        form = CuttingForm()
-    
-    cutting_records = Cutting.objects.all()
-    # Update days remaining for all records
-    for record in cutting_records:
-        record.update_days_remaining()
+            messages.error(request, 'Error adding cutting record. Please check the form.')
 
     context = {
-        'form': form,
-        'cutting_records': cutting_records
+        'cutting_records': cutting_records,
+        'form': form
     }
     return render(request, 'cutting.html', context)
 
@@ -210,13 +202,9 @@ def edit_cutting(request, pk):
     if request.method == 'POST':
         form = CuttingForm(request.POST, instance=cutting)
         if form.is_valid():
-            cutting = form.save(commit=False)
-            cutting.created_by = request.user
-            cutting.save()
-            messages.success(request, 'Cutting permit updated successfully!')
+            form.save()
+            messages.success(request, 'Cutting record updated successfully!')
             return redirect('cutting')
-        else:
-            messages.error(request, 'Error updating cutting permit. Please check the form.')
     else:
         form = CuttingForm(instance=cutting)
     
@@ -226,6 +214,20 @@ def edit_cutting(request, pk):
     }
     return render(request, 'edit_cutting.html', context)
 
+def view_cutting(request, pk):
+    cutting = get_object_or_404(Cutting, pk=pk)
+    context = {
+        'cutting': cutting
+    }
+    return render(request, 'view_cutting.html', context)
+
+def add_cutting_record(request, tcp_no):
+    parent_tcp = get_object_or_404(Cutting, tcp_no=tcp_no)
+    # Add your logic for adding cutting records
+    context = {
+        'parent_tcp': parent_tcp
+    }
+    return render(request, 'add_cutting_record.html', context)
 
 ###FOR CHAINSAW####
 @login_required(login_url='login')
