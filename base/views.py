@@ -2,8 +2,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .forms import LoginForm, LumberForm, CuttingForm, ChainsawForm, WoodForm
-from .models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord
+from base.forms import LoginForm, LumberForm, CuttingForm, ChainsawForm, WoodForm
+from base.models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord
 from datetime import datetime, timedelta
 from django.utils import timezone
 import os
@@ -232,6 +232,7 @@ def add_cutting_record(request, tcp_no):
     running_balance = parent_tcp.total_volume_granted
     for record in volume_records:
         record.running_balance = running_balance
+        record.thirty_percent = record.volume * 0.3
         running_balance -= record.calculated_volume
     
     remaining_balance = running_balance

@@ -4,4 +4,7 @@ register = template.Library()
 
 @register.filter
 def multiply(value, arg):
-    return float(value) * float(arg)
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return 0
