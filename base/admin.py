@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.urls import path
-from .models import Lumber, Cutting, Chainsaw, Wood
+from .models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord
 
 # Custom admin login view
 def custom_admin_login(request):
@@ -39,9 +39,19 @@ class LumberAdmin(admin.ModelAdmin):
 
 @admin.register(Cutting)
 class CuttingAdmin(admin.ModelAdmin):
-    list_display = ('tcp_no', 'permittee', 'location', 'permit_issue_date', 'species_name', 'no_of_trees')
-    list_filter = ('permit_issue_date', 'created_at')
-    search_fields = ('tcp_no', 'permittee', 'location')
+    list_display = [
+        'tcp_no',
+        'permittee',
+        'location',
+        'permit_issue_date',
+        'species',
+        'no_of_trees',
+        'total_volume_granted',
+        'gross_volume',
+        'status'
+    ]
+    search_fields = ['tcp_no', 'permittee', 'species']
+    list_filter = ['permit_issue_date', 'status']
     date_hierarchy = 'permit_issue_date'
     readonly_fields = ('created_at', 'updated_at')
 
@@ -91,3 +101,9 @@ class ChainsawAdmin(admin.ModelAdmin):
 @admin.register(Wood)
 class WoodAdmin(admin.ModelAdmin):
     pass  # Add appropriate fields when Wood model is implemented
+
+@admin.register(CuttingRecord)
+class CuttingRecordAdmin(admin.ModelAdmin):
+    list_display = ['parent_tcp', 'date_added', 'species', 'no_of_trees', 'volume', 'calculated_volume']
+    search_fields = ['parent_tcp__tcp_no', 'species']
+    list_filter = ['date_added']
