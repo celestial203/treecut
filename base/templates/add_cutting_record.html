@@ -10,103 +10,208 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Cutting Record - CENRO Argao</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .bg-denr {
+            background-color: #2B5019;
+        }
+        .from-denr {
+            --tw-gradient-from: #2B5019;
+        }
+        .to-denr-light {
+            --tw-gradient-to: #3D7324;
+        }
+        .text-denr {
+            color: #2B5019;
+        }
+        .border-denr {
+            border-color: #2B5019;
+        }
+        .hover\:bg-denr-dark:hover {
+            background-color: #1F3B12;
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
-    <div class="max-w-4xl mx-auto bg-white p-8 mt-8 shadow-lg rounded-lg">
-        <h2 class="text-2xl font-bold mb-6">Add Cutting Record</h2>
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0 flex items-center">
+                        <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO</span>
+                    </div>
+                    <!-- Navigation Links -->
+                    <div class="hidden sm:ml-8 sm:flex sm:space-x-8">
+                        <a href="{% url 'dashboard' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Dashboard
+                        </a>
+                        <a href="{% url 'cutting' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Cutting
+                        </a>
+                        <a href="{% url 'lumber' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Lumber
+                        </a>
+                        <a href="{% url 'chainsaw' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Chainsaw
+                        </a>
+                        <a href="{% url 'wood' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                            Wood
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="text-m text-gray-800">
+                        Welcome, {{ request.user.username }}
+                    </div>
+                    <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
+                        Sign Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Breadcrumb -->
+        <div class="mb-8">
+            <nav class="flex" aria-label="Breadcrumb">
+                <ol class="flex items-center space-x-4">
+                    <li>
+                        <div>
+                            <a href="{% url 'cutting' %}" class="text-gray-400 hover:text-gray-500">
+                                Cutting
+                            </a>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="flex-shrink-0 h-5 w-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
+                            </svg>
+                            <span class="ml-4 text-sm font-medium text-gray-500">Add Cutting Record</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Add Cutting Record</h1>
+            <p class="mt-2 text-sm text-gray-600">Manage cutting records for TCP No. {{ parent_tcp.tcp_no }}</p>
+        </div>
 
         <!-- TCP Information Card -->
-        <div class="bg-white p-6 rounded-lg border border-gray-200 mb-6">
-            <div class="grid grid-cols-2 gap-4">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div>
-                    <p class="text-sm text-gray-600">TCP No.</p>
-                    <p class="font-medium">{{ parent_tcp.tcp_no }}</p>
+                    <h3 class="text-sm font-medium text-gray-500">TCP No.</h3>
+                    <p class="mt-1 text-lg font-semibold text-gray-900">{{ parent_tcp.tcp_no }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-600">Date Issued</p>
-                    <p class="font-medium">{{ parent_tcp.permit_issue_date|date:"M d, Y" }}</p>
+                    <h3 class="text-sm font-medium text-gray-500">Date Issued</h3>
+                    <p class="mt-1 text-lg font-semibold text-gray-900">{{ formatted_issue_date }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-600">Expiry</p>
-                    <p class="font-medium">{{ parent_tcp.expiry_date|date:"M d, Y" }}</p>
+                    <h3 class="text-sm font-medium text-gray-500">Expiry Date</h3>
+                    <p class="mt-1 text-lg font-semibold text-gray-900">{{ formatted_expiry_date }}</p>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-600">Permittee</p>
-                    <p class="font-medium">{{ parent_tcp.permittee }} {% if parent_tcp.rep_by %}RISP By: {{ parent_tcp.rep_by }}{% endif %}</p>
+                    <h3 class="text-sm font-medium text-gray-500">Permittee</h3>
+                    <p class="mt-1 text-lg font-semibold text-gray-900">{{ parent_tcp.permittee }}</p>
+                    {% if parent_tcp.rep_by %}
+                    <p class="text-sm text-gray-500">RISP By: {{ parent_tcp.rep_by }}</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
 
         <!-- Volume Information Card -->
-        <div class="bg-blue-50 p-6 rounded-lg mb-6">
-            <h3 class="font-semibold text-blue-800 mb-4">Volume Information</h3>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <p class="text-sm text-gray-600">Total Volume Granted</p>
-                    <p class="font-semibold text-lg">{{ parent_tcp.total_volume_granted }} cu.m</p>
+        <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg shadow-sm p-6 mb-6">
+            <h2 class="text-xl font-semibold text-blue-900 mb-4">Volume Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <p class="text-sm font-medium text-gray-500">Total Volume Granted</p>
+                    <p class="mt-1 text-2xl font-bold text-blue-600">{{ parent_tcp.total_volume_granted }} cu.m</p>
                 </div>
-                <div>
-                    <p class="text-sm text-gray-600">Remaining Balance</p>
-                    <p class="font-semibold text-lg">{{ remaining_balance }} cu.m</p>
+                <div class="bg-white rounded-lg p-4 shadow-sm">
+                    <p class="text-sm font-medium text-gray-500">Remaining Balance</p>
+                    <p class="mt-1 text-2xl font-bold {% if remaining_balance <= 0 %}text-red-600{% else %}text-blue-600{% endif %}">
+                        {{ remaining_balance }} cu.m
+                    </p>
                 </div>
             </div>
         </div>
 
         <!-- Add Record Form -->
-        <form method="POST" id="addRecordForm" class="space-y-6">
-            {% csrf_token %}
-            
-            <!-- Species and Trees -->
-            <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Species*</label>
-                    <input type="text" name="species" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-6">New Record Details</h2>
+            <form method="POST" id="addRecordForm" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Species*</label>
+                        <input type="text" name="species" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Number of Trees*</label>
+                        <input type="number" name="no_of_trees" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Number of Trees*</label>
-                    <input type="number" name="no_of_trees" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Volume (cu.m)*</label>
+                        <input type="number" step="0.01" name="volume" id="inputVolume" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Calculated Volume (30%)</label>
+                        <input type="number" step="0.01" id="calculatedVolume" class="mt-1 block w-full rounded-md bg-gray-50 border-gray-300 shadow-sm" readonly>
+                        <div id="calculationDetails" class="mt-2 text-sm text-gray-600"></div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Volume Fields -->
-            <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Volume (cu.m)*</label>
-                    <input type="number" step="0.01" name="volume" id="inputVolume" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-600">Current Balance:</p>
+                            <p class="font-medium text-lg" id="currentBalance">{{ remaining_balance }} cu.m</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">After This Entry:</p>
+                            <p class="font-medium text-lg" id="newBalance">{{ remaining_balance }} cu.m</p>
+                        </div>
+                    </div>
                 </div>
+
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Calculated Volume (30%)</label>
-                    <input type="number" step="0.01" id="calculatedVolume" class="w-full rounded-lg border-gray-300 shadow-sm bg-gray-50" readonly>
-                    <div id="calculationDetails" class="mt-2 text-sm text-gray-600"></div>
+                    <label class="block text-sm font-medium text-gray-700">Remarks</label>
+                    <textarea name="remarks" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
                 </div>
-            </div>
 
-            <!-- Running Balance Info -->
-            <div class="bg-blue-50 p-4 rounded-lg">
-                <p class="text-sm text-gray-600">Current Remaining Balance: <span id="currentBalance" class="font-medium">{{ remaining_balance }}</span> cu.m</p>
-                <p class="text-sm text-gray-600">After This Entry: <span id="newBalance" class="font-medium">{{ remaining_balance }}</span> cu.m</p>
-            </div>
-
-            <!-- Remarks -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
-                <textarea name="remarks" rows="3" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex justify-end space-x-4">
-                <a href="{% url 'cutting' %}" class="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
-                    Cancel
-                </a>
-                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    Add
-                </button>
-            </div>
-        </form>
+                <div class="flex justify-end space-x-4">
+                    <a href="{% url 'cutting' %}" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Cancel
+                    </a>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Add Record
+                    </button>
+                </div>
+            </form>
+        </div>
 
         <!-- Volume Breakdown Table -->
-        <div class="mt-8">
-            <h3 class="text-lg font-semibold mb-4">Volume Breakdown</h3>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Volume Breakdown</h2>
+            </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
@@ -128,7 +233,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.no_of_trees }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.volume|floatformat:2 }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.calculated_volume|floatformat:2 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm {% if record.remaining_balance <= 0 %}text-red-600{% else %}text-green-600{% endif %}">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm {% if record.remaining_balance <= 0 %}text-red-600{% else %}text-blue-600{% endif %} font-medium">
                                 {{ record.remaining_balance|floatformat:2 }}
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ record.remarks|default:"-" }}</td>
@@ -173,9 +278,9 @@
             // Add realtime feedback with colors
             if (newBalance < 0) {
                 newBalanceSpan.classList.add('text-red-600');
-                newBalanceSpan.classList.remove('text-green-600');
+                newBalanceSpan.classList.remove('text-blue-600');
             } else {
-                newBalanceSpan.classList.add('text-green-600');
+                newBalanceSpan.classList.add('text-blue-600');
                 newBalanceSpan.classList.remove('text-red-600');
             }
 

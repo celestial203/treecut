@@ -255,18 +255,28 @@ def add_cutting_record(request, tcp_no):
                 record = form.save(commit=False)
                 record.parent_tcp = parent_tcp
                 record.calculated_volume = calculated_volume
-                record._remaining_balance = new_remaining  # Use _remaining_balance instead
+                record._remaining_balance = new_remaining
                 record.save()
                 messages.success(request, 'Cutting record added successfully!')
                 return redirect('add_cutting_record', tcp_no=tcp_no)
             else:
                 messages.error(request, 'Volume exceeds remaining balance!')
 
+    # Format dates for display
+    try:
+        formatted_issue_date = parent_tcp.permit_issue_date.strftime('%B %d, %Y') if parent_tcp.permit_issue_date else 'Not Set'
+        formatted_expiry_date = parent_tcp.expiry_date.strftime('%B %d, %Y') if parent_tcp.expiry_date else 'Not Set'
+    except AttributeError:
+        formatted_issue_date = 'Not Set'
+        formatted_expiry_date = 'Not Set'
+
     context = {
         'parent_tcp': parent_tcp,
         'remaining_balance': remaining_balance,
         'volume_records': volume_records,
-        'form': CuttingRecordForm()
+        'form': CuttingRecordForm(),
+        'formatted_issue_date': formatted_issue_date,
+        'formatted_expiry_date': formatted_expiry_date
     }
     return render(request, 'add_cutting_record.html', context)
 
