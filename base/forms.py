@@ -1,12 +1,13 @@
 # forms.py
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
-from .models import Lumber, Cutting, Chainsaw, Wood
+from .models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord
 import re
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from datetime import timedelta
 from django.contrib.auth.forms import AuthenticationForm
+from decimal import Decimal
 
 
 # Get the user model
@@ -224,3 +225,45 @@ class WoodForm(forms.ModelForm):
         if volume is not None and volume < 0:
             raise forms.ValidationError("Volume cannot be negative")
         return volume
+
+# CuttingRecordForm
+class CuttingRecordForm(forms.ModelForm):
+    class Meta:
+        model = CuttingRecord
+        fields = ['species', 'no_of_trees', 'volume', 'remarks']
+        widgets = {
+            'species': forms.TextInput(attrs={
+                'class': 'mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
+                'required': True
+            }),
+            'no_of_trees': forms.NumberInput(attrs={
+                'class': 'mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
+                'required': True
+            }),
+            'volume': forms.NumberInput(attrs={
+                'step': '0.01',
+                'class': 'mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
+                'required': True
+            }),
+            'remarks': forms.Textarea(attrs={
+                'rows': 3,
+                'class': 'mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
+            })
+        }
+
+    def clean_volume(self):
+        volume = self.cleaned_data.get('volume')
+        if volume <= 0:
+            raise ValidationError("Volume must be greater than 0")
+        return volume
+
+    def clean(self):
+        cleaned_data = super().clean()
+        volume = cleaned_data.get('volume')
+        
+        if volume:
+            # Calculate the volume with 30% addition
+            calculated_volume = volume + (volume * Decimal('0.30'))
+            cleaned_data['calculated_volume'] = calculated_volume
+            
+        return cleaned_data

@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from base.forms import LoginForm, LumberForm, CuttingForm, ChainsawForm, WoodForm
+from base.forms import LoginForm, LumberForm, CuttingForm, ChainsawForm, WoodForm, CuttingRecordForm
 from base.models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -223,44 +223,51 @@ def view_cutting(request, pk):
     }
     return render(request, 'view_cutting.html', context)
 
+@login_required
 def add_cutting_record(request, tcp_no):
     parent_tcp = get_object_or_404(Cutting, tcp_no=tcp_no)
-    
-    # Get all records ordered by date
     volume_records = CuttingRecord.objects.filter(parent_tcp=parent_tcp).order_by('-date_added')
     
-    # Calculate running balance for each record
-    running_balance = parent_tcp.total_volume_granted
-    for record in volume_records:
-        record.running_balance = running_balance
-        record.thirty_percent = record.volume * Decimal('0.30')
-        running_balance -= record.calculated_volume
+    # Calculate initial remaining balance
+    initial_volume = parent_tcp.total_volume_granted
+    initial_calculated = initial_volume + (initial_volume * Decimal('0.30'))
     
-    remaining_balance = running_balance
+    # For first entry or no records yet
+    if not volume_records.exists():
+        remaining_balance = initial_calculated
+    else:
+        # For subsequent entries, get the last record's remaining balance
+        remaining_balance = volume_records.first().remaining_balance
 
     if request.method == 'POST':
-        volume = Decimal(request.POST.get('volume', '0'))
-        # New calculation: volume * 30% + volume
-        calculated_volume = (volume * Decimal('30')) + volume
-
-        if calculated_volume <= remaining_balance:
-            CuttingRecord.objects.create(
-                parent_tcp=parent_tcp,
-                species=request.POST.get('species'),
-                no_of_trees=int(request.POST.get('no_of_trees')),
-                volume=volume,
-                calculated_volume=calculated_volume,
-                remarks=request.POST.get('remarks', '')
-            )
-            messages.success(request, 'Cutting record added successfully!')
-            return redirect('cutting')
-        else:
-            messages.error(request, 'Volume exceeds remaining balance!')
+        form = CuttingRecordForm(request.POST)
+        if form.is_valid():
+            volume = form.cleaned_data['volume']
+            calculated_volume = volume + (volume * Decimal('0.30'))
+            
+            if not volume_records.exists():
+                # First entry: set remaining balance to calculated volume
+                new_remaining = calculated_volume
+            else:
+                # Subsequent entries: subtract original volume from remaining balance
+                new_remaining = remaining_balance - volume
+            
+            if new_remaining >= 0:
+                record = form.save(commit=False)
+                record.parent_tcp = parent_tcp
+                record.calculated_volume = calculated_volume
+                record.remaining_balance = new_remaining
+                record.save()
+                messages.success(request, 'Cutting record added successfully!')
+                return redirect('add_cutting_record', tcp_no=tcp_no)
+            else:
+                messages.error(request, 'Volume exceeds remaining balance!')
 
     context = {
         'parent_tcp': parent_tcp,
         'remaining_balance': remaining_balance,
-        'volume_records': volume_records
+        'volume_records': volume_records,
+        'form': CuttingRecordForm()
     }
     return render(request, 'add_cutting_record.html', context)
 
