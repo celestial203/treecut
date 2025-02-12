@@ -1,0 +1,152 @@
+{% load static %}
+{% load form_filters %}
+{% load widget_tweaks %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Cutting Record - CENRO Argao</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-4xl mx-auto bg-white p-8 mt-8 shadow-lg rounded-lg">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Add Cutting Record</h2>
+            <p class="text-gray-600">TCP No. {{ parent_tcp.tcp_no }}</p>
+            <p class="text-gray-600">Date Issued: {{ parent_tcp.permit_issue_date|date:"m-d-Y" }}</p>
+            <p class="text-gray-600">Expiry: {{ parent_tcp.expiry_date|date:"m-d-Y" }}</p>
+            <p class="text-gray-600 mt-2">Permittee: {{ parent_tcp.permittee }}</p>
+        </div>
+
+        <!-- Current Balance Information -->
+        <div class="bg-blue-50 p-4 rounded-lg mb-6">
+            <h3 class="font-semibold text-blue-800">Volume Information</h3>
+            <div class="grid grid-cols-2 gap-4 mt-2">
+                <div>
+                    <p class="text-sm text-blue-600">Total Volume Granted:</p>
+                    <p class="font-medium">{{ parent_tcp.total_volume_granted }} cu.m</p>
+                </div>
+                <div>
+                    <p class="text-sm text-blue-600">Remaining Balance:</p>
+                    <p class="font-medium" id="remainingBalance">{{ remaining_balance }} cu.m</p>
+                    {% if remaining_balance <= 0 %}
+                        <p class="text-red-600 font-bold">Already Consumed!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Record Form -->
+        <form method="POST" id="addRecordForm" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Species and Number of Trees -->
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Species*</label>
+                    {{ form.species|add_class:"form-input w-full rounded-md"|attr:"placeholder:Enter species" }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Number of Trees*</label>
+                    {{ form.no_of_trees|add_class:"form-input w-full rounded-md"|attr:"placeholder:Enter number of trees" }}
+                </div>
+            </div>
+
+            <!-- Volume Calculation -->
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Volume (cu.m)*</label>
+                    <input type="number" step="0.01" id="inputVolume" name="volume" 
+                           class="form-input w-full rounded-md" 
+                           placeholder="Enter volume">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Calculated Volume (30%)</label>
+                    <input type="text" id="calculatedVolume" readonly 
+                           class="form-input w-full rounded-md bg-gray-50">
+                </div>
+            </div>
+
+            <!-- Remarks -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Remarks</label>
+                {{ form.remarks|add_class:"form-input w-full rounded-md"|attr:"rows:3"|attr:"placeholder:Enter remarks" }}
+            </div>
+
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'cutting' %}" 
+                   class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        {% if remaining_balance <= 0 %}disabled{% endif %}>
+                    Save Record
+                </button>
+            </div>
+        </form>
+
+        <!-- Volume Breakdown -->
+        <div class="mt-8">
+            <h3 class="font-semibold text-gray-800 mb-4">Volume Breakdown</h3>
+            <div class="bg-white shadow overflow-hidden rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Species</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trees</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Volume</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for record in volume_records %}
+                        <tr>
+                            <td class="px-6 py-4">{{ record.date_added|date:"m-d-Y" }}</td>
+                            <td class="px-6 py-4">{{ record.species }}</td>
+                            <td class="px-6 py-4">{{ record.no_of_trees }}</td>
+                            <td class="px-6 py-4">{{ record.volume }} cu.m</td>
+                            <td class="px-6 py-4">{{ record.remarks }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Calculate 30% of input volume
+        const inputVolume = document.getElementById('inputVolume');
+        const calculatedVolume = document.getElementById('calculatedVolume');
+        const remainingBalance = {{ remaining_balance|default:0 }};
+
+        inputVolume.addEventListener('input', function() {
+            const volume = parseFloat(this.value) || 0;
+            const calculated = volume * 0.30;
+            calculatedVolume.value = calculated.toFixed(2);
+
+            // Check if calculated volume exceeds remaining balance
+            if (calculated > remainingBalance) {
+                this.classList.add('border-red-500');
+                alert('Warning: Volume exceeds remaining balance!');
+            } else {
+                this.classList.remove('border-red-500');
+            }
+        });
+
+        // Form validation
+        document.getElementById('addRecordForm').addEventListener('submit', function(event) {
+            const volume = parseFloat(calculatedVolume.value) || 0;
+            
+            if (volume > remainingBalance) {
+                event.preventDefault();
+                alert('Cannot exceed remaining balance!');
+            }
+        });
+    </script>
+</body>
+</html>

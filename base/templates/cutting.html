@@ -125,64 +125,53 @@
                     {{ form.tcp_no|add_class:"form-input"|attr:"placeholder:Enter TCP number" }}
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Permittee*</label>
-                    {{ form.permittee|add_class:"form-input"|attr:"placeholder:Enter permittee name" }}
+                    <label class="block text-sm font-medium text-gray-700">Permit Issue Date*</label>
+                    {{ form.permit_issue_date|add_class:"form-input"|attr:"type:date" }}
                 </div>
             </div>
 
-            <!-- Representative Details -->
+            <!-- Permittee Information -->
             <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Representative Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Representative*</label>
+                        <label class="block text-sm font-medium text-gray-700">Permittee*</label>
+                        {{ form.permittee|add_class:"form-input"|attr:"placeholder:Enter permittee name" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Representative</label>
                         {{ form.rep_by|add_class:"form-input"|attr:"placeholder:Enter representative name" }}
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Location*</label>
-                        {{ form.location|add_class:"form-input"|attr:"placeholder:Enter location" }}
-                    </div>
                 </div>
             </div>
 
-            <!-- Property Details -->
+            <!-- Species and Trees Information -->
             <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Property Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">TCT/OCT Number</label>
-                        {{ form.tct_oct_no|add_class:"form-input"|attr:"placeholder:Enter TCT/OCT number" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Tax Declaration Number</label>
-                        {{ form.tax_dec_no|add_class:"form-input"|attr:"placeholder:Enter tax declaration number" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Lot Number</label>
-                        {{ form.lot_no|add_class:"form-input"|attr:"placeholder:Enter lot number" }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Volume Details -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Volume Details</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Species*</label>
+                        {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species name" }}
+                    </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Number of Trees*</label>
                         {{ form.no_of_trees|add_class:"form-input"|attr:"placeholder:Enter number of trees" }}
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Area (ha.)</label>
-                        {{ form.area|add_class:"form-input"|attr:"placeholder:Enter area in hectares" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Gross Volume (cu.m.)*</label>
-                        {{ form.gross_volume|add_class:"form-input"|attr:"placeholder:Enter gross volume" }}
-                    </div>
+                </div>
+            </div>
+
+            <!-- Volume Information -->
+            <div class="mt-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Total Volume Granted (cu.m.)*</label>
                         {{ form.total_volume_granted|add_class:"form-input"|attr:"placeholder:Enter total volume granted" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Gross Volume (cu.m.)*</label>
+                        {{ form.gross_volume|add_class:"form-input"|attr:"id:grossVolume"|attr:"placeholder:Enter gross volume" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Net Volume (cu.m.)</label>
+                        <input type="text" id="netVolume" class="form-input" readonly>
                     </div>
                 </div>
             </div>
@@ -246,13 +235,12 @@
                     <thead class="bg-gray-50 text-gray-700">
                         <tr>
                             <th class="px-6 py-4 font-semibold">TCP Number</th>
+                            <th class="px-6 py-4 font-semibold">Date Issued</th>
                             <th class="px-6 py-4 font-semibold">Permittee</th>
                             <th class="px-6 py-4 font-semibold">Representative</th>
-                            <th class="px-6 py-4 font-semibold">Location</th>
-                            <th class="px-6 py-4 font-semibold">Issue Date</th>
-                            <th class="px-6 py-4 font-semibold">Species Name</th>
+                            <th class="px-6 py-4 font-semibold">Species</th>
                             <th class="px-6 py-4 font-semibold">No. of Trees</th>
-                            <th class="px-6 py-4 font-semibold">Volume (m³)</th>
+                            <th class="px-6 py-4 font-semibold">Volume (cu.m)</th>
                             <th class="px-6 py-4 font-semibold">Status</th>
                             <th class="px-6 py-4 font-semibold">Days Remaining</th>
                             <th class="px-6 py-4 font-semibold">Actions</th>
@@ -262,11 +250,10 @@
                         {% for record in cutting_records %}
                         <tr class="hover:bg-gray-50 transition-colors duration-150">
                             <td class="px-6 py-4">{{ record.tcp_no }}</td>
+                            <td class="px-6 py-4">{{ record.permit_issue_date|date:"m-d-Y" }}</td>
                             <td class="px-6 py-4">{{ record.permittee }}</td>
                             <td class="px-6 py-4">{{ record.rep_by }}</td>
-                            <td class="px-6 py-4">{{ record.location }}</td>
-                            <td class="px-6 py-4">{{ record.permit_issue_date|date:"F d, Y" }}</td>
-                            <td class="px-6 py-4">{{ record.species_name }}</td>
+                            <td class="px-6 py-4">{{ record.species }}</td>
                             <td class="px-6 py-4">{{ record.no_of_trees }}</td>
                             <td class="px-6 py-4">{{ record.total_volume_granted }}</td>
                             <td class="px-6 py-4">
@@ -290,8 +277,10 @@
                                     </span>
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 space-x-2">
                                 <a href="{% url 'edit_cutting' record.id %}" class="text-blue-600 hover:text-blue-800 font-medium">Edit</a>
+                                <a href="{% url 'view_cutting' record.id %}" class="text-green-600 hover:text-green-800 font-medium">View</a>
+                                <a href="{% url 'add_cutting_record' record.tcp_no %}" class="text-purple-600 hover:text-purple-800 font-medium">Add Record</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -410,6 +399,16 @@
                     }
                 });
             }
+
+            // Calculate Net Volume automatically (70% of Gross Volume)
+            const grossVolumeInput = document.getElementById('grossVolume');
+            const netVolumeInput = document.getElementById('netVolume');
+
+            grossVolumeInput.addEventListener('input', function() {
+                const grossVolume = parseFloat(this.value) || 0;
+                const netVolume = grossVolume * 0.70;
+                netVolumeInput.value = netVolume.toFixed(2);
+            });
         });
 
         function exportTableToCSV(filename) {

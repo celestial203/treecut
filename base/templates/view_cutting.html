@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white p-8 shadow-xl rounded-lg">
+    <h2 class="text-2xl font-bold mb-6">Cutting Permit Details</h2>
+    
+    <div class="grid grid-cols-2 gap-6">
+        <div>
+            <h3 class="font-semibold text-gray-700">TCP No.</h3>
+            <p>{{ cutting.tcp_no }}</p>
+        </div>
+        <div>
+            <h3 class="font-semibold text-gray-700">Permittee</h3>
+            <p>{{ cutting.permittee }}</p>
+        </div>
+        <!-- Add all other fields similarly -->
+    </div>
+
+    <div class="mt-8">
+        <h3 class="font-semibold text-gray-700 mb-4">Volume Information</h3>
+        <div class="grid grid-cols-3 gap-6">
+            <div>
+                <p class="text-sm text-gray-600">Gross Volume</p>
+                <p class="font-medium">{{ cutting.gross_volume }} cu.m.</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600">Net Volume</p>
+                <p class="font-medium">{{ cutting.gross_volume|multiply:0.7 }} cu.m.</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600">Total Volume Granted</p>
+                <p class="font-medium">{{ cutting.total_volume_granted }} cu.m.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 flex justify-end space-x-4">
+        <a href="{% url 'edit_cutting' cutting.id %}" 
+           class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            Edit Record
+        </a>
+        <a href="{% url 'cutting' %}" 
+           class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300">
+            Back to List
+        </a>
+    </div>
+</div>
+
+<script>
+// Add to your existing validation script
+const decimalFields = ['area', 'gross_volume', 'total_volume_granted'];
+decimalFields.forEach(fieldName => {
+    const field = document.querySelector(`input[name="${fieldName}"]`);
+    const value = parseFloat(field.value);
+    if (isNaN(value) || value < 0) {
+        isValid = false;
+        field.classList.add('border-red-500');
+    }
+});
+</script>
+{% endblock %}

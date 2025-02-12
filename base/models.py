@@ -348,3 +348,28 @@ class Wood(models.Model):
         elif self.is_expiring_soon:
             return 'Expiring Soon'
         return 'Active'
+
+class CuttingRecord(models.Model):
+    parent_tcp = models.ForeignKey(Cutting, on_delete=models.CASCADE, related_name='volume_records')
+    date_added = models.DateTimeField(auto_now_add=True)
+    species = models.CharField(max_length=100)
+    no_of_trees = models.IntegerField()
+    volume = models.DecimalField(max_digits=10, decimal_places=2)  # Original volume
+    calculated_volume = models.DecimalField(max_digits=10, decimal_places=2)  # 30% of volume
+    remarks = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-date_added']
+
+    def save(self, *args, **kwargs):
+        # Calculate 30% of volume before saving
+        self.calculated_volume = self.volume * 0.30
+        super().save(*args, **kwargs)
+
+    @property
+    def remaining_balance(self):
+        """Calculate remaining balance for the parent TCP"""
+        total_used = self.parent_tcp.volume_records.aggregate(
+            total=models.Sum('calculated_volume')
+        )['total'] or 0
+        return self.parent_tcp.total_volume_granted - total_used
