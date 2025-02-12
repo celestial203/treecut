@@ -1,5 +1,6 @@
 {% load static %}
 {% load widget_tweaks %}
+{% load custom_filters %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -371,6 +372,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </span>
+                        <!-- Add validation message div -->
+                        <div id="searchValidation" class="absolute mt-1 text-sm text-red-600 hidden"></div>
                     </div>
                     <!-- Export Button -->
                     <button onclick="exportTableToCSV('cutting_records.csv')" 
@@ -494,17 +497,117 @@
                 );
             });
 
-            // Search functionality
             const searchInput = document.getElementById('searchInput');
+            const searchValidation = document.getElementById('searchValidation');
+            let searchTimeout;
+
+            function validateSearch(searchTerm) {
+                // Check for empty or only whitespace
+                if (!searchTerm.trim()) {
+                    return { valid: false, message: 'Please enter a search term' };
+                }
+
+                // Check minimum length
+                if (searchTerm.trim().length < 2) {
+                    return { valid: false, message: 'Search term must be at least 2 characters' };
+                }
+
+                // Check for special characters (allowing only letters, numbers, spaces, and basic punctuation)
+                const validPattern = /^[a-zA-Z0-9\s\-.,]+$/;
+                if (!validPattern.test(searchTerm)) {
+                    return { valid: false, message: 'Search contains invalid characters' };
+                }
+
+                return { valid: true };
+            }
+
+            function showValidationMessage(message) {
+                searchValidation.textContent = message;
+                searchValidation.classList.remove('hidden');
+                setTimeout(() => {
+                    searchValidation.classList.add('hidden');
+                }, 3000); // Hide message after 3 seconds
+            }
+
+            function performSearch(searchTerm) {
+                const validation = validateSearch(searchTerm);
+                
+                if (!validation.valid) {
+                    showValidationMessage(validation.message);
+                    return;
+                }
+
+                const rows = document.querySelectorAll('tbody tr');
+                let hasResults = false;
+
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+                    
+                    if (text.includes(normalizedSearchTerm)) {
+                        row.style.display = '';
+                        hasResults = true;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Show no results message
+                const tbody = document.querySelector('tbody');
+                const existingNoResults = document.getElementById('noResultsRow');
+                
+                if (!hasResults) {
+                    if (!existingNoResults) {
+                        const noResultsRow = document.createElement('tr');
+                        noResultsRow.id = 'noResultsRow';
+                        noResultsRow.innerHTML = `
+                            <td colspan="14" class="px-6 py-4 text-center text-gray-500">
+                                No records found for "${searchTerm}"
+                            </td>
+                        `;
+                        tbody.appendChild(noResultsRow);
+                    }
+                } else if (existingNoResults) {
+                    existingNoResults.remove();
+                }
+            }
+
             if (searchInput) {
                 searchInput.addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    const rows = document.querySelectorAll('tbody tr');
+                    // Clear existing timeout
+                    clearTimeout(searchTimeout);
                     
-                    rows.forEach(row => {
-                        const text = row.textContent.toLowerCase();
-                        row.style.display = text.includes(searchTerm) ? '' : 'none';
-                    });
+                    // Get search term
+                    const searchTerm = this.value;
+                    
+                    // Reset validation message
+                    searchValidation.classList.add('hidden');
+                    
+                    // Remove existing no results message
+                    const existingNoResults = document.getElementById('noResultsRow');
+                    if (existingNoResults) {
+                        existingNoResults.remove();
+                    }
+
+                    // Show all rows if search is empty
+                    if (!searchTerm.trim()) {
+                        const rows = document.querySelectorAll('tbody tr');
+                        rows.forEach(row => row.style.display = '');
+                        return;
+                    }
+
+                    // Set new timeout for search
+                    searchTimeout = setTimeout(() => {
+                        performSearch(searchTerm);
+                    }, 300); // Wait 300ms after last keystroke before searching
+                });
+
+                // Prevent form submission on enter
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        performSearch(this.value);
+                    }
                 });
             }
         });
@@ -533,39 +636,63 @@
         }
 
         function calculateNetVolume() {
-            const grossVolume = parseFloat(document.getElementById('grossVolume').value) || 0;
-            const netVolume = grossVolume * 0.70; // 70% of gross volume
+            // Get the gross volume input
+            const grossVolumeInput = document.getElementById('grossVolume');
+            const grossVolume = parseFloat(grossVolumeInput?.value) || 0;
             
-            // Update both the display and form field
+            // Calculate net volume (70% of gross volume)
+            const netVolume = grossVolume * 0.70;
+            
+            // Get the net volume input
             const netVolumeInput = document.getElementById('netVolume');
+            
             if (netVolumeInput) {
+                // Set the value and ensure it has the correct name attribute
                 netVolumeInput.value = netVolume.toFixed(2);
-                // Ensure the form field has the name attribute
                 netVolumeInput.name = 'net_volume';
+                netVolumeInput.setAttribute('value', netVolume.toFixed(2));
+                
+                // Log the values for debugging
+                console.log('Gross Volume:', grossVolume);
+                console.log('Net Volume:', netVolume.toFixed(2));
+                console.log('Net Volume Input Value:', netVolumeInput.value);
+            } else {
+                console.error('Net volume input not found!');
             }
-
-            console.log('Gross Volume:', grossVolume);
-            console.log('Calculated Net Volume:', netVolume.toFixed(2));
         }
 
-        // Calculate net volume whenever gross volume changes
+        // Initialize calculation on page load
         document.addEventListener('DOMContentLoaded', function() {
             const grossVolumeInput = document.getElementById('grossVolume');
-            if (grossVolumeInput) {
-                // Calculate initial net volume if gross volume exists
+            const netVolumeInput = document.getElementById('netVolume');
+            
+            if (grossVolumeInput && netVolumeInput) {
+                // Initial calculation if gross volume exists
                 if (grossVolumeInput.value) {
                     calculateNetVolume();
                 }
                 
-                // Add event listeners
+                // Add event listeners for changes
                 grossVolumeInput.addEventListener('input', calculateNetVolume);
                 grossVolumeInput.addEventListener('change', calculateNetVolume);
+                
+                // Log initial state
+                console.log('Initial gross volume:', grossVolumeInput.value);
+                console.log('Initial net volume:', netVolumeInput.value);
             }
         });
 
-        // Ensure net volume is calculated before form submission
+        // Ensure calculation happens before form submission
         document.querySelector('form').addEventListener('submit', function(e) {
+            // e.preventDefault(); // Uncomment for debugging
             calculateNetVolume();
+            
+            // Log form data before submission
+            const formData = new FormData(this);
+            console.log('Form data before submission:');
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
         });
     </script>
 </body>
