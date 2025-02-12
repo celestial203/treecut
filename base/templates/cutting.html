@@ -418,7 +418,13 @@
                                 <td class="px-6 py-4">{{ cutting.species|default:"-" }}</td>
                                 <td class="px-6 py-4">{{ cutting.total_volume_granted }}</td>
                                 <td class="px-6 py-4">{{ cutting.gross_volume|default:"-" }}</td>
-                                <td class="px-6 py-4">{{ cutting.net_volume|default:"-" }}</td>
+                                <td class="px-6 py-4">
+                                    {% if cutting.gross_volume %}
+                                        {{ cutting.net_volume|floatformat:2 }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
                                 <td class="px-6 py-4">
                                     <div class="flex space-x-3">
                                         <a href="{% url 'add_cutting_record' tcp_no=cutting.tcp_no %}" 
@@ -534,12 +540,8 @@
             const netVolumeInput = document.getElementById('netVolume');
             if (netVolumeInput) {
                 netVolumeInput.value = netVolume.toFixed(2);
-            }
-
-            // Also update the hidden form field if it exists
-            const hiddenNetVolume = document.querySelector('input[name="net_volume"]');
-            if (hiddenNetVolume) {
-                hiddenNetVolume.value = netVolume.toFixed(2);
+                // Ensure the form field has the name attribute
+                netVolumeInput.name = 'net_volume';
             }
 
             console.log('Gross Volume:', grossVolume);
@@ -550,8 +552,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             const grossVolumeInput = document.getElementById('grossVolume');
             if (grossVolumeInput) {
-                // Initial calculation
-                calculateNetVolume();
+                // Calculate initial net volume if gross volume exists
+                if (grossVolumeInput.value) {
+                    calculateNetVolume();
+                }
                 
                 // Add event listeners
                 grossVolumeInput.addEventListener('input', calculateNetVolume);
