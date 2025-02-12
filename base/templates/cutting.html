@@ -261,78 +261,95 @@
     </div>
 
     <!-- Add New Record Form -->
-    <div class="max-w-5xl mx-auto bg-white p-8 mt-8 shadow-xl rounded-lg">
-        <h2 class="text-2xl font-bold mb-6">Add New Record</h2>
-        <form method="POST" class="space-y-6">
-            {% csrf_token %}
-            
-            <!-- Form Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- TCP No. -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">TCP No.*</label>
-                    {{ form.tcp_no|add_class:"form-input"|attr:"placeholder:Enter TCP number" }}
-                </div>
-                <!-- Permittee -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Permittee*</label>
-                    {{ form.permittee|add_class:"form-input"|attr:"placeholder:Enter permittee name" }}
-                </div>
-                <!-- Location -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Location*</label>
-                    {{ form.location|add_class:"form-input"|attr:"placeholder:Enter location" }}
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- TCT/OCT No. -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">TCT/OCT No.*</label>
-                    {{ form.tct_oct_no|add_class:"form-input"|attr:"placeholder:Enter TCT/OCT number" }}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-2xl font-bold mb-6">Add New Record</h2>
+            <form method="POST" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Basic Information -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">TCP No.</label>
+                        {{ form.tcp_no|add_class:"form-input"|attr:"placeholder:Enter TCP number" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Permittee</label>
+                        {{ form.permittee|add_class:"form-input"|attr:"placeholder:Enter permittee name" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Location</label>
+                        {{ form.location|add_class:"form-input"|attr:"placeholder:Enter location" }}
+                    </div>
                 </div>
 
-                <!-- Date Issued -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Date Issued*</label>
-                    {{ form.permit_issue_date|add_class:"form-input date-input"|attr:"type:date"|attr:"max:2025-12-31"|attr:"min:2000-01-01"|attr:"required" }}
+                <!-- Property Information -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">TCT/OCT No.</label>
+                        {{ form.tct_oct_no|add_class:"form-input"|attr:"placeholder:Enter TCT/OCT number" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Date Issued</label>
+                        {{ form.permit_issue_date|add_class:"form-input date-input"|attr:"type:date"|attr:"max:2025-12-31"|attr:"min:2000-01-01"|attr:"required" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Tax Dec. No.</label>
+                        {{ form.tax_dec_no|add_class:"form-input"|attr:"placeholder:Enter tax declaration number" }}
+                    </div>
                 </div>
-                <!-- Tax Dec. No. -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Tax Dec. No.*</label>
-                    {{ form.tax_dec_no|add_class:"form-input"|attr:"placeholder:Enter tax declaration number" }}
-                </div>
-                <!-- No. of Trees -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. of Trees*</label>
-                    {{ form.no_of_trees|add_class:"form-input"|attr:"placeholder:Enter number of trees" }}
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Total Volume -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Total Volume Granted*</label>
-                    {{ form.total_volume_granted|add_class:"form-input"|attr:"placeholder:Enter total volume" }}
+                <!-- Additional Property Details -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Lot No.</label>
+                        {{ form.lot_no|add_class:"form-input"|attr:"placeholder:Enter lot number" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Area (ha.)</label>
+                        {{ form.area|add_class:"form-input"|attr:"placeholder:Enter area in hectares"|attr:"step:0.01" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Representative</label>
+                        {{ form.rep_by|add_class:"form-input"|attr:"placeholder:Enter representative name" }}
+                    </div>
                 </div>
-                <!-- Species -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Species*</label>
-                    {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species" }}
-                </div>
-                <!-- Representative -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Representative</label>
-                    {{ form.rep_by|add_class:"form-input"|attr:"placeholder:Enter representative name" }}
-                </div>
-            </div>
 
-            <div class="flex justify-end pt-4">
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
-                    Add Record
-                </button>
-            </div>
-        </form>
+                <!-- Trees and Volume Information -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Number of Trees</label>
+                        {{ form.no_of_trees|add_class:"form-input"|attr:"placeholder:Enter number of trees" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Species</label>
+                        {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Total Volume Granted</label>
+                        {{ form.total_volume_granted|add_class:"form-input"|attr:"placeholder:Enter total volume"|attr:"step:0.01" }}
+                    </div>
+                </div>
+
+                <!-- Volume Calculations -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 required">Gross Volume</label>
+                        {{ form.gross_volume|add_class:"form-input"|attr:"placeholder:Enter gross volume"|attr:"step:0.01"|attr:"id:grossVolume"|attr:"oninput:calculateNetVolume()" }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Net Volume</label>
+                        <input type="text" id="netVolume" class="form-input bg-gray-100" readonly>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-4">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
+                        Add Record
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Records Table -->
@@ -374,9 +391,14 @@
                             <th class="px-6 py-4 font-semibold">Location</th>
                             <th class="px-6 py-4 font-semibold">TCT/OCT No.</th>
                             <th class="px-6 py-4 font-semibold">Tax Dec. No.</th>
+                            <th class="px-6 py-4 font-semibold">Lot No.</th>
+                            <th class="px-6 py-4 font-semibold">Area (ha.)</th>
                             <th class="px-6 py-4 font-semibold">Date Issued</th>
                             <th class="px-6 py-4 font-semibold">No. of Trees</th>
+                            <th class="px-6 py-4 font-semibold">Species</th>
                             <th class="px-6 py-4 font-semibold">Total Volume</th>
+                            <th class="px-6 py-4 font-semibold">Gross Volume</th>
+                            <th class="px-6 py-4 font-semibold">Net Volume</th>
                             <th class="px-6 py-4 font-semibold">Actions</th>
                         </tr>
                     </thead>
@@ -389,9 +411,14 @@
                                 <td class="px-6 py-4">{{ cutting.location|default:"-" }}</td>
                                 <td class="px-6 py-4">{{ cutting.tct_oct_no|default:"-" }}</td>
                                 <td class="px-6 py-4">{{ cutting.tax_dec_no|default:"-" }}</td>
+                                <td class="px-6 py-4">{{ cutting.lot_no|default:"-" }}</td>
+                                <td class="px-6 py-4">{{ cutting.area|default:"-" }}</td>
                                 <td class="px-6 py-4">{{ cutting.permit_issue_date|date:"M d, Y" }}</td>
                                 <td class="px-6 py-4">{{ cutting.no_of_trees }}</td>
+                                <td class="px-6 py-4">{{ cutting.species|default:"-" }}</td>
                                 <td class="px-6 py-4">{{ cutting.total_volume_granted }}</td>
+                                <td class="px-6 py-4">{{ cutting.gross_volume|default:"-" }}</td>
+                                <td class="px-6 py-4">{{ cutting.net_volume|default:"-" }}</td>
                                 <td class="px-6 py-4">
                                     <div class="flex space-x-3">
                                         <a href="{% url 'add_cutting_record' tcp_no=cutting.tcp_no %}" 
@@ -422,7 +449,7 @@
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <td colspan="14" class="px-6 py-4 text-center text-sm text-gray-500">
                                     No records found. Add a new record above.
                                 </td>
                             </tr>
@@ -498,6 +525,15 @@
             document.body.appendChild(downloadLink);
             downloadLink.click();
         }
+
+        function calculateNetVolume() {
+            const grossVolume = parseFloat(document.getElementById('grossVolume').value) || 0;
+            const netVolume = grossVolume * 0.70;
+            document.getElementById('netVolume').value = netVolume.toFixed(2);
+        }
+
+        // Calculate initial net volume on page load
+        document.addEventListener('DOMContentLoaded', calculateNetVolume);
     </script>
 </body>
 </html>

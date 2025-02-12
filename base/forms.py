@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from datetime import timedelta, date
 from django.contrib.auth.forms import AuthenticationForm
 from decimal import Decimal
+from django.core.validators import MinValueValidator
 
 
 # Get the user model
@@ -76,20 +77,82 @@ class CuttingForm(forms.ModelForm):
         required=True
     )
 
+    def clean_tcp_no(self):
+        tcp_no = self.cleaned_data.get('tcp_no')
+        if tcp_no:
+            # Ensure TCP number follows format (e.g., C-Argao-123456789)
+            if not tcp_no.startswith('C-Argao-'):
+                raise forms.ValidationError("TCP No. must start with 'C-Argao-'")
+            # Remove any instance being updated from the unique check
+            existing = Cutting.objects.filter(tcp_no=tcp_no)
+            if self.instance:
+                existing = existing.exclude(pk=self.instance.pk)
+            if existing.exists():
+                raise forms.ValidationError("This TCP No. already exists")
+        return tcp_no
+
     def clean_permit_issue_date(self):
         permit_date = self.cleaned_data.get('permit_issue_date')
         if permit_date:
-            if permit_date > date.today():
+            if permit_date > timezone.now().date():
                 raise forms.ValidationError("Date issued cannot be in the future")
             if permit_date.year < 2000:
                 raise forms.ValidationError("Date issued cannot be before year 2000")
         return permit_date
 
+    def clean_area(self):
+        area = self.cleaned_data.get('area')
+        if area is not None:
+            if area <= 0:
+                raise forms.ValidationError("Area must be greater than 0")
+            if area > 1000:  # Example maximum area limit
+                raise forms.ValidationError("Area cannot exceed 1000 hectares")
+        return area
+
+    def clean_no_of_trees(self):
+        trees = self.cleaned_data.get('no_of_trees')
+        if trees is not None:
+            if trees <= 0:
+                raise forms.ValidationError("Number of trees must be greater than 0")
+            if trees > 10000:  # Example maximum limit
+                raise forms.ValidationError("Number of trees seems unusually high")
+        return trees
+
     def clean_gross_volume(self):
         gross_volume = self.cleaned_data.get('gross_volume')
-        if gross_volume and gross_volume <= 0:
-            raise forms.ValidationError("Gross volume must be greater than 0")
+        if gross_volume is not None:
+            if gross_volume <= 0:
+                raise forms.ValidationError("Gross volume must be greater than 0")
+            if gross_volume > 10000:  # Example maximum limit
+                raise forms.ValidationError("Gross volume seems unusually high")
         return gross_volume
+
+    def clean_total_volume_granted(self):
+        volume = self.cleaned_data.get('total_volume_granted')
+        if volume is not None:
+            if volume <= 0:
+                raise forms.ValidationError("Total volume granted must be greater than 0")
+            if volume > 10000:  # Example maximum limit
+                raise forms.ValidationError("Total volume granted seems unusually high")
+        return volume
+
+    def clean(self):
+        cleaned_data = super().clean()
+        gross_volume = cleaned_data.get('gross_volume')
+        total_volume_granted = cleaned_data.get('total_volume_granted')
+
+        if gross_volume and total_volume_granted:
+            if gross_volume > total_volume_granted:
+                raise forms.ValidationError(
+                    "Gross volume cannot exceed total volume granted"
+                )
+
+        # Calculate net volume (70% of gross volume)
+        if gross_volume:
+            net_volume = gross_volume * Decimal('0.70')
+            cleaned_data['net_volume'] = net_volume
+
+        return cleaned_data
 
     class Meta:
         model = Cutting
@@ -109,18 +172,61 @@ class CuttingForm(forms.ModelForm):
             'gross_volume',
         ]
         widgets = {
-            'tcp_no': forms.TextInput(attrs={'class': 'form-input'}),
-            'permittee': forms.TextInput(attrs={'class': 'form-input'}),
-            'location': forms.TextInput(attrs={'class': 'form-input'}),
-            'tct_oct_no': forms.TextInput(attrs={'class': 'form-input'}),
-            'tax_dec_no': forms.TextInput(attrs={'class': 'form-input'}),
-            'lot_no': forms.TextInput(attrs={'class': 'form-input'}),
-            'area': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.01'}),
-            'rep_by': forms.TextInput(attrs={'class': 'form-input'}),
-            'no_of_trees': forms.NumberInput(attrs={'class': 'form-input'}),
-            'species': forms.TextInput(attrs={'class': 'form-input'}),
-            'total_volume_granted': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.01'}),
-            'gross_volume': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.01'}),
+            'tcp_no': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Format: C-Argao-XXXXXXXXX'
+            }),
+            'permittee': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Enter permittee name'
+            }),
+            'location': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Enter location'
+            }),
+            'tct_oct_no': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Enter TCT/OCT number'
+            }),
+            'tax_dec_no': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Enter tax declaration number'
+            }),
+            'lot_no': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Enter lot number'
+            }),
+            'area': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': 'Enter area in hectares'
+            }),
+            'rep_by': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Enter representative name'
+            }),
+            'no_of_trees': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'min': '1',
+                'placeholder': 'Enter number of trees'
+            }),
+            'species': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Enter species'
+            }),
+            'total_volume_granted': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': 'Enter total volume granted'
+            }),
+            'gross_volume': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'step': '0.01',
+                'min': '0',
+                'placeholder': 'Enter gross volume'
+            }),
         }
 
 # ChainsawForm

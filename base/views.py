@@ -223,8 +223,15 @@ def edit_cutting(request, pk):
 
 def view_cutting(request, pk):
     cutting = get_object_or_404(Cutting, pk=pk)
+    cutting_records = CuttingRecord.objects.filter(parent_tcp=cutting)
+    
+    # Calculate net volume
+    net_volume = cutting.gross_volume * Decimal('0.7') if cutting.gross_volume else None
+    
     context = {
-        'cutting': cutting
+        'cutting': cutting,
+        'cutting_records': cutting_records,
+        'net_volume': net_volume,
     }
     return render(request, 'view_cutting.html', context)
 

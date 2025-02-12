@@ -1,4 +1,5 @@
 {% load static %}
+{% load widget_tweaks %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -10,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         /* Form styling */
-        input, select, textarea {
+        .form-input {
             @apply mt-1 block w-full rounded-lg border-gray-300 shadow-sm 
                    focus:border-blue-500 focus:ring-blue-500 
                    bg-gray-50 text-gray-900;
@@ -18,11 +19,11 @@
             transition: all 0.2s;
         }
 
-        input:hover, select:hover, textarea:hover {
+        .form-input:hover {
             @apply border-blue-400;
         }
 
-        input:focus, select:focus, textarea:focus {
+        .form-input:focus {
             @apply ring-2 ring-blue-200;
         }
 
@@ -30,11 +31,6 @@
         label.required:after {
             content: " *";
             @apply text-red-500;
-        }
-
-        /* Error message styling */
-        .error-message {
-            @apply mt-1 text-sm text-red-600;
         }
     </style>
 </head>
@@ -47,7 +43,12 @@
                     <span class="text-xl font-bold text-gray-800">CENRO-ARGAO</span>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="{% url 'cutting' %}" class="text-gray-600 hover:text-blue-600">Back to Records</a>
+                    <a href="{% url 'cutting' %}" class="text-gray-600 hover:text-blue-600 flex items-center">
+                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Back to Records
+                    </a>
                 </div>
             </div>
         </div>
@@ -57,7 +58,7 @@
         <!-- Header Card -->
         <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
             <h2 class="text-2xl font-bold text-gray-800">Edit Cutting Record</h2>
-            <p class="text-gray-600 mt-1">Update the information for this cutting permit record</p>
+            <p class="text-gray-600 mt-1">Update the information for TCP No. {{ form.tcp_no.value }}</p>
         </div>
 
         <!-- Form Card -->
@@ -105,7 +106,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 required">Area (ha.)</label>
-                        {{ form.area|attr:"class:form-input" }}
+                        {{ form.area|attr:"class:form-input"|attr:"step:0.01" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Representative</label>
@@ -124,20 +125,16 @@
                         {{ form.species|attr:"class:form-input" }}
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Purpose</label>
-                        {{ form.purpose|attr:"class:form-input" }}
+                        <label class="block text-sm font-medium text-gray-700 required">Total Volume Granted (cu.m.)</label>
+                        {{ form.total_volume_granted|attr:"class:form-input"|attr:"step:0.01" }}
                     </div>
                 </div>
 
                 <!-- Volume Information -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Total Volume Granted (cu.m.)</label>
-                        {{ form.total_volume_granted|attr:"class:form-input" }}
-                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 required">Gross Volume (cu.m.)</label>
-                        {{ form.gross_volume|attr:"class:form-input"|attr:"id:grossVolume"|attr:"oninput:calculateNetVolume()" }}
+                        {{ form.gross_volume|attr:"class:form-input"|attr:"id:grossVolume"|attr:"oninput:calculateNetVolume()"|attr:"step:0.01" }}
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Net Volume (cu.m.)</label>
@@ -148,11 +145,17 @@
                 <!-- Action Buttons -->
                 <div class="flex justify-end space-x-4 pt-6 border-t">
                     <a href="{% url 'cutting' %}" 
-                       class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                       class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 flex items-center">
+                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
                         Cancel
                     </a>
                     <button type="submit" 
-                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md">
+                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md flex items-center">
+                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
                         Save Changes
                     </button>
                 </div>

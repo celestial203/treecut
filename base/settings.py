@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'widget_tweaks',
     'base',
+    'mathfilters',
 ]
 
 # Middleware configuration
