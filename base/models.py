@@ -107,88 +107,75 @@ class Cutting(models.Model):
     tcp_no = models.CharField(max_length=100)
     permittee = models.CharField(max_length=200)
     location = models.CharField(max_length=200)
-    permit_issue_date = models.DateField()
-    species_name = models.CharField(max_length=100)
+    tct_oct_no = models.CharField(max_length=100)
+    tax_dec_no = models.CharField(max_length=100)
+    lot_no = models.CharField(max_length=100)
+    area = models.DecimalField(max_digits=10, decimal_places=2)
     no_of_trees = models.IntegerField()
+    species = models.CharField(max_length=100)
+    total_volume_granted = models.DecimalField(max_digits=10, decimal_places=2)
+    gross_volume = models.DecimalField(max_digits=10, decimal_places=2)
+    permit_issue_date = models.DateField()
+    rep_by = models.CharField(max_length=200, null=True, blank=True)  # Optional representative field
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return f"{self.permittee} - {self.tcp_no}"
+        return f"{self.tcp_no} - {self.permittee}"
 
-    def clean(self):
-        super().clean()
-        errors = {}
+    @property
+    def net_volume(self):
+        """Calculate net volume (70% of gross volume)"""
+        return self.gross_volume * 0.70 if self.gross_volume else 0
 
-        # TCP number validation
-        if self.tcp_no:
-            tcp_pattern = re.compile(r'^[A-Za-z0-9-]+$')
-            if not tcp_pattern.match(self.tcp_no):
-                errors['tcp_no'] = 'TCP number can only contain letters, numbers, and hyphens.'
-
-        # Required fields validation
-        if not self.permittee:
-            errors['permittee'] = 'Permittee is required.'
-        if not self.location:
-            errors['location'] = 'Location is required.'
-        if not self.permit_issue_date:
-            errors['permit_issue_date'] = 'Permit issue date is required.'
-        if not self.species_name:
-            errors['species_name'] = 'Species name is required.'
-
-        # Number validation
-        if self.no_of_trees is None:
-            errors['no_of_trees'] = 'Number of trees is required.'
-        elif self.no_of_trees <= 0:
-            errors['no_of_trees'] = 'Number of trees must be greater than 0.'
-
-        if errors:
-            raise ValidationError(errors)
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        
-        # Convert fields to uppercase before saving
-        if self.tcp_no:
-            self.tcp_no = self.tcp_no.upper()
-        if self.permittee:
-            self.permittee = self.permittee.upper()
-        if self.species_name:
-            self.species_name = self.species_name.upper()
-        
-        super().save(*args, **kwargs)
+    @property
+    def expiry_date(self):
+        """Calculate expiry date (50 days from permit issue date)"""
+        if self.permit_issue_date:
+            return self.permit_issue_date + timedelta(days=50)
+        return None
 
     @property
     def days_remaining(self):
-        """Calculate days remaining until permit expires"""
-        if self.permit_issue_date:
-            expiry_date = self.permit_issue_date + timedelta(days=50)  # 50 days validity
-            remaining = (expiry_date - timezone.now().date()).days
-            return max(remaining, 0)  # Don't show negative days
+        """Calculate days remaining until expiry"""
+        if self.expiry_date:
+            delta = self.expiry_date - timezone.now().date()
+            return delta.days
         return 0
-
-    def update_days_remaining(self):
-        """Update the stored days_remaining value"""
-        self._days_remaining = self.days_remaining
-        self.save(update_fields=['_days_remaining'])
 
     @property
     def is_expiring_soon(self):
+        """Check if permit is expiring within 30 days"""
         remaining = self.days_remaining
-        return 0 < remaining <= 10
+        return 0 < remaining <= 30
 
     @property
     def is_expired(self):
+        """Check if permit has expired"""
         return self.days_remaining <= 0
 
     @property
     def status(self):
+        """Get the current status of the permit"""
         if self.is_expired:
             return 'Expired'
         elif self.is_expiring_soon:
             return 'Expiring Soon'
         return 'Active'
+
+    def clean(self):
+        """Validate model data"""
+        if self.gross_volume and self.gross_volume < 0:
+            raise ValidationError({'gross_volume': 'Gross volume cannot be negative'})
+        
+        if self.total_volume_granted and self.total_volume_granted < 0:
+            raise ValidationError({'total_volume_granted': 'Total volume granted cannot be negative'})
+        
+        if self.area and self.area < 0:
+            raise ValidationError({'area': 'Area cannot be negative'})
+        
+        if self.no_of_trees and self.no_of_trees < 0:
+            raise ValidationError({'no_of_trees': 'Number of trees cannot be negative'})
 
 def chainsaw_file_path(instance, filename):
     # Generate file path: chainsaw_files/YYYY/MM/filename
