@@ -5,7 +5,7 @@ from .models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord
 import re
 from django.utils import timezone
 from django.core.exceptions import ValidationError
-from datetime import timedelta
+from datetime import timedelta, date
 from django.contrib.auth.forms import AuthenticationForm
 from decimal import Decimal
 
@@ -67,10 +67,19 @@ class LumberForm(forms.ModelForm):
 
 # CuttingForm
 class CuttingForm(forms.ModelForm):
+    permit_issue_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        initial=date.today
+    )
+    expiry_date = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        initial=date.today
+    )
+
     class Meta:
         model = Cutting
         fields = [
-            'tcp_no',
+            'tcp_no', 
             'permittee',
             'location',
             'tct_oct_no',
@@ -81,61 +90,25 @@ class CuttingForm(forms.ModelForm):
             'species',
             'total_volume_granted',
             'gross_volume',
+            'net_volume',
             'permit_issue_date',
+            'expiry_date',
             'rep_by'
         ]
         widgets = {
-            'tcp_no': forms.TextInput(attrs={
-                'placeholder': 'Enter TCP number',
-                'class': 'form-input'
-            }),
-            'permittee': forms.TextInput(attrs={
-                'placeholder': 'Enter permittee name',
-                'class': 'form-input'
-            }),
-            'location': forms.TextInput(attrs={
-                'placeholder': 'Enter location',
-                'class': 'form-input'
-            }),
-            'tct_oct_no': forms.TextInput(attrs={
-                'placeholder': 'Enter TCT/OCT number',
-                'class': 'form-input'
-            }),
-            'tax_dec_no': forms.TextInput(attrs={
-                'placeholder': 'Enter tax declaration number',
-                'class': 'form-input'
-            }),
-            'lot_no': forms.TextInput(attrs={
-                'placeholder': 'Enter lot number',
-                'class': 'form-input'
-            }),
-            'area': forms.NumberInput(attrs={
-                'placeholder': 'Enter area in hectares',
-                'step': '0.01',
-                'class': 'form-input'
-            }),
-            'no_of_trees': forms.NumberInput(attrs={
-                'placeholder': 'Enter number of trees',
-                'class': 'form-input'
-            }),
-            'species': forms.TextInput(attrs={
-                'placeholder': 'Enter species name',
-                'class': 'form-input'
-            }),
-            'total_volume_granted': forms.NumberInput(attrs={
-                'placeholder': 'Enter total volume granted',
-                'step': '0.01',
-                'class': 'form-input'
-            }),
-            'gross_volume': forms.NumberInput(attrs={
-                'placeholder': 'Enter gross volume',
-                'step': '0.01',
-                'class': 'form-input'
-            }),
-            'permit_issue_date': forms.DateInput(attrs={
-                'type': 'date',
-                'class': 'form-input'
-            })
+            'tcp_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter TCP number'}),
+            'permittee': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter permittee name'}),
+            'location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter location'}),
+            'tct_oct_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter TCT/OCT number'}),
+            'tax_dec_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter tax declaration number'}),
+            'lot_no': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter lot number'}),
+            'area': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Enter area in hectares'}),
+            'no_of_trees': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Enter number of trees'}),
+            'species': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter species'}),
+            'total_volume_granted': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Enter total volume granted'}),
+            'gross_volume': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Enter gross volume'}),
+            'net_volume': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Enter net volume'}),
+            'rep_by': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter representative name'}),
         }
 
     def clean(self):

@@ -43,15 +43,15 @@ class CuttingAdmin(admin.ModelAdmin):
         'tcp_no',
         'permittee',
         'location',
-        'permit_issue_date',
-        'species',
+        'tct_oct_no',
+        'tax_dec_no',
         'no_of_trees',
         'total_volume_granted',
-        'gross_volume',
-        'status'
+        'permit_issue_date',
+        'expiry_date'
     ]
-    search_fields = ['tcp_no', 'permittee', 'species']
-    list_filter = ['permit_issue_date']
+    search_fields = ['tcp_no', 'permittee']
+    list_filter = ['permit_issue_date', 'expiry_date']
     date_hierarchy = 'permit_issue_date'
     readonly_fields = ('created_at', 'updated_at')
 
@@ -104,6 +104,6 @@ class WoodAdmin(admin.ModelAdmin):
 
 @admin.register(CuttingRecord)
 class CuttingRecordAdmin(admin.ModelAdmin):
-    list_display = ['parent_tcp', 'date_added', 'species', 'no_of_trees', 'volume', 'calculated_volume']
+    list_display = ['parent_tcp', 'species', 'no_of_trees', 'volume', 'calculated_volume', 'remaining_balance', 'date_added']
     search_fields = ['parent_tcp__tcp_no', 'species']
     list_filter = ['date_added']

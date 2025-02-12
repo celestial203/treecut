@@ -105,67 +105,26 @@ class UserProfile(models.Model):
         return self.user.username
 
 class Cutting(models.Model):
-    tcp_no = models.CharField(max_length=100, unique=True)
+    tcp_no = models.CharField(max_length=100, unique=True, verbose_name="TCP No.")
+    permittee = models.CharField(max_length=100)
+    location = models.CharField(max_length=200, null=True, blank=True)
+    tct_oct_no = models.CharField(max_length=100, verbose_name="TCT/OCT No.", null=True, blank=True)
+    tax_dec_no = models.CharField(max_length=100, verbose_name="Tax Declaration No.", null=True, blank=True)
+    lot_no = models.CharField(max_length=100, verbose_name="Lot No.", null=True, blank=True)
+    area = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Area (ha.)", null=True, blank=True)
+    no_of_trees = models.IntegerField(verbose_name="Number of Trees", default=0)
+    species = models.CharField(max_length=100, null=True, blank=True)
+    total_volume_granted = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total Volume Granted (cu.m.)")
+    gross_volume = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Gross Volume (cu.m.)", null=True, blank=True)
+    net_volume = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Net Volume (cu.m.)", null=True, blank=True)
     permit_issue_date = models.DateField(null=True, blank=True)
     expiry_date = models.DateField(null=True, blank=True)
-    permittee = models.CharField(max_length=100)
     rep_by = models.CharField(max_length=100, blank=True, null=True)
-    total_volume_granted = models.DecimalField(max_digits=10, decimal_places=2)
-    location = models.CharField(max_length=200, default='')
-    tct_oct_no = models.CharField(max_length=100, default='')
-    tax_dec_no = models.CharField(max_length=100, default='')
-    lot_no = models.CharField(max_length=100, default='')
-    area = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    no_of_trees = models.IntegerField(default=0)
-    species = models.CharField(max_length=100, default='')
-    gross_volume = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.tcp_no
-
-    @property
-    def net_volume(self):
-        return self.gross_volume * 0.70 if self.gross_volume else 0
-
-    @property
-    def days_remaining(self):
-        if self.expiry_date:
-            delta = self.expiry_date - timezone.now().date()
-            return delta.days
-        return 0
-
-    @property
-    def is_expiring_soon(self):
-        remaining = self.days_remaining
-        return 0 < remaining <= 30
-
-    @property
-    def is_expired(self):
-        return self.days_remaining <= 0
-
-    @property
-    def status(self):
-        if self.is_expired:
-            return 'Expired'
-        elif self.is_expiring_soon:
-            return 'Expiring Soon'
-        return 'Active'
-
-    def clean(self):
-        """Validate model data"""
-        if self.gross_volume and self.gross_volume < 0:
-            raise ValidationError({'gross_volume': 'Gross volume cannot be negative'})
-        
-        if self.total_volume_granted and self.total_volume_granted < 0:
-            raise ValidationError({'total_volume_granted': 'Total volume granted cannot be negative'})
-        
-        if self.area and self.area < 0:
-            raise ValidationError({'area': 'Area cannot be negative'})
-        
-        if self.no_of_trees and self.no_of_trees < 0:
-            raise ValidationError({'no_of_trees': 'Number of trees cannot be negative'})
 
     class Meta:
         ordering = ['-created_at']

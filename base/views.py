@@ -56,21 +56,22 @@ def dashboard(request):
 
 @login_required
 def cutting(request):
-    cutting_records = Cutting.objects.all().order_by('-created_at')
-    form = CuttingForm()
-
     if request.method == 'POST':
         form = CuttingForm(request.POST)
         if form.is_valid():
-            cutting = form.save()
-            messages.success(request, 'Cutting record added successfully!')
+            form.save()
+            messages.success(request, 'TCP added successfully!')
             return redirect('cutting')
-        else:
-            messages.error(request, 'Error adding cutting record. Please check the form.')
+    else:
+        form = CuttingForm()
 
+    # Get all cutting records ordered by created_at
+    cuttings = Cutting.objects.all().order_by('-created_at')
+    
     context = {
-        'cutting_records': cutting_records,
-        'form': form
+        'form': form,
+        'cuttings': cuttings,
+        'page_title': 'Cutting Records'
     }
     return render(request, 'cutting.html', context)
 
@@ -231,11 +232,9 @@ def add_cutting_record(request, tcp_no):
     # Calculate initial remaining balance
     initial_volume = parent_tcp.total_volume_granted
     
-    # If no records exist, show the total volume granted
     if not volume_records.exists():
         remaining_balance = initial_volume
     else:
-        # For subsequent entries, get the last record's remaining balance
         remaining_balance = volume_records.first().remaining_balance
 
     if request.method == 'POST':
@@ -245,10 +244,8 @@ def add_cutting_record(request, tcp_no):
             calculated_volume = volume + (volume * Decimal('0.30'))
             
             if not volume_records.exists():
-                # First entry: set remaining balance to calculated volume
-                new_remaining = calculated_volume
+                new_remaining = initial_volume - volume
             else:
-                # Subsequent entries: subtract original volume from remaining balance
                 new_remaining = remaining_balance - volume
             
             if new_remaining >= 0:
@@ -262,21 +259,11 @@ def add_cutting_record(request, tcp_no):
             else:
                 messages.error(request, 'Volume exceeds remaining balance!')
 
-    # Format dates for display
-    try:
-        formatted_issue_date = parent_tcp.permit_issue_date.strftime('%B %d, %Y') if parent_tcp.permit_issue_date else 'Not Set'
-        formatted_expiry_date = parent_tcp.expiry_date.strftime('%B %d, %Y') if parent_tcp.expiry_date else 'Not Set'
-    except AttributeError:
-        formatted_issue_date = 'Not Set'
-        formatted_expiry_date = 'Not Set'
-
     context = {
         'parent_tcp': parent_tcp,
         'remaining_balance': remaining_balance,
         'volume_records': volume_records,
-        'form': CuttingRecordForm(),
-        'formatted_issue_date': formatted_issue_date,
-        'formatted_expiry_date': formatted_expiry_date
+        'form': CuttingRecordForm()
     }
     return render(request, 'add_cutting_record.html', context)
 
