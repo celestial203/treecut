@@ -206,20 +206,23 @@ def edit_recordlumber(request, pk):
 @login_required
 def edit_cutting(request, pk):
     cutting = get_object_or_404(Cutting, pk=pk)
+    
     if request.method == 'POST':
         form = CuttingForm(request.POST, instance=cutting)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Cutting record updated successfully!')
-            return redirect('cutting')
+            try:
+                cutting = form.save()
+                messages.success(request, f'Successfully updated cutting record for TCP No. {cutting.tcp_no}')
+                return redirect('view_cutting', pk=cutting.pk)
+            except Exception as e:
+                messages.error(request, f'Error updating record: {str(e)}')
     else:
         form = CuttingForm(instance=cutting)
     
-    context = {
+    return render(request, 'edit_cutting.html', {
         'form': form,
         'cutting': cutting
-    }
-    return render(request, 'edit_cutting.html', context)
+    })
 
 def view_cutting(request, pk):
     cutting = get_object_or_404(Cutting, pk=pk)
