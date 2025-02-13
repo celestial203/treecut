@@ -98,6 +98,7 @@
                             </a>
                         </div>
                     </li>
+                    
                     <li>
                         <div class="flex items-center">
                             <svg class="flex-shrink-0 h-5 w-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
@@ -164,7 +165,7 @@
         </div>
 
         <!-- Volume Information Card -->
-        <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg shadow-sm p-6 mb-6">
+        <div class="bg-gradient-to-r from-blue-50 to-green-200 rounded-lg shadow-sm p-6 mb-6">
             <h2 class="text-xl font-semibold text-blue-900 mb-4">Volume Information</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white rounded-lg p-4 shadow-sm">
@@ -235,7 +236,7 @@
                     <a href="{% url 'cutting' %}" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         Cancel
                     </a>
-                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         Add Volume
                     </button>
                 </div>
@@ -285,16 +286,16 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.calculated_volume|floatformat:2 }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
-                                    <span class="text-sm {% if record.remaining_balance <= 0.03 %}text-red-600 font-semibold{% else %}text-blue-600{% endif %}">
-                                        {% if record.remaining_balance <= 0 %}
-                                            CONSUMED
-                                        {% else %}
+                                    {% if record.remaining_balance <= 1 %}
+                                        <span class="text-sm text-red-600 font-semibold">
                                             {{ record.remaining_balance|floatformat:2 }} cu.m.
-                                        {% endif %}
-                                    </span>
-                                    {% if record.remaining_balance <= 0.03 %}
+                                        </span>
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                             CONSUMED
+                                        </span>
+                                    {% else %}
+                                        <span class="text-sm text-blue-600">
+                                            {{ record.remaining_balance|floatformat:2 }} cu.m.
                                         </span>
                                     {% endif %}
                                 </div>
@@ -324,6 +325,13 @@
             {% endif %}
         </div>
     </div>
+
+    <footer class="bg-blue-900 text-white mt-auto py-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+        </div>
+    </footer>
 
     <script>
         // Show Django messages using SweetAlert2
