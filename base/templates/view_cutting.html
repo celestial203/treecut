@@ -52,18 +52,26 @@
             {% endfor %}
         {% endif %}
 
-        <!-- Header Card -->
+        <!-- Header Card with Volume Info -->
         <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
             <div class="flex justify-between items-center">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800">View Cutting Record</h2>
                     <p class="text-gray-600 mt-1">Details for TCP No. {{ cutting.tcp_no }}</p>
                 </div>
-                {% if last_updated %}
-                <div class="text-sm text-gray-500">
-                    Last updated: {{ last_updated|date:"F d, Y H:i" }}
+                <div class="text-right">
+                    <p class="text-sm text-gray-600">Total Volume Granted: {{ cutting.total_volume_granted }} cu.m.</p>
+                    <p class="text-sm {% if remaining_balance <= 0.00 %}text-red-600{% else %}text-green-600{% endif %}">
+                        Remaining Balance: 
+                        <span class="font-semibold">
+                            {% if remaining_balance <= 0.03 %}
+                                CONSUMED
+                            {% else %}
+                                {{ remaining_balance|floatformat:2 }} cu.m.
+                            {% endif %}
+                        </span>
+                    </p>
                 </div>
-                {% endif %}
             </div>
         </div>
 
@@ -148,7 +156,24 @@
 
         {% if cutting_records %}
         <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Volume Record <p>{{ cutting.tcp_no }}</p> </h2>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900">Volume Record <span class="text-gray-600">{{ cutting.tcp_no }}</span></h2>
+                <div class="text-right">
+                    <p class="text-sm text-gray-600">Total Volume Granted: 
+                        <span class="font-semibold">{{ cutting.total_volume_granted }} cu.m.</span>
+                    </p>
+                    <p class="text-sm {% if cutting_records.last.remaining_balance <= 0.03 %}text-red-600{% else %}text-green-600{% endif %}">
+                        Remaining Balance: 
+                        <span class="font-semibold">
+                            {% if cutting_records.last.remaining_balance <= 0.00 %}
+                                CONSUMED
+                            {% else %}
+                                {{ cutting_records.last.remaining_balance|floatformat:2 }} cu.m.
+                            {% endif %}
+                        </span>
+                    </p>
+                </div>
+            </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead>
@@ -157,12 +182,13 @@
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Species</th>
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. of Trees</th>
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume</th>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining Balance</th>
                             <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remarks</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         {% for record in cutting_records %}
-                        <tr>
+                        <tr {% if forloop.last %}class="bg-gray-50"{% endif %}>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ record.date_added|date:"F d, Y" }}
                             </td>
@@ -175,6 +201,13 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ record.volume }} cu.m.
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm {% if record.remaining_balance <= 0.03 %}text-red-600 font-semibold{% else %}text-green-600{% endif %}">
+                                {% if record.remaining_balance <= 0.03 %}
+                                    CONSUMED
+                                {% else %}
+                                    {{ record.remaining_balance|floatformat:2 }} cu.m.
+                                {% endif %}
+                            </td>
                             <td class="px-6 py-4 text-sm text-gray-900">
                                 {{ record.remarks|default:"-" }}
                             </td>
@@ -182,6 +215,30 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+            
+            {% if cutting_records.last.remaining_balance <= 0.03 %}
+            <div class="mt-4 bg-red-50 border-l-4 border-red-400 p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700">
+                            This TCP has been fully consumed. No more volume can be added.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="mt-8 bg-white rounded-lg shadow-lg p-6">
+            <div class="text-center py-4">
+                <p class="text-gray-600">No volume records found for this TCP.</p>
+                <p class="text-gray-500 text-sm mt-2">Total Volume Granted: {{ cutting.total_volume_granted }} cu.m.</p>
             </div>
         </div>
         {% endif %}

@@ -228,7 +228,7 @@ def edit_cutting(request, pk):
 def view_cutting(request, pk):
     try:
         cutting = get_object_or_404(Cutting, pk=pk)
-        cutting_records = CuttingRecord.objects.filter(tcp=cutting)
+        cutting_records = CuttingRecord.objects.filter(parent_tcp=cutting)
         
         # Calculate net volume
         net_volume = cutting.gross_volume * Decimal('0.7') if cutting.gross_volume else None
