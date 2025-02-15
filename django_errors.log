@@ -2096,3 +2096,17 @@ Traceback (most recent call last):
     raise NoReverseMatch(msg)
 django.urls.exceptions.NoReverseMatch: Reverse for 'view_cutting' with no arguments not found. 1 pattern(s) tried: ['cutting/view/(?P<pk>[0-9]+)/\\Z']
 ERROR 2025-02-13 09:41:15,019 basehttp "GET /cutting/add-record/C-Argao-12262024-157/ HTTP/1.1" 500 139373
+WARNING 2025-02-13 15:10:53,582 log Not Found: /favicon.ico
+WARNING 2025-02-13 15:10:53,584 basehttp "GET /favicon.ico HTTP/1.1" 404 4497
+WARNING 2025-02-13 15:10:53,595 log Not Found: /favicon.ico
+WARNING 2025-02-13 15:10:53,595 basehttp "GET /favicon.ico HTTP/1.1" 404 4497
+WARNING 2025-02-13 15:10:53,608 log Not Found: /favicon.ico
+WARNING 2025-02-13 15:10:53,609 basehttp "GET /favicon.ico HTTP/1.1" 404 4497
+WARNING 2025-02-13 15:10:53,623 log Not Found: /favicon.ico
+WARNING 2025-02-13 15:10:53,624 basehttp "GET /favicon.ico HTTP/1.1" 404 4497
+WARNING 2025-02-13 15:10:53,639 log Not Found: /favicon.ico
+WARNING 2025-02-13 15:10:53,640 basehttp "GET /favicon.ico HTTP/1.1" 404 4497
+WARNING 2025-02-13 15:10:53,651 log Not Found: /favicon.ico
+WARNING 2025-02-13 15:10:53,652 basehttp "GET /favicon.ico HTTP/1.1" 404 4497
+WARNING 2025-02-13 15:10:53,670 log Not Found: /favicon.ico
+WARNING 2025-02-13 15:10:53,671 basehttp "GET /favicon.ico HTTP/1.1" 404 4497
