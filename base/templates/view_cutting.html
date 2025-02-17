@@ -17,24 +17,45 @@
     <div class="max-w-4xl mx-auto">
         <!-- Add Breadcrumb Navigation -->
         <div class="mb-8">
-            <nav class="flex" aria-label="Breadcrumb">
-                <ol class="flex items-center space-x-4">
-                    <li>
-                        <div>
-                            <a href="{% url 'cutting' %}" class="text-gray-400 hover:text-gray-500">
-                                Cutting
+            <nav class="bg-white shadow-lg">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between h-16">
+                        <div class="flex">
+                            <!-- Logo -->
+                            <div class="flex-shrink-0 flex items-center">
+                                     <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO-FUS</span>
+                                    </div>
+        
+                            <!-- Navigation Links -->
+                            <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                                <a href="{% url 'dashboard' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
+                                    Dashboard
+                                </a>
+                                <a href="{% url 'cutting' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
+                                    Tree Cutting Permits 
+                                </a>
+                                <a href="{% url 'lumber' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
+                                    Lumber Dealers
+                                </a>
+                                <a href="{% url 'chainsaw' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
+                                    Chainsaw
+                                </a>
+                                <a href="{% url 'wood' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
+                                    WPP
+                                </a>
+                            </div>
+                        </div>
+                        <!-- User Menu -->
+                        <div class="flex items-center">
+                            <div class="text-m text-gray-800">
+                                Welcome, {{ request.user.username }}
+                            </div>
+                            <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
+                                Sign Out
                             </a>
                         </div>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <svg class="flex-shrink-0 h-5 w-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
-                            </svg>
-                            <span class="ml-4 text-sm font-medium text-gray-500">View Record</span>
-                        </div>
-                    </li>
-                </ol>
+                    </div>
+                </div>
             </nav>
         </div>
 

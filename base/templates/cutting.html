@@ -272,27 +272,31 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex">
+                    <!-- Logo -->
                     <div class="flex-shrink-0 flex items-center">
-                        <span class="ml-2 text-xl font-bold text-gray-800">CENRO-ARGAO</span>
-                    </div>
-                    <div class="hidden sm:ml-8 sm:flex sm:space-x-8">
-                        <a href="{% url 'dashboard' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                             <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO-FUS</span>
+                            </div>
+
+                    <!-- Navigation Links -->
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="{% url 'dashboard' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
                             Dashboard
                         </a>
-                        <a href="{% url 'cutting' %}" class="border-b-2 border-blue-600 text-blue-600 inline-flex items-center px-3 pt-1 text-m font-medium">
-                            Cutting
+                        <a href="{% url 'cutting' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
+                            Tree Cutting Permits 
                         </a>
-                        <a href="{% url 'lumber' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
-                            Lumber
+                        <a href="{% url 'lumber' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
+                            Lumber Dealers
                         </a>
-                        <a href="{% url 'chainsaw' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
+                        <a href="{% url 'chainsaw' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
                             Chainsaw
                         </a>
-                        <a href="{% url 'wood' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
-                            Wood
+                        <a href="{% url 'wood' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
+                            WPP
                         </a>
                     </div>
                 </div>
+                <!-- User Menu -->
                 <div class="flex items-center">
                     <div class="text-m text-gray-800">
                         Welcome, {{ request.user.username }}
@@ -306,9 +310,9 @@
     </nav>
 
     <!-- Header -->
-    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-6 shadow-md">
+    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-2 shadow-md">
         <div class="max-w-7xl mx-auto px-4">
-            <h1 class="text-3xl font-bold mb-2">Cutting Records</h1>
+            <h1 class="text-2xl font-bold mb-2">Tree Cutting Permits</h1>
             <p class="text-sm opacity-90">Manage tree cutting permits and records</p>
         </div>
     </div>
