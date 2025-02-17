@@ -317,15 +317,15 @@
                 <!-- Third Row -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Barangay* *</label>
+                        <label class="block text-sm font-medium text-gray-700">Barangay*</label>
                         <input type="text" name="brgy" class="form-input" placeholder="Enter barangay" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Municipality* *</label>
+                        <label class="block text-sm font-medium text-gray-700">Municipality*</label>
                         <input type="text" name="municipality" class="form-input" placeholder="Enter municipality" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Province* *</label>
+                        <label class="block text-sm font-medium text-gray-700">Province*</label>
                         <input type="text" name="province" class="form-input" placeholder="Enter province" required>
                     </div>
                 </div>
@@ -333,11 +333,11 @@
                 <!-- Fourth Row -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Permit No.* *</label>
+                        <label class="block text-sm font-medium text-gray-700">Permit No.*</label>
                         <input type="text" name="permit_no" class="form-input" placeholder="Enter permit number" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Date Issued* *</label>
+                        <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
                         <input type="text" 
                                name="date_issued" 
                                class="form-input date-input"
@@ -347,7 +347,7 @@
                                required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Expiry Date* *</label>
+                        <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
                         <input type="text" 
                                name="expiry_date" 
                                class="form-input date-input"
@@ -419,17 +419,17 @@
             </div>
             <div class="overflow-x-auto">
                 <div class="mb-4">
-                    {% for record in lumber_records %}
-                        {% if record.is_expiring_soon and not record.is_expired %}
-                            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
-                                Warning: Permit {{ record.permit_no }} for {{ record.trade_name }} will expire in {{ record.days_remaining }} days
-                            </div>
-                        {% elif record.is_expired %}
-                            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
-                                Alert: Permit {{ record.permit_no }} for {{ record.trade_name }} has expired
-                            </div>
-                        {% endif %}
-                    {% endfor %}
+                    {% if expired_count > 0 %}
+                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
+                            Alert: {{ expired_count }} record{% if expired_count != 1 %}s{% endif %} expired
+                        </div>
+                    {% endif %}
+                    
+                    {% if expiring_soon_count > 0 %}
+                        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
+                            Warning: {{ expiring_soon_count }} permit{% if expiring_soon_count != 1 %}s{% endif %} expiring soon
+                        </div>
+                    {% endif %}
                 </div>
                 <table class="min-w-full text-sm text-left text-gray-500">
                     <thead class="bg-gray-50 text-gray-700">

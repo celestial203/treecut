@@ -41,17 +41,44 @@ def logout_view(request):
 # Dashboard view
 @login_required
 def dashboard(request):
+    # Get current date
+    current_date = timezone.now().date()
+
+    # Cutting Permits counts
     cutting_count = Cutting.objects.count()
+    expired_cutting_count = Cutting.objects.filter(
+        expiry_date__lt=current_date
+    ).count()
+
+    # Lumber Records counts
     lumber_count = Lumber.objects.count()
+    expired_lumber_count = Lumber.objects.filter(
+        expiry_date__lt=current_date
+    ).count()
+
+    # Chainsaw counts
     chainsaw_count = Chainsaw.objects.count()
+    expired_chainsaw_count = Chainsaw.objects.filter(
+        expiry_date__lt=current_date
+    ).count()
+
+    # Wood counts
     wood_count = Wood.objects.count()
+    expired_wood_count = Wood.objects.filter(
+        expiry_date__lt=current_date
+    ).count()
 
     context = {
         'cutting_count': cutting_count,
+        'expired_cutting_count': expired_cutting_count,
         'lumber_count': lumber_count,
+        'expired_lumber_count': expired_lumber_count,
         'chainsaw_count': chainsaw_count,
+        'expired_chainsaw_count': expired_chainsaw_count,
         'wood_count': wood_count,
+        'expired_wood_count': expired_wood_count,
     }
+
     return render(request, 'dashboard.html', context)
 
 @login_required
@@ -81,59 +108,52 @@ def cutting(request):
 
 @login_required
 def wood(request):
-    if request.method == 'POST':
-        form = WoodForm(request.POST)
-        print("Form data:", request.POST)  # Debug print
-        if form.is_valid():
-            print("Form is valid")  # Debug print
-            try:
-                wood = form.save()
-                messages.success(request, 'Wood record created successfully!')
-                return redirect('wood')
-            except Exception as e:
-                print("Save error:", str(e))  # Debug print
-                messages.error(request, f'Error saving record: {str(e)}')
-        else:
-            print("Form errors:", form.errors)  # Debug print
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        form = WoodForm()
+    current_date = timezone.now().date()
     
-    wood_records = Wood.objects.all()
-    return render(request, 'wood.html', {'form': form, 'wood_records': wood_records})
+    # Get all records
+    wood_records = Wood.objects.all().order_by('-date_issued')
+    
+    # Count expired records from the actual table data
+    expired_records = [record for record in wood_records if record.expiry_date and record.expiry_date < current_date]
+    expired_count = len(expired_records)
+    
+    # Count records expiring soon from the actual table data
+    thirty_days_from_now = current_date + timedelta(days=30)
+    expiring_soon_records = [
+        record for record in wood_records 
+        if record.expiry_date 
+        and record.expiry_date > current_date 
+        and record.expiry_date <= thirty_days_from_now
+    ]
+    expiring_soon_count = len(expiring_soon_records)
+
+    context = {
+        'wood_records': wood_records,
+        'expired_count': expired_count,
+        'expiring_soon_count': expiring_soon_count,
+    }
+    return render(request, 'wood.html', context)
 
 #FOR LUMBERRRR #####
 @login_required
 def lumber(request):
-    if request.method == 'POST':
-        form = LumberForm(request.POST)
-        if form.is_valid():
-            lumber = form.save(commit=False)
-            lumber.created_by = request.user
-            lumber.save()
-            messages.success(request, 'Lumber record created successfully!')
-            return redirect('lumber')
-    else:
-        form = LumberForm()
-    
-    # Get all lumber records
+    current_date = timezone.now().date()
     lumber_records = Lumber.objects.all()
     
-    # Calculate the date 3 months from now
-    three_months_from_now = timezone.now().date() + timedelta(days=90)
+    # Count expired records
+    expired_count = Lumber.objects.filter(expiry_date__lt=current_date).count()
     
-    # Add expiry warning flag to records
-    has_expiring = False
-    for record in lumber_records:
-        if record.expiry_date:
-            record.expiry_warning = record.expiry_date <= three_months_from_now
-            if record.expiry_warning:
-                has_expiring = True
-    
+    # Count records expiring in next 30 days but not expired yet
+    thirty_days_from_now = current_date + timedelta(days=30)
+    expiring_soon_count = Lumber.objects.filter(
+        expiry_date__gte=current_date,
+        expiry_date__lte=thirty_days_from_now
+    ).count()
+
     context = {
-        'form': form,
         'lumber_records': lumber_records,
-        'any_expiring_records': has_expiring,
+        'expired_count': expired_count,
+        'expiring_soon_count': expiring_soon_count,
     }
     
     return render(request, 'lumber.html', context)
@@ -145,41 +165,38 @@ def search(request):
 ### FOR CHAINSAW### 
 @login_required(login_url='login')
 def chainsaw(request):
+    current_date = timezone.now().date()
+    chainsaw_records = Chainsaw.objects.all()
+    
     if request.method == 'POST':
         form = ChainsawForm(request.POST, request.FILES)
         if form.is_valid():
-            chainsaw = form.save(commit=False)
-            chainsaw.created_by = request.user
-            
-            # Handle file upload
-            if 'file' in request.FILES:
-                file = request.FILES['file']
-                # Save the chainsaw first to generate the ID
-                chainsaw.save()
-                
-                # Create the directory if it doesn't exist
-                upload_dir = os.path.join(settings.MEDIA_ROOT, 'chainsaw_files')
-                os.makedirs(upload_dir, exist_ok=True)
-                
-                # Save the file
-                chainsaw.file = file
-                chainsaw.save()
-                
-            messages.success(request, 'Chainsaw registration successfully added!')
+            form.save()
+            messages.success(request, 'Chainsaw record added successfully!')
             return redirect('chainsaw')
         else:
-            messages.error(request, 'Error in form submission. Please check the fields.')
-            print(form.errors)
+            messages.error(request, 'Error adding chainsaw record. Please check the form.')
     else:
         form = ChainsawForm()
-
-    chainsaw_records = Chainsaw.objects.all().order_by('-date_acquired')
     
+    # Count expired records
+    expired_count = Chainsaw.objects.filter(
+        expiry_date__lt=current_date
+    ).count()
+    
+    # Count records expiring in next 30 days but not expired yet
+    thirty_days_from_now = current_date + timedelta(days=30)
+    expiring_soon_count = Chainsaw.objects.filter(
+        expiry_date__gt=current_date,
+        expiry_date__lte=thirty_days_from_now
+    ).count()
+
     context = {
         'form': form,
         'chainsaw_records': chainsaw_records,
+        'expired_count': expired_count,
+        'expiring_soon_count': expiring_soon_count,
     }
-    
     return render(request, 'chainsaw.html', context)
 
 @login_required

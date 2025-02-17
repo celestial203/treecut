@@ -60,18 +60,34 @@
                 <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-green-100">
                     <div class="text-4xl font-bold text-green-600">{{ cutting_count }}</div>
                     <div class="text-gray-600">Registered Cutting Permits</div>
+                    <div class="mt-2 text-sm">
+                        <span class="text-red-500 font-semibold">{{ expired_cutting_count }}</span>
+                        <span class="text-gray-500">expired</span>
+                    </div>
                 </div>
                 <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-100">
                     <div class="text-4xl font-bold text-blue-600">{{ lumber_count }}</div>
                     <div class="text-gray-600">Registered Lumber Records</div>
+                    <div class="mt-2 text-sm">
+                        <span class="text-red-500 font-semibold">{{ expired_lumber_count }}</span>
+                        <span class="text-gray-500">expired</span>
+                    </div>
                 </div>
                 <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-yellow-100">
                     <div class="text-4xl font-bold text-yellow-600">{{ chainsaw_count }}</div>
                     <div class="text-gray-600">Registered Chainsaws</div>
+                    <div class="mt-2 text-sm">
+                        <span class="text-red-500 font-semibold">{{ expired_chainsaw_count }}</span>
+                        <span class="text-gray-500">expired</span>
+                    </div>
                 </div>
                 <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-red-100">
                     <div class="text-4xl font-bold text-red-600">{{ wood_count }}</div>
-                    <div class="text-gray-600"> Registered Woods </div>
+                    <div class="text-gray-600">Registered Woods</div>
+                    <div class="mt-2 text-sm">
+                        <span class="text-red-500 font-semibold">{{ expired_wood_count }}</span>
+                        <span class="text-gray-500">expired</span>
+                    </div>
                 </div>
             </div>
         </div>

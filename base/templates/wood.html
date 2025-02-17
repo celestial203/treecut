@@ -14,42 +14,55 @@
         /* Input field styles */
         input, select, textarea {
             background-color: #ffffff;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            padding: 8px 12px;  /* Adjusted padding to match */
-            height: 42px;      /* Fixed height for uniformity */
-            border-radius: 8px;
+            border: 1px solid rgb(206, 212, 218);
+            border-radius: 4px;
+            padding: 6px 12px;
+            height: 38px;
             width: 100%;
-            color: #4B5563;
-            font-size: 14px;   /* Standardized font size */
-            line-height: 1.5;
+            color: rgb(73, 80, 87);
+            font-size: 16px;
+            line-height: 24px;
         }
 
         input::placeholder {
-            color: #9CA3AF;
-            opacity: 1;
+            color: rgb(173, 181, 189);
         }
 
         input:focus, select:focus, textarea:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.1);
-            outline: none;
+            color: rgb(73, 80, 87);
+            background-color: #fff;
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
 
+        /* Form input specific styles */
         .form-input {
-            @apply mt-1 block w-full rounded-lg border-gray-200
-                   focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
-                   bg-white text-gray-900;
-            height: 42px !important;  /* Force consistent height */
+            display: block;
+            width: 100%;
+            padding: 6px 12px;
+            font-size: 16px;
+            line-height: 24px;
+            color: rgb(73, 80, 87);
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid rgb(206, 212, 218);
+            border-radius: 4px;
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        }
+
+        .form-input:focus {
+            color: rgb(73, 80, 87);
+            background-color: #fff;
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
         }
 
         /* Label styles */
         label {
-            font-size: 14px;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 6px;
-            display: block;
+            display: inline-block;
+            margin-bottom: 8px;
         }
 
         /* Section headers */
@@ -162,13 +175,11 @@
 
     <!-- Messages Section -->
     {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-                <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% endif %} mb-4">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
+        {% for message in messages %}
+            <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% endif %} mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
     {% endif %}
 
     <!-- Header Section -->
@@ -197,153 +208,108 @@
             </ul>
         </div>
         {% endif %}
-        <form id="woodForm" method="POST" class="space-y-6">
+        <form method="POST" id="woodForm" class="space-y-6" enctype="multipart/form-data">
             {% csrf_token %}
             
-            <!-- Basic Information -->
-            <div class="grid grid-cols-1 gap-6">
-                <!-- Name and Type -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Name*</label>
-                        {{ form.name|add_class:"form-input"|attr:"placeholder:Enter name" }}
-                        {{ form.name.errors }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Type*</label>
-                        {{ form.type|add_class:"form-input"|attr:"placeholder:Enter type" }}
-                        {{ form.type.errors }}
-                    </div>
+            <!-- Name and Type -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Name*</label>
+                    <input type="text" name="{{ form.name.name }}" class="form-input" placeholder="Enter name" required>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Type*</label>
+                    <input type="text" name="{{ form.type.name }}" class="form-input" placeholder="Enter type" required>
+                </div>
+            </div>
 
-                <!-- Integrated and WPP -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Integrated and WPP -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Integrated*</label>
+                    <input type="text" name="{{ form.integrated.name }}" class="form-input" placeholder="Enter integrated status" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">WPP Number*</label>
+                    <input type="text" name="{{ form.wpp_number.name }}" class="form-input" placeholder="Enter WPP number" required>
+                </div>
+            </div>
+
+            <!-- Location Details -->
+            <div class="mt-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">LOCATION</h3>
+                <div class="grid grid-cols-2 gap-6 mb-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Integrated*</label>
-                        {{ form.integrated|add_class:"form-input" }}
-                        {{ form.integrated.errors }}
+                        <label class="block text-sm font-medium text-gray-700">Business*</label>
+                        <input type="text" name="{{ form.business.name }}" class="form-input" placeholder="Enter business name" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">WPP Number*</label>
-                        {{ form.wpp_number|add_class:"form-input"|attr:"placeholder:Enter WPP number" }}
-                        {{ form.wpp_number.errors }}
+                        <label class="block text-sm font-medium text-gray-700">Plant*</label>
+                        <input type="text" name="{{ form.plant.name }}" class="form-input" placeholder="Enter plant name" required>
                     </div>
                 </div>
-
-                <!-- Location Details -->
-                <div class="mt-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">LOCATION</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Business*</label>
-                            {{ form.business|add_class:"form-input"|attr:"placeholder:Enter business name" }}
-                            {{ form.business.errors }}
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Plant*</label>
-                            {{ form.plant|add_class:"form-input"|attr:"placeholder:Enter plant name" }}
-                            {{ form.plant.errors }}
-                        </div>
-                    </div>
-                </div>
-                 <!-- DRC and ALR -->
-                 <div class="mt-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">DRC (cu.m)*</label>
-                            {{ form.drc|add_class:"form-input"|attr:"placeholder:Enter DRC value" }}
-                            {{ form.drc.errors }}
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">ALR (m³)</label>
-                            {{ form.alr|add_class:"form-input"|attr:"readonly:readonly" }}
-                            {{ form.alr.errors }}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Coordinates -->
-                <div class="mt-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">COORDINATES</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Longitude*</label>
-                            {{ form.longitude|add_class:"form-input"|attr:"placeholder:Enter longitude" }}
-                            {{ form.longitude.errors }}
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Latitude*</label>
-                            {{ form.latitude|add_class:"form-input"|attr:"placeholder:Enter latitude" }}
-                            {{ form.latitude.errors }}
-                        </div>
-                    </div>
-                </div>
-
+            </div>
             
-
-                <!-- Volume Contracted -->
-                <div class="mt-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">VOLUME CONTRACTED</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Local*</label>
-                            {{ form.local_volume|add_class:"form-input"|attr:"placeholder:Enter local volume" }}
-                            {{ form.local_volume.errors }}
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Imported*</label>
-                            {{ form.imported_volume|add_class:"form-input"|attr:"placeholder:Enter imported volume" }}
-                            {{ form.imported_volume.errors }}
-                        </div>
-                    </div>
+            <!-- DRC and ALR -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">DRC (cu.m)*</label>
+                    <input type="number" step="0.01" name="{{ form.drc.name }}" class="form-input" placeholder="Enter DRC value" required>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">ALR (m³)</label>
+                    <input type="number" step="0.01" name="{{ form.alr.name }}" class="form-input" readonly>
+                </div>
+            </div>
 
-                <!-- Rest of your existing fields... -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Coordinates -->
+            <div class="mt-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">COORDINATES</h3>
+                <div class="grid grid-cols-2 gap-6 mb-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Name & Address of Supplier*</label>
-                        {{ form.supplier_info|add_class:"form-input"|attr:"placeholder:Enter supplier information" }}
-                        {{ form.supplier_info.errors }}
+                        <label class="block text-sm font-medium text-gray-700">Longitude*</label>
+                        <input type="text" name="{{ form.longitude.name }}" class="form-input" placeholder="Enter longitude" required>
                     </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Area*</label>
-                        {{ form.area|add_class:"form-input"|attr:"placeholder:Enter area" }}
-                        {{ form.area.errors }}
+                        <label class="block text-sm font-medium text-gray-700">Latitude*</label>
+                        <input type="text" name="{{ form.latitude.name }}" class="form-input" placeholder="Enter latitude" required>
                     </div>
                 </div>
+            </div>
 
-                <!-- Dates and Status -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+            <!-- Volume Contracted -->
+            <div class="mt-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">VOLUME CONTRACTED</h3>
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Local*</label>
+                        <input type="number" step="0.01" name="{{ form.local_volume.name }}" class="form-input" placeholder="Enter local volume" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Export*</label>
+                        <input type="number" step="0.01" name="{{ form.export_volume.name }}" class="form-input" placeholder="Enter export volume" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dates -->
+            <div class="mt-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">DATES</h3>
+                <div class="grid grid-cols-2 gap-6 mb-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
-                        {{ form.date_issued|add_class:"form-input" }}
-                        {{ form.date_issued.errors }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Date Released*</label>
-                        {{ form.date_released|add_class:"form-input" }}
-                        {{ form.date_released.errors }}
+                        <input type="date" name="{{ form.date_issued.name }}" class="form-input" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
-                        {{ form.expiry_date|add_class:"form-input" }}
-                        {{ form.expiry_date.errors }}
+                        <input type="date" name="{{ form.expiry_date.name }}" class="form-input" required>
                     </div>
                 </div>
-
-                <div class="mt-6">
-                    <label class="block text-sm font-medium text-gray-700">Approved By*</label>
-                    {{ form.approved_by|add_class:"form-input"|attr:"placeholder:Enter approver's name" }}
-                    {{ form.approved_by.errors }}
-                </div>
-
             </div>
 
-            <div class="flex justify-end mt-6">
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
+            <!-- Submit Button -->
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
                     Save Record
                 </button>
             </div>
@@ -386,41 +352,21 @@
 
             <!-- Expiry Warnings -->
             <div class="p-4">
-                {% for record in wood_records %}
-                    {% if record.is_expiring_soon and not record.is_expired %}
-                        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2 rounded">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm">
-                                        Warning: Record for <strong>{{ record.name }}</strong> will expire in {{ record.days_remaining }} days 
-                                        ({{ record.years_remaining }} years, {{ record.months_remaining }} months remaining)
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    {% elif record.is_expired %}
-                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2 rounded">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm">
-                                        Alert: Record for <strong>{{ record.name }}</strong> has expired 
-                                        (Expired {{ record.days_since_expiry }} days ago)
-                                    </p>
-                                </div>
-                            </div>
+                {% with expired_records=wood_records|expired_records %}
+                    {% if expired_records %}
+                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
+                            Alert: {{ expired_records|length }} record{{ expired_records|length|pluralize }} expired
                         </div>
                     {% endif %}
-                {% endfor %}
+                {% endwith %}
+                
+                {% with expiring_records=wood_records|expiring_records %}
+                    {% if expiring_records %}
+                        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
+                            Warning: {{ expiring_records|length }} permit{{ expiring_records|length|pluralize }} expiring soon
+                        </div>
+                    {% endif %}
+                {% endwith %}
             </div>
 
             <div class="overflow-x-auto">
@@ -437,7 +383,7 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Longitude</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Latitude</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Local Volume</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Imported Volume</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Export Volume</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Issued</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Released</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry Date</th>
@@ -458,7 +404,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.longitude }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.latitude }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.local_volume }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.imported_volume }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.export_volume }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.date_issued|date:"F d, Y" }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.date_released|date:"F d, Y" }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -499,8 +445,6 @@
             </div>
         </div>
     </div>
-
-
 
     <!-- Replace the existing noResultsMessage div with this enhanced version -->
     <div id="noResultsMessage" class="hidden p-8 text-center">

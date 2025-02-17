@@ -10,6 +10,154 @@
     <title>CENRO Argao - Chainsaw Registration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Input field styles */
+        input, select, textarea {
+            background-color: #ffffff;
+            border: 1px solid rgb(206, 212, 218);
+            border-radius: 4px;
+            padding: 6px 12px;
+            height: 38px;
+            width: 100%;
+            color: rgb(73, 80, 87);
+            font-size: 16px;
+            line-height: 24px;
+        }
+
+        input::placeholder {
+            color: rgb(173, 181, 189);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            color: rgb(73, 80, 87);
+            background-color: #fff;
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        /* Form input specific styles */
+        .form-input {
+            display: block;
+            width: 100%;
+            padding: 6px 12px;
+            font-size: 16px;
+            line-height: 24px;
+            color: rgb(73, 80, 87);
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid rgb(206, 212, 218);
+            border-radius: 4px;
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        }
+
+        .form-input:focus {
+            color: rgb(73, 80, 87);
+            background-color: #fff;
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        /* Label styles */
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Section headers */
+        h3 {
+            color: #111827;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        /* Remove number input spinners */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        /* Date input specific styles */
+        input[type="date"] {
+            height: 42px;
+            padding: 8px 12px;
+            color: #4B5563;
+        }
+
+        /* Select field styles */
+        select {
+            height: 42px;
+            padding: 8px 12px;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.25em 1.25em;
+            padding-right: 2.5rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Hover states */
+        input:hover, select:hover, textarea:hover {
+            border-color: #d1d5db;
+        }
+
+        /* Error states */
+        .error {
+            border-color: #ef4444;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        /* Form group spacing */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        /* Grid gap adjustments */
+        .gap-6 {
+            gap: 16px;
+        }
+
+        input {
+            display: block;
+            width: 100%;
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: #495057;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            height: 38px;
+        }
+
+        input:focus {
+            color: #495057;
+            background-color: #fff;
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+    </style>
 </head>
 <body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
     <!-- Navigation Bar -->
@@ -77,178 +225,139 @@
         <form method="POST" id="chainsawForm" class="space-y-6" enctype="multipart/form-data">
             {% csrf_token %}
             
-            <style>
-                input, select, textarea {
-                    background-color: #f8fafc;
-                    border: 1px solid #e2e8f0;
-                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-                    padding: 0.5rem;
-                    border-radius: 0.375rem;
-                    width: 100%;
-                    color: #4B5563;
-                }
-                input::placeholder, select::placeholder, textarea::placeholder {
-                    color: #6B7280;
-                    opacity: 0.8;
-                }
-                input:focus, select:focus, textarea:focus {
-                    border-color: #3b82f6;
-                    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-                    outline: none;
-                }
-                .form-input {
-                    @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
-                           focus:border-blue-500 focus:ring-blue-500 
-                           bg-gray-50 text-gray-900;
-                }
-                input[type="date"] {
-                    padding: 0.4rem;
-                    color: #4B5563;
-                }
-                select {
-                    background-color: #f8fafc;
-                    padding: 0.4rem;
-                    color: #4B5563;
-                }
-                input:hover, select:hover, textarea:hover {
-                    border-color: #60A5FA;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                }
-            </style>
-
-            <!-- Basic Information -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- First Row -->
+            <div class="grid grid-cols-3 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">No.*</label>
-                    {{ form.no|add_class:"form-input"|attr:"placeholder:Enter number" }}
+                    <input type="text" name="{{ form.no.name }}" class="form-input" placeholder="Enter number" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Year*</label>
-                    {{ form.year|add_class:"form-input"|attr:"placeholder:Enter year" }}
+                    <input type="text" name="{{ form.year.name }}" class="form-input" placeholder="Enter year" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Region*</label>
-                    {{ form.region|add_class:"form-input"|attr:"placeholder:Enter region" }}
+                    <input type="text" name="{{ form.region.name }}" class="form-input" placeholder="Enter region" required>
                 </div>
             </div>
 
-            <!-- Location and Office Details -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Second Row -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">PENRO*</label>
-                    {{ form.penro|add_class:"form-input"|attr:"placeholder:Enter PENRO" }}
+                    <input type="text" name="{{ form.penro.name }}" class="form-input" placeholder="Enter PENRO" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">CENRO*</label>
-                    {{ form.cenro|add_class:"form-input"|attr:"placeholder:Enter CENRO" }}
+                    <input type="text" name="{{ form.cenro.name }}" class="form-input" placeholder="Enter CENRO" required>
                 </div>
             </div>
 
-            <!-- Personal Information -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Third Row -->
+            <div class="grid grid-cols-3 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Name*</label>
-                    {{ form.name|add_class:"form-input"|attr:"placeholder:Enter name" }}
+                    <input type="text" name="{{ form.name.name }}" class="form-input" placeholder="Enter name" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Municipality/City*</label>
-                    {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality" }}
+                    <input type="text" name="{{ form.municipality.name }}" class="form-input" placeholder="Enter municipality/city" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Province*</label>
-                    {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province" }}
+                    <input type="text" name="{{ form.province.name }}" class="form-input" placeholder="Enter province" required>
                 </div>
             </div>
 
-            <!-- Purpose and Registration -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Fourth Row -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Purpose/Use of Chainsaw*</label>
-                    {{ form.purpose|add_class:"form-input"|attr:"placeholder:Enter purpose" }}
+                    <input type="text" name="{{ form.purpose.name }}" class="form-input" placeholder="Enter purpose" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Date of Acquisition*</label>
-                    {{ form.date_acquired|add_class:"form-input"|attr:"type:date" }}
+                    <input type="date" name="{{ form.date_acquired.name }}" class="form-input" required>
                 </div>
             </div>
 
-            <!-- Registration Numbers -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Fifth Row -->
+            <div class="grid grid-cols-2 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Certificate of Registration Number*</label>
-                    {{ form.cert_reg_number|add_class:"form-input"|attr:"placeholder:Enter registration number" }}
+                    <input type="text" name="{{ form.cert_reg_number.name }}" class="form-input" placeholder="Enter registration number" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">CTPO/PTPR/Tenure Number*</label>
-                    {{ form.ctpo_number|add_class:"form-input"|attr:"placeholder:Enter CTPO number" }}
+                    <input type="text" name="{{ form.ctpo_number.name }}" class="form-input" placeholder="Enter CTPO/PTPR/Tenure number" required>
                 </div>
             </div>
 
-            <!-- Chainsaw Details -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- Sixth Row -->
+            <div class="grid grid-cols-4 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Brand*</label>
-                    {{ form.brand|add_class:"form-input"|attr:"placeholder:Enter brand" }}
+                    <input type="text" name="{{ form.brand.name }}" class="form-input" placeholder="Enter brand" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Model*</label>
-                    {{ form.model|add_class:"form-input"|attr:"placeholder:Enter model" }}
+                    <input type="text" name="{{ form.model.name }}" class="form-input" placeholder="Enter model" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Serial Number*</label>
-                    {{ form.serial_number|add_class:"form-input"|attr:"placeholder:Enter serial number" }}
+                    <input type="text" name="{{ form.serial_number.name }}" class="form-input" placeholder="Enter serial number" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Color*</label>
-                    {{ form.color|add_class:"form-input"|attr:"placeholder:Enter color" }}
+                    <input type="text" name="{{ form.color.name }}" class="form-input" placeholder="Enter color" required>
                 </div>
             </div>
 
-            <!-- Dates and Status -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- Seventh Row -->
+            <div class="grid grid-cols-4 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
-                    {{ form.date_issued|add_class:"form-input"|attr:"type:date" }}
+                    <input type="date" name="{{ form.date_issued.name }}" class="form-input" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
-                    {{ form.expiry_date|add_class:"form-input"|attr:"type:date" }}
+                    <input type="date" name="{{ form.expiry_date.name }}" class="form-input" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Status of Registration*</label>
-                    {{ form.registration_status|add_class:"form-input" }}
+                    <input type="text" name="{{ form.registration_status.name }}" class="form-input" placeholder="Enter status" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Date of Renewal</label>
-                    {{ form.date_renewal|add_class:"form-input"|attr:"type:date" }}
+                    <input type="date" name="{{ form.date_renewal.name }}" class="form-input">
                 </div>
             </div>
 
-            <!-- Technical Details -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Eighth Row -->
+            <div class="grid grid-cols-3 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Horse Power*</label>
-                    {{ form.horse_power|add_class:"form-input"|attr:"placeholder:Enter horse power" }}
+                    <input type="text" name="{{ form.horse_power.name }}" class="form-input" placeholder="Enter horse power" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Maximum Length of Guidebar (inches)*</label>
-                    {{ form.guidebar_length|add_class:"form-input"|attr:"placeholder:Enter length" }}
+                    <input type="text" name="{{ form.guidebar_length.name }}" class="form-input" placeholder="Enter guidebar length" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">DENR Sticker Number*</label>
-                    {{ form.denr_sticker|add_class:"form-input"|attr:"placeholder:Enter sticker number" }}
+                    <input type="text" name="{{ form.denr_sticker.name }}" class="form-input" placeholder="Enter DENR sticker number" required>
                 </div>
             </div>
 
             <!-- File Upload -->
-            <div>
+            <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700">Attach File</label>
-                {{ form.file|add_class:"form-input" }}
+                <input type="file" name="{{ form.file.name }}" class="form-input">
             </div>
 
             <!-- Submit Button -->
-            <div class="flex justify-end mt-6">
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
                     Save Record
                 </button>
             </div>
@@ -289,6 +398,23 @@
                 </div>
             </div>
             <div class="overflow-x-auto">
+                <div class="mb-4">
+                    {% with expired_records=chainsaw_records|expired_records %}
+                        {% if expired_records %}
+                            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
+                                Alert: {{ expired_records|length }} record{{ expired_records|length|pluralize }} expired
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                    
+                    {% with expiring_records=chainsaw_records|expiring_records %}
+                        {% if expiring_records %}
+                            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
+                                Warning: {{ expiring_records|length }} permit{{ expiring_records|length|pluralize }} expiring soon
+                            </div>
+                        {% endif %}
+                    {% endwith %}
+                </div>
                 <!-- Expiry Warnings -->
                 <div class="mb-4">
                     {% for record in chainsaw_records %}
