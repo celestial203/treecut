@@ -104,30 +104,61 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+def permit_file_path(instance, filename):
+    return f'permit_files/{timezone.now().year}/{timezone.now().month}/{filename}'
+
+def calculate_expiry_date(from_date):
+    # Start with the initial date
+    current_date = from_date
+    days_to_add = 50
+    days_added = 0
+    
+    while days_added < days_to_add:
+        current_date += timedelta(days=1)
+        # Skip weekends (5 = Saturday, 6 = Sunday)
+        if current_date.weekday() not in [5, 6]:
+            days_added += 1
+    
+    return current_date
+
 class Cutting(models.Model):
-    tcp_no = models.CharField(max_length=100, unique=True, verbose_name="TCP No.")
+    PERMIT_CHOICES = [
+        ('TCP', 'TCP'),
+        ('STCP', 'STCP'),
+        ('PLTP', 'PLTP'),
+        ('SPLTP', 'SPLTP'),
+    ]
+    
+    permit_type = models.CharField(max_length=5, choices=PERMIT_CHOICES, default='TCP')
+    permit_number = models.CharField(max_length=20, help_text='Permit identification number')
     permittee = models.CharField(max_length=100)
-    location = models.CharField(max_length=200, null=True, blank=True)
+    location = models.CharField(max_length=200, blank=True, null=True)
+    
+    # Making new fields nullable
     tct_oct_no = models.CharField(max_length=100, verbose_name="TCT/OCT No.", null=True, blank=True)
     tax_dec_no = models.CharField(max_length=100, verbose_name="Tax Declaration No.", null=True, blank=True)
     lot_no = models.CharField(max_length=100, verbose_name="Lot No.", null=True, blank=True)
     area = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Area (ha.)", null=True, blank=True)
-    no_of_trees = models.IntegerField(verbose_name="Number of Trees", default=0)
-    species = models.CharField(max_length=100, null=True, blank=True)
+    no_of_trees = models.IntegerField(verbose_name="Number of Trees", null=True, blank=True)
+    species = models.CharField(max_length=100, verbose_name="Species", null=True, blank=True)
+    permit_file = models.FileField(upload_to='permits/', verbose_name="Permit File", null=True, blank=True)
+    
     total_volume_granted = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total Volume Granted (cu.m.)")
     gross_volume = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Gross Volume (cu.m.)", null=True, blank=True)
     net_volume = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Net Volume (cu.m.)", null=True, blank=True)
+    
     permit_issue_date = models.DateField(null=True, blank=True)
     expiry_date = models.DateField(null=True, blank=True)
-    rep_by = models.CharField(max_length=100, blank=True, null=True)
+    rep_by = models.CharField(max_length=100, blank=True, null=True, verbose_name="Representative")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.tcp_no
-
     class Meta:
         ordering = ['-created_at']
+        unique_together = ['permit_type', 'permit_number']
+
+    def __str__(self):
+        return f"{self.permit_type}-{self.permit_number}"
 
 def chainsaw_file_path(instance, filename):
     # Generate file path: chainsaw_files/YYYY/MM/filename
@@ -292,16 +323,17 @@ class CuttingRecord(models.Model):
     parent_tcp = models.ForeignKey(Cutting, on_delete=models.CASCADE)
     date_added = models.DateTimeField(auto_now_add=True)
     species = models.CharField(max_length=100)
-    no_of_trees = models.IntegerField()
+    no_of_trees = models.IntegerField(default=0)
     volume = models.DecimalField(max_digits=10, decimal_places=2)
     calculated_volume = models.DecimalField(max_digits=10, decimal_places=2)
     _remaining_balance = models.DecimalField(
         max_digits=10, 
         decimal_places=2, 
         db_column='remaining_balance',
-        default=Decimal('0.00')  # Add default value
+        default=Decimal('0.00')
     )
     remarks = models.TextField(blank=True, null=True)
+    expiry_date = models.DateField(null=True, blank=True)
 
     @property
     def remaining_balance(self):
@@ -314,7 +346,25 @@ class CuttingRecord(models.Model):
     def save(self, *args, **kwargs):
         if not self.calculated_volume:
             self.calculated_volume = self.volume + (self.volume * Decimal('0.30'))
+        
+        # Calculate expiry date if not set
+        if not self.expiry_date and self.date_added:
+            self.expiry_date = calculate_expiry_date(self.date_added.date())
+            
         super().save(*args, **kwargs)
+
+    @property
+    def is_expired(self):
+        if self.expiry_date:
+            return timezone.now().date() > self.expiry_date
+        return False
+
+    @property
+    def days_until_expiry(self):
+        if self.expiry_date:
+            delta = self.expiry_date - timezone.now().date()
+            return delta.days
+        return None
 
     class Meta:
         ordering = ['-date_added']

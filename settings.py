@@ -78,3 +78,7 @@ TEMPLATES = [
 
 # WSGI application
 WSGI_APPLICATION = 'Treecut.wsgi.application'  # Points to project's WSGI application
+
+# Media files configuration
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

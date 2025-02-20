@@ -15,8 +15,14 @@ from django.core.validators import MinValueValidator
 User = get_user_model()
 ##LOGIN FORM#####
 class LoginForm(AuthenticationForm):
-    username = forms.CharField(widget=forms.TextInput(attrs={'class': 'form-control'}))
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    username = forms.CharField(widget=forms.TextInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Username'
+    }))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Password'
+    }))
 
     def clean(self):
         cleaned_data = super().clean()
@@ -136,89 +142,82 @@ class CuttingForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        gross_volume = cleaned_data.get('gross_volume')
+        permit_issue_date = cleaned_data.get('permit_issue_date')
+        expiry_date = cleaned_data.get('expiry_date')
 
-        # Calculate net volume (70% of gross volume)
-        if gross_volume:
-            net_volume = gross_volume * Decimal('0.70')
-            cleaned_data['net_volume'] = net_volume
+        if permit_issue_date and expiry_date:
+            if expiry_date < permit_issue_date:
+                raise forms.ValidationError('Expiry date cannot be earlier than issue date.')
 
         return cleaned_data
 
     class Meta:
         model = Cutting
         fields = [
-            'tcp_no',
+            'permit_type',
+            'permit_number',
             'permittee',
-            'permit_issue_date',
             'location',
             'tct_oct_no',
             'tax_dec_no',
             'lot_no',
             'area',
-            'rep_by',
             'no_of_trees',
             'species',
             'total_volume_granted',
             'gross_volume',
+            'net_volume',
+            'permit_issue_date',
+            'expiry_date',
+            'rep_by',
+            'permit_file'
         ]
         widgets = {
-            'tcp_no': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Format: C-Argao-XXXXXXXXX'
-            }),
-            'permittee': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Enter permittee name'
-            }),
-            'location': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Enter location'
-            }),
-            'tct_oct_no': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Enter TCT/OCT number'
-            }),
-            'tax_dec_no': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Enter tax declaration number'
-            }),
-            'lot_no': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Enter lot number'
-            }),
-            'area': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'step': '0.01',
-                'min': '0',
-                'placeholder': 'Enter area in hectares'
-            }),
-            'rep_by': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Enter representative name'
-            }),
-            'no_of_trees': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'min': '1',
-                'placeholder': 'Enter number of trees'
-            }),
-            'species': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Enter species'
-            }),
-            'total_volume_granted': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'step': '0.01',
-                'min': '0',
-                'placeholder': 'Enter total volume granted'
-            }),
-            'gross_volume': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'step': '0.01',
-                'min': '0',
-                'placeholder': 'Enter gross volume'
-            }),
+            'permit_issue_date': forms.DateInput(attrs={'type': 'date'}),
+            'expiry_date': forms.DateInput(attrs={'type': 'date'}),
+            'area': forms.NumberInput(attrs={'step': '0.01'}),
+            'total_volume_granted': forms.NumberInput(attrs={'step': '0.01'}),
+            'gross_volume': forms.NumberInput(attrs={'step': '0.01'}),
+            'net_volume': forms.NumberInput(attrs={'step': '0.01'})
         }
+
+    def clean_permit_file(self):
+        file = self.cleaned_data.get('permit_file')
+        if file:
+            # Get file extension
+            ext = file.name.split('.')[-1].lower()
+            allowed_extensions = ['pdf', 'jpg', 'jpeg', 'png']
+            
+            if ext not in allowed_extensions:
+                raise forms.ValidationError(
+                    'Only PDF, JPG, JPEG, and PNG files are allowed.'
+                )
+            
+            # Check file size (limit to 5MB)
+            if file.size > 5 * 1024 * 1024:
+                raise forms.ValidationError(
+                    'File size must be less than 5MB.'
+                )
+        return file
+
+    def clean(self):
+        cleaned_data = super().clean()
+        permit_type = cleaned_data.get('permit_type')
+        permit_number = cleaned_data.get('permit_number')
+
+        if permit_type and permit_number:
+            # Check if combination already exists
+            exists = Cutting.objects.filter(
+                permit_type=permit_type,
+                permit_number=permit_number
+            ).exists()
+            
+            if exists and not self.instance.pk:
+                raise forms.ValidationError(
+                    f"A record with permit type {permit_type} and number {permit_number} already exists."
+                )
+
+        return cleaned_data
 
 # ChainsawForm
 class ChainsawForm(forms.ModelForm):
@@ -295,22 +294,19 @@ class CuttingRecordForm(forms.ModelForm):
         model = CuttingRecord
         fields = ['species', 'no_of_trees', 'volume', 'remarks']
         widgets = {
-            'species': forms.TextInput(attrs={
-                'class': 'mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
-                'required': True
+            'volume': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'step': '0.01'
             }),
             'no_of_trees': forms.NumberInput(attrs={
-                'class': 'mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
-                'required': True
+                'class': 'form-input'
             }),
-            'volume': forms.NumberInput(attrs={
-                'step': '0.01',
-                'class': 'mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500',
-                'required': True
+            'species': forms.TextInput(attrs={
+                'class': 'form-input'
             }),
             'remarks': forms.Textarea(attrs={
-                'rows': 3,
-                'class': 'mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'
+                'class': 'form-textarea',
+                'rows': 3
             })
         }
 

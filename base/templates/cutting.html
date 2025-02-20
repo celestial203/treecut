@@ -236,10 +236,15 @@
 
         /* Add visual feedback for updates */
         .updated {
-            transition: background-color 0.3s ease;
-            background-color: #e8f4ff !important;
+            animation: highlight 0.3s ease-out;
         }
         
+        @keyframes highlight {
+            0% { background-color: #fff; }
+            50% { background-color: #e3f2fd; }
+            100% { background-color: #fff; }
+        }
+
         /* Style for readonly net volume field */
         #netVolume {
             background-color: #f8fafc;
@@ -261,8 +266,8 @@
         }
 
         input[readonly] {
-            background-color: #f9fafb;
-            cursor: default;
+            background-color: #f8f9fa;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -321,96 +326,175 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="bg-white rounded-lg shadow-lg p-6">
             <h2 class="text-2xl font-bold mb-6">Add New Record</h2>
-            <form method="POST" class="space-y-6">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 
-                <!-- Basic Information -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">TCP No.</label>
-                        {{ form.tcp_no|add_class:"form-input"|attr:"placeholder:Enter TCP number (e.g. C-Argao-123)"|attr:"pattern:C-Argao-.*"|attr:"title:TCP number must start with C-Argao-"|attr:"id:tcpNo" }}
-                        <div id="tcpValidationMessage" class="validation-message mt-1 text-sm text-red-600 hidden"></div>
+                {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                    <div class="p-4 {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} rounded">
+                        {{ message }}
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Permittee</label>
-                        {{ form.permittee|add_class:"form-input"|attr:"placeholder:Enter permittee name" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Location</label>
-                        {{ form.location|add_class:"form-input"|attr:"placeholder:Enter location" }}
-                    </div>
+                    {% endfor %}
                 </div>
+                {% endif %}
 
-                <!-- Property Information -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">TCT/OCT No.</label>
-                        {{ form.tct_oct_no|add_class:"form-input"|attr:"placeholder:Enter TCT/OCT number" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Date Issued</label>
-                        {{ form.permit_issue_date|add_class:"form-input date-input"|attr:"type:date"|attr:"max:2025-12-31"|attr:"min:2000-01-01"|attr:"required" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Tax Dec. No.</label>
-                        {{ form.tax_dec_no|add_class:"form-input"|attr:"placeholder:Enter tax declaration number" }}
-                    </div>
+                {% if form.errors %}
+                <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">
+                    <p class="font-bold">Please correct the following errors:</p>
+                    <ul>
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
                 </div>
+                {% endif %}
 
-                <!-- Additional Property Details -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Lot No.</label>
-                        {{ form.lot_no|add_class:"form-input"|attr:"placeholder:Enter lot number" }}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Permit Information -->
+                    <div class="form-group">
+                        <label for="{{ form.permit_type.id_for_label }}">Permit Type</label>
+                        {{ form.permit_type }}
+                        {% if form.permit_type.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.permit_type.errors.0 }}</div>
+                        {% endif %}
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Area (ha.)</label>
-                        {{ form.area|add_class:"form-input"|attr:"placeholder:Enter area in hectares"|attr:"step:0.01" }}
+                    <div class="form-group">
+                        <label for="{{ form.permit_number.id_for_label }}">Permit Number</label>
+                        {{ form.permit_number }}
+                        {% if form.permit_number.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.permit_number.errors.0 }}</div>
+                        {% endif %}
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Representative</label>
-                        {{ form.rep_by|add_class:"form-input"|attr:"placeholder:Enter representative name" }}
+                    
+                    <!-- Permittee Information -->
+                    <div class="form-group">
+                        <label for="{{ form.permittee.id_for_label }}">Permittee</label>
+                        {{ form.permittee }}
+                        {% if form.permittee.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.permittee.errors.0 }}</div>
+                        {% endif %}
                     </div>
-                </div>
+                    
+                    <!-- Location Information -->
+                    <div class="form-group">
+                        <label for="{{ form.location.id_for_label }}">Location</label>
+                        {{ form.location }}
+                        {% if form.location.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.location.errors.0 }}</div>
+                        {% endif %}
+                    </div>
 
-                <!-- Trees and Volume Information -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Number of Trees</label>
-                        {{ form.no_of_trees|add_class:"form-input"|attr:"placeholder:Enter number of trees" }}
+                    <!-- Property Information -->
+                    <div class="form-group">
+                        <label for="{{ form.tct_oct_no.id_for_label }}">TCT/OCT No.</label>
+                        {{ form.tct_oct_no }}
+                        {% if form.tct_oct_no.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.tct_oct_no.errors.0 }}</div>
+                        {% endif %}
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Species</label>
-                        {{ form.species|add_class:"form-input"|attr:"placeholder:Enter species" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Total Volume Granted</label>
-                        {{ form.total_volume_granted|add_class:"form-input"|attr:"placeholder:Enter total volume"|attr:"step:0.01" }}
-                    </div>
-                </div>
 
-                <!-- Volume Calculations -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Gross Volume</label>
-                        <input type="number" 
-                               id="grossVolume" 
-                               name="gross_volume" 
-                               class="form-input" 
-                               placeholder="Enter gross volume" 
-                               step="0.01" 
-                               oninput="calculateNetVolume()" 
-                               value="{{ form.gross_volume.value|default:'' }}">
+                    <div class="form-group">
+                        <label for="{{ form.tax_dec_no.id_for_label }}">Tax Declaration No.</label>
+                        {{ form.tax_dec_no }}
+                        {% if form.tax_dec_no.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.tax_dec_no.errors.0 }}</div>
+                        {% endif %}
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Net Volume</label>
-                        <input type="number" 
-                               id="netVolume" 
-                               name="net_volume" 
-                               class="form-input bg-gray-50" 
-                               readonly 
-                               placeholder="Net volume"
-                               value="{{ form.net_volume.value|default:'' }}">
+
+                    <div class="form-group">
+                        <label for="{{ form.lot_no.id_for_label }}">Lot No.</label>
+                        {{ form.lot_no }}
+                        {% if form.lot_no.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.lot_no.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Area and Trees -->
+                    <div class="form-group">
+                        <label for="{{ form.area.id_for_label }}">Area (ha.)</label>
+                        {{ form.area }}
+                        {% if form.area.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.area.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.no_of_trees.id_for_label }}">Number of Trees</label>
+                        {{ form.no_of_trees }}
+                        {% if form.no_of_trees.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.no_of_trees.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.species.id_for_label }}">Species</label>
+                        {{ form.species }}
+                        {% if form.species.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.species.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Volume Information -->
+                    <div class="form-group">
+                        <label for="{{ form.total_volume_granted.id_for_label }}">Total Volume Granted (cu.m.)</label>
+                        {{ form.total_volume_granted }}
+                        {% if form.total_volume_granted.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.total_volume_granted.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.gross_volume.id_for_label }}">Gross Volume (cu.m.)</label>
+                        {{ form.gross_volume }}
+                        {% if form.gross_volume.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.gross_volume.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.net_volume.id_for_label }}">Net Volume (cu.m.)</label>
+                        {{ form.net_volume }}
+                        {% if form.net_volume.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.net_volume.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="form-group">
+                        <label for="{{ form.permit_issue_date.id_for_label }}">Date Issued</label>
+                        {{ form.permit_issue_date }}
+                        {% if form.permit_issue_date.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.permit_issue_date.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.expiry_date.id_for_label }}">Expiry Date</label>
+                        {{ form.expiry_date }}
+                        {% if form.expiry_date.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.expiry_date.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Representative -->
+                    <div class="form-group">
+                        <label for="{{ form.rep_by.id_for_label }}">Representative</label>
+                        {{ form.rep_by }}
+                        {% if form.rep_by.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.rep_by.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="form-group">
+                        <label for="{{ form.permit_file.id_for_label }}">Permit File</label>
+                        {{ form.permit_file }}
+                        {% if form.permit_file.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.permit_file.errors.0 }}</div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -466,34 +550,61 @@
                 <table class="min-w-full text-sm text-left text-gray-500">
                     <thead class="bg-gray-50 text-gray-700">
                         <tr>
-                            <th class="px-6 py-4 font-semibold">TCP No.</th>
-                            <th class="px-6 py-4 font-semibold">Permittee</th>
-                            <th class="px-6 py-4 font-semibold">Location</th>
+                            <th class="px-6 py-4 font-semibold">Permit Type</th>
+                            <th class="px-6 py-4 font-semibold">Permit Number</th>
+                            <th class="px-6 py-4 font-semibold">File</th>
                             <th class="px-6 py-4 font-semibold">TCT/OCT No.</th>
                             <th class="px-6 py-4 font-semibold">Tax Dec. No.</th>
                             <th class="px-6 py-4 font-semibold">Lot No.</th>
                             <th class="px-6 py-4 font-semibold">Area (ha.)</th>
                             <th class="px-6 py-4 font-semibold">Date Issued</th>
+                            <th class="px-6 py-4 font-semibold">Expiry Date</th>
                             <th class="px-6 py-4 font-semibold">No. of Trees</th>
                             <th class="px-6 py-4 font-semibold">Species</th>
                             <th class="px-6 py-4 font-semibold">Total Volume</th>
                             <th class="px-6 py-4 font-semibold">Gross Volume</th>
                             <th class="px-6 py-4 font-semibold">Net Volume</th>
+                            <th class="px-6 py-4 font-semibold">Status</th>
                             <th class="px-6 py-4 font-semibold">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                         {% if cuttings %}
                             {% for cutting in cuttings %}
-                            <tr class="hover:bg-gray-50 transition-colors duration-150">
-                                <td class="px-6 py-4">{{ cutting.tcp_no }}</td>
-                                <td class="px-6 py-4">{{ cutting.permittee }}</td>
-                                <td class="px-6 py-4">{{ cutting.location|default:"-" }}</td>
+                            <tr class="{% if cutting.expiry_date %}
+                                       {% if cutting.expiry_date|date:'Y-m-d' >= today|date:'Y-m-d' %}
+                                           bg-green-50 hover:bg-green-100  <!-- Active -->
+                                       {% elif cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}
+                                           bg-red-50 hover:bg-red-100      <!-- Expired -->
+                                       {% else %}
+                                           bg-yellow-50 hover:bg-yellow-100 <!-- Unknown/Pending -->
+                                       {% endif %}
+                                       {% else %}
+                                           bg-yellow-50 hover:bg-yellow-100 <!-- No expiry date set -->
+                                       {% endif %}">
+                                <td class="px-6 py-4">{{ cutting.get_permit_type_display }}</td>
+                                <td class="px-6 py-4">{{ cutting.permit_number }}</td>
+                                <td class="px-6 py-4">
+                                    {% if cutting.permit_file %}
+                                    <a href="{{ cutting.permit_file.url }}" 
+                                       target="_blank"
+                                       class="text-blue-600 hover:text-blue-900 font-medium flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                        View File
+                                    </a>
+                                    {% else %}
+                                    <span class="text-gray-400">No file</span>
+                                    {% endif %}
+                                </td>
                                 <td class="px-6 py-4">{{ cutting.tct_oct_no|default:"-" }}</td>
                                 <td class="px-6 py-4">{{ cutting.tax_dec_no|default:"-" }}</td>
                                 <td class="px-6 py-4">{{ cutting.lot_no|default:"-" }}</td>
                                 <td class="px-6 py-4">{{ cutting.area|default:"-" }}</td>
                                 <td class="px-6 py-4">{{ cutting.permit_issue_date|date:"M d, Y" }}</td>
+                                <td class="px-6 py-4">{{ cutting.expiry_date|date:"M d, Y" }}</td>
                                 <td class="px-6 py-4">{{ cutting.no_of_trees }}</td>
                                 <td class="px-6 py-4">{{ cutting.species|default:"-" }}</td>
                                 <td class="px-6 py-4">{{ cutting.total_volume_granted }}</td>
@@ -505,9 +616,35 @@
                                         -
                                     {% endif %}
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {% if cutting.expiry_date %}
+                                            {% if cutting.expiry_date|date:'Y-m-d' >= today|date:'Y-m-d' %}
+                                                bg-green-100 text-green-800  <!-- Active -->
+                                            {% elif cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}
+                                                bg-red-100 text-red-800      <!-- Expired -->
+                                            {% else %}
+                                                bg-yellow-100 text-yellow-800 <!-- Unknown/Pending -->
+                                            {% endif %}
+                                        {% else %}
+                                            bg-yellow-100 text-yellow-800     <!-- No expiry date set -->
+                                        {% endif %}">
+                                        {% if cutting.expiry_date %}
+                                            {% if cutting.expiry_date|date:'Y-m-d' >= today|date:'Y-m-d' %}
+                                                Active
+                                            {% elif cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}
+                                                Expired
+                                            {% else %}
+                                                Pending
+                                            {% endif %}
+                                        {% else %}
+                                            Pending
+                                        {% endif %}
+                                    </span>
+                                </td>
                                 <td class="px-6 py-4">
                                     <div class="flex space-x-3">
-                                        <a href="{% url 'add_cutting_record' tcp_no=cutting.tcp_no %}" 
+                                        <a href="{% url 'add_cutting_record' permit_number=cutting.permit_number %}" 
                                            class="text-blue-600 hover:text-blue-900 font-medium flex items-center">
                                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -535,7 +672,7 @@
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="14" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <td colspan="16" class="px-6 py-4 text-center text-sm text-gray-500">
                                     No records found. Add a new record above.
                                 </td>
                             </tr>
@@ -711,90 +848,83 @@
             downloadLink.click();
         }
 
-        function calculateNetVolume() {
-            const grossVolume = document.getElementById('grossVolume').value;
-            const netVolume = document.getElementById('netVolume');
-            
-            if (grossVolume && !isNaN(grossVolume)) {
-                // Calculate net volume as 70% of gross volume
-                const grossVal = parseFloat(grossVolume);
-                const netVal = grossVal * (70/100); // Multiply by 70%
-                netVolume.value = netVal.toFixed(2);
-                
-                // Add visual feedback
-                netVolume.classList.add('updated');
-                setTimeout(() => {
-                    netVolume.classList.remove('updated');
-                }, 300);
-
-                // Log calculation for verification
-                console.log(`Gross Volume: ${grossVal}`);
-                console.log(`Calculation: ${grossVal} × 70% = ${netVal}`);
-            } else {
-                netVolume.value = '';
-            }
-        }
-
-        // Calculate on page load if gross volume exists
         document.addEventListener('DOMContentLoaded', function() {
-            const grossVolume = document.getElementById('grossVolume');
-            if (grossVolume.value) {
+            const grossVolumeInput = document.getElementById('{{ form.gross_volume.id_for_label }}');
+            const netVolumeInput = document.getElementById('{{ form.net_volume.id_for_label }}');
+
+            function calculateNetVolume() {
+                const grossVolume = parseFloat(grossVolumeInput.value) || 0;
+                
+                // Calculate net volume (70% of gross volume)
+                const netVolume = grossVolume * 0.70;
+                
+                // Update net volume field with 2 decimal places
+                netVolumeInput.value = netVolume.toFixed(2);
+            }
+
+            // Calculate net volume whenever gross volume changes
+            grossVolumeInput.addEventListener('input', calculateNetVolume);
+            
+            // Calculate on page load if gross volume exists
+            if (grossVolumeInput.value) {
                 calculateNetVolume();
             }
+
+            // Add visual feedback when net volume is updated
+            netVolumeInput.addEventListener('change', function() {
+                netVolumeInput.classList.add('updated');
+                setTimeout(() => {
+                    netVolumeInput.classList.remove('updated');
+                }, 300);
+            });
         });
 
-        // Ensure calculation happens before form submission
-        document.querySelector('form').addEventListener('submit', function(e) {
-            // e.preventDefault(); // Uncomment for debugging
-            calculateNetVolume();
+        function calculateExpiryDate(issueDate) {
+            const date = new Date(issueDate);
+            let daysToAdd = 50;
+            let daysAdded = 0;
             
-            // Log form data before submission
-            const formData = new FormData(this);
-            console.log('Form data before submission:');
-            for (let pair of formData.entries()) {
-                console.log(pair[0] + ': ' + pair[1]);
+            while (daysAdded < daysToAdd) {
+                date.setDate(date.getDate() + 1);
+                // Skip weekends (0 is Sunday, 6 is Saturday)
+                if (date.getDay() !== 0 && date.getDay() !== 6) {
+                    daysAdded++;
+                }
             }
-        });
+            
+            // Format date as YYYY-MM-DD for input field
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
-        // Add TCP Number validation
+        // Add event listener to issue date field
         document.addEventListener('DOMContentLoaded', function() {
-            const tcpInput = document.getElementById('tcpNo');
-            const tcpValidationMessage = document.getElementById('tcpValidationMessage');
+            const issueDateInput = document.querySelector('input[name="permit_issue_date"]');
+            const expiryDateInput = document.querySelector('input[name="expiry_date"]');
             
-            function validateTCP(value) {
-                if (!value.startsWith('C-Argao-')) {
-                    return 'TCP number must start with C-Argao-';
-                }
-                return '';
-            }
-
-            tcpInput.addEventListener('input', function() {
-                const error = validateTCP(this.value);
-                if (error) {
-                    tcpValidationMessage.textContent = error;
-                    tcpValidationMessage.classList.remove('hidden');
-                    tcpValidationMessage.classList.add('show');
-                    this.setCustomValidity(error);
-                } else {
-                    tcpValidationMessage.classList.remove('show');
-                    tcpValidationMessage.classList.add('hidden');
-                    this.setCustomValidity('');
-                }
-            });
-
-            // Add form submission validation
-            document.querySelector('form').addEventListener('submit', function(e) {
-                const tcpValue = tcpInput.value;
-                const error = validateTCP(tcpValue);
+            if (issueDateInput && expiryDateInput) {
+                issueDateInput.addEventListener('change', function() {
+                    if (this.value) {
+                        expiryDateInput.value = calculateExpiryDate(this.value);
+                    }
+                });
                 
-                if (error) {
-                    e.preventDefault();
-                    tcpValidationMessage.textContent = error;
-                    tcpValidationMessage.classList.remove('hidden');
-                    tcpValidationMessage.classList.add('show');
-                    tcpInput.focus();
+                // Calculate on page load if issue date exists
+                if (issueDateInput.value) {
+                    expiryDateInput.value = calculateExpiryDate(issueDateInput.value);
                 }
-            });
+            }
+        });
+
+        // Make the expiry date field readonly
+        document.addEventListener('DOMContentLoaded', function() {
+            const expiryDateInput = document.querySelector('input[name="expiry_date"]');
+            if (expiryDateInput) {
+                expiryDateInput.readOnly = true;
+                expiryDateInput.style.backgroundColor = '#f3f4f6';  // Light gray background
+            }
         });
     </script>
 </body>

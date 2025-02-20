@@ -84,15 +84,18 @@ def dashboard(request):
 @login_required
 def cutting(request):
     if request.method == 'POST':
-        form = CuttingForm(request.POST)
+        form = CuttingForm(request.POST, request.FILES)
         if form.is_valid():
-            permit_date = form.cleaned_data.get('permit_issue_date')
-            if permit_date and permit_date > date.today():
-                messages.error(request, 'Date issued cannot be in the future')
-            else:
-                form.save()
-                messages.success(request, 'Record added successfully')
+            try:
+                cutting = form.save()
+                messages.success(request, f'Successfully added cutting record for {cutting.permit_type}-{cutting.permit_number}')
                 return redirect('cutting')
+            except Exception as e:
+                messages.error(request, f'Error saving record: {str(e)}')
+        else:
+            # Print form errors to console for debugging
+            print("Form errors:", form.errors)
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = CuttingForm()
 
@@ -102,6 +105,7 @@ def cutting(request):
     context = {
         'form': form,
         'cuttings': cuttings,
+        'today': timezone.now().date(),
         'page_title': 'Cutting Records'
     }
     return render(request, 'cutting.html', context)
@@ -269,8 +273,8 @@ def view_cutting(request, pk):
         return redirect('cutting')
 
 @login_required
-def add_cutting_record(request, tcp_no):
-    parent_tcp = get_object_or_404(Cutting, tcp_no=tcp_no)
+def add_cutting_record(request, permit_number):
+    parent_tcp = get_object_or_404(Cutting, permit_number=permit_number)
     cutting_records = CuttingRecord.objects.filter(parent_tcp=parent_tcp).order_by('date_added')
     
     # Get the new_record_id from the session if it exists
@@ -283,50 +287,13 @@ def add_cutting_record(request, tcp_no):
         remaining_balance = parent_tcp.total_volume_granted
         is_first_entry = True
     
-    if request.method == 'POST':
-        try:
-            species = request.POST.get('species')
-            no_of_trees = request.POST.get('no_of_trees')
-            volume = Decimal(request.POST.get('volume', '0'))
-            remarks = request.POST.get('remarks')
-
-            if is_first_entry:
-                calculated_volume = volume + (volume * Decimal('0.30'))
-                new_remaining_balance = calculated_volume
-            else:
-                calculated_volume = volume
-                new_remaining_balance = remaining_balance - volume
-
-            if not is_first_entry and new_remaining_balance < 0:
-                messages.error(request, 'Cannot add record. Volume exceeds remaining balance.')
-                return redirect('add_cutting_record', tcp_no=tcp_no)
-
-            cutting_record = CuttingRecord.objects.create(
-                parent_tcp=parent_tcp,
-                species=species,
-                no_of_trees=no_of_trees,
-                volume=volume,
-                calculated_volume=calculated_volume,
-                remaining_balance=new_remaining_balance,
-                remarks=remarks
-            )
-            
-            # Store the new record ID in session
-            request.session['new_record_id'] = cutting_record.id
-            messages.success(request, f'Record successfully added! New balance: {new_remaining_balance:.2f} cu.m')
-            return redirect('add_cutting_record', tcp_no=tcp_no)
-            
-        except Exception as e:
-            messages.error(request, f'Error adding record: {str(e)}')
-            return redirect('add_cutting_record', tcp_no=tcp_no)
-    
     context = {
         'parent_tcp': parent_tcp,
         'volume_records': cutting_records,
         'remaining_balance': remaining_balance,
         'is_first_entry': is_first_entry,
         'total_volume_granted': parent_tcp.total_volume_granted,
-        'new_record_id': new_record_id,  # Pass the new record ID to the template
+        'new_record_id': new_record_id,
     }
     
     return render(request, 'add_cutting_record.html', context)
@@ -390,4 +357,22 @@ def edit_wood(request, pk):
 
 def login_page(request):
     return render(request, 'login.html')
+
+@login_required
+def edit_cutting_record(request, record_id):
+    record = get_object_or_404(CuttingRecord, id=record_id)
+    
+    if request.method == 'POST':
+        form = CuttingRecordForm(request.POST, instance=record)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Record updated successfully!')
+            return redirect('add_cutting_record', permit_number=record.parent_tcp.permit_number)
+    else:
+        form = CuttingRecordForm(instance=record)
+    
+    return render(request, 'edit_cutting_record.html', {
+        'form': form,
+        'record': record
+    })
 

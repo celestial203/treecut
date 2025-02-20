@@ -199,16 +199,12 @@
                         <input type="text" name="species" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Number of Trees*</label>
-                        <input type="number" name="no_of_trees" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                        <label class="block text-sm font-medium text-gray-700">Volume (cu.m)*</label>
+                        <input type="number" step="0.01" name="volume" id="inputVolume" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Volume (cu.m)*</label>
-                        <input type="number" step="0.01" name="volume" id="inputVolume" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
-                    </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Calculated Volume (30%)</label>
                         <input type="number" step="0.01" id="calculatedVolume" class="mt-1 block w-full rounded-md bg-gray-50 border-gray-300 shadow-sm" readonly>
@@ -271,11 +267,11 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Species</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. of Trees</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume (cu.m)</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calculated Volume</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining Balance</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remarks</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -283,26 +279,25 @@
                         <tr class="{% if record.id == new_record_id %}bg-blue-50 animate-highlight{% else %}hover:bg-gray-50{% endif %} {% if forloop.last %}bg-gray-50{% endif %}">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.date_added|date:"M d, Y" }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.species }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.no_of_trees }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.volume|floatformat:2 }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.calculated_volume|floatformat:2 }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
                                     {% if record.remaining_balance <= 1 %}
                                         <span class="text-sm text-red-600 font-semibold">
-                                            {{ record.remaining_balance|floatformat:2 }} cu.m.
-                                        </span>
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                            CONSUMED
+                                            {{ record.remaining_balance|floatformat:2 }}
                                         </span>
                                     {% else %}
-                                        <span class="text-sm text-blue-600">
-                                            {{ record.remaining_balance|floatformat:2 }} cu.m.
+                                        <span class="text-sm text-gray-900">
+                                            {{ record.remaining_balance|floatformat:2 }}
                                         </span>
                                     {% endif %}
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ record.remarks|default:"-" }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="{% url 'edit_cutting_record' record.id %}" class="text-blue-600 hover:text-blue-900">Edit</a>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

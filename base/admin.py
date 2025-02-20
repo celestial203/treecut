@@ -39,17 +39,14 @@ class LumberAdmin(admin.ModelAdmin):
 
 @admin.register(Cutting)
 class CuttingAdmin(admin.ModelAdmin):
-    list_display = [
-        'tcp_no',
-        'permittee',
-        'location',
-        'tct_oct_no',
-        'tax_dec_no',
-        'no_of_trees',
-        'total_volume_granted',
-        'permit_issue_date',
-        'expiry_date'
+    PERMIT_CHOICES = [
+        ('TCP', 'TCP'),
+        ('STCP', 'STCP'),
+        ('PLTP', 'PLTP'),
+        ('SPLTP', 'SPLTP'),
     ]
+
+    list_display = ('permit_type', 'permit_number')  # Assuming these are your new field names
     search_fields = ['tcp_no', 'permittee']
     list_filter = ['permit_issue_date', 'expiry_date']
     date_hierarchy = 'permit_issue_date'
