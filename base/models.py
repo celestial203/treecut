@@ -334,6 +334,7 @@ class CuttingRecord(models.Model):
     )
     remarks = models.TextField(blank=True, null=True)
     expiry_date = models.DateField(null=True, blank=True)
+    number_of_trees = models.IntegerField(default=0)
 
     @property
     def remaining_balance(self):
