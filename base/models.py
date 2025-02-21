@@ -7,6 +7,7 @@ from django.db import models
 import re
 import os
 from decimal import Decimal
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 # models.py
 from django.db import models
@@ -129,6 +130,11 @@ class Cutting(models.Model):
         ('SPLTP', 'SPLTP'),
     ]
     
+    SITUATION_CHOICES = [
+        ('Good', 'Good'),
+        ('Pending', 'Pending'),
+    ]
+    
     permit_type = models.CharField(max_length=5, choices=PERMIT_CHOICES, default='TCP')
     permit_number = models.CharField(max_length=20, help_text='Permit identification number')
     permittee = models.CharField(max_length=100)
@@ -141,7 +147,12 @@ class Cutting(models.Model):
     area = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Area (ha.)", null=True, blank=True)
     no_of_trees = models.IntegerField(verbose_name="Number of Trees", null=True, blank=True)
     species = models.CharField(max_length=100, verbose_name="Species", null=True, blank=True)
-    permit_file = models.FileField(upload_to='permits/', verbose_name="Permit File", null=True, blank=True)
+    permit_file = models.FileField(
+        upload_to='permits/',
+        null=True,
+        blank=True,
+        help_text="Upload permit document"
+    )
     
     total_volume_granted = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total Volume Granted (cu.m.)")
     gross_volume = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Gross Volume (cu.m.)", null=True, blank=True)
@@ -152,6 +163,35 @@ class Cutting(models.Model):
     rep_by = models.CharField(max_length=100, blank=True, null=True, verbose_name="Representative")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    situation = models.CharField(
+        max_length=50, 
+        choices=SITUATION_CHOICES,
+        default='Pending',
+        verbose_name='Situation'
+    )
+
+    latitude = models.DecimalField(
+        max_digits=9,  # Total digits including decimal places
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(-90),
+            MaxValueValidator(90)
+        ],
+        help_text="Enter latitude between -90 and 90 degrees"
+    )
+    longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+        validators=[
+            MinValueValidator(-180),
+            MaxValueValidator(180)
+        ],
+        help_text="Enter longitude between -180 and 180 degrees"
+    )
 
     class Meta:
         ordering = ['-created_at']
@@ -159,6 +199,25 @@ class Cutting(models.Model):
 
     def __str__(self):
         return f"{self.permit_type}-{self.permit_number}"
+
+    def save(self, *args, **kwargs):
+        # Calculate net volume if gross volume exists
+        if self.gross_volume:
+            self.net_volume = float(self.gross_volume) * 0.70
+
+        # Calculate expiry date if permit_issue_date exists and expiry_date doesn't
+        if self.permit_issue_date and not self.expiry_date:
+            self.expiry_date = calculate_expiry_date(self.permit_issue_date)
+
+        # Convert fields to uppercase
+        if self.permit_number:
+            self.permit_number = self.permit_number.upper()
+        if self.permittee:
+            self.permittee = self.permittee.upper()
+        if self.location:
+            self.location = self.location.upper()
+
+        super().save(*args, **kwargs)
 
 def chainsaw_file_path(instance, filename):
     # Generate file path: chainsaw_files/YYYY/MM/filename
@@ -369,3 +428,24 @@ class CuttingRecord(models.Model):
 
     class Meta:
         ordering = ['-date_added']
+
+class CuttingPermit(models.Model):
+    # ... existing fields ...
+    
+    # Add these new fields
+    latitude = models.DecimalField(
+        max_digits=9, 
+        decimal_places=6,
+        null=True,
+        blank=True,
+        help_text="Latitude coordinates (e.g. 10.123456)"
+    )
+    longitude = models.DecimalField(
+        max_digits=9, 
+        decimal_places=6,
+        null=True,
+        blank=True,
+        help_text="Longitude coordinates (e.g. 123.456789)"
+    )
+
+    # ... rest of the model ...

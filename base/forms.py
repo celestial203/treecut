@@ -74,150 +74,91 @@ class LumberForm(forms.ModelForm):
 
 # CuttingForm
 class CuttingForm(forms.ModelForm):
-    permit_issue_date = forms.DateField(
-        widget=forms.DateInput(attrs={
-            'type': 'date',
-            'max': '2025-12-31',
-            'min': '2000-01-01',
-        }),
-        required=True
-    )
-
-    def clean_tcp_no(self):
-        tcp_no = self.cleaned_data.get('tcp_no')
-        if tcp_no:
-            if not tcp_no.startswith('C-Argao-'):
-                raise forms.ValidationError("TCP No. must start with 'C-Argao-'")
-            existing = Cutting.objects.filter(tcp_no=tcp_no)
-            if self.instance:
-                existing = existing.exclude(pk=self.instance.pk)
-            if existing.exists():
-                raise forms.ValidationError("This TCP No. already exists")
-        return tcp_no
-
-    def clean_permit_issue_date(self):
-        permit_date = self.cleaned_data.get('permit_issue_date')
-        if permit_date:
-            if permit_date > timezone.now().date():
-                raise forms.ValidationError("Date issued cannot be in the future")
-            if permit_date.year < 2000:
-                raise forms.ValidationError("Date issued cannot be before year 2000")
-        return permit_date
-
-    def clean_area(self):
-        area = self.cleaned_data.get('area')
-        if area is not None:
-            if area <= 0:
-                raise forms.ValidationError("Area must be greater than 0")
-            if area > 1000:
-                raise forms.ValidationError("Area cannot exceed 1000 hectares")
-        return area
-
-    def clean_no_of_trees(self):
-        trees = self.cleaned_data.get('no_of_trees')
-        if trees is not None:
-            if trees <= 0:
-                raise forms.ValidationError("Number of trees must be greater than 0")
-            if trees > 10000:
-                raise forms.ValidationError("Number of trees seems unusually high")
-        return trees
-
-    def clean_gross_volume(self):
-        gross_volume = self.cleaned_data.get('gross_volume')
-        if gross_volume is not None:
-            if gross_volume <= 0:
-                raise forms.ValidationError("Gross volume must be greater than 0")
-            if gross_volume > 10000:
-                raise forms.ValidationError("Gross volume seems unusually high")
-        return gross_volume
-
-    def clean_total_volume_granted(self):
-        volume = self.cleaned_data.get('total_volume_granted')
-        if volume is not None:
-            if volume <= 0:
-                raise forms.ValidationError("Total volume granted must be greater than 0")
-            if volume > 10000:
-                raise forms.ValidationError("Total volume granted seems unusually high")
-        return volume
-
-    def clean(self):
-        cleaned_data = super().clean()
-        permit_issue_date = cleaned_data.get('permit_issue_date')
-        expiry_date = cleaned_data.get('expiry_date')
-
-        if permit_issue_date and expiry_date:
-            if expiry_date < permit_issue_date:
-                raise forms.ValidationError('Expiry date cannot be earlier than issue date.')
-
-        return cleaned_data
-
     class Meta:
         model = Cutting
         fields = [
             'permit_type',
             'permit_number',
+            'permit_issue_date',
+            'expiry_date',
             'permittee',
+            'rep_by',
             'location',
+            'latitude',
+            'longitude',
             'tct_oct_no',
             'tax_dec_no',
             'lot_no',
             'area',
-            'no_of_trees',
             'species',
+            'no_of_trees',
             'total_volume_granted',
             'gross_volume',
             'net_volume',
-            'permit_issue_date',
-            'expiry_date',
-            'rep_by',
-            'permit_file'
+            'permit_file',
+            'situation'
         ]
         widgets = {
             'permit_issue_date': forms.DateInput(attrs={'type': 'date'}),
-            'expiry_date': forms.DateInput(attrs={'type': 'date'}),
-            'area': forms.NumberInput(attrs={'step': '0.01'}),
-            'total_volume_granted': forms.NumberInput(attrs={'step': '0.01'}),
-            'gross_volume': forms.NumberInput(attrs={'step': '0.01'}),
-            'net_volume': forms.NumberInput(attrs={'step': '0.01'})
+            'expiry_date': forms.DateInput(attrs={'type': 'date', 'readonly': 'readonly'}),
+            'net_volume': forms.NumberInput(attrs={'readonly': 'readonly'}),
+            'permit_file': forms.ClearableFileInput(attrs={'class': 'form-control'})
         }
 
-    def clean_permit_file(self):
-        file = self.cleaned_data.get('permit_file')
-        if file:
-            # Get file extension
-            ext = file.name.split('.')[-1].lower()
-            allowed_extensions = ['pdf', 'jpg', 'jpeg', 'png']
-            
-            if ext not in allowed_extensions:
-                raise forms.ValidationError(
-                    'Only PDF, JPG, JPEG, and PNG files are allowed.'
-                )
-            
-            # Check file size (limit to 5MB)
-            if file.size > 5 * 1024 * 1024:
-                raise forms.ValidationError(
-                    'File size must be less than 5MB.'
-                )
-        return file
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make certain fields required
+        self.fields['permit_type'].required = True
+        self.fields['permit_number'].required = True
+        self.fields['permit_issue_date'].required = True
+        self.fields['permittee'].required = True
+        
+        # Make certain fields not required
+        self.fields['permit_file'].required = False
+        self.fields['expiry_date'].required = False
+        self.fields['net_volume'].required = False
 
     def clean(self):
         cleaned_data = super().clean()
-        permit_type = cleaned_data.get('permit_type')
-        permit_number = cleaned_data.get('permit_number')
+        
+        # Calculate net volume if gross volume exists
+        gross_volume = cleaned_data.get('gross_volume')
+        if gross_volume:
+            cleaned_data['net_volume'] = float(gross_volume) * 0.70
 
-        if permit_type and permit_number:
-            # Check if combination already exists
-            exists = Cutting.objects.filter(
-                permit_type=permit_type,
-                permit_number=permit_number
-            ).exists()
-            
-            if exists and not self.instance.pk:
-                raise forms.ValidationError(
-                    f"A record with permit type {permit_type} and number {permit_number} already exists."
-                )
+        # Calculate expiry date based on permit type and issue date
+        permit_type = cleaned_data.get('permit_type')
+        issue_date = cleaned_data.get('permit_issue_date')
+        
+        if permit_type and issue_date:
+            # Number of working days for each permit type
+            days_map = {
+                'PTP': 50,  # Private Tree Plantation - 50 working days
+                'TCP': 60,  # Tree Cutting Permit - 60 working days
+                'CSP': 90,  # Certificate of Sawmill Permit - 90 working days
+                'STP': 120  # Special Tree Permit - 120 working days
+            }
+            days = days_map.get(permit_type, 50)  # Default to 50 if permit type not found
+            expiry_date = issue_date
+            days_added = 0
+            while days_added < days:
+                expiry_date += timedelta(days=1)
+                if expiry_date.weekday() < 5:  # Monday = 0, Friday = 4
+                    days_added += 1
+            cleaned_data['expiry_date'] = expiry_date
 
         return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        # Ensure calculations are applied
+        if instance.gross_volume:
+            instance.net_volume = float(instance.gross_volume) * 0.70
+            
+        if commit:
+            instance.save()
+        return instance
 
 # ChainsawForm
 class ChainsawForm(forms.ModelForm):

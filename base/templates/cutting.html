@@ -269,70 +269,103 @@
             background-color: #f8f9fa;
             cursor: not-allowed;
         }
+
+        /* Situation dropdown styling */
+        select[name="situation"] {
+            @apply bg-white border border-gray-300 rounded-md shadow-sm;
+            padding: 0.5rem;
+            width: 100%;
+        }
+
+        select[name="situation"]:focus {
+            @apply ring-2 ring-blue-500 border-blue-500;
+            outline: none;
+        }
+
+        /* Style for the options */
+        select[name="situation"] option[value="Good"] {
+            color: #059669;
+        }
+
+        select[name="situation"] option[value="Pending"] {
+            color: #d97706;
+        }
     </style>
 </head>
-<body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
-    <!-- Navigation Bar -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <!-- Logo -->
-                    <div class="flex-shrink-0 flex items-center">
-                             <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO-FUS</span>
-                            </div>
-
-                    <!-- Navigation Links -->
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{% url 'dashboard' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Dashboard
-                        </a>
-                        <a href="{% url 'cutting' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Tree Cutting Permits 
-                        </a>
-                        <a href="{% url 'lumber' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Lumber Dealers
-                        </a>
-                        <a href="{% url 'chainsaw' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Chainsaw
-                        </a>
-                        <a href="{% url 'wood' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            WPP
-                        </a>
-                    </div>
+<body class="font-inter bg-gradient-to-tl from-blue-800 to-green-600 text-white-900">
+    <!-- Header with Logo -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo with gradient text -->
+                <div class="flex-shrink-0">
+                    <span class="text-2xl font-bold">
+                        <span class="text-green-600">CENRO</span>
+                        <span class="text-gray-700">-</span>
+                        <span class="text-cyan-600">ARGAO</span>
+                        <span class="text-gray-700">-</span>
+                        <span class="text-blue-600">FUS</span>
+                    </span>
                 </div>
-                <!-- User Menu -->
-                <div class="flex items-center">
-                    <div class="text-m text-gray-800">
-                        Welcome, {{ request.user.username }}
-                    </div>
-                    <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
+
+                <!-- User Info and Sign Out -->
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-600">Welcome, {{ request.user.username }}</span>
+                    <a href="{% url 'logout' %}" 
+                       class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-red-500 rounded-full hover:bg-red-600 transition-colors duration-200">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
                         Sign Out
                     </a>
                 </div>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-2 shadow-md">
-        <div class="max-w-7xl mx-auto px-4">
-            <h1 class="text-2xl font-bold mb-2">Tree Cutting Permits</h1>
-            <p class="text-sm opacity-90">Manage tree cutting permits and records</p>
+    <!-- Title Section with Gradient Background -->
+    <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-700 shadow-lg">
+        <div class="max-w-7xl mx-auto px-8 py-10">
+            <div class="flex items-center justify-between">
+                <!-- Title and Subtitle -->
+
+                <!-- Action Buttons -->
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'cutting_records' %}" 
+                       class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-white rounded-lg 
+                              hover:bg-blue-50 transition-all duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        View Records
+                    </a>
+                    
+                    <a href="#" 
+                       class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-emerald-500 rounded-lg 
+                              hover:bg-emerald-600 transition-all duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Add Volume
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Add New Record Form -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="bg-white rounded-lg shadow-lg p-6">
-            <h2 class="text-2xl font-bold mb-6">Add New Record</h2>
-            <form method="post" enctype="multipart/form-data">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Add New Tree Cutting Permit</h2>
+            <form method="post" enctype="multipart/form-data" class="space-y-6">
                 {% csrf_token %}
                 
                 {% if messages %}
                 <div class="mb-4">
                     {% for message in messages %}
-                    <div class="p-4 {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} rounded">
+                    <div class="p-4 {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} rounded-lg shadow-sm">
                         {{ message }}
                     </div>
                     {% endfor %}
@@ -340,9 +373,9 @@
                 {% endif %}
 
                 {% if form.errors %}
-                <div class="mb-4 p-4 bg-red-100 text-red-700 rounded">
+                <div class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg shadow-sm">
                     <p class="font-bold">Please correct the following errors:</p>
-                    <ul>
+                    <ul class="list-disc list-inside mt-2">
                         {% for field in form %}
                             {% for error in field.errors %}
                                 <li>{{ field.label }}: {{ error }}</li>
@@ -352,338 +385,194 @@
                 </div>
                 {% endif %}
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Permit Information -->
-                    <div class="form-group">
-                        <label for="{{ form.permit_type.id_for_label }}">Permit Type</label>
-                        {{ form.permit_type }}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Form groups remain the same but with enhanced styling -->
+                    <!-- Each form-group gets additional hover and focus effects -->
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.permit_type.id_for_label }}" class="text-gray-700">Permit Type</label>
+                        {{ form.permit_type|add_class:"form-input" }}
                         {% if form.permit_type.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.permit_type.errors.0 }}</div>
                         {% endif %}
                     </div>
-                    <div class="form-group">
-                        <label for="{{ form.permit_number.id_for_label }}">Permit Number</label>
-                        {{ form.permit_number }}
+                    
+                    <!-- Continue with all other form groups using the same enhanced styling -->
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.permit_number.id_for_label }}" class="text-gray-700">Permit Number</label>
+                        {{ form.permit_number|add_class:"form-input" }}
                         {% if form.permit_number.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.permit_number.errors.0 }}</div>
                         {% endif %}
                     </div>
                     
-                    <!-- Permittee Information -->
-                    <div class="form-group">
-                        <label for="{{ form.permittee.id_for_label }}">Permittee</label>
-                        {{ form.permittee }}
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.permittee.id_for_label }}" class="text-gray-700">Permittee</label>
+                        {{ form.permittee|add_class:"form-input" }}
                         {% if form.permittee.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.permittee.errors.0 }}</div>
                         {% endif %}
                     </div>
                     
-                    <!-- Location Information -->
-                    <div class="form-group">
-                        <label for="{{ form.location.id_for_label }}">Location</label>
-                        {{ form.location }}
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.location.id_for_label }}" class="text-gray-700">Location</label>
+                        {{ form.location|add_class:"form-input" }}
                         {% if form.location.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.location.errors.0 }}</div>
                         {% endif %}
                     </div>
 
+                    <!-- Coordinates -->
+                    <div class="col-span-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="form-group transition-all duration-200 hover:shadow-sm">
+                                <label for="{{ form.latitude.id_for_label }}" class="text-gray-700">Latitude</label>
+                                {{ form.latitude|add_class:"form-input" }}
+                                {% if form.latitude.errors %}
+                                    <div class="text-red-600 text-sm mt-1">{{ form.latitude.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group transition-all duration-200 hover:shadow-sm">
+                                <label for="{{ form.longitude.id_for_label }}" class="text-gray-700">Longitude</label>
+                                {{ form.longitude|add_class:"form-input" }}
+                                {% if form.longitude.errors %}
+                                    <div class="text-red-600 text-sm mt-1">{{ form.longitude.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Property Information -->
-                    <div class="form-group">
-                        <label for="{{ form.tct_oct_no.id_for_label }}">TCT/OCT No.</label>
-                        {{ form.tct_oct_no }}
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.tct_oct_no.id_for_label }}" class="text-gray-700">TCT/OCT No.</label>
+                        {{ form.tct_oct_no|add_class:"form-input" }}
                         {% if form.tct_oct_no.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.tct_oct_no.errors.0 }}</div>
                         {% endif %}
                     </div>
 
-                    <div class="form-group">
-                        <label for="{{ form.tax_dec_no.id_for_label }}">Tax Declaration No.</label>
-                        {{ form.tax_dec_no }}
+                    <!-- Add Status Field Here -->
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.situation.id_for_label }}" class="text-gray-700">Situation</label>
+                        {{ form.situation|add_class:"form-input" }}
+                        {% if form.situation.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.situation.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.tax_dec_no.id_for_label }}" class="text-gray-700">Tax Declaration No.</label>
+                        {{ form.tax_dec_no|add_class:"form-input" }}
                         {% if form.tax_dec_no.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.tax_dec_no.errors.0 }}</div>
                         {% endif %}
                     </div>
 
-                    <div class="form-group">
-                        <label for="{{ form.lot_no.id_for_label }}">Lot No.</label>
-                        {{ form.lot_no }}
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.lot_no.id_for_label }}" class="text-gray-700">Lot No.</label>
+                        {{ form.lot_no|add_class:"form-input" }}
                         {% if form.lot_no.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.lot_no.errors.0 }}</div>
                         {% endif %}
                     </div>
 
                     <!-- Area and Trees -->
-                    <div class="form-group">
-                        <label for="{{ form.area.id_for_label }}">Area (ha.)</label>
-                        {{ form.area }}
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.area.id_for_label }}" class="text-gray-700">Area (ha.)</label>
+                        {{ form.area|add_class:"form-input" }}
                         {% if form.area.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.area.errors.0 }}</div>
                         {% endif %}
                     </div>
 
-                    <div class="form-group">
-                        <label for="{{ form.no_of_trees.id_for_label }}">Number of Trees</label>
-                        {{ form.no_of_trees }}
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.no_of_trees.id_for_label }}" class="text-gray-700">Number of Trees</label>
+                        {{ form.no_of_trees|add_class:"form-input" }}
                         {% if form.no_of_trees.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.no_of_trees.errors.0 }}</div>
                         {% endif %}
                     </div>
 
-                    <div class="form-group">
-                        <label for="{{ form.species.id_for_label }}">Species</label>
-                        {{ form.species }}
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.species.id_for_label }}" class="text-gray-700">Species</label>
+                        {{ form.species|add_class:"form-input" }}
                         {% if form.species.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.species.errors.0 }}</div>
                         {% endif %}
                     </div>
 
                     <!-- Volume Information -->
-                    <div class="form-group">
-                        <label for="{{ form.total_volume_granted.id_for_label }}">Total Volume Granted (cu.m.)</label>
-                        {{ form.total_volume_granted }}
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.total_volume_granted.id_for_label }}" class="text-gray-700">Total Volume Granted (cu.m.)</label>
+                        {{ form.total_volume_granted|add_class:"form-input" }}
                         {% if form.total_volume_granted.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.total_volume_granted.errors.0 }}</div>
                         {% endif %}
                     </div>
 
-                    <div class="form-group">
-                        <label for="{{ form.gross_volume.id_for_label }}">Gross Volume (cu.m.)</label>
-                        {{ form.gross_volume }}
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.gross_volume.id_for_label }}" class="text-gray-700">Gross Volume (cu.m.)</label>
+                        {{ form.gross_volume|add_class:"form-input" }}
                         {% if form.gross_volume.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.gross_volume.errors.0 }}</div>
                         {% endif %}
                     </div>
 
-                    <div class="form-group">
-                        <label for="{{ form.net_volume.id_for_label }}">Net Volume (cu.m.)</label>
-                        {{ form.net_volume }}
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.net_volume.id_for_label }}" class="text-gray-700">Net Volume (cu.m.)</label>
+                        {{ form.net_volume|add_class:"form-input" }}
                         {% if form.net_volume.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.net_volume.errors.0 }}</div>
                         {% endif %}
                     </div>
 
                     <!-- Dates -->
-                    <div class="form-group">
-                        <label for="{{ form.permit_issue_date.id_for_label }}">Date Issued</label>
-                        {{ form.permit_issue_date }}
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.permit_issue_date.id_for_label }}" class="text-gray-700">Date Issued</label>
+                        {{ form.permit_issue_date|add_class:"form-input" }}
                         {% if form.permit_issue_date.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.permit_issue_date.errors.0 }}</div>
                         {% endif %}
                     </div>
 
-                    <div class="form-group">
-                        <label for="{{ form.expiry_date.id_for_label }}">Expiry Date</label>
-                        {{ form.expiry_date }}
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.expiry_date.id_for_label }}" class="text-gray-700">Expiry Date</label>
+                        {{ form.expiry_date|add_class:"form-input" }}
                         {% if form.expiry_date.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.expiry_date.errors.0 }}</div>
                         {% endif %}
                     </div>
 
                     <!-- Representative -->
-                    <div class="form-group">
-                        <label for="{{ form.rep_by.id_for_label }}">Representative</label>
-                        {{ form.rep_by }}
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.rep_by.id_for_label }}" class="text-gray-700">Representative</label>
+                        {{ form.rep_by|add_class:"form-input" }}
                         {% if form.rep_by.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.rep_by.errors.0 }}</div>
                         {% endif %}
                     </div>
 
                     <!-- File Upload -->
-                    <div class="form-group">
-                        <label for="{{ form.permit_file.id_for_label }}">Permit File</label>
-                        {{ form.permit_file }}
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.permit_file.id_for_label }}" class="text-gray-700">Attach File</label>
+                        {{ form.permit_file|add_class:"form-input" }}
                         {% if form.permit_file.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.permit_file.errors.0 }}</div>
                         {% endif %}
                     </div>
                 </div>
 
-                <div class="flex justify-end pt-4">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
-                        Add Record
+                <div class="flex justify-end pt-6 space-x-4">
+                    <button type="reset" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition duration-200">
+                        Clear Form
+                    </button>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        <span>Submit</span>
                     </button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <!-- Records Table -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="bg-white shadow-xl rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-600 to-blue-600">
-                <h3 class="text-xl font-semibold text-white mb-4">
-                    Existing Records
-                </h3>
-                <div class="flex items-center justify-between space-x-4">
-                    <!-- Search Bar -->
-                    <div class="relative flex-1 max-w-md">
-                        <!-- Search Input -->
-                        <input type="text" 
-                               id="searchInput" 
-                               placeholder="Search records..." 
-                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700">
-                        
-                        <!-- Search Icon -->
-                        <span class="absolute right-3 top-2.5 text-gray-400">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                        </span>
-                        
-                        <!-- Validation Message -->
-                        <div id="searchValidation" 
-                             class="absolute mt-1 text-sm text-red-600 bg-white px-2 py-1 rounded-md shadow-sm hidden"
-                             style="z-index: 50; transition: opacity 0.3s ease-in-out;">
-                        </div>
-                    </div>
-                    <!-- Export Button -->
-                    <button onclick="exportTableToCSV('cutting_records.csv')" 
-                            class="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition duration-200 flex items-center space-x-2 shadow-sm">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                        </svg>
-                        <span>Export CSV</span>
-                    </button>
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="min-w-full text-sm text-left text-gray-500">
-                    <thead class="bg-gray-50 text-gray-700">
-                        <tr>
-                            <th class="px-6 py-4 font-semibold">Permit Type</th>
-                            <th class="px-6 py-4 font-semibold">Permit Number</th>
-                            <th class="px-6 py-4 font-semibold">File</th>
-                            <th class="px-6 py-4 font-semibold">Permittee</th>
-                            <th class="px-6 py-4 font-semibold">Representative</th>
-                            <th class="px-6 py-4 font-semibold">TCT/OCT No.</th>
-                            <th class="px-6 py-4 font-semibold">Tax Dec. No.</th>
-                            <th class="px-6 py-4 font-semibold">Lot No.</th>
-                            <th class="px-6 py-4 font-semibold">Area (ha.)</th>
-                            <th class="px-6 py-4 font-semibold">Date Issued</th>
-                            <th class="px-6 py-4 font-semibold">Expiry Date</th>
-                            <th class="px-6 py-4 font-semibold">No. of Trees</th>
-                            <th class="px-6 py-4 font-semibold">Species</th>
-                            <th class="px-6 py-4 font-semibold">Total Volume</th>
-                            <th class="px-6 py-4 font-semibold">Gross Volume</th>
-                            <th class="px-6 py-4 font-semibold">Net Volume</th>
-                            <th class="px-6 py-4 font-semibold">Status</th>
-                            <th class="px-6 py-4 font-semibold">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        {% if cuttings %}
-                            {% for cutting in cuttings %}
-                            <tr class="{% if cutting.expiry_date %}
-                                       {% if cutting.expiry_date|date:'Y-m-d' >= today|date:'Y-m-d' %}
-                                           bg-green-50 hover:bg-green-100  <!-- Active -->
-                                       {% elif cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}
-                                           bg-red-50 hover:bg-red-100      <!-- Expired -->
-                                       {% else %}
-                                           bg-yellow-50 hover:bg-yellow-100 <!-- Unknown/Pending -->
-                                       {% endif %}
-                                       {% else %}
-                                           bg-yellow-50 hover:bg-yellow-100 <!-- No expiry date set -->
-                                       {% endif %}">
-                                <td class="px-6 py-4">{{ cutting.get_permit_type_display }}</td>
-                                <td class="px-6 py-4">{{ cutting.permit_number }}</td>
-                                <td class="px-6 py-4">
-                                    {% if cutting.permit_file %}
-                                    <a href="{{ cutting.permit_file.url }}" 
-                                       target="_blank"
-                                       class="text-blue-600 hover:text-blue-900 font-medium flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                        </svg>
-                                        View File
-                                    </a>
-                                    {% else %}
-                                    <span class="text-gray-400">No file</span>
-                                    {% endif %}
-                                </td>
-                                <td class="px-6 py-4">{{ cutting.permittee|default:"-" }}</td>
-                                <td class="px-6 py-4">{{ cutting.rep_by|default:"-" }}</td>
-                                <td class="px-6 py-4">{{ cutting.tct_oct_no|default:"-" }}</td>
-                                <td class="px-6 py-4">{{ cutting.tax_dec_no|default:"-" }}</td>
-                                <td class="px-6 py-4">{{ cutting.lot_no|default:"-" }}</td>
-                                <td class="px-6 py-4">{{ cutting.area|default:"-" }}</td>
-                                <td class="px-6 py-4">{{ cutting.permit_issue_date|date:"M d, Y" }}</td>
-                                <td class="px-6 py-4">{{ cutting.expiry_date|date:"M d, Y" }}</td>
-                                <td class="px-6 py-4">{{ cutting.no_of_trees }}</td>
-                                <td class="px-6 py-4">{{ cutting.species|default:"-" }}</td>
-                                <td class="px-6 py-4">{{ cutting.total_volume_granted }}</td>
-                                <td class="px-6 py-4">{{ cutting.gross_volume|default:"-" }}</td>
-                                <td class="px-6 py-4">
-                                    {% if cutting.gross_volume %}
-                                        {{ cutting.net_volume|floatformat:2 }}
-                                    {% else %}
-                                        -
-                                    {% endif %}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                        {% if cutting.expiry_date %}
-                                            {% if cutting.expiry_date|date:'Y-m-d' >= today|date:'Y-m-d' %}
-                                                bg-green-100 text-green-800  <!-- Active -->
-                                            {% elif cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}
-                                                bg-red-100 text-red-800      <!-- Expired -->
-                                            {% else %}
-                                                bg-yellow-100 text-yellow-800 <!-- Unknown/Pending -->
-                                            {% endif %}
-                                        {% else %}
-                                            bg-yellow-100 text-yellow-800     <!-- No expiry date set -->
-                                        {% endif %}">
-                                        {% if cutting.expiry_date %}
-                                            {% if cutting.expiry_date|date:'Y-m-d' >= today|date:'Y-m-d' %}
-                                                Active
-                                            {% elif cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}
-                                                Expired
-                                            {% else %}
-                                                Pending
-                                            {% endif %}
-                                        {% else %}
-                                            Pending
-                                        {% endif %}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex space-x-3">
-                                        <a href="{% url 'add_cutting_record' permit_number=cutting.permit_number %}" 
-                                           class="text-blue-600 hover:text-blue-900 font-medium flex items-center">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                            </svg>
-                                            Add
-                                        </a>
-                                        <a href="{% url 'view_cutting' cutting.id %}" 
-                                           class="text-green-600 hover:text-green-900 font-medium flex items-center">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                            </svg>
-                                            View
-                                        </a>
-                                        <a href="{% url 'edit_cutting' cutting.id %}" 
-                                           class="text-amber-600 hover:text-amber-900 font-medium flex items-center">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                            </svg>
-                                            Edit
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="16" class="px-6 py-4 text-center text-sm text-gray-500">
-                                    No records found. Add a new record above.
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
         </div>
     </div>
 
@@ -695,242 +584,85 @@
         </div>
     </footer>
 
-    <!-- Search and Export Scripts -->
+    <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('searchInput');
-            const searchValidation = document.getElementById('searchValidation');
-            let searchTimeout;
-            let validationTimeout;
-
-            function showValidationMessage(message) {
-                // Clear any existing timeout
-                if (validationTimeout) {
-                    clearTimeout(validationTimeout);
-                }
-
-                // Show message with animation
-                searchValidation.textContent = message;
-                searchValidation.classList.remove('hidden');
-                searchValidation.style.opacity = '1';
-
-                // Set timeout to hide message
-                validationTimeout = setTimeout(() => {
-                    searchValidation.style.opacity = '0';
-                    setTimeout(() => {
-                        searchValidation.classList.add('hidden');
-                    }, 300);
-                }, 3000);
-            }
-
-            function showNoResultsMessage(searchTerm) {
-                const tbody = document.querySelector('tbody');
-                const existingNoResults = document.getElementById('noResultsRow');
-                
-                if (!existingNoResults) {
-                    const noResultsRow = document.createElement('tr');
-                    noResultsRow.id = 'noResultsRow';
-                    noResultsRow.className = 'no-results-message';
-                    noResultsRow.innerHTML = `
-                        <td colspan="14" class="px-6 py-8 text-center">
-                            <div class="text-gray-500 text-lg">
-                                No records found for "${searchTerm}"
-                            </div>
-                            <div class="text-gray-400 text-sm mt-2">
-                                Try adjusting your search terms
-                            </div>
-                        </td>
-                    `;
-                    tbody.appendChild(noResultsRow);
-                }
-            }
-
-            function validateSearch(searchTerm) {
-                if (!searchTerm.trim()) {
-                    return { valid: false, message: 'Please enter a search term' };
-                }
-
-                if (searchTerm.trim().length < 2) {
-                    return { valid: false, message: 'Search term must be at least 2 characters' };
-                }
-
-                const validPattern = /^[a-zA-Z0-9\s\-.,]+$/;
-                if (!validPattern.test(searchTerm)) {
-                    return { valid: false, message: 'Search contains invalid characters' };
-                }
-
-                return { valid: true };
-            }
-
-            function performSearch(searchTerm) {
-                const validation = validateSearch(searchTerm);
-                
-                if (!validation.valid) {
-                    showValidationMessage(validation.message);
-                    return;
-                }
-
-                const rows = document.querySelectorAll('tbody tr:not(#noResultsRow)');
-                let hasResults = false;
-
-                rows.forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    const normalizedSearchTerm = searchTerm.toLowerCase().trim();
-                    
-                    if (text.includes(normalizedSearchTerm)) {
-                        row.style.display = '';
-                        hasResults = true;
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-
-                // Handle no results
-                const existingNoResults = document.getElementById('noResultsRow');
-                if (!hasResults) {
-                    showNoResultsMessage(searchTerm);
-                } else if (existingNoResults) {
-                    existingNoResults.remove();
-                }
-            }
-
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(searchTimeout);
-                    
-                    const searchTerm = this.value;
-                    
-                    // Remove existing messages
-                    const existingNoResults = document.getElementById('noResultsRow');
-                    if (existingNoResults) {
-                        existingNoResults.remove();
-                    }
-
-                    // Show all rows if search is empty
-                    if (!searchTerm.trim()) {
-                        const rows = document.querySelectorAll('tbody tr');
-                        rows.forEach(row => row.style.display = '');
-                        return;
-                    }
-
-                    // Debounce search
-                    searchTimeout = setTimeout(() => {
-                        performSearch(searchTerm);
-                    }, 300);
-                });
-
-                // Prevent form submission on enter
-                searchInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        performSearch(this.value);
-                    }
-                });
-            }
-        });
-
-        function exportTableToCSV(filename) {
-            const table = document.querySelector('table');
-            let csv = [];
-            const rows = table.querySelectorAll('tr');
-            
-            for (let i = 0; i < rows.length; i++) {
-                const row = [], cols = rows[i].querySelectorAll('td, th');
-                
-                for (let j = 0; j < cols.length; j++) 
-                    row.push(cols[j].innerText);
-                
-                csv.push(row.join(','));        
-            }
-
-            const csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
-            const downloadLink = document.createElement('a');
-            downloadLink.download = filename;
-            downloadLink.href = window.URL.createObjectURL(csvFile);
-            downloadLink.style.display = 'none';
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
+            // Gross volume to net volume calculation
             const grossVolumeInput = document.getElementById('{{ form.gross_volume.id_for_label }}');
             const netVolumeInput = document.getElementById('{{ form.net_volume.id_for_label }}');
 
             function calculateNetVolume() {
                 const grossVolume = parseFloat(grossVolumeInput.value) || 0;
                 const netVolume = grossVolume * 0.70;
-                
-                // Update net volume field with 2 decimal places
                 netVolumeInput.value = netVolume.toFixed(2);
-                // Ensure the net volume field is not readonly
                 netVolumeInput.readOnly = true;
-                // Trigger change event to ensure form validation picks up the new value
                 netVolumeInput.dispatchEvent(new Event('change'));
             }
 
-            // Calculate net volume whenever gross volume changes
             grossVolumeInput.addEventListener('input', calculateNetVolume);
             grossVolumeInput.addEventListener('change', calculateNetVolume);
             
-            // Calculate on page load if gross volume exists
             if (grossVolumeInput.value) {
                 calculateNetVolume();
             }
 
-            // Add form submit handler to ensure net volume is calculated before submission
-            const form = grossVolumeInput.closest('form');
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    calculateNetVolume(); // Recalculate one final time before submit
-                });
-            }
-        });
-
-        function calculateExpiryDate(issueDate) {
-            const date = new Date(issueDate);
-            let daysToAdd = 50;
-            let daysAdded = 0;
-            
-            while (daysAdded < daysToAdd) {
-                date.setDate(date.getDate() + 1);
-                // Skip weekends (0 is Sunday, 6 is Saturday)
-                if (date.getDay() !== 0 && date.getDay() !== 6) {
-                    daysAdded++;
-                }
-            }
-            
-            // Format date as YYYY-MM-DD for input field
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
-        // Add event listener to issue date field
-        document.addEventListener('DOMContentLoaded', function() {
+            // Updated expiry date calculation
             const issueDateInput = document.querySelector('input[name="permit_issue_date"]');
             const expiryDateInput = document.querySelector('input[name="expiry_date"]');
+            const permitTypeInput = document.querySelector('select[name="permit_type"]');
             
-            if (issueDateInput && expiryDateInput) {
-                issueDateInput.addEventListener('change', function() {
-                    if (this.value) {
-                        expiryDateInput.value = calculateExpiryDate(this.value);
-                    }
-                });
+            function calculateExpiryDate(issueDate, permitType) {
+                const date = new Date(issueDate);
+                let daysToAdd;
                 
-                // Calculate on page load if issue date exists
-                if (issueDateInput.value) {
-                    expiryDateInput.value = calculateExpiryDate(issueDateInput.value);
+                // Set days based on permit type
+                switch(permitType) {
+                    case 'PTP':
+                        daysToAdd = 50;
+                        break;
+                    case 'TCP':
+                        daysToAdd = 60;
+                        break;
+                    case 'CSP':
+                        daysToAdd = 90;
+                        break;
+                    case 'STP':
+                        daysToAdd = 120;
+                        break;
+                    default:
+                        daysToAdd = 50; // Default case
+                }
+                
+                let daysAdded = 0;
+                
+                while (daysAdded < daysToAdd) {
+                    date.setDate(date.getDate() + 1);
+                    // Skip weekends (0 = Sunday, 6 = Saturday)
+                    if (date.getDay() !== 0 && date.getDay() !== 6) {
+                        daysAdded++;
+                    }
+                }
+                
+                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+
+            function updateExpiryDate() {
+                if (issueDateInput.value && permitTypeInput.value) {
+                    expiryDateInput.value = calculateExpiryDate(issueDateInput.value, permitTypeInput.value);
                 }
             }
-        });
 
-        // Make the expiry date field readonly
-        document.addEventListener('DOMContentLoaded', function() {
-            const expiryDateInput = document.querySelector('input[name="expiry_date"]');
-            if (expiryDateInput) {
+            if (issueDateInput && expiryDateInput && permitTypeInput) {
+                issueDateInput.addEventListener('change', updateExpiryDate);
+                permitTypeInput.addEventListener('change', updateExpiryDate);
+                
+                // Calculate initial expiry date if values exist
+                if (issueDateInput.value && permitTypeInput.value) {
+                    updateExpiryDate();
+                }
+
                 expiryDateInput.readOnly = true;
-                expiryDateInput.style.backgroundColor = '#f3f4f6';  // Light gray background
+                expiryDateInput.style.backgroundColor = '#f3f4f6';
             }
         });
     </script>

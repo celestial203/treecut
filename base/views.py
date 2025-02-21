@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from base.forms import LoginForm, LumberForm, CuttingForm, ChainsawForm, WoodForm, CuttingRecordForm
-from base.models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord
+from base.models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord, CuttingPermit
 from datetime import datetime, timedelta, date
 from django.utils import timezone
 import os
@@ -11,6 +11,8 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from decimal import Decimal
+from django.http import JsonResponse
+from django.urls import reverse
 
 # Login view
 def login_view(request):
@@ -89,15 +91,14 @@ def cutting(request):
             try:
                 cutting = form.save(commit=False)
                 if cutting.gross_volume:
-                    # Calculate net volume on the server side as well
                     cutting.net_volume = float(cutting.gross_volume) * 0.70
+                # Status will be saved automatically from the form
                 cutting.save()
                 messages.success(request, f'Successfully added cutting record for {cutting.permit_type}-{cutting.permit_number}')
                 return redirect('cutting')
             except Exception as e:
                 messages.error(request, f'Error saving record: {str(e)}')
         else:
-            # Print form errors to console for debugging
             print("Form errors:", form.errors)
             messages.error(request, 'Please correct the errors below.')
     else:
@@ -231,50 +232,40 @@ def edit_recordlumber(request, pk):
 @login_required
 def edit_cutting(request, pk):
     cutting = get_object_or_404(Cutting, pk=pk)
+    
     if request.method == 'POST':
-        form = CuttingForm(request.POST, instance=cutting)
-        if form.is_valid():
-            try:
+        form = CuttingForm(request.POST, request.FILES, instance=cutting)
+        try:
+            if form.is_valid():
+                # Check if 'clear' checkbox is checked for permit_file
+                if request.POST.get('permit_file-clear') == 'on':
+                    cutting.permit_file = None
+                
                 cutting = form.save()
-                messages.success(request, f'Successfully updated cutting record for {cutting.permit_type}-{cutting.permit_number}')
+                messages.success(request, 'Record updated successfully')
                 return redirect('view_cutting', pk=cutting.pk)
-            except Exception as e:
-                messages.error(request, f'Error updating record: {str(e)}')
-        else:
-            messages.error(request, 'Please correct the errors below.')
+            else:
+                print("Form errors:", form.errors)  # Debug print
+                messages.error(request, 'Please check the form for errors')
+        except Exception as e:
+            print(f"Error saving: {str(e)}")  # Debug print
+            messages.error(request, f'An error occurred while saving: {str(e)}')
     else:
         form = CuttingForm(instance=cutting)
     
-    return render(request, 'edit_cutting.html', {
+    context = {
         'form': form,
         'cutting': cutting
-    })
+    }
+    return render(request, 'edit_cutting.html', context)
 
 def view_cutting(request, pk):
-    try:
-        cutting = get_object_or_404(Cutting, pk=pk)
-        cutting_records = CuttingRecord.objects.filter(parent_tcp=cutting)
-        
-        # Calculate net volume
-        net_volume = cutting.gross_volume * Decimal('0.7') if cutting.gross_volume else None
-
-        # Get the last update timestamp
-        last_updated = cutting.updated_at if hasattr(cutting, 'updated_at') else None
-        
-        # Add success message if coming from edit
-        if request.GET.get('edited'):
-            messages.success(request, f'Record for TCP No. {cutting.permit} was successfully updated.')
-        
-        context = {
-            'cutting': cutting,
-            'cutting_records': cutting_records,
-            'net_volume': net_volume,
-            'last_updated': last_updated
-        }
-        return render(request, 'view_cutting.html', context)
-    except Exception as e:
-        messages.error(request, f'Error viewing record: {str(e)}')
-        return redirect('cutting')
+    cutting = get_object_or_404(Cutting, pk=pk)
+    context = {
+        'cutting': cutting,
+        'page_title': 'View Cutting Record'
+    }
+    return render(request, 'view_cutting.html', context)
 
 @login_required
 def add_cutting_record(request, permit_number):
@@ -365,3 +356,22 @@ def edit_cutting_record(request, record_id):
         'record': record
     })
 
+def cutting_records(request):
+    cuttings = Cutting.objects.all().order_by('-created_at')
+    today = date.today()
+    
+    context = {
+        'cuttings': cuttings,
+        'today': today,
+    }
+    return render(request, 'CuttingRecord.html', context)
+
+def cutting_records(request):
+    cuttings = Cutting.objects.all().order_by('-created_at')
+    today = date.today()
+    
+    context = {
+        'cuttings': cuttings,
+        'today': today,
+    }
+    return render(request, 'CuttingRecord.html', context)

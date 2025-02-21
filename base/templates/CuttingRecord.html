@@ -1,0 +1,616 @@
+{% load static %}
+{% load widget_tweaks %}
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CENRO Argao - Cutting Records</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Enhanced styling */
+        body {
+            background: linear-gradient(to bottom right, #1a1a1a, #2d2d2d);
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Modern table styling */
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        thead th {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 2px solid #e5e7eb;
+            color: #111827;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+        }
+
+        /* Status badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-active {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .status-expired {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Action buttons */
+        .action-button {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .action-button:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Search bar enhancement */
+        .search-container {
+            position: relative;
+            max-width: 500px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            background-color: white;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body class="font-inter bg-gradient-to-tl from-blue-800 to-green-600 text-white-900">
+    <!-- Compact modern header with dark theme -->
+    <div class="bg-black text-white py-3 px-6 border-b border-gray-800">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-medium">
+                    <span class="text-green-400">Tree Cutting Records</span>
+                    <span class="text-blue-400">Records</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="{% url 'cutting' %}" 
+                   class="inline-flex items-center px-3 py-2 bg-gray-900/50 hover:bg-gray-800 rounded-lg transition-all duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    <span class="text-sm text-gray-300 hover:text-white">Return to Cutting</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div class="bg-gradient-to-r from-emerald-800 to-blue-800 p-8 rounded-xl shadow-lg">
+            <!-- Filter Buttons Row 1 - Status Filters -->
+            <div class="flex gap-4 mb-6">
+                <button id="allRecordsBtn" 
+                        class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                    All Records
+                </button>
+                <button id="activeRecordsBtn" 
+                        class="px-4 py-2 bg-green-500/80 hover:bg-green-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                    Active 
+                </button>
+                <button id="expiredRecordsBtn" 
+                        class="px-4 py-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                    Expired 
+                </button>
+                <button id="pendingRecordsBtn" 
+                        class="px-4 py-2 bg-yellow-500/80 hover:bg-yellow-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                    Pending
+                </button>
+                <button id="allPermitsBtn" 
+                        class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                    All Permits
+                </button>
+                <button id="stcpBtn" 
+                        class="px-4 py-2 bg-blue-500/80 hover:bg-blue-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                    STCP
+                </button>
+                <button id="tcpBtn" 
+                        class="px-4 py-2 bg-indigo-500/80 hover:bg-indigo-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                    TCP
+                </button>
+                <button id="pltpBtn" 
+                        class="px-4 py-2 bg-purple-500/80 hover:bg-purple-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                    PLTP
+                </button>
+                <button id="spltpBtn" 
+                        class="px-4 py-2 bg-pink-500/80 hover:bg-pink-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                    SPLTP
+                </button>
+            </div>
+
+            <!-- Existing Search Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                <!-- Permit Search -->
+                <div class="search-container">
+                    <label class="block text-white text-sm mb-2">Permit Number</label>
+                    <input type="text" 
+                           id="permitSearch" 
+                           placeholder="Search permit..." 
+                           class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                </div>
+
+                <!-- Start Date -->
+                <div class="search-container">
+                    <label class="block text-white text-sm mb-2">Start Date</label>
+                    <input type="date" 
+                           id="startDate" 
+                           class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                </div>
+
+                <!-- End Date -->
+                <div class="search-container">
+                    <label class="block text-white text-sm mb-2">End Date</label>
+                    <input type="date" 
+                           id="endDate" 
+                           class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                </div>
+
+                <!-- Year Filter -->
+                <div class="search-container">
+                    <label class="block text-white text-sm mb-2">Filter by Year</label>
+                    <select id="yearFilter" 
+                            class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                        <option value="">All Years</option>
+                    </select>
+                </div>
+
+                <!-- Export Button -->
+                <div class="flex items-end">
+                    <button onclick="exportTableToCSV('cutting_records.csv')" 
+                            class="w-full px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Export Records
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Records Section - Full Width with Scroll -->
+    <div class="w-full py-8">
+        <div class="bg-white shadow-2xl">
+            <div class="overflow-x-auto">
+                <div class="inline-block min-w-full">
+                    <div class="overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50 sticky top-0 z-10">
+                                <tr>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Permit Type</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Permit Number</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">File</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Permittee</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Representative</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Location</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Latitude</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Longitude</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Species</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">TCT/OCT No.</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Tax Dec. No.</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Lot No.</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Area (ha.)</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">No. of Trees</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Total Volume Granted</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Gross Volume</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Net Volume</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Date Issued</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Expiry Date</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Situation</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% if cuttings %}
+                                    {% for cutting in cuttings %}
+                                    <tr class="hover:bg-gray-50 
+                                        {% if cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}
+                                            hover:bg-red-100
+                                        {% else %}
+                                            hover:bg-green-100
+                                        {% endif %}">
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.permit_type }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.permit_number }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                            {% if cutting.permit_file %}
+                                                <a href="{{ cutting.permit_file.url }}" class="text-blue-600 hover:text-blue-800">View</a>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.permittee }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.rep_by|default:"-" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.location|default:"-" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.latitude|default:"-" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.longitude|default:"-" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.species|default:"-" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.tct_oct_no|default:"-" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.tax_dec_no|default:"-" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.lot_no|default:"-" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.area|default:"-" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.no_of_trees|default:"-" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.total_volume_granted|default:"-" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.gross_volume|default:"-" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.net_volume|default:"-" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.permit_issue_date|date:"Y-m-d" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.expiry_date|date:"Y-m-d" }}</td>
+                                        <td class="px-6 py-3 whitespace-nowrap">
+                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                {% if cutting.situation == 'Good' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                                {{ cutting.situation }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-3 text-xs font-medium space-x-2 whitespace-nowrap">
+                                            <a href="{% url 'view_cutting' cutting.id %}" class="text-blue-600 hover:text-blue-900">View</a>
+                                            <a href="{% url 'edit_cutting' cutting.id %}" class="text-amber-600 hover:text-amber-900">Edit</a>
+                                            <a href="{% url 'add_cutting_record' %}" class="text-green-600 hover:text-green-900">Vol.</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="21" class="px-6 py-8 text-center text-gray-500">
+                                            <div class="text-sm">No records found</div>
+                                            <div class="text-xs mt-1">No cutting records are available at this time</div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white mt-auto py-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+        </div>
+    </footer>
+
+    <!-- Search and Export Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Populate year dropdown with years up to 2050
+            const yearSelect = document.getElementById('yearFilter');
+            const endYear = 2050;
+            const startYear = new Date().getFullYear();
+            
+            // Add default "All Years" option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'All Years';
+            yearSelect.appendChild(defaultOption);
+            
+            // Add years from current year up to 2050
+            for (let year = startYear; year <= endYear; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            }
+
+            // Search and filter functionality
+            const permitSearch = document.getElementById('permitSearch');
+            const startDate = document.getElementById('startDate');
+            const endDate = document.getElementById('endDate');
+            const yearFilter = document.getElementById('yearFilter');
+
+            function filterTable() {
+                const rows = document.querySelectorAll('tbody tr');
+                const permitTerm = permitSearch.value.toLowerCase();
+                const startDateVal = startDate.value ? new Date(startDate.value) : null;
+                const endDateVal = endDate.value ? new Date(endDate.value) : null;
+                const yearVal = yearFilter.value;
+
+                let hasResults = false;
+
+                rows.forEach(row => {
+                    if (!row.id || row.id !== 'noResultsRow') {
+                        const permitText = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                        const dateCell = row.querySelector('td:nth-child(10)').textContent; // Date Issued column
+                        const rowDate = new Date(dateCell);
+                        const rowYear = rowDate.getFullYear().toString();
+
+                        const matchesPermit = permitText.includes(permitTerm);
+                        const matchesDateRange = (!startDateVal || rowDate >= startDateVal) && 
+                                              (!endDateVal || rowDate <= endDateVal);
+                        const matchesYear = !yearVal || rowYear === yearVal;
+
+                        if (matchesPermit && matchesDateRange && matchesYear) {
+                            row.style.display = '';
+                            hasResults = true;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+
+                // Handle no results message
+                const existingNoResults = document.getElementById('noResultsRow');
+                if (!hasResults) {
+                    if (!existingNoResults) {
+                        const tbody = document.querySelector('tbody');
+                        const noResultsRow = document.createElement('tr');
+                        noResultsRow.id = 'noResultsRow';
+                        noResultsRow.innerHTML = `
+                            <td colspan="21" class="px-6 py-8 text-center">
+                                <div class="text-gray-500 text-lg">No matching records found</div>
+                                <div class="text-gray-400 text-sm mt-2">Try adjusting your search criteria</div>
+                            </td>
+                        `;
+                        tbody.appendChild(noResultsRow);
+                    }
+                } else if (existingNoResults) {
+                    existingNoResults.remove();
+                }
+            }
+
+            // Add event listeners
+            permitSearch.addEventListener('input', filterTable);
+            startDate.addEventListener('change', filterTable);
+            endDate.addEventListener('change', filterTable);
+            yearFilter.addEventListener('change', filterTable);
+
+            // Track current filters
+            let currentPermitType = 'all';
+            let currentStatus = 'all';
+
+            function filterRecords() {
+                const rows = document.querySelectorAll('tbody tr');
+                const today = new Date();
+                let hasResults = false;
+
+                rows.forEach(row => {
+                    if (row.id !== 'noResultsRow') {
+                        const permitTypeCell = row.querySelector('td:first-child');
+                        const issueDateCell = row.querySelector('td:nth-child(18)'); // Issue date column
+                        const expiryDateCell = row.querySelector('td:nth-child(19)'); // Expiry date column
+                        const situationCell = row.querySelector('td:nth-child(20) span');
+
+                        if (permitTypeCell && issueDateCell && expiryDateCell && situationCell) {
+                            const rowPermitType = permitTypeCell.textContent.trim();
+                            const issueDate = new Date(issueDateCell.textContent);
+                            const expiryDate = new Date(expiryDateCell.textContent);
+                            const isPending = situationCell.textContent.trim() === 'Pending';
+                            
+                            // Active/Expired only depends on dates
+                            const isExpired = expiryDate < today;
+                            const isActive = !isExpired;  // Active if not expired, regardless of pending status
+
+                            // Check if row matches both permit type and status filters
+                            let matchesPermitType = currentPermitType === 'all' || rowPermitType === currentPermitType;
+                            let matchesStatus = true;
+
+                            switch(currentStatus) {
+                                case 'active':
+                                    matchesStatus = isActive;
+                                    break;
+                                case 'expired':
+                                    matchesStatus = isExpired;
+                                    break;
+                                case 'pending':
+                                    matchesStatus = isPending;
+                                    break;
+                                case 'all':
+                                    matchesStatus = true;
+                                    break;
+                            }
+
+                            // Show row only if it matches both permit type and status
+                            if (matchesPermitType && matchesStatus) {
+                                row.style.display = '';
+                                hasResults = true;
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        }
+                    }
+                });
+
+                // Handle no results message
+                const existingNoResults = document.getElementById('noResultsRow');
+                if (!hasResults) {
+                    if (!existingNoResults) {
+                        const tbody = document.querySelector('tbody');
+                        const noResultsRow = document.createElement('tr');
+                        noResultsRow.id = 'noResultsRow';
+                        noResultsRow.innerHTML = `
+                            <td colspan="21" class="px-6 py-8 text-center">
+                                <div class="text-gray-500 text-lg">No matching records found</div>
+                                <div class="text-gray-400 text-sm mt-2">Try adjusting your filter criteria</div>
+                            </td>
+                        `;
+                        tbody.appendChild(noResultsRow);
+                    }
+                } else if (existingNoResults) {
+                    existingNoResults.remove();
+                }
+            }
+
+            // Permit Type button click handlers
+            document.getElementById('allPermitsBtn').addEventListener('click', function() {
+                currentPermitType = 'all';
+                updateButtonStyles('permit');
+                this.classList.add('ring-2', 'ring-white');
+                filterRecords();
+            });
+
+            document.getElementById('stcpBtn').addEventListener('click', function() {
+                currentPermitType = 'STCP';
+                updateButtonStyles('permit');
+                this.classList.add('ring-2', 'ring-white');
+                filterRecords();
+            });
+
+            document.getElementById('tcpBtn').addEventListener('click', function() {
+                currentPermitType = 'TCP';
+                updateButtonStyles('permit');
+                this.classList.add('ring-2', 'ring-white');
+                filterRecords();
+            });
+
+            document.getElementById('pltpBtn').addEventListener('click', function() {
+                currentPermitType = 'PLTP';
+                updateButtonStyles('permit');
+                this.classList.add('ring-2', 'ring-white');
+                filterRecords();
+            });
+
+            document.getElementById('spltpBtn').addEventListener('click', function() {
+                currentPermitType = 'SPLTP';
+                updateButtonStyles('permit');
+                this.classList.add('ring-2', 'ring-white');
+                filterRecords();
+            });
+
+            // Status button click handlers
+            document.getElementById('allRecordsBtn').addEventListener('click', function() {
+                currentStatus = 'all';
+                updateButtonStyles('status');
+                this.classList.add('ring-2', 'ring-white');
+                filterRecords();
+            });
+
+            document.getElementById('activeRecordsBtn').addEventListener('click', function() {
+                currentStatus = 'active';
+                updateButtonStyles('status');
+                this.classList.add('ring-2', 'ring-white');
+                filterRecords();
+            });
+
+            document.getElementById('expiredRecordsBtn').addEventListener('click', function() {
+                currentStatus = 'expired';
+                updateButtonStyles('status');
+                this.classList.add('ring-2', 'ring-white');
+                filterRecords();
+            });
+
+            document.getElementById('pendingRecordsBtn').addEventListener('click', function() {
+                currentStatus = 'pending';
+                updateButtonStyles('status');
+                this.classList.add('ring-2', 'ring-white');
+                filterRecords();
+            });
+
+            // Helper function to update button styles
+            function updateButtonStyles(type) {
+                const permitButtons = ['allPermitsBtn', 'stcpBtn', 'tcpBtn', 'pltpBtn', 'spltpBtn'];
+                const statusButtons = ['allRecordsBtn', 'activeRecordsBtn', 'expiredRecordsBtn', 'pendingRecordsBtn'];
+                
+                const buttons = type === 'permit' ? permitButtons : statusButtons;
+                
+                buttons.forEach(btnId => {
+                    document.getElementById(btnId).classList.remove('ring-2', 'ring-white');
+                });
+            }
+
+            // Initialize with all records shown
+            document.getElementById('allPermitsBtn').classList.add('ring-2', 'ring-white');
+            document.getElementById('allRecordsBtn').classList.add('ring-2', 'ring-white');
+        });
+
+        // Export functionality
+        function exportTableToCSV(filename) {
+            const table = document.querySelector('table');
+            let csv = [];
+            const rows = table.querySelectorAll('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = [], cols = rows[i].querySelectorAll('td, th');
+                
+                for (let j = 0; j < cols.length; j++) 
+                    row.push(cols[j].innerText);
+                
+                csv.push(row.join(','));        
+            }
+
+            const csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
+            const downloadLink = document.createElement('a');
+            downloadLink.download = filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+        }
+
+        // Add this to your existing JavaScript
+        document.getElementById('permitSearch').addEventListener('paste', function(e) {
+            // Get pasted data
+            let pastedData = (e.clipboardData || window.clipboardData).getData('text');
+            
+            // Check if pasted data contains non-numeric characters
+            if (!/^\d*$/.test(pastedData)) {
+                e.preventDefault();
+                // Optionally show a message to the user
+                alert('Only numbers are allowed');
+            }
+        });
+    </script>
+</body>
+</html>

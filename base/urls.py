@@ -14,7 +14,7 @@ urlpatterns = [
     path('cutting/', views.cutting, name='cutting'),
     path('cutting/<int:pk>/edit/', views.edit_cutting, name='edit_cutting'),
     path('cutting/<int:pk>/view/', views.view_cutting, name='view_cutting'),
-    path('cutting/record/<str:permit_number>/', views.add_cutting_record, name='add_cutting_record'),
+    path('cutting/record/add/', views.add_cutting_record, name='add_cutting_record'),
     path('wood/', views.wood, name='wood'),
     path('lumber/', views.lumber, name='lumber'),
     path('edit_recordlumber/<int:pk>/', views.edit_recordlumber, name='edit_recordlumber'),
@@ -24,6 +24,7 @@ urlpatterns = [
     path('edit-wood/<int:pk>/', views.edit_wood, name='edit_wood'),
     path('profile/', views.profile, name='profile'),
     path('cutting/record/edit/<int:record_id>/', views.edit_cutting_record, name='edit_cutting_record'),
+    path('cutting/records/', views.cutting_records, name='cutting_records'),
 ]
 
 if settings.DEBUG:

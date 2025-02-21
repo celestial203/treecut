@@ -38,11 +38,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'yourusername$treecut',
-        'USER': 'yourusername',
-        'PASSWORD': 'your-database-password',
-        'HOST': 'yourusername.mysql.pythonanywhere-services.com',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'Treecut',  # Your database name
+        'USER': 'postgres',  # Default PostgreSQL user, change if different
+        'PASSWORD': 'iloveyou234',  # Replace with your actual password
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
