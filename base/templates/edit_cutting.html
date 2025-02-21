@@ -8,104 +8,165 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Cutting Record - CENRO Argao</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        .form-group {
-            @apply mb-4;
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .bg-denr {
+            background-color: #2B5019;
+        }
+        .from-denr {
+            --tw-gradient-from: #2B5019;
+        }
+        .to-denr-light {
+            --tw-gradient-to: #3D7324;
+        }
+        .text-denr {
+            color: #2B5019;
+        }
+        .border-denr {
+            border-color: #2B5019;
+        }
+        .hover\:bg-denr-dark:hover {
+            background-color: #1F3B12;
         }
 
-        .form-group label {
-            @apply block text-sm font-medium text-gray-700 mb-1;
-        }
-
-        .form-group input, .form-group select {
-            @apply w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
-        }
-
-        /* Style for readonly net volume field */
-        #netVolume {
+        input, select, textarea {
             background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            width: 100%;
             color: #4B5563;
-            cursor: default;
         }
 
-        input[type="number"] {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
+        input::placeholder, select::placeholder, textarea::placeholder {
+            color: #6B7280;
+            opacity: 0.8;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
             outline: none;
         }
 
-        input[type="number"]:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        .form-input {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                   focus:border-blue-500 focus:ring-blue-500 
+                   bg-gray-50 text-gray-900;
         }
 
-        input[readonly] {
-            background-color: #f8f9fa;
-            cursor: not-allowed;
+        input[type="date"] {
+            padding: 0.4rem;
+            color: #4B5563;
         }
 
-        .updated {
-            animation: highlight 0.3s ease-out;
+        select {
+            background-color: #f8fafc;
+            padding: 0.4rem;
+            color: #4B5563;
         }
 
-        @keyframes highlight {
-            0% { background-color: #fff; }
-            50% { background-color: #e3f2fd; }
-            100% { background-color: #fff; }
+        input:hover, select:hover, textarea:hover {
+            border-color: #60A5FA;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Add specific styling for date inputs to show the placeholder */
+        input[type="date"]::before {
+            content: attr(placeholder);
+            position: absolute;
+            color: #6B7280;
+        }
+
+        input[type="date"]:focus::before,
+        input[type="date"]:valid::before {
+            display: none;
+        }
+
+        /* Style file input */
+        input[type="file"] {
+            padding: 0.375rem;
+        }
+
+        input[type="file"]::-webkit-file-upload-button {
+            padding: 0.5rem 1rem;
+            margin-right: 1rem;
+            background-color: #E5E7EB;
+            border: none;
+            border-radius: 0.375rem;
+            color: #374151;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        input[type="file"]::-webkit-file-upload-button:hover {
+            background-color: #D1D5DB;
+        }
+
+        /* Label styling */
+        label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+
+        /* Required field indicator */
+        label.required:after {
+            content: " *";
+            color: #EF4444;
         }
     </style>
 </head>
-<body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
+<body class="bg-gray-50">
     <!-- Navigation Bar -->
     <div class="max-w-4xl mx-auto">
         <!-- Add Breadcrumb Navigation -->
-        <div class="mb-8">
-            <nav class="bg-white shadow-lg">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div class="flex justify-between h-16">
-                        <div class="flex">
-                            <!-- Logo -->
-                            <div class="flex-shrink-0 flex items-center">
-                                     <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO-FUS</span>
-                                    </div>
-        
-                            <!-- Navigation Links -->
-                            <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                                <a href="{% url 'dashboard' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                                    Dashboard
-                                </a>
-                                <a href="{% url 'cutting' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                                    Tree Cutting Permits 
-                                </a>
-                                <a href="{% url 'lumber' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                                    Lumber Dealers
-                                </a>
-                                <a href="{% url 'chainsaw' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                                    Chainsaw
-                                </a>
-                                <a href="{% url 'wood' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                                    WPP
-                                </a>
-                            </div>
-                        </div>
-                        <!-- User Menu -->
+        <div class="py-4 px-2">
+            <nav class="flex" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="{% url 'cutting' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                            <svg class="w-3 h-3 mr-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
+                            </svg>
+                            Tree Cutting Permits
+                        </a>
+                    </li>
+                    <li>
                         <div class="flex items-center">
-                            <div class="text-m text-gray-800">
-                                Welcome, {{ request.user.username }}
-                            </div>
-                            <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
-                                Sign Out
-                            </a>
+                            <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                            </svg>
+                            <a href="{% url 'view_cutting' cutting.id %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">View Record</a>
                         </div>
-                    </div>
-                </div>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                            </svg>
+                            <a href="{% url 'add_cutting_record' cutting.permit_number %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">Add Volume</a>
+                        </div>
+                    </li>
+                    <li aria-current="page">
+                        <div class="flex items-center">
+                            <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                            </svg>
+                            <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">Edit Record</span>
+                        </div>
+                    </li>
+                </ol>
             </nav>
         </div>
 
-    <div class="max-w-4xl mx-auto">
         <!-- Messages Section -->
         {% if messages %}
             {% for message in messages %}
@@ -129,123 +190,140 @@
         <!-- Header Card -->
         <div class="bg-white p-6 rounded-lg shadow-lg mb-6">
             <h2 class="text-2xl font-bold text-gray-800">Edit Cutting Record</h2>
-            <p class="text-gray-600 mt-1">Editing TCP No. {{ cutting.tcp_no }}</p>
+            <p class="text-gray-600 mt-1">Editing PERMIT No. {{ cutting.permit_number }}</p>
         </div>
 
         <!-- Form Card -->
         <div class="bg-white p-8 rounded-lg shadow-lg">
-            <form method="POST" class="space-y-6">
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
                 {% csrf_token %}
                 
-                <!-- Basic Information -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">TCP No.</label>
-                        {{ form.tcp_no|add_class:"form-input" }}
+                <!-- Form Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label class="required">Permit Type</label>
+                        <select name="permit_type" class="form-input">
+                            <option value="STCP" {% if cutting.permit_type == 'STCP' %}selected{% endif %}>STCP</option>
+                            <option value="PTP" {% if cutting.permit_type == 'PTP' %}selected{% endif %}>PTP</option>
+                            <option value="STP" {% if cutting.permit_type == 'STP' %}selected{% endif %}>STP</option>
+                        </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Permittee</label>
+                    <div class="form-group">
+                        <label class="required">Permit Number</label>
+                        {{ form.permit_number|add_class:"form-input" }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label class="required">Permittee</label>
                         {{ form.permittee|add_class:"form-input" }}
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Location</label>
+                    <div class="form-group">
+                        <label class="required">Location</label>
                         {{ form.location|add_class:"form-input" }}
                     </div>
                 </div>
 
-                <!-- Property Information -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">TCT/OCT No.</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label class="required">TCT/OCT No.</label>
                         {{ form.tct_oct_no|add_class:"form-input" }}
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Date Issued</label>
-                        {{ form.permit_issue_date|add_class:"form-input"|attr:"type:date" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Tax Dec. No.</label>
+                    <div class="form-group">
+                        <label class="required">Tax Declaration No.</label>
                         {{ form.tax_dec_no|add_class:"form-input" }}
                     </div>
                 </div>
 
-                <!-- Additional Property Details -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Lot No.</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label class="required">Lot No.</label>
                         {{ form.lot_no|add_class:"form-input" }}
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Area (ha.)</label>
-                        {{ form.area|add_class:"form-input"|attr:"step:0.01" }}
+                    <div class="form-group">
+                        <label class="required">Area (ha.)</label>
+                        {{ form.area|add_class:"form-input"|attr:"type:number,step:0.01" }}
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Representative</label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label class="required">Number of Trees</label>
+                        {{ form.no_of_trees|add_class:"form-input"|attr:"type:number" }}
+                    </div>
+                    <div class="form-group">
+                        <label class="required">Species</label>
+                        {{ form.species|add_class:"form-input" }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label class="required">Total Volume Granted (cu.m.)</label>
+                        {{ form.total_volume_granted|add_class:"form-input"|attr:"type:number,step:0.01" }}
+                    </div>
+                    <div class="form-group">
+                        <label class="required">Date Issued</label>
+                        {{ form.permit_issue_date|add_class:"form-input date-input"|attr:"type:date" }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label class="required">Gross Volume (cu.m.)</label>
+                        <input type="number" 
+                               step="0.01" 
+                               id="grossVolume" 
+                               name="gross_volume" 
+                               class="form-input" 
+                               value="{{ cutting.gross_volume|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="required">Net Volume (cu.m.)</label>
+                        <input type="number" 
+                               step="0.01" 
+                               id="netVolume" 
+                               name="net_volume" 
+                               class="form-input" 
+                               value="{{ cutting.net_volume|default:'' }}" 
+                               readonly>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label class="required">Expiry Date</label>
+                        {{ form.expiry_date|add_class:"form-input date-input"|attr:"type:date,readonly" }}
+                    </div>
+                    <div class="form-group">
+                        <label class="required">Representative</label>
                         {{ form.rep_by|add_class:"form-input" }}
                     </div>
                 </div>
 
-                <!-- Trees and Volume Information -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Number of Trees</label>
-                        {{ form.no_of_trees|add_class:"form-input" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Species</label>
-                        {{ form.species|add_class:"form-input" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Total Volume Granted</label>
-                        {{ form.total_volume_granted|add_class:"form-input"|attr:"step:0.01" }}
+                <div class="col-span-2">
+                    <label class="required">Permit File</label>
+                    <div class="mt-1">
+                        {% if cutting.permit_file %}
+                            <p class="text-sm text-gray-600 mb-2">Current file: {{ cutting.permit_file.name }}</p>
+                            <label class="inline-flex items-center mb-2">
+                                <input type="checkbox" name="clear_permit_file" class="form-checkbox h-4 w-4 text-blue-600">
+                                <span class="ml-2 text-sm text-gray-600">Clear current file</span>
+                            </label>
+                        {% endif %}
+                        <input type="file" name="permit_file" class="form-input">
                     </div>
                 </div>
-
-                <!-- Volume Calculations -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 required">Gross Volume</label>
-                        {{ form.gross_volume|add_class:"form-input"|attr:"step:0.01"|attr:"id:grossVolume"|attr:"oninput:calculateNetVolume()" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Net Volume</label>
-                        <input type="text" id="netVolume" class="form-input bg-gray-100" readonly>
-                    </div>
-                </div>
-
-                <!-- Form Errors -->
-                {% if form.errors %}
-                    <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <h3 class="text-sm font-medium text-red-800">Please correct the following errors:</h3>
-                                <div class="mt-2 text-sm text-red-700">
-                                    {{ form.errors }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
 
                 <!-- Action Buttons -->
-                <div class="flex justify-end space-x-4 pt-6 border-t">
+                <div class="flex justify-end space-x-4 pt-6">
                     <a href="{% url 'view_cutting' cutting.id %}" 
                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 flex items-center">
-                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
                         Cancel
                     </a>
                     <button type="submit" 
                             class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-md flex items-center">
-                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
                         Save Changes
                     </button>
                 </div>
@@ -264,22 +342,41 @@
     </footer>
 
     <script>
-        // Calculate Net Volume automatically (70% of Gross Volume)
-        function calculateNetVolume() {
-            const grossVolume = parseFloat(document.getElementById('grossVolume').value) || 0;
-            const netVolume = grossVolume * 0.70;
-            document.getElementById('netVolume').value = netVolume.toFixed(2);
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the input elements
+            const grossVolumeInput = document.getElementById('grossVolume');
+            const netVolumeInput = document.getElementById('netVolume');
 
-        // Calculate initial net volume on page load
-        document.addEventListener('DOMContentLoaded', () => {
+            // Function to calculate net volume
+            function calculateNetVolume() {
+                const grossValue = parseFloat(grossVolumeInput.value) || 0;
+                const netValue = (grossValue * 0.70).toFixed(2);
+                netVolumeInput.value = netValue;
+            }
+
+            // Add event listeners
+            grossVolumeInput.addEventListener('input', calculateNetVolume);
+            grossVolumeInput.addEventListener('change', calculateNetVolume);
+
+            // Calculate initial value if gross volume exists
             calculateNetVolume();
+
+            // Calculate expiry date based on issue date
+            const issueDateInput = document.querySelector('input[name="permit_issue_date"]');
+            const expiryDateInput = document.querySelector('input[name="expiry_date"]');
             
-            // Check if there's a success message
-            const messages = document.querySelectorAll('.bg-green-100');
-            if (messages.length > 0) {
-                // Show alert
-                alert('Record successfully updated!');
+            function calculateExpiryDate(issueDate) {
+                const date = new Date(issueDate);
+                date.setDate(date.getDate() + 50); // Add 50 working days
+                return date.toISOString().split('T')[0];
+            }
+            
+            if (issueDateInput && expiryDateInput) {
+                issueDateInput.addEventListener('change', function() {
+                    if (this.value) {
+                        expiryDateInput.value = calculateExpiryDate(this.value);
+                    }
+                });
             }
         });
     </script>

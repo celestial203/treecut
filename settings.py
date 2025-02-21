@@ -63,8 +63,11 @@ ROOT_URLCONF = 'Treecut.urls'  # Point to project's main URLconf
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # Specify where your templates are located
-        'APP_DIRS': True,  # Ensure it looks in app-specific templates directories
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR, 'base', 'templates'),
+        ],
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',

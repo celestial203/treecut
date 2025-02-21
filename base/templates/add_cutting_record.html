@@ -46,78 +46,44 @@
 </head>
 <body class="bg-gray-50">
     <!-- Navigation Bar -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <!-- Logo -->
-                    <div class="flex-shrink-0 flex items-center">
-                             <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO-FUS</span>
-                            </div>
-
-                    <!-- Navigation Links -->
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{% url 'dashboard' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Dashboard
-                        </a>
-                        <a href="{% url 'cutting' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Tree Cutting Permits 
-                        </a>
-                        <a href="{% url 'lumber' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Lumber Dealers
-                        </a>
-                        <a href="{% url 'chainsaw' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Chainsaw
-                        </a>
-                        <a href="{% url 'wood' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            WPP
-                        </a>
-                    </div>
-                </div>
-                <!-- User Menu -->
-                <div class="flex items-center">
-                    <div class="text-m text-gray-800">
-                        Welcome, {{ request.user.username }}
-                    </div>
-                    <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
-                        Sign Out
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <!-- Breadcrumb -->
-        <div class="mb-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Add Breadcrumb Navigation -->
+        <div class="py-4 px-2">
             <nav class="flex" aria-label="Breadcrumb">
-                <ol class="flex items-center space-x-4">
-                    <li>
-                        <div>
-                            <a href="{% url 'cutting' %}" class="text-gray-400 hover:text-gray-500">
-                                Cutting
-                            </a>
-                        </div>
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="{% url 'cutting' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                            <svg class="w-3 h-3 mr-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
+                            </svg>
+                            Tree Cutting Permits
+                        </a>
                     </li>
-                    
+                    {% if cutting.id %}
                     <li>
                         <div class="flex items-center">
-                            <svg class="flex-shrink-0 h-5 w-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
+                            <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
                             </svg>
-                            {% if request.resolver_match.url_name == 'add_cutting_record' %}
-                                <span class="ml-4 text-sm font-medium text-gray-500">Add Cutting Record</span>
-                            {% elif request.resolver_match.url_name == 'view_cutting' %}
-                                <span class="ml-4 text-sm font-medium text-gray-500">View Cutting Record</span>
-                            {% elif request.resolver_match.url_name == 'edit_cutting' %}
-                                <span class="ml-4 text-sm font-medium text-gray-500">Edit Cutting Record</span>
-                            {% endif %}
+                            <a href="{% url 'view_cutting' cutting.id %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">View Record</a>
+                        </div>
+                    </li>
+                    {% endif %}
+                    <li aria-current="page">
+                        <div class="flex items-center">
+                            <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
+                            </svg>
+                            <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">Add Volume</span>
                         </div>
                     </li>
                 </ol>
             </nav>
         </div>
+
+    </div>
+
+    <!-- Main Content -->
 
         <!-- Header -->
         {% if messages %}

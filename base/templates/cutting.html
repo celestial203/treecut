@@ -553,6 +553,8 @@
                             <th class="px-6 py-4 font-semibold">Permit Type</th>
                             <th class="px-6 py-4 font-semibold">Permit Number</th>
                             <th class="px-6 py-4 font-semibold">File</th>
+                            <th class="px-6 py-4 font-semibold">Permittee</th>
+                            <th class="px-6 py-4 font-semibold">Representative</th>
                             <th class="px-6 py-4 font-semibold">TCT/OCT No.</th>
                             <th class="px-6 py-4 font-semibold">Tax Dec. No.</th>
                             <th class="px-6 py-4 font-semibold">Lot No.</th>
@@ -599,6 +601,8 @@
                                     <span class="text-gray-400">No file</span>
                                     {% endif %}
                                 </td>
+                                <td class="px-6 py-4">{{ cutting.permittee|default:"-" }}</td>
+                                <td class="px-6 py-4">{{ cutting.rep_by|default:"-" }}</td>
                                 <td class="px-6 py-4">{{ cutting.tct_oct_no|default:"-" }}</td>
                                 <td class="px-6 py-4">{{ cutting.tax_dec_no|default:"-" }}</td>
                                 <td class="px-6 py-4">{{ cutting.lot_no|default:"-" }}</td>
@@ -854,29 +858,32 @@
 
             function calculateNetVolume() {
                 const grossVolume = parseFloat(grossVolumeInput.value) || 0;
-                
-                // Calculate net volume (70% of gross volume)
                 const netVolume = grossVolume * 0.70;
                 
                 // Update net volume field with 2 decimal places
                 netVolumeInput.value = netVolume.toFixed(2);
+                // Ensure the net volume field is not readonly
+                netVolumeInput.readOnly = true;
+                // Trigger change event to ensure form validation picks up the new value
+                netVolumeInput.dispatchEvent(new Event('change'));
             }
 
             // Calculate net volume whenever gross volume changes
             grossVolumeInput.addEventListener('input', calculateNetVolume);
+            grossVolumeInput.addEventListener('change', calculateNetVolume);
             
             // Calculate on page load if gross volume exists
             if (grossVolumeInput.value) {
                 calculateNetVolume();
             }
 
-            // Add visual feedback when net volume is updated
-            netVolumeInput.addEventListener('change', function() {
-                netVolumeInput.classList.add('updated');
-                setTimeout(() => {
-                    netVolumeInput.classList.remove('updated');
-                }, 300);
-            });
+            // Add form submit handler to ensure net volume is calculated before submission
+            const form = grossVolumeInput.closest('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    calculateNetVolume(); // Recalculate one final time before submit
+                });
+            }
         });
 
         function calculateExpiryDate(issueDate) {

@@ -87,7 +87,11 @@ def cutting(request):
         form = CuttingForm(request.POST, request.FILES)
         if form.is_valid():
             try:
-                cutting = form.save()
+                cutting = form.save(commit=False)
+                if cutting.gross_volume:
+                    # Calculate net volume on the server side as well
+                    cutting.net_volume = float(cutting.gross_volume) * 0.70
+                cutting.save()
                 messages.success(request, f'Successfully added cutting record for {cutting.permit_type}-{cutting.permit_number}')
                 return redirect('cutting')
             except Exception as e:
@@ -232,7 +236,7 @@ def edit_cutting(request, pk):
         if form.is_valid():
             try:
                 cutting = form.save()
-                messages.success(request, f'Successfully updated cutting record for TCP No. {cutting.tcp_no}')
+                messages.success(request, f'Successfully updated cutting record for {cutting.permit_type}-{cutting.permit_number}')
                 return redirect('view_cutting', pk=cutting.pk)
             except Exception as e:
                 messages.error(request, f'Error updating record: {str(e)}')
@@ -259,7 +263,7 @@ def view_cutting(request, pk):
         
         # Add success message if coming from edit
         if request.GET.get('edited'):
-            messages.success(request, f'Record for TCP No. {cutting.tcp_no} was successfully updated.')
+            messages.success(request, f'Record for TCP No. {cutting.permit} was successfully updated.')
         
         context = {
             'cutting': cutting,
@@ -274,61 +278,13 @@ def view_cutting(request, pk):
 
 @login_required
 def add_cutting_record(request, permit_number):
-    parent_tcp = get_object_or_404(Cutting, permit_number=permit_number)
-    cutting_records = CuttingRecord.objects.filter(parent_tcp=parent_tcp).order_by('date_added')
-    
-    # Handle POST request
-    if request.method == 'POST':
-        volume = Decimal(request.POST.get('volume', 0))
-        species = request.POST.get('species')
-        remarks = request.POST.get('remarks', '')
-        number_of_trees = int(request.POST.get('number_of_trees', 0))  # Get number_of_trees from POST
-        
-        if cutting_records.exists():
-            remaining_balance = cutting_records.last().remaining_balance - volume
-            calculated_volume = volume  # For subsequent entries, no 30% addition
-        else:
-            # First entry: add 30% to volume
-            calculated_volume = volume + (volume * Decimal('0.30'))
-            remaining_balance = calculated_volume
-        
-        # Create new record with number_of_trees
-        new_record = CuttingRecord.objects.create(
-            parent_tcp=parent_tcp,
-            species=species,
-            volume=volume,
-            calculated_volume=calculated_volume,
-            remaining_balance=remaining_balance,
-            remarks=remarks,
-            number_of_trees=number_of_trees  # Add number_of_trees to the record
-        )
-        
-        # Store the new record ID in session for highlighting
-        request.session['new_record_id'] = new_record.id
-        messages.success(request, 'Volume record added successfully!')
-        return redirect('add_cutting_record', permit_number=permit_number)
-    
-    # Get the new_record_id from the session if it exists
-    new_record_id = request.session.pop('new_record_id', None)
-    
-    if cutting_records.exists():
-        remaining_balance = cutting_records.last().remaining_balance
-        is_first_entry = False
-    else:
-        remaining_balance = parent_tcp.total_volume_granted
-        is_first_entry = True
-    
+    cutting = get_object_or_404(Cutting, permit_number=permit_number)
     context = {
-        'parent_tcp': parent_tcp,
-        'volume_records': cutting_records,
-        'remaining_balance': remaining_balance,
-        'is_first_entry': is_first_entry,
-        'total_volume_granted': parent_tcp.total_volume_granted,
-        'new_record_id': new_record_id,
-        'formatted_issue_date': parent_tcp.permit_issue_date,
-        'formatted_expiry_date': parent_tcp.expiry_date,
+        'cutting': cutting,
+        'permit_number': permit_number,
+        'parent_tcp': cutting,  # Add this for the breadcrumb
+        # ... other context data ...
     }
-    
     return render(request, 'add_cutting_record.html', context)
 
 ###FOR CHAINSAW####
