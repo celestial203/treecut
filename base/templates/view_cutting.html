@@ -14,7 +14,20 @@
     <style>
         @media print {
             /* Hide navigation, buttons, and footer when printing */
-            nav, button, .bg-blue-900, a {
+            nav, button, .bg-blue-900, a:not([href*="permit_file"]) {
+                display: none !important;
+            }
+            
+            /* Style permit document link for printing */
+            a[href*="permit_file"] {
+                display: block !important;
+                color: black !important;
+                text-decoration: none !important;
+                background: none !important;
+                padding: 0 !important;
+            }
+
+            a[href*="permit_file"] svg {
                 display: none !important;
             }
             
@@ -70,6 +83,52 @@
                 background-color: white !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
+            }
+            
+            /* Update permit document styles for printing */
+            .permit-document-container {
+                page-break-inside: avoid !important;
+                margin: 20px 0 !important;
+            }
+            
+            .permit-document-container img {
+                max-width: 100% !important;
+                height: auto !important;
+                display: block !important;
+            }
+            
+            /* Show permit document title in print */
+            .permit-document-title {
+                display: block !important;
+                font-weight: bold !important;
+                margin-bottom: 10px !important;
+                color: black !important;
+            }
+            
+            /* Force permit document to start on a new page */
+            .permit-document-section {
+                page-break-before: always !important;
+                margin-top: 20px !important;
+            }
+            
+            .permit-document-container {
+                page-break-inside: avoid !important;
+                margin: 20px 0 !important;
+            }
+            
+            .permit-document-container img {
+                max-width: 100% !important;
+                height: auto !important;
+                display: block !important;
+                margin: 0 auto !important; /* Center the image */
+            }
+            
+            .permit-document-title {
+                display: block !important;
+                font-weight: bold !important;
+                margin-bottom: 10px !important;
+                color: black !important;
+                text-align: center !important;
             }
         }
     </style>
@@ -284,26 +343,30 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Permit Document -->
-                <div class="space-y-4">
-                    <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Permit Document</h3>
+              
+                <div class="space-y-4 permit-document-container">
+                    <h3 class="text-lg font-semibold text-gray-800 border-b pb-2 permit-document-title">Permit Document</h3>
                     
                     <div class="space-y-3">
                         {% if cutting.permit_file %}
-                        <a href="{{ cutting.permit_file.url }}" 
-                           class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                            View Permit Document
-                        </a>
+                            <a href="{{ cutting.permit_file.url }}" 
+                               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                View Permit Document
+                            </a>
+                            <img src="{{ cutting.permit_file.url }}" 
+                                 alt="Permit Document" 
+                                 class="hidden print:block max-w-full h-auto mx-auto"
+                                 style="page-break-inside: avoid;">
                         {% else %}
-                        <p class="text-sm text-gray-500">No permit document available</p>
+                            <p class="text-sm text-gray-500">No permit document available</p>
                         {% endif %}
                     </div>
                 </div>
             </div>
+            
 
             <!-- Volume Breakdown Table -->
             <div class="border-t px-6 py-4">
@@ -347,6 +410,9 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Permit Document - Now in its own section -->
+           
         </div>
     </div>
 
