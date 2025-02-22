@@ -294,7 +294,7 @@
                                         <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.total_volume_granted|default:"-" }}</td>
                                         <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.gross_volume|default:"-" }}</td>
                                         <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.net_volume|default:"-" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.permit_issue_date|date:"Y-m-d" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.date_issued|date:"Y-m-d" }}</td>
                                         <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.expiry_date|date:"Y-m-d" }}</td>
                                         <td class="px-6 py-3 whitespace-nowrap">
                                             <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
@@ -305,7 +305,7 @@
                                         <td class="px-6 py-3 text-xs font-medium space-x-2 whitespace-nowrap">
                                             <a href="{% url 'view_cutting' cutting.id %}" class="text-blue-600 hover:text-blue-900">View</a>
                                             <a href="{% url 'edit_cutting' cutting.id %}" class="text-amber-600 hover:text-amber-900">Edit</a>
-                                            <a href="{% url 'add_cutting_record' cutting.id %}" class="text-green-600 hover:text-green-900">Volume</a>
+                                            <a href="{% url 'add_cutting_record' cutting.id %}" class="text-green-600 hover:text-green-900">Vol</a>
                                         </td>
                                     </tr>
                                     {% endfor %}

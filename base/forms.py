@@ -76,57 +76,37 @@ class LumberForm(forms.ModelForm):
 class CuttingForm(forms.ModelForm):
     class Meta:
         model = Cutting
-        fields = [
-            'permit_type', 'permit_number', 'permit_issue_date', 'expiry_date',
-            'situation', 'permittee', 'rep_by', 'location', 'latitude', 'longitude',
-            'tct_oct_no', 'tax_dec_no', 'lot_no', 'area', 'species', 'no_of_trees',
-            'total_volume_granted', 'gross_volume', 'net_volume', 'permit_file'
-        ]
+        exclude = ['net_volume', 'expiry_date']  # Exclude calculated fields
         widgets = {
-            'permit_issue_date': forms.DateInput(attrs={'type': 'date'}),
-            'expiry_date': forms.DateInput(attrs={'type': 'date', 'readonly': 'readonly'}),
-            'net_volume': forms.NumberInput(attrs={'readonly': 'readonly'}),
-            'permit_file': forms.ClearableFileInput(attrs={'class': 'form-control'})
+            'date_issued': forms.DateInput(
+                attrs={
+                    'type': 'date',
+                    'class': 'form-input datepicker',
+                    'required': True
+                }
+            ),
+            # Add widgets for other date fields if needed
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Make certain fields required
-        self.fields['permit_type'].required = True
-        self.fields['permit_number'].required = True
-        self.fields['permit_issue_date'].required = True
-        self.fields['permittee'].required = True
+    def clean_date_issued(self):
+        date_issued = self.cleaned_data.get('date_issued')
+        if not date_issued:
+            raise forms.ValidationError("Date issued is required.")
         
-        # Make certain fields not required
-        self.fields['permit_file'].required = False
-        self.fields['expiry_date'].required = False
-        self.fields['net_volume'].required = False
-
-    def clean_gross_volume(self):
-        gross_volume = self.cleaned_data.get('gross_volume')
-        if gross_volume:
-            # Ensure only 2 decimal places
-            return round(float(gross_volume), 2)
-        return gross_volume
+        # Prevent future dates
+        if date_issued > timezone.now().date():
+            raise forms.ValidationError("Date issued cannot be in the future.")
+            
+        return date_issued
 
     def clean(self):
         cleaned_data = super().clean()
-        gross_volume = cleaned_data.get('gross_volume')
-        
-        if gross_volume:
-            # Calculate net volume (70% of gross volume)
-            net_volume = float(gross_volume) * 0.70
-            cleaned_data['net_volume'] = round(net_volume, 2)
-            
+        # Any additional form validation logic here
         return cleaned_data
 
     def save(self, commit=True):
         instance = super().save(commit=False)
-        
-        # Ensure calculations are applied
-        if instance.gross_volume:
-            instance.net_volume = float(instance.gross_volume) * 0.70
-            
+        # The net_volume and expiry_date will be calculated in the model's save method
         if commit:
             instance.save()
         return instance

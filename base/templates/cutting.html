@@ -451,7 +451,7 @@
                     </div>
 
                     <!-- Add Status Field Here -->
-                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                    <div class="form-group transition-all duration-200 hover:shadow-sm" style="display: none;">
                         <label for="{{ form.situation.id_for_label }}" class="text-gray-700">Situation</label>
                         {{ form.situation|add_class:"form-input" }}
                         {% if form.situation.errors %}
@@ -517,29 +517,41 @@
                         {% endif %}
                     </div>
 
-                    <div class="form-group transition-all duration-200 hover:shadow-sm">
-                        <label for="{{ form.net_volume.id_for_label }}" class="text-gray-700">Net Volume (cu.m.)</label>
-                        {{ form.net_volume|add_class:"form-input" }}
-                        {% if form.net_volume.errors %}
-                            <div class="text-red-600 text-sm mt-1">{{ form.net_volume.errors.0 }}</div>
+                    <!-- Net Volume Field (Read-only display) -->
+                    <div class="form-group mb-4">
+                        <label for="net_volume" class="block text-sm font-medium text-gray-700">Net Volume(cu.m.)</label>
+                        <input type="text" 
+                               id="net_volume" 
+                               class="form-input bg-gray-100" 
+                               readonly 
+                               value="{{ calculated_net_volume|default:'' }}"
+                        >
+                    </div>
+
+                    <!-- Date Issued Field -->
+                    <div class="form-group mb-4">
+                        <label for="{{ form.date_issued.id_for_label }}" class="block text-sm font-medium text-gray-700">Date Issued</label>
+                        <input type="date" 
+                               name="date_issued"
+                               id="{{ form.date_issued.id_for_label }}"
+                               class="form-input datepicker"
+                               required
+                               value="{% if form.date_issued.value %}{{ form.date_issued.value|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}"
+                        >
+                        {% if form.date_issued.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.date_issued.errors.0 }}</div>
                         {% endif %}
                     </div>
 
-                    <!-- Dates -->
-                    <div class="form-group transition-all duration-200 hover:shadow-sm">
-                        <label for="{{ form.permit_issue_date.id_for_label }}" class="text-gray-700">Date Issued</label>
-                        {{ form.permit_issue_date|add_class:"form-input" }}
-                        {% if form.permit_issue_date.errors %}
-                            <div class="text-red-600 text-sm mt-1">{{ form.permit_issue_date.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="form-group transition-all duration-200 hover:shadow-sm">
-                        <label for="{{ form.expiry_date.id_for_label }}" class="text-gray-700">Expiry Date</label>
-                        {{ form.expiry_date|add_class:"form-input" }}
-                        {% if form.expiry_date.errors %}
-                            <div class="text-red-600 text-sm mt-1">{{ form.expiry_date.errors.0 }}</div>
-                        {% endif %}
+                    <!-- Expiry Date Field -->
+                    <div class="form-group mb-4">
+                        <label for="expiry_date" class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                        <input type="date" 
+                               id="expiry_date"
+                               name="expiry_date"
+                               class="form-input bg-gray-100"
+                               readonly
+                        >
                     </div>
 
                     <!-- Representative -->
@@ -587,83 +599,90 @@
     <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Gross volume to net volume calculation
             const grossVolumeInput = document.getElementById('{{ form.gross_volume.id_for_label }}');
-            const netVolumeInput = document.getElementById('{{ form.net_volume.id_for_label }}');
+            const netVolumeDisplay = document.getElementById('net_volume');
+            const dateIssuedInput = document.getElementById('{{ form.date_issued.id_for_label }}');
+            const expiryDateInput = document.getElementById('expiry_date');
+            const permitTypeSelect = document.getElementById('{{ form.permit_type.id_for_label }}');
+
+            // Calculate net volume in real-time
+            if (grossVolumeInput) {
+                grossVolumeInput.addEventListener('input', calculateNetVolume);
+                grossVolumeInput.addEventListener('change', calculateNetVolume);
+                grossVolumeInput.addEventListener('keyup', calculateNetVolume);
+            }
 
             function calculateNetVolume() {
-                const grossVolume = parseFloat(grossVolumeInput.value) || 0;
-                const netVolume = grossVolume * 0.70;
-                netVolumeInput.value = netVolume.toFixed(2);
-                netVolumeInput.readOnly = true;
-                netVolumeInput.dispatchEvent(new Event('change'));
+                const grossValue = parseFloat(grossVolumeInput.value) || 0;
+                const netValue = (grossValue * 0.70).toFixed(2);
+                netVolumeDisplay.value = netValue;
             }
 
-            grossVolumeInput.addEventListener('input', calculateNetVolume);
-            grossVolumeInput.addEventListener('change', calculateNetVolume);
-            
-            if (grossVolumeInput.value) {
-                calculateNetVolume();
+            // Get number of working days based on permit type
+            function getWorkingDays(permitType) {
+                const permitDays = {
+                    'TCP': 50,
+                    'STCP': 60,
+                    'PLTP': 90,
+                    'SPLTP': 120
+                };
+                return permitDays[permitType] || 0;
             }
 
-            // Updated expiry date calculation
-            const issueDateInput = document.querySelector('input[name="permit_issue_date"]');
-            const expiryDateInput = document.querySelector('input[name="expiry_date"]');
-            const permitTypeInput = document.querySelector('select[name="permit_type"]');
-            
-            function calculateExpiryDate(issueDate, permitType) {
-                const date = new Date(issueDate);
-                let daysToAdd;
+            // Function to add working days to a date
+            function addWorkingDays(startDate, days) {
+                let currentDate = new Date(startDate);
+                let remainingDays = days;
                 
-                // Set days based on permit type
-                switch(permitType) {
-                    case 'PTP':
-                        daysToAdd = 50;
-                        break;
-                    case 'TCP':
-                        daysToAdd = 60;
-                        break;
-                    case 'CSP':
-                        daysToAdd = 90;
-                        break;
-                    case 'STP':
-                        daysToAdd = 120;
-                        break;
-                    default:
-                        daysToAdd = 50; // Default case
-                }
-                
-                let daysAdded = 0;
-                
-                while (daysAdded < daysToAdd) {
-                    date.setDate(date.getDate() + 1);
+                while (remainingDays > 0) {
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    
                     // Skip weekends (0 = Sunday, 6 = Saturday)
-                    if (date.getDay() !== 0 && date.getDay() !== 6) {
-                        daysAdded++;
+                    if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+                        remainingDays--;
                     }
                 }
                 
-                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                return currentDate;
             }
 
-            function updateExpiryDate() {
-                if (issueDateInput.value && permitTypeInput.value) {
-                    expiryDateInput.value = calculateExpiryDate(issueDateInput.value, permitTypeInput.value);
-                }
-            }
-
-            if (issueDateInput && expiryDateInput && permitTypeInput) {
-                issueDateInput.addEventListener('change', updateExpiryDate);
-                permitTypeInput.addEventListener('change', updateExpiryDate);
+            // Calculate expiry date based on permit type (excluding weekends)
+            function calculateExpiryDate() {
+                const dateIssued = new Date(dateIssuedInput.value);
+                const permitType = permitTypeSelect.value;
                 
-                // Calculate initial expiry date if values exist
-                if (issueDateInput.value && permitTypeInput.value) {
-                    updateExpiryDate();
+                if (!isNaN(dateIssued.getTime()) && permitType) {
+                    const workingDays = getWorkingDays(permitType);
+                    const expiryDate = addWorkingDays(dateIssued, workingDays);
+                    
+                    // Format date as YYYY-MM-DD
+                    const formattedDate = expiryDate.toISOString().split('T')[0];
+                    expiryDateInput.value = formattedDate;
                 }
-
-                expiryDateInput.readOnly = true;
-                expiryDateInput.style.backgroundColor = '#f3f4f6';
             }
+
+            // Set default date and calculate expiry date
+            if (dateIssuedInput) {
+                // Set today as default if no date is set
+                if (!dateIssuedInput.value) {
+                    const today = new Date().toISOString().split('T')[0];
+                    dateIssuedInput.value = today;
+                }
+                
+                // Calculate initial expiry date
+                calculateExpiryDate();
+
+                // Update expiry date when date issued changes
+                dateIssuedInput.addEventListener('change', calculateExpiryDate);
+                
+                // Update expiry date when permit type changes
+                if (permitTypeSelect) {
+                    permitTypeSelect.addEventListener('change', calculateExpiryDate);
+                }
+            }
+
+            // Initial calculation if gross volume has a value
+            calculateNetVolume();
         });
     </script>
 </body>

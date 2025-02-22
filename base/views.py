@@ -90,23 +90,25 @@ def cutting(request):
         if form.is_valid():
             try:
                 cutting = form.save(commit=False)
+                
+                # Calculate net volume
                 if cutting.gross_volume:
-                    cutting.net_volume = float(cutting.gross_volume) * 0.70
-                # Status will be saved automatically from the form
+                    cutting.net_volume = round(float(cutting.gross_volume) * 0.70, 2)
+                
                 cutting.save()
                 messages.success(request, f'Successfully added cutting record for {cutting.permit_type}-{cutting.permit_number}')
                 return redirect('cutting')
             except Exception as e:
                 messages.error(request, f'Error saving record: {str(e)}')
         else:
-            print("Form errors:", form.errors)
             messages.error(request, 'Please correct the errors below.')
     else:
-        form = CuttingForm()
+        initial_data = {
+            'date_issued': timezone.now().date()  # Set initial date this way
+        }
+        form = CuttingForm(initial=initial_data)  # Pass initial data to form
 
-    # Get all cutting records ordered by created_at
     cuttings = Cutting.objects.all().order_by('-created_at')
-    
     context = {
         'form': form,
         'cuttings': cuttings,
@@ -257,13 +259,30 @@ def view_cutting(request, cutting_id):
     return render(request, 'view_cutting.html', context)
 
 @login_required
-def add_cutting_record(request, permit_number):
-    cutting = get_object_or_404(Cutting, permit_number=permit_number)
+def add_cutting_record(request, cutting_id):
+    cutting = get_object_or_404(Cutting, id=cutting_id)
+    
+    if request.method == 'POST':
+        form = CuttingRecordForm(request.POST)
+        if form.is_valid():
+            record = form.save(commit=False)
+            record.parent_tcp = cutting
+            record.save()
+            
+            # Update parent cutting situation to "Good" when volume is added
+            cutting.situation = 'Good'
+            cutting.save()
+            
+            messages.success(request, 'Record added successfully!')
+            return redirect('view_cutting', cutting_id=cutting_id)
+    
+    # Get existing records for display
+    records = CuttingRecord.objects.filter(parent_tcp=cutting).order_by('-date_added')
+    
     context = {
         'cutting': cutting,
-        'permit_number': permit_number,
-        'parent_tcp': cutting,  # Add this for the breadcrumb
-        # ... other context data ...
+        'parent_tcp': cutting,  # For breadcrumb
+        'records': records,
     }
     return render(request, 'add_cutting_record.html', context)
 
@@ -336,7 +355,7 @@ def edit_cutting_record(request, record_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Record updated successfully!')
-            return redirect('add_cutting_record', permit_number=record.parent_tcp.permit_number)
+            return redirect('add_cutting_record', cutting_id=record.parent_tcp.id)
     else:
         form = CuttingRecordForm(instance=record)
     

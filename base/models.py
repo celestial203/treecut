@@ -156,24 +156,21 @@ class Cutting(models.Model):
     
     total_volume_granted = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total Volume Granted (cu.m.)")
     gross_volume = models.DecimalField(
-        max_digits=10, 
+        max_digits=10,
         decimal_places=2,
-        validators=[DecimalValidator(10, 2)],
         null=True,
-        blank=True,
-        default=0.00
+        blank=True
     )
     net_volume = models.DecimalField(
-        max_digits=10, 
+        max_digits=10,
         decimal_places=2,
-        validators=[DecimalValidator(10, 2)],
         null=True,
         blank=True,
-        default=0.00
+        editable=False  # Make this field non-editable since it's calculated
     )
     
-    permit_issue_date = models.DateField(null=True, blank=True)
-    expiry_date = models.DateField(null=True, blank=True)
+    date_issued = models.DateField(default=timezone.now)
+    expiry_date = models.DateField(editable=False)
     rep_by = models.CharField(max_length=100, blank=True, null=True, verbose_name="Representative")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -185,53 +182,65 @@ class Cutting(models.Model):
     )
 
     latitude = models.DecimalField(
-        max_digits=9,  # Total digits including decimal places
+        max_digits=9,
         decimal_places=6,
+        validators=[
+            MaxValueValidator(999.999999),
+        ],
         null=True,
         blank=True,
-        validators=[
-            MinValueValidator(-90),
-            MaxValueValidator(90)
-        ],
-        help_text="Enter latitude between -90 and 90 degrees"
+        help_text="Latitude coordinates (e.g. 10.123456)"
     )
     longitude = models.DecimalField(
         max_digits=9,
         decimal_places=6,
+        validators=[
+            MaxValueValidator(999.999999),
+        ],
         null=True,
         blank=True,
-        validators=[
-            MinValueValidator(-180),
-            MaxValueValidator(180)
-        ],
-        help_text="Enter longitude between -180 and 180 degrees"
+        help_text="Longitude coordinates (e.g. 123.456789)"
     )
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['-date_issued']
         unique_together = ['permit_type', 'permit_number']
 
     def __str__(self):
         return f"{self.permit_type}-{self.permit_number}"
 
     def save(self, *args, **kwargs):
-        # Calculate net volume if gross volume exists
-        if self.gross_volume:
-            self.net_volume = float(self.gross_volume) * 0.70
-
-        # Calculate expiry date if permit_issue_date exists and expiry_date doesn't
-        if self.permit_issue_date and not self.expiry_date:
-            self.expiry_date = calculate_expiry_date(self.permit_issue_date)
-
-        # Convert fields to uppercase
-        if self.permit_number:
-            self.permit_number = self.permit_number.upper()
-        if self.permittee:
-            self.permittee = self.permittee.upper()
-        if self.location:
-            self.location = self.location.upper()
-
+        # Calculate expiry date (1 year from date issued)
+        if self.date_issued:
+            # Using timedelta for 1 year (365 days)
+            self.expiry_date = self.date_issued + timedelta(days=365)
+            
+            # Calculate net volume if gross volume exists
+            if self.gross_volume:
+                self.net_volume = round(float(self.gross_volume) * 0.70, 2)
+                
+        # Handle initial save
+        if not self.pk:  # New record
+            self.situation = 'Pending'
+        else:
+            # Check for existing volume records
+            has_records = CuttingRecord.objects.filter(parent_tcp=self).exists()
+            self.situation = 'Good' if has_records else 'Pending'
+        
+        # Call the original save method
         super().save(*args, **kwargs)
+
+    def update_situation(self):
+        # Get current volume records count
+        has_records = CuttingRecord.objects.filter(parent_tcp=self).exists()
+        
+        # Update situation based on volume records
+        new_situation = 'Good' if has_records else 'Pending'
+        
+        # Only update if situation has changed
+        if self.situation != new_situation:
+            self.situation = new_situation
+            self.save(update_fields=['situation'])
 
 def chainsaw_file_path(instance, filename):
     # Generate file path: chainsaw_files/YYYY/MM/filename
@@ -421,11 +430,19 @@ class CuttingRecord(models.Model):
         if not self.calculated_volume:
             self.calculated_volume = self.volume + (self.volume * Decimal('0.30'))
         
-        # Calculate expiry date if not set
         if not self.expiry_date and self.date_added:
             self.expiry_date = calculate_expiry_date(self.date_added.date())
-            
+        
         super().save(*args, **kwargs)
+        
+        # Update parent TCP situation after saving
+        self.parent_tcp.update_situation()
+
+    def delete(self, *args, **kwargs):
+        parent = self.parent_tcp
+        super().delete(*args, **kwargs)
+        # Update parent TCP situation after deletion
+        parent.update_situation()
 
     @property
     def is_expired(self):

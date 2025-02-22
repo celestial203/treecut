@@ -39,18 +39,11 @@ class LumberAdmin(admin.ModelAdmin):
 
 @admin.register(Cutting)
 class CuttingAdmin(admin.ModelAdmin):
-    PERMIT_CHOICES = [
-        ('TCP', 'TCP'),
-        ('STCP', 'STCP'),
-        ('PLTP', 'PLTP'),
-        ('SPLTP', 'SPLTP'),
-    ]
-
-    list_display = ('permit_type', 'permit_number')  # Assuming these are your new field names
-    search_fields = ['tcp_no', 'permittee']
-    list_filter = ['permit_issue_date', 'expiry_date']
-    date_hierarchy = 'permit_issue_date'
-    readonly_fields = ('created_at', 'updated_at')
+    list_display = ['permit_type', 'permit_number', 'date_issued', 'expiry_date', 'gross_volume', 'net_volume']
+    list_filter = ['date_issued', 'permit_type']
+    date_hierarchy = 'date_issued'
+    search_fields = ['permit_number', 'permit_type']
+    readonly_fields = ['expiry_date', 'net_volume']
 
     def save_model(self, request, obj, form, change):
         if not change:  # If this is a new record
