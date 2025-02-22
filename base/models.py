@@ -427,6 +427,7 @@ class CuttingRecord(models.Model):
         self._remaining_balance = value
 
     def save(self, *args, **kwargs):
+        self.clean()
         if not self.calculated_volume:
             self.calculated_volume = self.volume + (self.volume * Decimal('0.30'))
         
@@ -459,6 +460,9 @@ class CuttingRecord(models.Model):
 
     class Meta:
         ordering = ['-date_added']
+
+    def clean(self):
+        pass
 
 class CuttingPermit(models.Model):
     # ... existing fields ...

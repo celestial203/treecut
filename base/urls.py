@@ -25,6 +25,7 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('cutting/record/edit/<int:record_id>/', views.edit_cutting_record, name='edit_cutting_record'),
     path('cutting/records/', views.cutting_records, name='cutting_records'),
+    path('check-permit-exists/', views.check_permit_exists, name='check-permit-exists'),
 ]
 
 if settings.DEBUG:

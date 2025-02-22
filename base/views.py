@@ -384,3 +384,14 @@ def cutting_records(request):
         'today': today,
     }
     return render(request, 'CuttingRecord.html', context)
+
+def check_permit_exists(request):
+    permit_number = request.GET.get('permit_number')
+    permit_type = request.GET.get('permit_type')
+    
+    exists = Cutting.objects.filter(
+        permit_type=permit_type,
+        permit_number=permit_number
+    ).exists()
+    
+    return JsonResponse({'exists': exists})

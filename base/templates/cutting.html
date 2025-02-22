@@ -683,6 +683,49 @@
 
             // Initial calculation if gross volume has a value
             calculateNetVolume();
+
+            // Add new validation for permit number
+            const permitNumberInput = document.getElementById('{{ form.permit_number.id_for_label }}');
+            
+            async function checkPermitExists() {
+                const permitNumber = permitNumberInput.value;
+                const permitType = permitTypeSelect.value;
+                
+                if (!permitNumber || !permitType) return;
+
+                try {
+                    const response = await fetch(`/check-permit-exists/?permit_number=${permitNumber}&permit_type=${permitType}`);
+                    const data = await response.json();
+                    
+                    // Remove any existing error message
+                    const existingError = permitNumberInput.parentElement.querySelector('.permit-error');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+                    
+                    if (data.exists) {
+                        // Add error message
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'permit-error text-red-600 text-sm mt-1';
+                        errorDiv.textContent = `This ${permitType} permit number already exists`;
+                        permitNumberInput.parentElement.appendChild(errorDiv);
+                        
+                        // Disable submit button
+                        document.querySelector('button[type="submit"]').disabled = true;
+                    } else {
+                        // Enable submit button
+                        document.querySelector('button[type="submit"]').disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Error checking permit:', error);
+                }
+            }
+
+            // Add event listeners for validation
+            if (permitNumberInput && permitTypeSelect) {
+                permitNumberInput.addEventListener('blur', checkPermitExists);
+                permitTypeSelect.addEventListener('change', checkPermitExists);
+            }
         });
     </script>
 </body>
