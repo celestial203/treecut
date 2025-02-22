@@ -230,40 +230,29 @@ def edit_recordlumber(request, pk):
     })
 #FOR CUTTING ####
 @login_required
-def edit_cutting(request, pk):
-    cutting = get_object_or_404(Cutting, pk=pk)
-    
+def edit_cutting(request, cutting_id):
+    cutting = get_object_or_404(Cutting, id=cutting_id)
     if request.method == 'POST':
         form = CuttingForm(request.POST, request.FILES, instance=cutting)
-        try:
-            if form.is_valid():
-                # Check if 'clear' checkbox is checked for permit_file
-                if request.POST.get('permit_file-clear') == 'on':
-                    cutting.permit_file = None
-                
-                cutting = form.save()
-                messages.success(request, 'Record updated successfully')
-                return redirect('view_cutting', pk=cutting.pk)
-            else:
-                print("Form errors:", form.errors)  # Debug print
-                messages.error(request, 'Please check the form for errors')
-        except Exception as e:
-            print(f"Error saving: {str(e)}")  # Debug print
-            messages.error(request, f'An error occurred while saving: {str(e)}')
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Record updated successfully')
+            return redirect('view_cutting', cutting_id=cutting_id)
     else:
         form = CuttingForm(instance=cutting)
     
-    context = {
+    return render(request, 'edit_cutting.html', {
         'form': form,
         'cutting': cutting
-    }
-    return render(request, 'edit_cutting.html', context)
+    })
 
-def view_cutting(request, pk):
-    cutting = get_object_or_404(Cutting, pk=pk)
+def view_cutting(request, cutting_id):
+    cutting = get_object_or_404(Cutting, id=cutting_id)
+    today = date.today()
     context = {
         'cutting': cutting,
-        'page_title': 'View Cutting Record'
+        'page_title': 'View Cutting Record',
+        'today': today
     }
     return render(request, 'view_cutting.html', context)
 

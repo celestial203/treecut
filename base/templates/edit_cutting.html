@@ -66,18 +66,11 @@
                 {% endfor %}
             {% endif %}
 
-            <form method="post" enctype="multipart/form-data" id="editForm">
+            <form method="post" enctype="multipart/form-data" id="editForm" action="{% url 'edit_cutting' cutting.id %}">
                 {% csrf_token %}
                 
-                {% if messages %}
-                <div class="px-6 pt-4">
-                    {% for message in messages %}
-                    <div class="p-4 {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} rounded-lg">
-                        {{ message }}
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
+                <!-- Add a hidden input for the cutting ID -->
+                <input type="hidden" name="cutting_id" value="{{ cutting.id }}">
 
                 <!-- Form Content -->
                 <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -213,14 +206,14 @@
                             <div class="mb-4">
                                 <label class="text-sm text-gray-600">Attach File</label>
                                 {% if cutting.permit_file %}
-                                    <div class="mb-2">
+                                    <div class="mb-2 text-sm text-gray-600">
                                         Currently: {{ cutting.permit_file.name }}
-                                        <label>
+                                        <label class="ml-2">
                                             <input type="checkbox" name="permit_file-clear" id="permit_file-clear_id"> Clear
                                         </label>
                                     </div>
                                 {% endif %}
-                                {{ form.permit_file|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                                {{ form.permit_file|add_class:"mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" }}
                             </div>
                         </div>
                     </div>
@@ -257,120 +250,126 @@
     <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Gross volume to net volume calculation
             const grossVolumeInput = document.getElementById('{{ form.gross_volume.id_for_label }}');
             const netVolumeInput = document.getElementById('{{ form.net_volume.id_for_label }}');
 
+            function validateDecimals(input) {
+                if (!input.value) return true;
+                
+                // Convert to string and trim whitespace
+                let value = input.value.toString().trim();
+                
+                // Check if the value is a valid number
+                if (isNaN(value)) {
+                    input.value = '';
+                    return false;
+                }
+
+                // Handle negative numbers
+                if (parseFloat(value) < 0) {
+                    input.value = '0.00';
+                    return false;
+                }
+
+                // Format decimal places
+                if (value.includes('.')) {
+                    let parts = value.split('.');
+                    if (parts[1].length > 2) {
+                        input.value = parseFloat(value).toFixed(2);
+                        return false;
+                    }
+                } else {
+                    // If no decimal, add .00
+                    input.value = parseFloat(value).toFixed(2);
+                }
+                return true;
+            }
+
+            // Function to calculate net volume (70% of gross volume)
             function calculateNetVolume() {
-                const grossVolume = parseFloat(grossVolumeInput.value) || 0;
+                if (!grossVolumeInput.value) {
+                    netVolumeInput.value = '';
+                    return;
+                }
+
+                const grossVolume = parseFloat(grossVolumeInput.value);
                 const netVolume = grossVolume * 0.70;
                 netVolumeInput.value = netVolume.toFixed(2);
-                netVolumeInput.readOnly = true;
             }
 
-            grossVolumeInput.addEventListener('input', calculateNetVolume);
-            
-            // Expiry date calculation
-            const issueDateInput = document.querySelector('input[name="permit_issue_date"]');
-            const expiryDateInput = document.querySelector('input[name="expiry_date"]');
-            const permitTypeInput = document.querySelector('select[name="permit_type"]');
-            
-            function calculateExpiryDate(issueDate, permitType) {
-                const date = new Date(issueDate);
-                let daysToAdd;
-                
-                switch(permitType) {
-                    case 'PTP': daysToAdd = 50; break;
-                    case 'TCP': daysToAdd = 60; break;
-                    case 'CSP': daysToAdd = 90; break;
-                    case 'STP': daysToAdd = 120; break;
-                    default: daysToAdd = 50;
+            // Add validation and calculation to gross volume field
+            if (grossVolumeInput) {
+                // Set initial format if value exists
+                if (grossVolumeInput.value) {
+                    grossVolumeInput.value = parseFloat(grossVolumeInput.value).toFixed(2);
+                    calculateNetVolume();
                 }
-                
-                let daysAdded = 0;
-                while (daysAdded < daysToAdd) {
-                    date.setDate(date.getDate() + 1);
-                    if (date.getDay() !== 0 && date.getDay() !== 6) {
-                        daysAdded++;
+
+                grossVolumeInput.addEventListener('input', function() {
+                    if (validateDecimals(this)) {
+                        calculateNetVolume();
                     }
-                }
-                
-                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-            }
+                });
 
-            function updateExpiryDate() {
-                if (issueDateInput.value && permitTypeInput.value) {
-                    expiryDateInput.value = calculateExpiryDate(issueDateInput.value, permitTypeInput.value);
-                }
-            }
-
-            if (issueDateInput && expiryDateInput && permitTypeInput) {
-                issueDateInput.addEventListener('change', updateExpiryDate);
-                permitTypeInput.addEventListener('change', updateExpiryDate);
-                expiryDateInput.readOnly = true;
-            }
-
-            // Auto-hide alert after 3 seconds
-            const alert = document.getElementById('alert');
-            if (alert) {
-                setTimeout(function() {
-                    alert.style.transition = 'opacity 0.5s ease-out';
-                    alert.style.opacity = '0';
-                    setTimeout(() => alert.remove(), 500);
-                }, 3000);
-            }
-
-            // Function to show SweetAlert
-            function showAlert(type, message) {
-                Swal.fire({
-                    icon: type,
-                    title: type === 'success' ? 'Success!' : 'Error!',
-                    text: message,
-                    toast: true,
-                    position: 'top',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                    didOpen: (toast) => {
-                        toast.addEventListener('mouseenter', Swal.stopTimer)
-                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                grossVolumeInput.addEventListener('blur', function() {
+                    if (validateDecimals(this)) {
+                        calculateNetVolume();
                     }
                 });
             }
 
-            // Handle form submission
+            // Make net volume read-only
+            if (netVolumeInput) {
+                netVolumeInput.readOnly = true;
+                netVolumeInput.style.backgroundColor = '#f3f4f6';
+            }
+
+            // Form submission handling with SweetAlert
             document.getElementById('editForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
+                e.preventDefault(); // Prevent default form submission
+
+                // Validate gross volume
+                if (grossVolumeInput && !validateDecimals(grossVolumeInput)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Error',
+                        text: 'Please ensure Gross Volume has no more than 2 decimal places',
+                        confirmButtonColor: '#3B82F6'
+                    });
+                    return false;
+                }
+
+                // Submit form using fetch
                 fetch(this.action, {
                     method: 'POST',
                     body: new FormData(this),
-                    headers: {
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    }
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        showAlert('success', 'Record updated successfully');
-                        setTimeout(() => {
-                            window.location.href = data.redirect_url;
-                        }, 1000);
+                .then(response => {
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Record has been successfully updated',
+                            confirmButtonColor: '#3B82F6'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Redirect to the view page
+                                window.location.href = "{% url 'view_cutting' cutting.id %}";
+                            }
+                        });
                     } else {
-                        showAlert('error', data.message || 'Error updating record');
+                        throw new Error('Something went wrong');
                     }
                 })
                 .catch(error => {
-                    showAlert('error', 'An error occurred while saving');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to update the record. Please try again.',
+                        confirmButtonColor: '#3B82F6'
+                    });
                 });
             });
-
-            // Show alert if there are any messages from the server
-            {% if messages %}
-                {% for message in messages %}
-                    showAlert('{{ message.tags }}', '{{ message }}');
-                {% endfor %}
-            {% endif %}
         });
     </script>
 </body>

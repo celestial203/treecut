@@ -7,7 +7,7 @@ from django.db import models
 import re
 import os
 from decimal import Decimal
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, DecimalValidator
 
 # models.py
 from django.db import models
@@ -155,8 +155,22 @@ class Cutting(models.Model):
     )
     
     total_volume_granted = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total Volume Granted (cu.m.)")
-    gross_volume = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Gross Volume (cu.m.)", null=True, blank=True)
-    net_volume = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Net Volume (cu.m.)", null=True, blank=True)
+    gross_volume = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        validators=[DecimalValidator(10, 2)],
+        null=True,
+        blank=True,
+        default=0.00
+    )
+    net_volume = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        validators=[DecimalValidator(10, 2)],
+        null=True,
+        blank=True,
+        default=0.00
+    )
     
     permit_issue_date = models.DateField(null=True, blank=True)
     expiry_date = models.DateField(null=True, blank=True)

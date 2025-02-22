@@ -305,7 +305,7 @@
                                         <td class="px-6 py-3 text-xs font-medium space-x-2 whitespace-nowrap">
                                             <a href="{% url 'view_cutting' cutting.id %}" class="text-blue-600 hover:text-blue-900">View</a>
                                             <a href="{% url 'edit_cutting' cutting.id %}" class="text-amber-600 hover:text-amber-900">Edit</a>
-                                            <a href="{% url 'add_cutting_record' %}" class="text-green-600 hover:text-green-900">Vol.</a>
+                                            <a href="{% url 'add_cutting_record' cutting.id %}" class="text-green-600 hover:text-green-900">Volume</a>
                                         </td>
                                     </tr>
                                     {% endfor %}

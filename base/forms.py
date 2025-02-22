@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from datetime import timedelta, date
 from django.contrib.auth.forms import AuthenticationForm
 from decimal import Decimal
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, DecimalValidator
 
 
 # Get the user model
@@ -77,26 +77,10 @@ class CuttingForm(forms.ModelForm):
     class Meta:
         model = Cutting
         fields = [
-            'permit_type',
-            'permit_number',
-            'permit_issue_date',
-            'expiry_date',
-            'permittee',
-            'rep_by',
-            'location',
-            'latitude',
-            'longitude',
-            'tct_oct_no',
-            'tax_dec_no',
-            'lot_no',
-            'area',
-            'species',
-            'no_of_trees',
-            'total_volume_granted',
-            'gross_volume',
-            'net_volume',
-            'permit_file',
-            'situation'
+            'permit_type', 'permit_number', 'permit_issue_date', 'expiry_date',
+            'situation', 'permittee', 'rep_by', 'location', 'latitude', 'longitude',
+            'tct_oct_no', 'tax_dec_no', 'lot_no', 'area', 'species', 'no_of_trees',
+            'total_volume_granted', 'gross_volume', 'net_volume', 'permit_file'
         ]
         widgets = {
             'permit_issue_date': forms.DateInput(attrs={'type': 'date'}),
@@ -118,35 +102,22 @@ class CuttingForm(forms.ModelForm):
         self.fields['expiry_date'].required = False
         self.fields['net_volume'].required = False
 
+    def clean_gross_volume(self):
+        gross_volume = self.cleaned_data.get('gross_volume')
+        if gross_volume:
+            # Ensure only 2 decimal places
+            return round(float(gross_volume), 2)
+        return gross_volume
+
     def clean(self):
         cleaned_data = super().clean()
-        
-        # Calculate net volume if gross volume exists
         gross_volume = cleaned_data.get('gross_volume')
-        if gross_volume:
-            cleaned_data['net_volume'] = float(gross_volume) * 0.70
-
-        # Calculate expiry date based on permit type and issue date
-        permit_type = cleaned_data.get('permit_type')
-        issue_date = cleaned_data.get('permit_issue_date')
         
-        if permit_type and issue_date:
-            # Number of working days for each permit type
-            days_map = {
-                'PTP': 50,  # Private Tree Plantation - 50 working days
-                'TCP': 60,  # Tree Cutting Permit - 60 working days
-                'CSP': 90,  # Certificate of Sawmill Permit - 90 working days
-                'STP': 120  # Special Tree Permit - 120 working days
-            }
-            days = days_map.get(permit_type, 50)  # Default to 50 if permit type not found
-            expiry_date = issue_date
-            days_added = 0
-            while days_added < days:
-                expiry_date += timedelta(days=1)
-                if expiry_date.weekday() < 5:  # Monday = 0, Friday = 4
-                    days_added += 1
-            cleaned_data['expiry_date'] = expiry_date
-
+        if gross_volume:
+            # Calculate net volume (70% of gross volume)
+            net_volume = float(gross_volume) * 0.70
+            cleaned_data['net_volume'] = round(net_volume, 2)
+            
         return cleaned_data
 
     def save(self, commit=True):

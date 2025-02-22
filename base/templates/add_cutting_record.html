@@ -118,21 +118,21 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div>
                     <h3 class="text-sm font-medium text-gray-900">Permit Type & No.</h3>
-                    <p class="mt-1 text-lg font-semibold text-gray-900">{{ parent_tcp }}</p>
+                    <p class="mt-1 text-lg font-semibold text-gray-900">{{ cutting }}</p>
                 </div>
                 <div>
                     <h3 class="text-sm font-medium text-gray-900">Date Issued</h3>
-                    <p class="mt-1 text-lg font-semibold text-gray-900">{{ formatted_issue_date }}</p>
+                    <p class="mt-1 text-lg font-semibold text-gray-900">{{ cutting.permit_issue_date|date:"Y-m-d" }}</p>
                 </div>
                 <div>
                     <h3 class="text-sm font-medium text-gray-900">Expiry Date</h3>
-                    <p class="mt-1 text-lg font-semibold text-gray-900">{{ formatted_expiry_date }}</p>
+                    <p class="mt-1 text-lg font-semibold text-gray-900">{{ cutting.expiry_date|date:"Y-m-d" }}</p>
                 </div>
                 <div>
                     <h3 class="text-sm font-medium text-gray-900">Permittee</h3>
-                    <p class="mt-1 text-lg font-semibold text-gray-900">{{ parent_tcp.permittee }}</p>
-                    {% if parent_tcp.rep_by %}
-                    <p class="text-sm text-green-900">REP By: {{ parent_tcp.rep_by }}</p>
+                    <p class="mt-1 text-lg font-semibold text-gray-900">{{ cutting.permittee }}</p>
+                    {% if cutting.rep_by %}
+                    <p class="text-sm text-green-900">REP By: {{ cutting.rep_by }}</p>
                     {% endif %}
                 </div>
             </div>
@@ -144,7 +144,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white rounded-lg p-4 shadow-sm">
                     <p class="text-sm font-medium text-gray-500">Total Volume Granted</p>
-                    <p class="mt-1 text-2xl font-bold text-blue-600">{{ parent_tcp.total_volume_granted }} cu.m</p>
+                    <p class="mt-1 text-2xl font-bold text-blue-600">{{ cutting.total_volume_granted }} cu.m</p>
                 </div>
                 <div class="bg-white rounded-lg p-4 shadow-sm">
                     <p class="text-sm font-medium text-gray-500">Remaining Balance</p>
@@ -172,7 +172,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Volume (cu.m)*</label>
-                        <input type="number" step="0.01" name="volume" id="inputVolume" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                        <input type="number" step="0.01" name="volume" id="inputVolume" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" onchange="validateDecimals(this)" required>
                     </div>
                 </div>
 
@@ -220,10 +220,10 @@
         <!-- Volume Breakdown Table -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                <h2 class="text-xl font-bold text-blue-700">VOLUME BREAKDOWN <span class="text-gray-600">{{ parent_tcp.tcp_no }}</span></h2>
+                <h2 class="text-xl font-bold text-blue-700">VOLUME BREAKDOWN <span class="text-gray-600">{{ cutting.tcp_no }}</span></h2>
                 <div class="text-right">
                     <p class="text-sm text-gray-600">Total Volume Granted: 
-                        <span class="font-semibold">{{ parent_tcp.total_volume_granted }} cu.m.</span>
+                        <span class="font-semibold">{{ cutting.total_volume_granted }} cu.m.</span>
                     </p>
                     <p class="text-sm {% if remaining_balance <= 0 %}text-red-600{% else %}text-green-600{% endif %}">
                         Remaining Balance: 
@@ -328,7 +328,27 @@
         let remainingBalance = parseFloat('{{ remaining_balance|stringformat:"f" }}');
         console.log('Remaining Balance:', remainingBalance);
 
+        // Add this function to validate decimal places
+        function validateDecimals(input) {
+            let value = input.value;
+            if (value.includes('.')) {
+                let decimals = value.split('.')[1];
+                if (decimals.length > 2) {
+                    input.value = parseFloat(value).toFixed(2);
+                    Swal.fire({
+                        title: 'Warning',
+                        text: 'Only 2 decimal places are allowed',
+                        icon: 'warning',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            }
+
         inputVolume.addEventListener('input', function() {
+            // Validate decimal places on input
+            validateDecimals(this);
+            
             const volume = parseFloat(this.value) || 0;
             let newBalance;
             let calcVol;
@@ -378,19 +398,29 @@
 
         // Update form submission
         document.getElementById('addRecordForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // This prevents form submission but there's no code to submit later
+            event.preventDefault();
             
-            const volume = parseFloat(inputVolume.value) || 0;
-            console.log('Submitting volume:', volume);
+            const volume = inputVolume.value;
+            
+            // Check for decimal places
+            if (volume.includes('.') && volume.split('.')[1].length > 2) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Please ensure volume has no more than 2 decimal places',
+                    icon: 'error',
+                    confirmButtonColor: '#3B82F6'
+                });
+                return false;
+            }
             
             if (isFirstEntry) {
                 console.log('This is first entry, proceeding with submission');
-                const calcVol = volume + (volume * 0.30);
+                const calcVol = parseFloat(volume) + (parseFloat(volume) * 0.30);
                 console.log('Calculated volume:', calcVol);
                 this.submit(); // This allows first entry submission
                 return true;
             } else {
-                newBalance = remainingBalance - volume;
+                newBalance = remainingBalance - parseFloat(volume);
                 
                 // Only check balance if it's not the first entry
                 if (newBalance < 0) {
