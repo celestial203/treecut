@@ -87,12 +87,23 @@
                                 {{ form.permit_number|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
                             </div>
                             <div>
-                                <label class="text-sm text-gray-600 required">Permit Issue Date</label>
-                                {{ form.permit_issue_date|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                                <label class="text-sm text-gray-600 required">Date Issued</label>
+                                <input type="date" 
+                                       id="date_issued"
+                                       name="date_issued"
+                                       value="{{ cutting.date_issued|date:'Y-m-d' }}"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                       required>
                             </div>
                             <div>
                                 <label class="text-sm text-gray-600">Expiry Date</label>
-                                {{ form.expiry_date|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                                <input type="date" 
+                                       id="expiry_date"
+                                       name="expiry_date"
+                                       value="{{ cutting.expiry_date|date:'Y-m-d' }}"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                       readonly
+                                       style="background-color: #f3f4f6;">
                             </div>
                             <div>
                                 <label class="text-sm text-gray-600">Situation</label>
@@ -186,15 +197,29 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="text-sm text-gray-600">Total Volume Granted</label>
-                                {{ form.total_volume_granted|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                                <input type="number" 
+                                       name="{{ form.total_volume_granted.name }}"
+                                       value="{{ cutting.total_volume_granted }}"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="text-sm text-gray-600">Gross Volume</label>
-                                {{ form.gross_volume|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                                <input type="number" 
+                                       id="gross_volume"
+                                       name="{{ form.gross_volume.name }}"
+                                       value="{{ cutting.gross_volume }}"
+                                       step="0.01"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="text-sm text-gray-600">Net Volume</label>
-                                {{ form.net_volume|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                                <input type="number" 
+                                       id="net_volume"
+                                       name="{{ form.net_volume.name }}"
+                                       value="{{ cutting.net_volume }}"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                       readonly
+                                       style="background-color: #f3f4f6;">
                             </div>
                         </div>
                     </div>
@@ -250,126 +275,140 @@
     <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const grossVolumeInput = document.getElementById('{{ form.gross_volume.id_for_label }}');
-            const netVolumeInput = document.getElementById('{{ form.net_volume.id_for_label }}');
+            // Volume calculation
+            const grossVolumeInput = document.getElementById('gross_volume');
+            const netVolumeInput = document.getElementById('net_volume');
+            const editForm = document.getElementById('editForm');
 
-            function validateDecimals(input) {
-                if (!input.value) return true;
-                
-                // Convert to string and trim whitespace
-                let value = input.value.toString().trim();
-                
-                // Check if the value is a valid number
-                if (isNaN(value)) {
-                    input.value = '';
-                    return false;
-                }
-
-                // Handle negative numbers
-                if (parseFloat(value) < 0) {
-                    input.value = '0.00';
-                    return false;
-                }
-
-                // Format decimal places
-                if (value.includes('.')) {
-                    let parts = value.split('.');
-                    if (parts[1].length > 2) {
-                        input.value = parseFloat(value).toFixed(2);
-                        return false;
-                    }
-                } else {
-                    // If no decimal, add .00
-                    input.value = parseFloat(value).toFixed(2);
-                }
-                return true;
-            }
-
-            // Function to calculate net volume (70% of gross volume)
             function calculateNetVolume() {
-                if (!grossVolumeInput.value) {
-                    netVolumeInput.value = '';
-                    return;
-                }
-
-                const grossVolume = parseFloat(grossVolumeInput.value);
-                const netVolume = grossVolume * 0.70;
-                netVolumeInput.value = netVolume.toFixed(2);
+                const grossValue = parseFloat(grossVolumeInput.value) || 0;
+                const netVolume = (grossValue * 0.70).toFixed(2);
+                netVolumeInput.value = netVolume;
             }
 
-            // Add validation and calculation to gross volume field
-            if (grossVolumeInput) {
-                // Set initial format if value exists
-                if (grossVolumeInput.value) {
-                    grossVolumeInput.value = parseFloat(grossVolumeInput.value).toFixed(2);
-                    calculateNetVolume();
-                }
-
-                grossVolumeInput.addEventListener('input', function() {
-                    if (validateDecimals(this)) {
-                        calculateNetVolume();
-                    }
-                });
-
-                grossVolumeInput.addEventListener('blur', function() {
-                    if (validateDecimals(this)) {
-                        calculateNetVolume();
-                    }
-                });
+            if (grossVolumeInput && netVolumeInput) {
+                calculateNetVolume();
+                grossVolumeInput.addEventListener('input', calculateNetVolume);
             }
 
-            // Make net volume read-only
-            if (netVolumeInput) {
-                netVolumeInput.readOnly = true;
-                netVolumeInput.style.backgroundColor = '#f3f4f6';
+            // Date calculation
+            const dateIssuedInput = document.getElementById('date_issued');
+            const expiryDateInput = document.getElementById('expiry_date');
+            const permitTypeSelect = document.getElementById('id_permit_type');
+
+            function addBusinessDays(startDate, days) {
+                let currentDate = new Date(startDate);
+                let addedDays = 0;
+                
+                while (addedDays < days) {
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+                        addedDays++;
+                    }
+                }
+                
+                return currentDate;
+            }
+
+            function calculateExpiryDate() {
+                if (!dateIssuedInput.value) return;
+
+                const permitType = permitTypeSelect.value;
+                const issueDate = new Date(dateIssuedInput.value);
+                let days = 0;
+
+                switch (permitType) {
+                    case 'TCP': days = 50; break;
+                    case 'STCP': days = 60; break;
+                    case 'PLTP': days = 90; break;
+                    case 'SPLTP': days = 120; break;
+                }
+
+                const expiryDate = addBusinessDays(issueDate, days);
+                expiryDateInput.value = expiryDate.toISOString().split('T')[0];
+            }
+
+            // Set initial dates if they exist
+            if (dateIssuedInput && "{{ cutting.date_issued|date:'Y-m-d' }}") {
+                dateIssuedInput.value = "{{ cutting.date_issued|date:'Y-m-d' }}";
+            }
+            
+            if (expiryDateInput && "{{ cutting.expiry_date|date:'Y-m-d' }}") {
+                expiryDateInput.value = "{{ cutting.expiry_date|date:'Y-m-d' }}";
+            }
+
+            // Add event listeners
+            if (dateIssuedInput) {
+                dateIssuedInput.addEventListener('change', calculateExpiryDate);
+            }
+            
+            if (permitTypeSelect) {
+                permitTypeSelect.addEventListener('change', calculateExpiryDate);
+            }
+
+            // Calculate initial expiry date if needed
+            if (!expiryDateInput.value) {
+                calculateExpiryDate();
             }
 
             // Form submission handling with SweetAlert
-            document.getElementById('editForm').addEventListener('submit', function(e) {
-                e.preventDefault(); // Prevent default form submission
+            if (editForm) {
+                editForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
 
-                // Validate gross volume
-                if (grossVolumeInput && !validateDecimals(grossVolumeInput)) {
                     Swal.fire({
-                        icon: 'error',
-                        title: 'Validation Error',
-                        text: 'Please ensure Gross Volume has no more than 2 decimal places',
-                        confirmButtonColor: '#3B82F6'
+                        title: 'Saving changes...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
                     });
-                    return false;
-                }
 
-                // Submit form using fetch
-                fetch(this.action, {
-                    method: 'POST',
-                    body: new FormData(this),
-                })
-                .then(response => {
-                    if (response.ok) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success!',
-                            text: 'Record has been successfully updated',
-                            confirmButtonColor: '#3B82F6'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                // Redirect to the view page
+                    const formData = new FormData(this);
+
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: 'Changes have been saved successfully.',
+                                confirmButtonColor: '#3B82F6'
+                            }).then((result) => {
                                 window.location.href = "{% url 'view_cutting' cutting.id %}";
+                            });
+                        } else {
+                            let errorMessage = data.error;
+                            if (data.errors) {
+                                errorMessage = Object.entries(data.errors)
+                                    .map(([field, error]) => `${field}: ${error}`)
+                                    .join('\n');
                             }
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error!',
+                                text: errorMessage,
+                                confirmButtonColor: '#3B82F6'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: 'An error occurred while saving changes.',
+                            confirmButtonColor: '#3B82F6'
                         });
-                    } else {
-                        throw new Error('Something went wrong');
-                    }
-                })
-                .catch(error => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Failed to update the record. Please try again.',
-                        confirmButtonColor: '#3B82F6'
                     });
                 });
-            });
+            }
         });
     </script>
 </body>

@@ -234,19 +234,20 @@ def edit_recordlumber(request, pk):
 @login_required
 def edit_cutting(request, cutting_id):
     cutting = get_object_or_404(Cutting, id=cutting_id)
+    
     if request.method == 'POST':
         form = CuttingForm(request.POST, request.FILES, instance=cutting)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Record updated successfully')
-            return redirect('view_cutting', cutting_id=cutting_id)
-    else:
-        form = CuttingForm(instance=cutting)
+            cutting = form.save()
+            return JsonResponse({'success': True})
+        return JsonResponse({'success': False, 'error': 'Invalid form data'})
     
-    return render(request, 'edit_cutting.html', {
+    form = CuttingForm(instance=cutting)
+    context = {
         'form': form,
-        'cutting': cutting
-    })
+        'cutting': cutting,  # Make sure to pass the cutting object
+    }
+    return render(request, 'edit_cutting.html', context)
 
 def view_cutting(request, cutting_id):
     cutting = get_object_or_404(Cutting, id=cutting_id)

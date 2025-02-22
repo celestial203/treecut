@@ -145,6 +145,14 @@
                             <p class="font-medium">{{ cutting.permit_number }}</p>
                         </div>
                         <div>
+                            <p class="text-sm text-gray-600">Date Issued</p>
+                            <p class="font-medium">{{ cutting.date_issued|date:"Y-m-d" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Expiry Date</p>
+                            <p class="font-medium">{{ cutting.expiry_date|date:"Y-m-d" }}</p>
+                        </div>
+                        <div>
                             <p class="text-sm text-gray-600">Status</p>
                             <span class="px-2 py-1 text-sm rounded-full 
                                 {% if cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}

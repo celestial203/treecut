@@ -4903,3 +4903,24 @@ LINE 1: ...ing"."gross_volume", "base_cutting"."net_volume", "base_cutt...
 ERROR 2025-02-22 10:43:39,724 basehttp "GET /cutting/records/ HTTP/1.1" 500 171910
 WARNING 2025-02-22 10:46:45,425 log Not Found: /favicon.ico
 WARNING 2025-02-22 10:46:45,426 basehttp "GET /favicon.ico HTTP/1.1" 404 5785
+WARNING 2025-02-22 11:15:01,902 log Not Found: /favicon.ico
+WARNING 2025-02-22 11:15:01,903 basehttp "GET /favicon.ico HTTP/1.1" 404 5785
+ERROR 2025-02-22 11:31:21,019 log Internal Server Error: /cutting/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 109, in cutting
+    form = CuttingForm(initial=initial_data)  # Pass initial data to form
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\forms.py", line 99, in __init__
+    if self.instance and self.instance.permit_issue_date:
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Cutting' object has no attribute 'permit_issue_date'
+ERROR 2025-02-22 11:31:21,025 basehttp "GET /cutting/ HTTP/1.1" 500 76361
+WARNING 2025-02-22 11:37:05,029 log Not Found: /favicon.ico
+WARNING 2025-02-22 11:37:05,031 basehttp "GET /favicon.ico HTTP/1.1" 404 5785
+WARNING 2025-02-22 11:38:48,965 log Not Found: /favicon.ico
+WARNING 2025-02-22 11:38:48,966 basehttp "GET /favicon.ico HTTP/1.1" 404 5785

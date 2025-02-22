@@ -76,17 +76,24 @@ class LumberForm(forms.ModelForm):
 class CuttingForm(forms.ModelForm):
     class Meta:
         model = Cutting
-        exclude = ['net_volume', 'expiry_date']  # Exclude calculated fields
+        fields = '__all__'
+        exclude = ['expiry_date']  # Since it's calculated automatically
         widgets = {
             'date_issued': forms.DateInput(
                 attrs={
                     'type': 'date',
-                    'class': 'form-input datepicker',
+                    'class': 'form-control',
                     'required': True
                 }
             ),
-            # Add widgets for other date fields if needed
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance:
+            # Format dates for the form
+            if self.instance.date_issued:
+                self.initial['date_issued'] = self.instance.date_issued.strftime('%Y-%m-%d')
 
     def clean_date_issued(self):
         date_issued = self.cleaned_data.get('date_issued')
