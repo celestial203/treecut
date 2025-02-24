@@ -13,6 +13,7 @@ from django.db.models import Sum
 from decimal import Decimal
 from django.http import JsonResponse
 from django.urls import reverse
+from decimal import Decimal
 
 # Login view
 def login_view(request):
@@ -263,27 +264,54 @@ def view_cutting(request, cutting_id):
 def add_cutting_record(request, cutting_id):
     cutting = get_object_or_404(Cutting, id=cutting_id)
     
-    if request.method == 'POST':
-        form = CuttingRecordForm(request.POST)
-        if form.is_valid():
-            record = form.save(commit=False)
-            record.parent_tcp = cutting
-            record.save()
-            
-            # Update parent cutting situation to "Good" when volume is added
-            cutting.situation = 'Good'
-            cutting.save()
-            
-            messages.success(request, 'Record added successfully!')
-            return redirect('view_cutting', cutting_id=cutting_id)
+    # Check if this is the first entry
+    is_first_entry = not CuttingRecord.objects.filter(parent_tcp=cutting).exists()
     
+    # Calculate remaining balance
+    total_volume_used = CuttingRecord.objects.filter(parent_tcp=cutting).aggregate(
+        total=Sum('volume'))['total'] or Decimal('0.00')
+    remaining_balance = cutting.total_volume_granted - total_volume_used
+
+    if request.method == 'POST':
+        # Convert string inputs to Decimal to ensure consistent types
+        volume = Decimal(request.POST.get('volume', '0'))
+        calculated_volume = Decimal(request.POST.get('calculated_volume', '0'))
+        
+        record = CuttingRecord(
+            parent_tcp=cutting,
+            species=request.POST.get('species'),
+            number_of_trees=request.POST.get('number_of_trees'),
+            remarks=request.POST.get('remarks')
+        )
+        
+        if is_first_entry:
+            # For first entry, add 30% to volume
+            record.volume = volume
+            record.calculated_volume = volume * Decimal('1.30')
+            record.remaining_balance = record.calculated_volume
+        else:
+            # For subsequent entries
+            record.volume = volume
+            record.calculated_volume = remaining_balance
+            record.remaining_balance = remaining_balance - volume
+            
+        if record.remaining_balance < 0:
+            messages.error(request, 'Volume exceeds remaining balance!')
+            return redirect('add_cutting_record', cutting_id=cutting_id)
+            
+        record.save()
+        messages.success(request, 'Record added successfully!')
+        return redirect('view_cutting', cutting_id=cutting_id)
+
     # Get existing records for display
-    records = CuttingRecord.objects.filter(parent_tcp=cutting).order_by('-date_added')
+    volume_records = CuttingRecord.objects.filter(parent_tcp=cutting).order_by('-date_added')
     
     context = {
         'cutting': cutting,
-        'parent_tcp': cutting,  # For breadcrumb
-        'records': records,
+        'volume_records': volume_records,
+        'remaining_balance': remaining_balance,
+        'is_first_entry': is_first_entry,
+        'new_record_id': request.GET.get('new_record_id'),
     }
     return render(request, 'add_cutting_record.html', context)
 

@@ -15,6 +15,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom right, #1a1a1a, #2d2d2d);
         }
         .bg-denr {
             background-color: #2B5019;
@@ -34,6 +35,59 @@
         .hover\:bg-denr-dark:hover {
             background-color: #1F3B12;
         }
+
+        /* Enhanced Modern Styling */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .gradient-header {
+            background: linear-gradient(to right, #2B5019, #3D7324);
+            color: white;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .input-field {
+            transition: all 0.2s ease;
+        }
+
+        .input-field:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Table Styling */
+        .modern-table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .modern-table th {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 2px solid #e5e7eb;
+            color: #111827;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        .modern-table tr:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+        }
+
         @keyframes highlight {
             0% { background-color: #93C5FD; }
             100% { background-color: #EFF6FF; }
@@ -46,41 +100,26 @@
 </head>
 <body class="bg-gray-50">
     <!-- Navigation Bar -->
-    <div class="max-w-4xl mx-auto">
-        <!-- Add Breadcrumb Navigation -->
-        <div class="py-4 px-2">
-            <nav class="flex" aria-label="Breadcrumb">
-                <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                    <li class="inline-flex items-center">
-                        <a href="{% url 'cutting' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
-                            <svg class="w-3 h-3 mr-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"/>
-                            </svg>
-                            Tree Cutting Permits
-                        </a>
-                    </li>
-                    {% if cutting.id %}
-                    <li>
-                        <div class="flex items-center">
-                            <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
-                            </svg>
-                            <a href="{% url 'view_cutting' cutting.id %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">View Record</a>
-                        </div>
-                    </li>
-                    {% endif %}
-                    <li aria-current="page">
-                        <div class="flex items-center">
-                            <svg class="w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
-                            </svg>
-                            <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">Add Volume</span>
-                        </div>
-                    </li>
-                </ol>
-            </nav>
+    <div class="bg-black text-white py-3 px-6 border-b border-gray-800">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-medium">
+                    <span class="text-green-400">Tree Cutting </span>
+                    <span class="text-blue-400">Records</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="{% url 'view_cutting' cutting.id %}" 
+                   class="inline-flex items-center px-4 py-2 bg-gray-900/50 hover:bg-gray-800 rounded-lg transition-all duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    <span class="text-sm text-gray-300 hover:text-white">
+                        Return to View Records ({{ cutting.permit_type }} {{ cutting.permit_number }})
+                    </span>
+                </a>
+            </div>
         </div>
-
     </div>
 
     <!-- Main Content -->
@@ -114,7 +153,7 @@
         {% endif %}
 
         <!-- TCP Information Card -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="card p-6 mb-6 hover:shadow-lg transition-all duration-300">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div>
                     <h3 class="text-sm font-medium text-gray-900">Permit Type & No.</h3>
@@ -139,14 +178,14 @@
         </div>
 
         <!-- Volume Information Card -->
-        <div class="bg-gradient-to-r from-blue-50 to-green-200 rounded-lg shadow-sm p-6 mb-6">
+        <div class="card bg-gradient-to-r from-blue-50 to-green-200 p-6 mb-6">
             <h2 class="text-xl font-semibold text-blue-900 mb-4">Volume Information</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white rounded-lg p-4 shadow-sm">
+                <div class="card bg-white p-4">
                     <p class="text-sm font-medium text-gray-500">Total Volume Granted</p>
                     <p class="mt-1 text-2xl font-bold text-blue-600">{{ cutting.total_volume_granted }} cu.m</p>
                 </div>
-                <div class="bg-white rounded-lg p-4 shadow-sm">
+                <div class="card bg-white p-4">
                     <p class="text-sm font-medium text-gray-500">Remaining Balance</p>
                     <p class="mt-1 text-2xl font-bold {% if remaining_balance <= 0.0 %}text-red-600{% else %}text-blue-600{% endif %}">
                         {% if remaining_balance <= 0.0 %}
@@ -160,30 +199,41 @@
         </div>
 
         <!-- Add Record Form -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 class="text-xl font-semibold text-blue-700 mb-6">ADD VOLUME RECORD</h2>
+        <div class="card p-6 mb-6">
+            <div class="gradient-header p-4 mb-6">
+                <h2 class="text-xl font-semibold text-white">ADD VOLUME RECORD</h2>
+            </div>
             <form method="POST" id="addRecordForm" class="space-y-6">
                 {% csrf_token %}
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Species*</label>
-                        <input type="text" name="species" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                        <input type="text" name="species" class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Volume (cu.m)*</label>
-                        <input type="number" step="0.01" name="volume" id="inputVolume" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" onchange="validateDecimals(this)" required>
+                        <input type="number" 
+                               step="0.01" 
+                               name="volume" 
+                               id="inputVolume" 
+                               class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                               required>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Number of Trees*</label>
-                        <input type="number" min="1" name="number_of_trees" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                        <input type="number" min="1" name="number_of_trees" class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Calculated Volume (30%)</label>
-                        <input type="number" step="0.01" id="calculatedVolume" class="mt-1 block w-full rounded-md bg-gray-50 border-gray-300 shadow-sm" readonly>
+                        <label class="block text-sm font-medium text-gray-700">Calculated Volume</label>
+                        <input type="number" 
+                               step="0.01" 
+                               id="calculatedVolume" 
+                               class="input-field mt-1 block w-full rounded-md bg-gray-50 border-gray-300 shadow-sm" 
+                               readonly>
                         <div id="calculationDetails" class="mt-2 text-sm text-gray-600"></div>
                     </div>
                 </div>
@@ -203,7 +253,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Remarks</label>
-                    <textarea name="remarks" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    <textarea name="remarks" rows="3" class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
                 </div>
 
                 <div class="flex justify-end space-x-4">
@@ -218,9 +268,9 @@
         </div>
 
         <!-- Volume Breakdown Table -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                <h2 class="text-xl font-bold text-blue-700">VOLUME BREAKDOWN <span class="text-gray-600">{{ cutting.tcp_no }}</span></h2>
+        <div class="card overflow-hidden">
+            <div class="gradient-header p-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-white">VOLUME BREAKDOWN <span class="text-gray-200">{{ cutting.tcp_no }}</span></h2>
                 <div class="text-right">
                     <p class="text-sm text-gray-600">Total Volume Granted: 
                         <span class="font-semibold">{{ cutting.total_volume_granted }} cu.m.</span>
@@ -238,7 +288,7 @@
                 </div>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="modern-table min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
@@ -305,148 +355,80 @@
     </footer>
 
     <script>
-        // Show Django messages using SweetAlert2
-        {% if messages %}
-            {% for message in messages %}
-                Swal.fire({
-                    title: '{{ message.tags|title }}!',
-                    text: '{{ message }}',
-                    icon: '{{ message.tags }}',
-                    confirmButtonColor: '#3B82F6',
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-            {% endfor %}
-        {% endif %}
-
         const inputVolume = document.getElementById('inputVolume');
         const calculatedVolume = document.getElementById('calculatedVolume');
+        const calculationDetails = document.getElementById('calculationDetails');
         const currentBalanceSpan = document.getElementById('currentBalance');
         const newBalanceSpan = document.getElementById('newBalance');
-        let isFirstEntry = {% if is_first_entry %}true{% else %}false{% endif %};
-        console.log('Is First Entry:', isFirstEntry);
-        let remainingBalance = parseFloat('{{ remaining_balance|stringformat:"f" }}');
-        console.log('Remaining Balance:', remainingBalance);
-
-        // Add this function to validate decimal places
-        function validateDecimals(input) {
-            let value = input.value;
-            if (value.includes('.')) {
-                let decimals = value.split('.')[1];
-                if (decimals.length > 2) {
-                    input.value = parseFloat(value).toFixed(2);
-                    Swal.fire({
-                        title: 'Warning',
-                        text: 'Only 2 decimal places are allowed',
-                        icon: 'warning',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                }
-            }
-
-        inputVolume.addEventListener('input', function() {
-            // Validate decimal places on input
-            validateDecimals(this);
-            
-            const volume = parseFloat(this.value) || 0;
-            let newBalance;
+        
+        function updateCalculations() {
+            const volume = parseFloat(inputVolume.value) || 0;
             let calcVol;
+            let newBalance;
+    
+            // Get the remaining balance from the template
+            const remainingBalance = 31.03; // This should come from your Django template
             
-            if (isFirstEntry) {
-                // For first entry: Add 30% to volume and set as initial balance
-                calcVol = volume + (volume * 0.30);
-                calculatedVolume.value = calcVol.toFixed(2);
-                newBalance = calcVol;  // Set new balance as calculated volume
-            } else {
-                // For subsequent entries: Just subtract from remaining
-                calcVol = volume;
-                calculatedVolume.value = volume.toFixed(2);
-                newBalance = remainingBalance - volume;
-            }
+            // Calculate volume with 30% addition
+            calcVol = volume * 1.30; // Original volume + 30%
             
-            // Update displays
-            currentBalanceSpan.textContent = remainingBalance.toFixed(2);
-            newBalanceSpan.textContent = newBalance.toFixed(2);
-
-            // Add visual feedback for negative balance
-            if (newBalance < 0) {
-                newBalanceSpan.classList.add('text-red-600');
-                newBalanceSpan.classList.remove('text-blue-600');
-            } else {
-                newBalanceSpan.classList.add('text-blue-600');
-                newBalanceSpan.classList.remove('text-red-600');
-            }
-
-            // Show calculation details
-            const calculationDetails = document.getElementById('calculationDetails');
             calculationDetails.innerHTML = `
-                <div class="text-sm text-gray-600 mt-2">
-                    ${isFirstEntry ? 
-                        `Original Volume: ${volume.toFixed(2)} cu.m<br>
-                        30% Addition: ${(volume * 0.30).toFixed(2)} cu.m<br>
-                        Calculated Volume: ${calcVol.toFixed(2)} cu.m<br>
-                        New Balance: ${newBalance.toFixed(2)} cu.m` 
-                        : 
-                        `Current Balance: ${remainingBalance.toFixed(2)} cu.m<br>
-                        Volume to Deduct: ${volume.toFixed(2)} cu.m<br>
-                        New Balance: ${newBalance.toFixed(2)} cu.m`
-                    }
+                <div class="text-sm space-y-1">
+                    <div class="flex justify-between text-gray-600">
+                        <span>Original Volume:</span>
+                        <span>${volume.toFixed(2)} cu.m</span>
+                    </div>
+                    <div class="flex justify-between text-green-600">
+                        <span>Additional 30%:</span>
+                        <span>+${(volume * 0.30).toFixed(2)} cu.m</span>
+                    </div>
+                    <div class="flex justify-between font-semibold text-blue-600 border-t pt-1">
+                        <span>Total Volume:</span>
+                        <span>${calcVol.toFixed(2)} cu.m</span>
+                    </div>
                 </div>
             `;
-        });
-
-        // Update form submission
+            
+            // Update the calculated volume field
+            calculatedVolume.value = calcVol.toFixed(2);
+            
+            // Update balance displays
+            currentBalanceSpan.textContent = `${remainingBalance.toFixed(2)} cu.m`;
+            newBalanceSpan.textContent = `${calcVol.toFixed(2)} cu.m`; // Show the total calculated volume
+    
+            // Add hidden input for form submission
+            let hiddenInput = document.getElementById('hiddenCalculatedVolume');
+            if (!hiddenInput) {
+                hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'calculated_volume';
+                hiddenInput.id = 'hiddenCalculatedVolume';
+                document.getElementById('addRecordForm').appendChild(hiddenInput);
+            }
+            hiddenInput.value = calcVol.toFixed(2);
+        }
+    
+        // Add event listeners for real-time updates
+        inputVolume.addEventListener('input', updateCalculations);
+        inputVolume.addEventListener('change', updateCalculations);
+    
+        // Initial calculation when page loads
+        updateCalculations();
+    
+        // Validate form before submission
         document.getElementById('addRecordForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const volume = inputVolume.value;
-            
-            // Check for decimal places
-            if (volume.includes('.') && volume.split('.')[1].length > 2) {
+            const volume = parseFloat(inputVolume.value) || 0;
+            const calcVol = volume * 1.30;
+    
+            if (calcVol <= 0) {
+                event.preventDefault();
                 Swal.fire({
                     title: 'Error!',
-                    text: 'Please ensure volume has no more than 2 decimal places',
+                    text: 'Please enter a valid volume!',
                     icon: 'error',
                     confirmButtonColor: '#3B82F6'
                 });
-                return false;
             }
-            
-            if (isFirstEntry) {
-                console.log('This is first entry, proceeding with submission');
-                const calcVol = parseFloat(volume) + (parseFloat(volume) * 0.30);
-                console.log('Calculated volume:', calcVol);
-                this.submit(); // This allows first entry submission
-                return true;
-            } else {
-                newBalance = remainingBalance - parseFloat(volume);
-                
-                // Only check balance if it's not the first entry
-                if (newBalance < 0) {
-                    event.preventDefault();
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'Volume exceeds remaining balance!',
-                        icon: 'error',
-                        confirmButtonColor: '#3B82F6'
-                    });
-                    return false;
-                }
-                
-                if (remainingBalance <= 0) {
-                    event.preventDefault();
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'Cannot add record. Balance is already zero or negative!',
-                        icon: 'error',
-                        confirmButtonColor: '#3B82F6'
-                    });
-                    return false;
-                }
-                this.submit(); // Add this line to submit the form when validation passes
-            }
-            return true;
         });
     </script>
 </body>

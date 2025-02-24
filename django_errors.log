@@ -4930,3 +4930,58 @@ WARNING 2025-02-22 11:53:31,267 log Not Found: /favicon.ico
 WARNING 2025-02-22 11:53:31,269 basehttp "GET /favicon.ico HTTP/1.1" 404 5976
 WARNING 2025-02-22 12:14:32,875 log Not Found: /favicon.ico
 WARNING 2025-02-22 12:14:32,876 basehttp "GET /favicon.ico HTTP/1.1" 404 5976
+WARNING 2025-02-22 12:20:08,458 log Not Found: /favicon.ico
+WARNING 2025-02-22 12:20:08,459 basehttp "GET /favicon.ico HTTP/1.1" 404 5976
+WARNING 2025-02-24 10:27:01,580 log Not Found: /favicon.ico
+WARNING 2025-02-24 10:27:01,582 basehttp "GET /favicon.ico HTTP/1.1" 404 5976
+WARNING 2025-02-24 10:27:35,981 log Not Found: /favicon.ico
+WARNING 2025-02-24 10:27:35,983 basehttp "GET /favicon.ico HTTP/1.1" 404 5976
+WARNING 2025-02-24 10:30:46,886 log Not Found: /favicon.ico
+WARNING 2025-02-24 10:30:46,886 basehttp "GET /favicon.ico HTTP/1.1" 404 5976
+ERROR 2025-02-24 11:39:23,809 log Internal Server Error: /cutting/6/record/add/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 288, in add_cutting_record
+    record.remaining_balance = cutting.total_volume_granted - volume
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~
+TypeError: unsupported operand type(s) for -: 'decimal.Decimal' and 'float'
+ERROR 2025-02-24 11:39:23,858 basehttp "POST /cutting/6/record/add/ HTTP/1.1" 500 74821
+ERROR 2025-02-24 11:44:59,218 log Internal Server Error: /cutting/6/record/add/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 302, in add_cutting_record
+    record.save()
+    ~~~~~~~~~~~^^
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\models.py", line 453, in save
+    self.calculated_volume = self.volume + (self.volume * 0.30)
+                                            ~~~~~~~~~~~~^~~~~~
+TypeError: unsupported operand type(s) for *: 'decimal.Decimal' and 'float'
+ERROR 2025-02-24 11:44:59,229 basehttp "POST /cutting/6/record/add/ HTTP/1.1" 500 78972
+ERROR 2025-02-24 11:48:27,743 log Internal Server Error: /cutting/6/record/add/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 302, in add_cutting_record
+    record.save()
+    ~~~~~~~~~~~^^
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\models.py", line 461, in save
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\base.py", line 1651, in full_clean
+    raise ValidationError(errors)
+django.core.exceptions.ValidationError: {'remaining_balance': ['Ensure that there are no more than 2 decimal places.']}
+ERROR 2025-02-24 11:48:27,755 basehttp "POST /cutting/6/record/add/ HTTP/1.1" 500 83753

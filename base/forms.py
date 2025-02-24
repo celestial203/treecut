@@ -191,13 +191,13 @@ class WoodForm(forms.ModelForm):
 class CuttingRecordForm(forms.ModelForm):
     class Meta:
         model = CuttingRecord
-        fields = ['species', 'no_of_trees', 'volume', 'remarks']
+        fields = ['species', 'number_of_trees', 'volume', 'remarks']
         widgets = {
             'volume': forms.NumberInput(attrs={
                 'class': 'form-input',
                 'step': '0.01'
             }),
-            'no_of_trees': forms.NumberInput(attrs={
+            'number_of_trees': forms.NumberInput(attrs={
                 'class': 'form-input'
             }),
             'species': forms.TextInput(attrs={
@@ -214,6 +214,12 @@ class CuttingRecordForm(forms.ModelForm):
         if volume <= 0:
             raise ValidationError("Volume must be greater than 0")
         return volume
+
+    def clean_number_of_trees(self):
+        number_of_trees = self.cleaned_data.get('number_of_trees')
+        if number_of_trees <= 0:
+            raise ValidationError("Number of trees must be greater than 0")
+        return number_of_trees
 
     def clean(self):
         cleaned_data = super().clean()

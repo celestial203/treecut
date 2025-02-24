@@ -94,6 +94,15 @@ class WoodAdmin(admin.ModelAdmin):
 
 @admin.register(CuttingRecord)
 class CuttingRecordAdmin(admin.ModelAdmin):
-    list_display = ['parent_tcp', 'species', 'no_of_trees', 'volume', 'calculated_volume', 'remaining_balance', 'date_added']
-    search_fields = ['parent_tcp__tcp_no', 'species']
-    list_filter = ['date_added']
+    list_display = [
+        'parent_tcp',
+        'species',
+        'number_of_trees',
+        'volume',
+        'calculated_volume',
+        'remaining_balance',
+        'date_added'
+    ]
+    list_filter = ['species', 'date_added']
+    search_fields = ['parent_tcp__permit_number', 'species']
+    readonly_fields = ['calculated_volume', 'remaining_balance', 'date_added']

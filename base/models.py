@@ -2,14 +2,12 @@ from django.contrib.auth.models import User  # Import the User model
 from django.db import models
 from datetime import datetime, timedelta
 from django.utils import timezone
-from django.core.exceptions import ValidationError
 from django.db import models
 import re
 import os
-from decimal import Decimal
 from django.core.validators import MinValueValidator, MaxValueValidator, DecimalValidator
-
-# models.py
+from decimal import Decimal
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -402,67 +400,65 @@ class Wood(models.Model):
         return 'Active'
 
 class CuttingRecord(models.Model):
-    parent_tcp = models.ForeignKey(Cutting, on_delete=models.CASCADE)
-    date_added = models.DateTimeField(auto_now_add=True)
+    parent_tcp = models.ForeignKey(Cutting, on_delete=models.CASCADE, related_name='volume_records')
     species = models.CharField(max_length=100)
-    no_of_trees = models.IntegerField(default=0)
     volume = models.DecimalField(max_digits=10, decimal_places=2)
-    calculated_volume = models.DecimalField(max_digits=10, decimal_places=2)
-    _remaining_balance = models.DecimalField(
+    calculated_volume = models.DecimalField(
         max_digits=10, 
-        decimal_places=2, 
-        db_column='remaining_balance',
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+    remaining_balance = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        null=True,
+        blank=True,
         default=Decimal('0.00')
     )
+    number_of_trees = models.IntegerField()
     remarks = models.TextField(blank=True, null=True)
-    expiry_date = models.DateField(null=True, blank=True)
-    number_of_trees = models.IntegerField(default=0)
-
-    @property
-    def remaining_balance(self):
-        return self._remaining_balance
-
-    @remaining_balance.setter
-    def remaining_balance(self, value):
-        self._remaining_balance = value
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        if not self.calculated_volume:
-            self.calculated_volume = self.volume + (self.volume * Decimal('0.30'))
-        
-        if not self.expiry_date and self.date_added:
-            self.expiry_date = calculate_expiry_date(self.date_added.date())
-        
-        super().save(*args, **kwargs)
-        
-        # Update parent TCP situation after saving
-        self.parent_tcp.update_situation()
-
-    def delete(self, *args, **kwargs):
-        parent = self.parent_tcp
-        super().delete(*args, **kwargs)
-        # Update parent TCP situation after deletion
-        parent.update_situation()
-
-    @property
-    def is_expired(self):
-        if self.expiry_date:
-            return timezone.now().date() > self.expiry_date
-        return False
-
-    @property
-    def days_until_expiry(self):
-        if self.expiry_date:
-            delta = self.expiry_date - timezone.now().date()
-            return delta.days
-        return None
+    date_added = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-date_added']
 
+    def __str__(self):
+        return f"{self.parent_tcp.permit_number} - {self.species} - {self.volume}cu.m"
+
     def clean(self):
-        pass
+        if self.volume <= 0:
+            raise ValidationError({'volume': 'Volume must be greater than 0.'})
+        if self.number_of_trees <= 0:
+            raise ValidationError({'number_of_trees': 'Number of trees must be greater than 0.'})
+
+    def save(self, *args, **kwargs):
+        if not self.pk:  # If this is a new record
+            # Get the latest record for this TCP
+            latest_record = CuttingRecord.objects.filter(
+                parent_tcp=self.parent_tcp
+            ).order_by('-date_added').first()
+
+            # Ensure volume is Decimal with 2 decimal places
+            if not isinstance(self.volume, Decimal):
+                self.volume = Decimal(str(self.volume)).quantize(Decimal('0.01'))
+
+            if latest_record:
+                # For subsequent entries
+                if not isinstance(latest_record.remaining_balance, Decimal):
+                    latest_balance = Decimal(str(latest_record.remaining_balance))
+                else:
+                    latest_balance = latest_record.remaining_balance
+                self.remaining_balance = (latest_balance - self.volume).quantize(Decimal('0.01'))
+                self.calculated_volume = latest_balance.quantize(Decimal('0.01'))
+            else:
+                # For first entry
+                volume_with_30_percent = (self.volume * Decimal('1.30')).quantize(Decimal('0.01'))
+                self.calculated_volume = Decimal(str(self.parent_tcp.total_volume_granted)).quantize(Decimal('0.01'))
+                self.remaining_balance = volume_with_30_percent
+
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 class CuttingPermit(models.Model):
     # ... existing fields ...
