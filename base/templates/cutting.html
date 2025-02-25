@@ -613,9 +613,9 @@
             function getWorkingDays(permitType) {
                 const permitDays = {
                     'TCP': 50,
-                    'STCP': 60,
-                    'PLTP': 90,
-                    'SPLTP': 120
+                    'STCP': 50,
+                    'PLTP': 50,
+                    'SPLTP': 50
                 };
                 return permitDays[permitType] || 0;
             }

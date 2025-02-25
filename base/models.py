@@ -400,7 +400,22 @@ class Wood(models.Model):
         return 'Active'
 
 class CuttingRecord(models.Model):
-    parent_tcp = models.ForeignKey(Cutting, on_delete=models.CASCADE, related_name='volume_records')
+    VOLUME_TYPE_CHOICES = [
+        ('Initial', 'Initial'),
+        ('Additional', 'Additional'),
+    ]
+    
+    parent_tcp = models.ForeignKey(
+        Cutting, 
+        on_delete=models.CASCADE, 
+        related_name='cutting_records'
+    )
+    date = models.DateField(default=timezone.now)
+    volume_type = models.CharField(
+        max_length=20,
+        choices=VOLUME_TYPE_CHOICES,
+        default='Initial'
+    )
     species = models.CharField(max_length=100)
     volume = models.DecimalField(max_digits=10, decimal_places=2)
     calculated_volume = models.DecimalField(
@@ -480,3 +495,25 @@ class CuttingPermit(models.Model):
     )
 
     # ... rest of the model ...
+
+class VolumeRecord(models.Model):
+    VOLUME_TYPE_CHOICES = [
+        ('Initial', 'Initial'),
+        ('Additional', 'Additional'),
+    ]
+    
+    cutting = models.ForeignKey(
+        Cutting, 
+        on_delete=models.CASCADE, 
+        related_name='volume_records'
+    )
+    date = models.DateField()
+    volume_type = models.CharField(max_length=20, choices=VOLUME_TYPE_CHOICES)
+    volume = models.DecimalField(max_digits=10, decimal_places=2)
+    remarks = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.volume_type} - {self.volume} cu.m ({self.date})"

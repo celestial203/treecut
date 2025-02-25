@@ -3,6 +3,7 @@ from django import forms
 from django.contrib.auth import authenticate, get_user_model
 from .models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord
 import re
+from .models import CuttingRecord
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from datetime import timedelta, date
@@ -231,3 +232,19 @@ class CuttingRecordForm(forms.ModelForm):
             cleaned_data['calculated_volume'] = calculated_volume
             
         return cleaned_data
+
+class VolumeRecordForm(forms.ModelForm):
+    class Meta:
+        model = CuttingRecord
+        fields = ['date', 'volume_type', 'volume', 'remarks']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
+            'volume_type': forms.Select(attrs={'class': 'form-select'}),
+            'remarks': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def clean_volume(self):
+        volume = self.cleaned_data.get('volume')
+        if volume and volume <= 0:
+            raise ValidationError("Volume must be greater than 0")
+        return volume

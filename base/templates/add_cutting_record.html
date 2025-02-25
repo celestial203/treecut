@@ -161,7 +161,7 @@
                 </div>
                 <div>
                     <h3 class="text-sm font-medium text-gray-900">Date Issued</h3>
-                    <p class="mt-1 text-lg font-semibold text-gray-900">{{ cutting.permit_issue_date|date:"Y-m-d" }}</p>
+                    <p class="mt-1 text-lg font-semibold {% if cutting.permit_issue_date %}text-gray-900{% else %}text-red-600{% endif %}">{% if cutting.permit_issue_date %}{{ cutting.permit_issue_date|date:"Y-m-d" }}{% else %}Not yet issued{% endif %}</p>
                 </div>
                 <div>
                     <h3 class="text-sm font-medium text-gray-900">Expiry Date</h3>
@@ -187,11 +187,11 @@
                 </div>
                 <div class="card bg-white p-4">
                     <p class="text-sm font-medium text-gray-500">Remaining Balance</p>
-                    <p class="mt-1 text-2xl font-bold {% if remaining_balance <= 0.0 %}text-red-600{% else %}text-blue-600{% endif %}">
-                        {% if remaining_balance <= 0.0 %}
+                    <p class="mt-1 text-2xl font-bold {% if volume_records.last.remaining_balance <= 0.0 %}text-red-600{% else %}text-blue-600{% endif %}">
+                        {% if volume_records.last.remaining_balance <= 0.0 %}
                             CONSUME
                         {% else %}
-                            {{ remaining_balance }} cu.m
+                            {{ volume_records.last.remaining_balance|default:cutting.total_volume_granted }} cu.m
                         {% endif %}
                     </p>
                 </div>
@@ -235,21 +235,18 @@
                                class="input-field mt-1 block w-full rounded-md bg-gray-50 border-gray-300 shadow-sm" 
                                readonly>
                         <div id="calculationDetails" class="mt-2 text-sm text-gray-600"></div>
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-sm text-gray-600">After This Entry:</p>
+                                    <p class="font-medium text-lg" id="newBalance">31.03 cu.m</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-blue-50 rounded-lg p-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <p class="text-sm text-gray-600">Current Balance:</p>
-                            <p class="font-medium text-lg" id="currentBalance">{{ remaining_balance }} cu.m</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-600">After This Entry:</p>
-                            <p class="font-medium text-lg" id="newBalance">{{ remaining_balance }} cu.m</p>
-                        </div>
-                    </div>
-                </div>
+                
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Remarks</label>
@@ -272,18 +269,8 @@
             <div class="gradient-header p-4 flex justify-between items-center">
                 <h2 class="text-xl font-bold text-white">VOLUME BREAKDOWN <span class="text-gray-200">{{ cutting.tcp_no }}</span></h2>
                 <div class="text-right">
-                    <p class="text-sm text-gray-600">Total Volume Granted: 
+                    <p class="text-sm text-black-600">Total Volume Granted: 
                         <span class="font-semibold">{{ cutting.total_volume_granted }} cu.m.</span>
-                    </p>
-                    <p class="text-sm {% if remaining_balance <= 0 %}text-red-600{% else %}text-green-600{% endif %}">
-                        Remaining Balance: 
-                        <span class="font-semibold">
-                            {% if remaining_balance <= 0 %}
-                                CONSUMED
-                            {% else %}
-                                {{ remaining_balance|floatformat:2 }} cu.m.
-                            {% endif %}
-                        </span>
                     </p>
                 </div>
             </div>
@@ -310,7 +297,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.calculated_volume|floatformat:2 }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
-                                    {% if record.remaining_balance <= 1 %}
+                                    {% if record.remaining_balance|default:0 <= 1 %}
                                         <span class="text-sm text-red-600 font-semibold">
                                             {{ record.remaining_balance|floatformat:2 }}
                                         </span>
@@ -328,7 +315,7 @@
                 </table>
             </div>
 
-            {% if remaining_balance <= 0 %}
+            {% if volume_records.last.remaining_balance <= 0.0 %}
             <div class="mt-4 bg-red-50 border-l-4 border-red-400 p-4">
                 <div class="flex">
                     <div class="flex-shrink-0">
@@ -363,40 +350,60 @@
         
         function updateCalculations() {
             const volume = parseFloat(inputVolume.value) || 0;
+            const totalVolumeGranted = {{ cutting.total_volume_granted }};
+            const hasExistingRecords = {{ volume_records|length }} > 0;
+            const remainingBalance = {{ volume_records.last.remaining_balance|default:cutting.total_volume_granted }};
             let calcVol;
-            let newBalance;
-    
-            // Get the remaining balance from the template
-            const remainingBalance = 31.03; // This should come from your Django template
             
-            // Calculate volume with 30% addition
-            calcVol = volume * 1.30; // Original volume + 30%
+            if (!hasExistingRecords) {
+                const additionalVolume = volume * 0.30;
+                calcVol = volume + additionalVolume;
+                
+                calculationDetails.innerHTML = `
+                    <div class="text-sm space-y-1">
+                        <div class="flex justify-between text-gray-600">
+                            <span>Original Volume:</span>
+                            <span>${volume.toFixed(2)} cu.m</span>
+                        </div>
+                        <div class="flex justify-between text-green-600">
+                            <span>Additional 30%:</span>
+                            <span>+${additionalVolume.toFixed(2)} cu.m</span>
+                        </div>
+                        <div class="flex justify-between font-semibold text-blue-600 border-t pt-1">
+                            <span>Total Volume:</span>
+                            <span>${calcVol.toFixed(2)} cu.m</span>
+                        </div>
+                    </div>
+                `;
+
+                // For first entry, show the calculated volume (31.03) as the remaining balance
+                document.querySelector('[id="newBalance"]').textContent = `${calcVol.toFixed(2)} cu.m`;
+            } else {
+                calcVol = volume;
+                
+                calculationDetails.innerHTML = `
+                    <div class="text-sm space-y-1">
+                        <div class="flex justify-between text-gray-600">
+                            <span>Volume to Deduct:</span>
+                            <span>${volume.toFixed(2)} cu.m</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Current Balance:</span>
+                            <span>${remainingBalance.toFixed(2)} cu.m</span>
+                        </div>
+                        <div class="flex justify-between font-semibold text-blue-600 border-t pt-1">
+                            <span>New Remaining Balance:</span>
+                            <span>${(remainingBalance - volume).toFixed(2)} cu.m</span>
+                        </div>
+                    </div>
+                `;
+
+                newBalanceSpan.textContent = `${(remainingBalance - volume).toFixed(2)} cu.m`;
+            }
             
-            calculationDetails.innerHTML = `
-                <div class="text-sm space-y-1">
-                    <div class="flex justify-between text-gray-600">
-                        <span>Original Volume:</span>
-                        <span>${volume.toFixed(2)} cu.m</span>
-                    </div>
-                    <div class="flex justify-between text-green-600">
-                        <span>Additional 30%:</span>
-                        <span>+${(volume * 0.30).toFixed(2)} cu.m</span>
-                    </div>
-                    <div class="flex justify-between font-semibold text-blue-600 border-t pt-1">
-                        <span>Total Volume:</span>
-                        <span>${calcVol.toFixed(2)} cu.m</span>
-                    </div>
-                </div>
-            `;
-            
-            // Update the calculated volume field
             calculatedVolume.value = calcVol.toFixed(2);
-            
-            // Update balance displays
-            currentBalanceSpan.textContent = `${remainingBalance.toFixed(2)} cu.m`;
-            newBalanceSpan.textContent = `${calcVol.toFixed(2)} cu.m`; // Show the total calculated volume
-    
-            // Add hidden input for form submission
+
+            // Update hidden input
             let hiddenInput = document.getElementById('hiddenCalculatedVolume');
             if (!hiddenInput) {
                 hiddenInput = document.createElement('input');
@@ -409,11 +416,15 @@
         }
     
         // Add event listeners for real-time updates
-        inputVolume.addEventListener('input', updateCalculations);
-        inputVolume.addEventListener('change', updateCalculations);
+        inputVolume.addEventListener('input', updateCalculations);  // Fires immediately while typing
+        inputVolume.addEventListener('keyup', updateCalculations);  // Backup for older browsers
+        inputVolume.addEventListener('change', updateCalculations); // When input loses focus
+        inputVolume.addEventListener('paste', () => {              // Handle pasted values
+            setTimeout(updateCalculations, 0);
+        });
     
         // Initial calculation when page loads
-        updateCalculations();
+        document.addEventListener('DOMContentLoaded', updateCalculations);
     
         // Validate form before submission
         document.getElementById('addRecordForm').addEventListener('submit', function(event) {
