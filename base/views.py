@@ -420,6 +420,7 @@ def check_permit_exists(request):
     
     return JsonResponse({'exists': exists})
 
+@login_required
 def volumes(request):
     # Get all volume records with their related cutting information
     volume_records = VolumeRecord.objects.select_related('cutting').all().order_by(
@@ -460,8 +461,12 @@ def volumes(request):
             grouped_records[permit_key]['total_volume_used']
         )
 
+    # Fetch cutting records to match with volume records
+    cutting_records = CuttingRecord.objects.all()
+
     context = {
-        'grouped_records': grouped_records
+        'grouped_records': grouped_records,
+        'cutting_records': cutting_records,
     }
     
-    return render(request, 'volumerecords.html', context)
+    return render(request, 'cutting_volrecords.html', context)

@@ -10,6 +10,7 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
+# The import statement for VolumeRecord should be placed at the top of the file with other import statements.
 
 class Lumber(models.Model):
     no = models.CharField(max_length=50)
