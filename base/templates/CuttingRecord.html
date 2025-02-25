@@ -13,7 +13,7 @@
     <style>
         /* Enhanced styling */
         body {
-            background: linear-gradient(to bottom right, #1a1a1a, #2d2d2d);
+            background-color: #f0fdf4; /* Light green background */
         }
 
         .table-container {
@@ -57,22 +57,24 @@
         }
 
         .status-active {
-            background-color: #dcfce7;
-            color: #166534;
+            background-color: #dcfce7; /* Light green for active status */
+            color: #166534; /* Dark green text */
         }
 
         .status-expired {
-            background-color: #fee2e2;
-            color: #991b1b;
+            background-color: #fee2e2; /* Light red for expired status */
+            color: #991b1b; /* Dark red text */
         }
 
         .status-pending {
-            background-color: #fef3c7;
-            color: #92400e;
+            background-color: #fef3c7; /* Light yellow for pending status */
+            color: #92400e; /* Dark yellow text */
         }
 
         /* Action buttons */
         .action-button {
+            background-color: #f0fdf4; /* Light green for buttons */
+            color: #2f855a; /* Dark green text */
             padding: 0.5rem 1rem;
             border-radius: 6px;
             transition: all 0.2s ease;
@@ -83,6 +85,7 @@
         }
 
         .action-button:hover {
+            background-color: #68d391; /* Darker green on hover */
             transform: translateY(-1px);
         }
 
@@ -115,14 +118,14 @@
         }
     </style>
 </head>
-<body class="font-inter bg-gradient-to-tl from-blue-800 to-green-600 text-white-900">
+<body class="font-inter bg-green-100 text-gray-900">
     <!-- Compact modern header with dark theme -->
     <div class="bg-black text-white py-3 px-6 border-b border-gray-800">
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-xl font-medium">
-                    <span class="text-green-400">Tree Cutting </span>
-                    <span class="text-blue-400">Records</span>
+                    <span class="text-green-600">Tree Cutting </span>
+                    <span class="text-blue-600">Records</span>
                 </h1>
             </div>
             <div class="flex items-center gap-4">
@@ -272,8 +275,8 @@
                                         {% else %}
                                             hover:bg-green-100
                                         {% endif %}">
-                                        <td class="px-6 py-3 text-xs font-bold text-black-900 whitespace-nowrap">{{ cutting.permit_type }}</td>
-                                        <td class="px-6 py-3 text-xs font-bold text-black-900 whitespace-nowrap">{{ cutting.permit_number }}</td>
+                                        <td class="px-6 py-3 text-xs font-bold text-gray-900 whitespace-nowrap">{{ cutting.permit_type }}</td>
+                                        <td class="px-6 py-3 text-xs font-bold text-gray-900 whitespace-nowrap">{{ cutting.permit_number }}</td>
                                         <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
                                             {% if cutting.permit_file %}
                                                 <a href="{{ cutting.permit_file.url }}" class="text-blue-600 hover:text-blue-800">View</a>

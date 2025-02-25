@@ -8,160 +8,268 @@
     <title>CENRO Argao - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to bottom right, #e2f3e5, #c6f6d5);
+        }
+    </style>
 </head>
-<body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
+<body class="font-inter text-gray-900">
     <!-- Navigation Bar -->
-    <nav class="bg-white shadow-lg">
+    <nav class="bg-transparent shadow-lg border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
                     <!-- Logo -->
-                    <div class="flex-shrink-0 flex items-center">
-                             <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO-FUS</span>
-                            </div>
-
-                    <!-- Navigation Links -->
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{% url 'dashboard' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Dashboard
-                        </a>
-                        <a href="{% url 'cutting' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Tree Cutting Permits 
-                        </a>
-                        <a href="{% url 'lumber' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Lumber Dealers
-                        </a>
-                        <a href="{% url 'chainsaw' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Chainsaw
-                        </a>
-                        <a href="{% url 'wood' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            WPP
-                        </a>
+                    <div class="flex-shrink-0">
+                        <span class="text-xl font-bold text-green-700">FUS-CENRO-ARGAO</span>
                     </div>
                 </div>
                 <!-- User Menu -->
-                <div class="flex items-center">
-                    <div class="text-m text-gray-800">
+                <div class="hidden md:flex items-center space-x-4">
+                    <div class="text-lg text-gray-900 font-medium">
                         Welcome, {{ request.user.username }}
                     </div>
-                    <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
-                        Sign Out
-                    </a>
+                    <div class="relative">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                            ▼
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                               
+                                <!-- Quick Actions -->
+                                <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
+                                    <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
+                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
+                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
+                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+
+                                </div>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                    </svg>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="md:hidden" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
             </div>
         </div>
     </nav>
 
     <div class="min-h-screen flex flex-col">
+        
+        <h1 class="text-5xl font-extrabold text-green-800 text-center font-serif mb-8 mt-10  ">TREE CUTTING PERMITS</h1>
 
         <!-- Stats Overview -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-green-100">
+                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
                     <div class="text-4xl font-bold text-green-600">{{ cutting_count }}</div>
                     <div class="text-gray-600">Registered Cutting Permits</div>
                     <div class="mt-2 text-sm">
                         <span class="text-red-500 font-semibold">{{ expired_cutting_count }}</span>
-                        <span class="text-gray-500">expired</span>
+                        <span class="text-gray-500"> expired</span>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-100">
+                
+                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
                     <div class="text-4xl font-bold text-blue-600">{{ lumber_count }}</div>
                     <div class="text-gray-600">Registered Lumber Records</div>
                     <div class="mt-2 text-sm">
                         <span class="text-red-500 font-semibold">{{ expired_lumber_count }}</span>
-                        <span class="text-gray-500">expired</span>
+                        <span class="text-gray-500"> expired</span>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-yellow-100">
-                    <div class="text-4xl font-bold text-yellow-600">{{ chainsaw_count }}</div>
+
+                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                    <div class="text-4xl font-bold text-green-600">{{ chainsaw_count }}</div>
                     <div class="text-gray-600">Registered Chainsaws</div>
                     <div class="mt-2 text-sm">
                         <span class="text-red-500 font-semibold">{{ expired_chainsaw_count }}</span>
-                        <span class="text-gray-500">expired</span>
+                        <span class="text-gray-500"> expired</span>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-red-100">
+                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
                     <div class="text-4xl font-bold text-red-600">{{ wood_count }}</div>
                     <div class="text-gray-600">Registered Woods</div>
                     <div class="mt-2 text-sm">
                         <span class="text-red-500 font-semibold">{{ expired_wood_count }}</span>
-                        <span class="text-gray-500">expired</span>
+                        <span class="text-gray-500"> expired</span>
                     </div>
                 </div>
             </div>
         </div>
-    
-
-    <!-- Main Menu Cards -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow">
-        <h2 class="text-2xl font-semibold text-white mb-6">Quick Actions</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Cutting Permits Card -->
-            <a href="{% url 'cutting' %}" class="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-green-50">
-                <div class="flex flex-col items-center text-center">
-                    <div class="p-4 rounded-full bg-green-100 mb-4">
-                        <svg class="h-12 w-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                        </svg>
+        <!-- Lumber Dealers -->
+        <h1 class="text-5xl font-extrabold text-green-800 text-center font-serif mb-8 mt-10 ">LUMBER DEALERS</h1>
+        <!-- Stats Overview for lumber dealers-->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                    <div class="text-4xl font-bold text-green-600">{{ cutting_count }}</div>
+                    <div class="text-gray-600">Registered Cutting Permits</div>
+                    <div class="mt-2 text-sm">
+                        <span class="text-red-500 font-semibold">{{ expired_cutting_count }}</span>
+                        <span class="text-gray-500"> expired</span>
                     </div>
-                    <h2 class="text-xl font-semibold text-gray-800 mb-2">Cutting Permits</h2>
-                    <p class="text-gray-600">Manage and track Tree Cutting </p>
                 </div>
-            </a>
-
-            <!-- Lumber Card -->
-            <a href="{% url 'lumber' %}" class="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
-                <div class="flex flex-col items-center text-center">
-                    <div class="p-4 rounded-full bg-blue-100 mb-4">
-                        <svg class="h-12 w-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                        </svg>
+                
+                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                    <div class="text-4xl font-bold text-blue-600">{{ lumber_count }}</div>
+                    <div class="text-gray-600">Registered Lumber Records</div>
+                    <div class="mt-2 text-sm">
+                        <span class="text-red-500 font-semibold">{{ expired_lumber_count }}</span>
+                        <span class="text-gray-500"> expired</span>
                     </div>
-                    <h2 class="text-xl font-semibold text-gray-800 mb-2">Lumber</h2>
-                    <p class="text-gray-600">Monitor and manage Lumber</p>
                 </div>
-            </a>
 
-            <!-- Chainsaw Card -->
-            <a href="{% url 'chainsaw' %}" class="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-yellow-50">
-                <div class="flex flex-col items-center text-center">
-                    <div class="p-4 rounded-full bg-yellow-100 mb-4">
-                        <svg class="h-12 w-12 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                        </svg>
+                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                    <div class="text-4xl font-bold text-green-600">{{ chainsaw_count }}</div>
+                    <div class="text-gray-600">Registered Chainsaws</div>
+                    <div class="mt-2 text-sm">
+                        <span class="text-red-500 font-semibold">{{ expired_chainsaw_count }}</span>
+                        <span class="text-gray-500"> expired</span>
                     </div>
-                    <h2 class="text-xl font-semibold text-gray-800 mb-2">Chainsaw</h2>
-                    <p class="text-gray-600">Register and track chainsaw </p>
                 </div>
-            </a>
-
-            <!-- Wood Card -->
-            <a href="{% url 'wood' %}" class="bg-white rounded-xl shadow-lg p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-red-50">
-                <div class="flex flex-col items-center text-center">
-                    <div class="p-4 rounded-full bg-red-100 mb-4">
-                        <svg class="h-12 w-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
-                        </svg>
+                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                    <div class="text-4xl font-bold text-red-600">{{ wood_count }}</div>
+                    <div class="text-gray-600">Registered Woods</div>
+                    <div class="mt-2 text-sm">
+                        <span class="text-red-500 font-semibold">{{ expired_wood_count }}</span>
+                        <span class="text-gray-500"> expired</span>
                     </div>
-                    <h2 class="text-xl font-semibold text-gray-800 mb-2">Wood</h2>
-                    <p class="text-gray-600">Register Wood Processing Plant Permit </p>
                 </div>
-            </a>
+            </div>
+        </div>
 
+    <!-- Chainsaws -->
+    <h1 class="text-5xl font-extrabold text-green-800 text-center font-serif mb-8 mt-10 "">CHAINSAWS    </h1>
+        <!-- Stats Overview for chainsaw dealers-->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                    <div class="text-4xl font-bold text-green-600">{{ cutting_count }}</div>
+                    <div class="text-gray-600">Registered Cutting Permits</div>
+                    <div class="mt-2 text-sm">
+                        <span class="text-red-500 font-semibold">{{ expired_cutting_count }}</span>
+                        <span class="text-gray-500"> expired</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                    <div class="text-4xl font-bold text-blue-600">{{ lumber_count }}</div>
+                    <div class="text-gray-600">Registered Lumber Records</div>
+                    <div class="mt-2 text-sm">
+                        <span class="text-red-500 font-semibold">{{ expired_lumber_count }}</span>
+                        <span class="text-gray-500"> expired</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                    <div class="text-4xl font-bold text-green-600">{{ chainsaw_count }}</div>
+                    <div class="text-gray-600">Registered Chainsaws</div>
+                    <div class="mt-2 text-sm">
+                        <span class="text-red-500 font-semibold">{{ expired_chainsaw_count }}</span>
+                        <span class="text-gray-500"> expired</span>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                    <div class="text-4xl font-bold text-red-600">{{ wood_count }}</div>
+                    <div class="text-gray-600">Registered Woods</div>
+                    <div class="mt-2 text-sm">
+                        <span class="text-red-500 font-semibold">{{ expired_wood_count }}</span>
+                        <span class="text-gray-500"> expired</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+         <!-- WPP -->
+    <h1 class="text-5xl font-extrabold text-green-800 text-center font-serif mb-8 mt-10 ">WOOD PROCESSING PERMIT </h1>
+    <!-- Stats Overview for WPP dealers-->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                <div class="text-4xl font-bold text-green-600">{{ cutting_count }}</div>
+                <div class="text-gray-600">Registered Cutting Permits</div>
+                <div class="mt-2 text-sm">
+                    <span class="text-red-500 font-semibold">{{ expired_cutting_count }}</span>
+                    <span class="text-gray-500"> expired</span>
+                </div>
+            </div>
             
+            <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                <div class="text-4xl font-bold text-blue-600">{{ lumber_count }}</div>
+                <div class="text-gray-600">Registered Lumber Records</div>
+                <div class="mt-2 text-sm">
+                    <span class="text-red-500 font-semibold">{{ expired_lumber_count }}</span>
+                    <span class="text-gray-500"> expired</span>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                <div class="text-4xl font-bold text-green-600">{{ chainsaw_count }}</div>
+                <div class="text-gray-600">Registered Chainsaws</div>
+                <div class="mt-2 text-sm">
+                    <span class="text-red-500 font-semibold">{{ expired_chainsaw_count }}</span>
+                    <span class="text-gray-500"> expired</span>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                <div class="text-4xl font-bold text-red-600">{{ wood_count }}</div>
+                <div class="text-gray-600">Registered Woods</div>
+                <div class="mt-2 text-sm">
+                    <span class="text-red-500 font-semibold">{{ expired_wood_count }}</span>
+                    <span class="text-gray-500"> expired</span>
+                </div>
+            </div>
         </div>
     </div>
+    </div>
     
+    <!-- Last Content Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 mb-10">
+        <!-- Your content here -->
+    </div>
 
     <!-- Footer -->
-    <footer class="bg-blue-900 text-white mt-auto py-6">
+    <footer class="bg-blue-900 text-white mt-auto py-8">
         <div class="max-w-7xl mx-auto text-center">
             <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
             <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
         </div>
     </footer>
 </div>
+<script>
+    // Toggle user menu
+    document.getElementById('user-menu-button').addEventListener('click', function() {
+        const menu = document.getElementById('user-menu');
+        menu.classList.toggle('hidden');
+    });
 
+    // Toggle mobile menu
+    document.getElementById('mobile-menu-button').addEventListener('click', function() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'block' : 'none';
+    });
+</script>
 </body>
 </html>
