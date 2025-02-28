@@ -37,10 +37,10 @@
                         Welcome, {{ request.user.username }}
                     </div>
                     <div class="relative">
-                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true" aria-label="User menu">
                             ▼
                         </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu" role="menu">
                             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
                                 <!-- Quick Actions -->
                                 <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
@@ -63,7 +63,7 @@
                 </div>
                 <!-- Mobile Menu Button -->
                 <div class="md:hidden">
-                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button" aria-label="Mobile menu">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
                         </svg>
@@ -106,18 +106,13 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Permit Number</label>
                     <input type="text" placeholder="Search permit..." 
-                           class="w-full px-2 py-1 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-green-500 focus:border-transparent">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Issue Date</label>
-                    <input type="date" 
-                           class="w-full px-2 py-1 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-green-500 focus:border-transparent">
+                           class="w-full px-2 py-1 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-green-500 focus:border-transparent" aria-label="Search permit by number">
                 </div>
             </div>
 
             <!-- Export Button -->
             <div class="flex justify-end mt-3">
-                <button class="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-all flex items-center">
+                <button class="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-all flex items-center" aria-label="Export records">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                     </svg>
@@ -145,18 +140,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     {% for permit_key, data in grouped_records.items %}
-                        <!-- Permit Header Row -->
-                        <tr class="bg-green-800 text-white" data-permit-status="
-                            {% if data.cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}
-                                expired
-                            {% elif data.remaining_balance <= 0 %}
-                                consumed
-                            {% elif data.remaining_balance == data.cutting.total_volume_granted %}
-                                pending
-                            {% else %}
-                                active
-                            {% endif %}
-                        ">
+                        <tr class="bg-green-800 text-white" data-permit-status="{{ data.status }}">
                             <td colspan="7" class="px-4 py-2">
                                 <div class="flex justify-between items-center">
                                     <div class="flex items-center space-x-2">
@@ -191,15 +175,7 @@
                                     <div class="bg-white p-2 rounded-lg shadow-sm border border-gray-100">
                                         <p class="text-gray-500 text-xs">Status</p>
                                         <p class="text-base font-bold">
-                                            {% if data.cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}
-                                                <span class="text-red-500">EXPIRED</span>
-                                            {% elif data.remaining_balance <= 0 %}
-                                                <span class="text-red-500">CONSUMED</span>
-                                            {% elif data.remaining_balance == data.cutting.total_volume_granted %}
-                                                <span class="text-yellow-500">PENDING</span>
-                                            {% else %}
-                                                <span class="text-green-500">ACTIVE</span>
-                                            {% endif %}
+                                            <span class="text-green-500">{{ data.status|upper }}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -207,7 +183,7 @@
                         </tr>
                         <!-- Record Rows -->
                         {% for record in data.records %}
-                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                        <tr class="hover:bg-gray-50 transition-colors duration-200" data-permit-status="{{ record.status }}">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">{{ record.date_added|date:"M d, Y" }}</div>
                             </td>
@@ -232,6 +208,15 @@
                                 <div class="text-sm text-gray-500">{{ record.remarks|default:"-" }}</div>
                             </td>
                         </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="px-6 py-8 text-center">
+                                    <div class="text-gray-500">
+                                        <p class="mt-2 text-sm font-medium">No volume records found</p>
+                                        <p class="mt-1 text-sm text-gray-400">Records will appear here once they are added to the system.</p>
+                                    </div>
+                                </td>
+                            </tr>
                         {% endfor %}
                     {% empty %}
                         <tr>
@@ -259,151 +244,69 @@
         </div>
     </footer>
 
-    <!-- Add this JavaScript code -->
+    <!-- JavaScript Code -->
     <script>
-        // User menu dropdown toggle
-        const userMenuButton = document.getElementById('user-menu-button');
-        const userMenu = document.getElementById('user-menu');
-        
-        userMenuButton.addEventListener('click', () => {
-            userMenu.classList.toggle('hidden');
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (event) => {
-            if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
-                userMenu.classList.add('hidden');
-            }
-        });
-
-        // Mobile menu toggle
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        mobileMenuButton.addEventListener('click', () => {
-            if (mobileMenu.style.display === 'none') {
-                mobileMenu.style.display = 'block';
-            } else {
-                mobileMenu.style.display = 'none';
-            }
-        });
-
-        // Filter functionality
         document.addEventListener('DOMContentLoaded', function() {
             const filterButtons = document.querySelectorAll('.filter-btn');
             const permitRows = document.querySelectorAll('tbody tr[data-permit-status]');
+            const permitNumberInput = document.querySelector('input[placeholder="Search permit..."]');
 
             filterButtons.forEach(button => {
                 button.addEventListener('click', () => {
-                    // Remove active state from all buttons
+                    // Reset styles for all buttons
                     filterButtons.forEach(btn => {
-                        if (btn.id === 'all-records') {
-                            btn.classList.remove('bg-green-600', 'text-white');
-                            btn.classList.add('border-2', 'border-green-600', 'text-green-600');
-                        } else {
-                            btn.style.opacity = '0.5';
-                        }
+                        btn.classList.remove('bg-green-600', 'text-white');
+                        btn.classList.add('border-2', 'border-green-600', 'text-green-600');
                     });
 
-                    // Add active state to clicked button
-                    if (button.id === 'all-records') {
-                        button.classList.remove('border-2', 'border-green-600', 'text-green-600');
-                        button.classList.add('bg-green-600', 'text-white');
-                    } else {
-                        button.style.opacity = '1';
-                    }
+                    // Highlight the active button
+                    button.classList.remove('border-2', 'border-green-600', 'text-green-600');
+                    button.classList.add('bg-green-600', 'text-white');
 
                     const status = button.dataset.status;
 
                     // Show/hide permit sections based on status
                     permitRows.forEach(row => {
                         const permitStatus = row.dataset.permitStatus;
-                        if (status === 'all' || permitStatus === status) {
-                            // Show the permit header row and its related rows
+                        const permitNumber = permitNumberInput.value.toLowerCase();
+
+                        // Check if the permit number matches
+                        const permitKey = row.querySelector('span.text-base.font-bold').textContent.toLowerCase();
+
+                        if ((status === 'all' || permitStatus === status) && permitKey.includes(permitNumber)) {
                             row.style.display = '';
-                            let nextRow = row.nextElementSibling;
-                            while (nextRow && !nextRow.hasAttribute('data-permit-status')) {
-                                nextRow.style.display = '';
-                                nextRow = nextRow.nextElementSibling;
-                            }
                         } else {
-                            // Hide the permit header row and its related rows
                             row.style.display = 'none';
-                            let nextRow = row.nextElementSibling;
-                            while (nextRow && !nextRow.hasAttribute('data-permit-status')) {
-                                nextRow.style.display = 'none';
-                                nextRow = nextRow.nextElementSibling;
-                            }
                         }
                     });
                 });
             });
-        });
 
-        // Search functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.querySelector('input[placeholder="Search permit..."]');
-            const dateInput = document.querySelector('input[type="date"]');
-            
-            function filterRecords() {
-                const searchTerm = searchInput.value.toLowerCase();
-                const dateValue = dateInput.value;
-                const permits = document.querySelectorAll('tbody tr[data-permit-status]');
-                let hasVisibleRecords = false;
-                
-                permits.forEach(permitRow => {
-                    // Get all record rows until next permit header
-                    let currentRow = permitRow.nextElementSibling;
-                    let recordRows = [];
-                    while (currentRow && !currentRow.hasAttribute('data-permit-status')) {
-                        if (!currentRow.querySelector('.text-gray-500')) { // Skip summary rows
-                            recordRows.push(currentRow);
-                        }
-                        currentRow = currentRow.nextElementSibling;
-                    }
-                    
-                    // Check if any record matches search criteria
-                    const hasMatch = recordRows.some(row => {
-                        const cells = row.querySelectorAll('td');
-                        const rowData = Array.from(cells).map(cell => cell.textContent.toLowerCase());
-                        const permitHeader = permitRow.querySelector('span.font-bold').textContent.toLowerCase();
-                        
-                        const matchesSearch = searchTerm === '' || 
-                            rowData.some(text => text.includes(searchTerm)) ||
-                            permitHeader.includes(searchTerm);
-                            
-                        const matchesDate = !dateValue || 
-                            cells[0].textContent.includes(dateValue);
-                        
-                        return matchesSearch && matchesDate;
-                    });
-                    
-                    // Show/hide the permit section based on matches
-                    const display = hasMatch ? '' : 'none';
-                    permitRow.style.display = display;
-                    
-                    // Show/hide all related rows
-                    let nextRow = permitRow.nextElementSibling;
-                    while (nextRow && !nextRow.hasAttribute('data-permit-status')) {
-                        nextRow.style.display = display;
-                        nextRow = nextRow.nextElementSibling;
-                    }
-                    
-                    if (hasMatch) {
-                        hasVisibleRecords = true;
+            // Add event listener for permit number input
+            permitNumberInput.addEventListener('input', () => {
+                const activeButton = Array.from(filterButtons).find(btn => btn.classList.contains('bg-green-600'));
+                const status = activeButton ? activeButton.dataset.status : 'all';
+                const permitNumber = permitNumberInput.value.toLowerCase();
+
+                permitRows.forEach(row => {
+                    const permitStatus = row.dataset.permitStatus;
+                    const permitKey = row.querySelector('span.text-base.font-bold').textContent.toLowerCase();
+
+                    if ((status === 'all' || permitStatus === status) && permitKey.includes(permitNumber)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
                     }
                 });
-                
-                // Show/hide no results message
-                const noResultsRow = document.querySelector('tr td[colspan="7"] div.text-gray-500');
-                if (noResultsRow) {
-                    noResultsRow.closest('tr').style.display = hasVisibleRecords ? 'none' : '';
+            });
+
+            // Highlight all active status rows
+            permitRows.forEach(row => {
+                const permitStatus = row.dataset.permitStatus;
+                if (permitStatus === 'active') {
+                    row.classList.add('bg-green-100'); // Add a highlight class
                 }
-            }
-            
-            // Add event listeners for both search and date inputs
-            searchInput.addEventListener('input', filterRecords);
-            dateInput.addEventListener('change', filterRecords);
+            });
         });
     </script>
 </body>
