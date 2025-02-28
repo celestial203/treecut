@@ -81,43 +81,52 @@
 
         <!-- Stats Overview -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
-                    <div class="text-4xl font-bold text-green-600">{{ cutting_count }}</div>
-                    <div class="text-gray-600">Registered Cutting Permits</div>
-                    <div class="mt-2 text-sm">
-                        <span class="text-red-500 font-semibold">{{ expired_cutting_count }}</span>
-                        <span class="text-gray-500"> expired</span>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+                <a href="{% url 'cutting' %}" class="block">
+                    <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                        <div class="text-4xl font-bold text-green-600">+</div>
+                        <div class="text-green-900">Register New Permit</div>
+                        <div class="mt-2 text-sm text-gray-500">Click to add new permit</div>
                     </div>
-                </div>
-                
-                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
-                    <div class="text-4xl font-bold text-blue-600">{{ lumber_count }}</div>
-                    <div class="text-gray-600">Registered Lumber Records</div>
-                    <div class="mt-2 text-sm">
-                        <span class="text-red-500 font-semibold">{{ expired_lumber_count }}</span>
-                        <span class="text-gray-500"> expired</span>
-                    </div>
-                </div>
+                </a>
 
-                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
-                    <div class="text-4xl font-bold text-green-600">{{ chainsaw_count }}</div>
-                    <div class="text-gray-600">Registered Chainsaws</div>
-                    <div class="mt-2 text-sm">
-                        <span class="text-red-500 font-semibold">{{ expired_chainsaw_count }}</span>
-                        <span class="text-gray-500"> expired</span>
+                <a href="{% url 'cutting_records' %}?status=expired" class="block">
+                    <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                        <div class="text-4xl font-bold text-red-600">{{ expired_cutting_count }}</div>
+                        <div class="text-red-900">Expired Cutting Permits</div>
+                        <div class="mt-2 text-sm text-gray-500">Out of {{ cutting_count }} total permits</div>
                     </div>
-                </div>
-                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
-                    <div class="text-4xl font-bold text-red-600">{{ wood_count }}</div>
-                    <div class="text-gray-600">Registered Woods</div>
-                    <div class="mt-2 text-sm">
-                        <span class="text-red-500 font-semibold">{{ expired_wood_count }}</span>
-                        <span class="text-gray-500"> expired</span>
+                </a>
+
+                <a href="{% url 'cutting_records' %}?status=active" class="block">
+                    <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                        <div class="text-4xl font-bold text-green-600">{{ active_cutting_count }}</div>
+                        <div class="text-green-900">Active Cutting Permits</div>
+                        <div class="mt-2 text-sm text-gray-500">Out of {{ cutting_count }} total permits</div>
                     </div>
-                </div>
+                </a>
+
+                <a href="{% url 'cutting_records' %}" class="block">
+                    <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                        <div class="text-4xl font-bold text-blue-600">{{ cutting_count }}</div>
+                        <div class="text-blue-900">Total Cutting Permits</div>
+                        <div class="mt-2 text-sm text-gray-500">View all records</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'volume_records_list' %}" class="block">
+                    <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                        <div class="text-4xl font-bold text-purple-600">{{ volume_count }}</div>
+                        <div class="text-purple-900">Volume Records</div>
+                        <div class="mt-2 text-sm text-gray-500">View all volume records</div>
+                    </div>
+                </a>
             </div>
         </div>
+                
+
+                
+        
         <!-- Lumber Dealers -->
         <h1 class="text-5xl font-extrabold text-green-800 text-center font-serif mb-8 mt-10 ">LUMBER DEALERS</h1>
         <!-- Stats Overview for lumber dealers-->

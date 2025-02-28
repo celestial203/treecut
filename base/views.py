@@ -52,6 +52,10 @@ def dashboard(request):
     expired_cutting_count = Cutting.objects.filter(
         expiry_date__lt=current_date
     ).count()
+    # Calculate active cutting permits (not expired)
+    active_cutting_count = Cutting.objects.filter(
+        expiry_date__gte=current_date
+    ).count()
 
     # Lumber Records counts
     lumber_count = Lumber.objects.count()
@@ -71,15 +75,20 @@ def dashboard(request):
         expiry_date__lt=current_date
     ).count()
 
+    # Add Volume Records count
+    volume_count = CuttingRecord.objects.count()
+
     context = {
         'cutting_count': cutting_count,
         'expired_cutting_count': expired_cutting_count,
+        'active_cutting_count': active_cutting_count,
         'lumber_count': lumber_count,
         'expired_lumber_count': expired_lumber_count,
         'chainsaw_count': chainsaw_count,
         'expired_chainsaw_count': expired_chainsaw_count,
         'wood_count': wood_count,
         'expired_wood_count': expired_wood_count,
+        'volume_count': volume_count,
     }
 
     return render(request, 'dashboard.html', context)
@@ -390,18 +399,18 @@ def edit_cutting_record(request, record_id):
     })
 
 def cutting_records(request):
-    cuttings = Cutting.objects.all().order_by('-created_at')
+    status = request.GET.get('status')
     today = date.today()
     
-    context = {
-        'cuttings': cuttings,
-        'today': today,
-    }
-    return render(request, 'CuttingRecord.html', context)
-
-def cutting_records(request):
-    cuttings = Cutting.objects.all().order_by('-created_at')
-    today = date.today()
+    if status == 'expired':
+        # Filter only expired permits
+        cuttings = Cutting.objects.filter(expiry_date__lt=today).order_by('-created_at')
+    elif status == 'active':
+        # Filter only active permits
+        cuttings = Cutting.objects.filter(expiry_date__gte=today).order_by('-created_at')
+    else:
+        # Show all permits if no status filter
+        cuttings = Cutting.objects.all().order_by('-created_at')
     
     context = {
         'cuttings': cuttings,
@@ -470,3 +479,45 @@ def volumes(request):
     }
     
     return render(request, 'cutting_volrecords.html', context)
+
+def get_permit_status(cutting, remaining_balance, today):
+    # Calculate expiry date (50 days from issue date)
+    expiry_date = cutting.date_issued + timedelta(days=50)
+    
+    if today > expiry_date:
+        return "EXPIRED"
+    elif remaining_balance <= 0:
+        return "CONSUMED"
+    elif remaining_balance == cutting.total_volume_granted:
+        return "PENDING"
+    else:
+        return "ACTIVE"
+
+@login_required
+def volume_records_list(request):
+    today = date.today()
+    cuttings = Cutting.objects.all()
+    grouped_records = {}
+    
+    for cutting in cuttings:
+        records = CuttingRecord.objects.filter(parent_tcp=cutting).order_by('-date_added')
+        total_volume_used = sum(record.calculated_volume for record in records) if records else 0
+        latest_record = records.first()
+        remaining_balance = latest_record.remaining_balance if latest_record else cutting.total_volume_granted
+        
+        status = get_permit_status(cutting, remaining_balance, today)
+        
+        grouped_records[f"{cutting.permit_type}-{cutting.permit_number}"] = {
+            'cutting': cutting,
+            'records': records,
+            'total_volume_used': total_volume_used,
+            'remaining_balance': remaining_balance,
+            'status': status
+        }
+    
+    context = {
+        'grouped_records': grouped_records,
+        'today': today,
+    }
+    
+    return render(request, 'volume_records_list.html', context)

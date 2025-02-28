@@ -118,31 +118,85 @@
         }
     </style>
 </head>
-<body class="font-inter bg-green-100 text-gray-900">
-    <!-- Compact modern header with dark theme -->
-    <div class="bg-black text-white py-3 px-6 border-b border-gray-800">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-xl font-medium">
-                    <span class="text-green-600">Tree Cutting </span>
-                    <span class="text-blue-600">Records</span>
-                </h1>
+  <!-- Header with Logo -->
+  <nav class="bg-transparent shadow-lg border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex items-center">
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <span class="text-xl font-bold text-green-700">FUS-CENRO-ARGAO</span>
+                </div>
             </div>
-            <div class="flex items-center gap-4">
-                <a href="{% url 'cutting' %}" 
-                   class="inline-flex items-center px-3 py-2 bg-gray-900/50 hover:bg-gray-800 rounded-lg transition-all duration-200">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            <!-- User Menu -->
+            <div class="hidden md:flex items-center space-x-4">
+                <div class="text-lg text-gray-900 font-medium">
+                    Welcome, {{ request.user.username }}
+                </div>
+                <div class="relative">
+                    <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true" onclick="toggleUserMenu()">
+                        ▼
+                    </button>
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                        <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                           
+                            <!-- Quick Actions -->
+                            <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
+                            <div class="grid grid-cols-1 gap-2">
+                                <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
+                                <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
+                                <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
+                                <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
+                                <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                            </div>
+                            <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
+                                <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                </svg>
+                                Sign Out
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+                <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
                     </svg>
-                    <span class="text-sm text-gray-300 hover:text-white">Return to Cutting</span>
-                </a>
+                </button>
             </div>
         </div>
     </div>
+    <!-- Error Check -->
+    {% if form.errors %}
+    <div class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg shadow-sm">
+        <strong>Please fix the following errors:</strong>
+        <ul>
+            {% for field, errors in form.errors.items %}
+                <li>{{ field }}: {{ errors|join:", " }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    <!-- Mobile Menu -->
+    <div class="md:hidden" id="mobile-menu" style="display: none;">
+        <div class="px-2 pt-2 pb-3 space-y-1">
+            <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
+        </div>
+    </div>
+</nav>
+<script>
+    function toggleUserMenu() {
+        const userMenu = document.getElementById('user-menu');
+        userMenu.classList.toggle('hidden');
+    }
+</script>
 
     <!-- Search Section -->
     <div class="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        <div class="bg-gradient-to-r from-emerald-800 to-blue-800 p-8 rounded-xl shadow-lg">
+        <div class="bg-gradient-to-r from-green-700 to-blue-100 p-8 rounded-xl shadow-lg">
             <!-- Filter Buttons Row 1 - Status Filters -->
             <div class="flex gap-4 mb-6">
                 <button id="allRecordsBtn" 

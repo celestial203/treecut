@@ -1,0 +1,410 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volume Records - CENRO Argao</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom right, #e2f3e5, #c6f6d5);
+        }
+        .bg-denr {
+            background-color: #2B5019;
+        }
+        .gradient-header {
+            background: linear-gradient(to right, #2B5019, #3D7324);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="bg-transparent shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0">
+                        <span class="text-xl font-bold text-green-700">FUS-CENRO-ARGAO</span>
+                    </div>
+                </div>
+                <!-- User Menu -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <div class="text-lg text-gray-900 font-medium">
+                        Welcome, {{ request.user.username }}
+                    </div>
+                    <div class="relative">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                            ▼
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                                <!-- Quick Actions -->
+                                <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
+                                    <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
+                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
+                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
+                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                </div>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                    </svg>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="md:hidden" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="bg-white rounded-lg shadow-sm p-4">
+            <!-- Filter Pills -->
+            <div class="flex flex-wrap gap-1.5 mb-4">
+                <button id="all-records" class="filter-btn px-3 py-1 text-sm rounded-full border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition-all" data-status="all">
+                    All Records
+                </button>
+                <button id="active-records" class="filter-btn px-3 py-1 text-sm rounded-full bg-green-500 text-white hover:bg-green-600 transition-all" data-status="active">
+                    Active
+                </button>
+                <button id="expired-records" class="filter-btn px-3 py-1 text-sm rounded-full bg-red-500 text-white hover:bg-red-600 transition-all" data-status="expired">
+                    Expired
+                </button>
+                <button id="consumed-records" class="filter-btn px-3 py-1 text-sm rounded-full bg-red-600 text-white hover:bg-red-700 transition-all" data-status="consumed">
+                    Consumed
+                </button>
+                <button id="pending-records" class="filter-btn px-3 py-1 text-sm rounded-full bg-yellow-500 text-white hover:bg-yellow-600 transition-all" data-status="pending">
+                    Pending
+                </button>
+            </div>
+
+            <!-- Search Form -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Permit Number</label>
+                    <input type="text" placeholder="Search permit..." 
+                           class="w-full px-2 py-1 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-green-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Issue Date</label>
+                    <input type="date" 
+                           class="w-full px-2 py-1 text-sm rounded-md border border-gray-300 focus:ring-1 focus:ring-green-500 focus:border-transparent">
+                </div>
+            </div>
+
+            <!-- Export Button -->
+            <div class="flex justify-end mt-3">
+                <button class="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-all flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    Export
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Records List -->
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+            <!-- Volume Records Table -->
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                    <tr>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider bg-gray-50">Date Added</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider bg-gray-50">Species</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider bg-gray-50">No. of Trees</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider bg-gray-50">Volume</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider bg-gray-50">Calculated Volume</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider bg-gray-50">Remaining Balance</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider bg-gray-50">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for permit_key, data in grouped_records.items %}
+                        <!-- Permit Header Row -->
+                        <tr class="bg-green-800 text-white" data-permit-status="
+                            {% if data.cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}
+                                expired
+                            {% elif data.remaining_balance <= 0 %}
+                                consumed
+                            {% elif data.remaining_balance == data.cutting.total_volume_granted %}
+                                pending
+                            {% else %}
+                                active
+                            {% endif %}
+                        ">
+                            <td colspan="7" class="px-4 py-2">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-base font-bold">{{ permit_key }}</span>
+                                        <span class="px-1.5 py-0.5 text-xs bg-green-700 rounded-full">Permit Type & No.</span>
+                                    </div>
+                                    <div class="text-right text-sm">
+                                        <span class="font-medium">{{ data.cutting.permittee }}</span>
+                                        <span class="text-green-200 ml-2">{{ data.cutting.total_volume_granted }} cu.m</span>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Volume Summary Row -->
+                        <tr class="bg-gray-50 border-b border-gray-200">
+                            <td colspan="7" class="px-4 py-2">
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div class="bg-white p-2 rounded-lg shadow-sm border border-gray-100">
+                                        <p class="text-gray-500 text-xs">Total Volume Used</p>
+                                        <p class="text-base font-bold text-blue-600">
+                                            {{ data.total_volume_used|floatformat:2 }}
+                                            <span class="text-xs text-gray-400 font-normal">cu.m</span>
+                                        </p>
+                                    </div>
+                                    <div class="bg-white p-2 rounded-lg shadow-sm border border-gray-100">
+                                        <p class="text-gray-500 text-xs">Remaining Balance</p>
+                                        <p class="text-base font-bold text-green-600">
+                                            {{ data.remaining_balance|floatformat:2 }}
+                                            <span class="text-xs text-gray-400 font-normal">cu.m</span>
+                                        </p>
+                                    </div>
+                                    <div class="bg-white p-2 rounded-lg shadow-sm border border-gray-100">
+                                        <p class="text-gray-500 text-xs">Status</p>
+                                        <p class="text-base font-bold">
+                                            {% if data.cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}
+                                                <span class="text-red-500">EXPIRED</span>
+                                            {% elif data.remaining_balance <= 0 %}
+                                                <span class="text-red-500">CONSUMED</span>
+                                            {% elif data.remaining_balance == data.cutting.total_volume_granted %}
+                                                <span class="text-yellow-500">PENDING</span>
+                                            {% else %}
+                                                <span class="text-green-500">ACTIVE</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Record Rows -->
+                        {% for record in data.records %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ record.date_added|date:"M d, Y" }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ record.species }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ record.number_of_trees }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ record.volume|floatformat:2 }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ record.calculated_volume|floatformat:2 }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm {% if record.remaining_balance <= 0 %}text-red-600 font-semibold{% else %}text-gray-900{% endif %}">
+                                    {{ record.remaining_balance|floatformat:2 }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-500">{{ record.remarks|default:"-" }}</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="px-6 py-8 text-center">
+                                <div class="text-gray-500">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    <p class="mt-2 text-sm font-medium">No volume records found</p>
+                                    <p class="mt-1 text-sm text-gray-400">Records will appear here once they are added to the system.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white mt-auto py-8">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+        </div>
+    </footer>
+
+    <!-- Add this JavaScript code -->
+    <script>
+        // User menu dropdown toggle
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userMenu = document.getElementById('user-menu');
+        
+        userMenuButton.addEventListener('click', () => {
+            userMenu.classList.toggle('hidden');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                userMenu.classList.add('hidden');
+            }
+        });
+
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            if (mobileMenu.style.display === 'none') {
+                mobileMenu.style.display = 'block';
+            } else {
+                mobileMenu.style.display = 'none';
+            }
+        });
+
+        // Filter functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const permitRows = document.querySelectorAll('tbody tr[data-permit-status]');
+
+            filterButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active state from all buttons
+                    filterButtons.forEach(btn => {
+                        if (btn.id === 'all-records') {
+                            btn.classList.remove('bg-green-600', 'text-white');
+                            btn.classList.add('border-2', 'border-green-600', 'text-green-600');
+                        } else {
+                            btn.style.opacity = '0.5';
+                        }
+                    });
+
+                    // Add active state to clicked button
+                    if (button.id === 'all-records') {
+                        button.classList.remove('border-2', 'border-green-600', 'text-green-600');
+                        button.classList.add('bg-green-600', 'text-white');
+                    } else {
+                        button.style.opacity = '1';
+                    }
+
+                    const status = button.dataset.status;
+
+                    // Show/hide permit sections based on status
+                    permitRows.forEach(row => {
+                        const permitStatus = row.dataset.permitStatus;
+                        if (status === 'all' || permitStatus === status) {
+                            // Show the permit header row and its related rows
+                            row.style.display = '';
+                            let nextRow = row.nextElementSibling;
+                            while (nextRow && !nextRow.hasAttribute('data-permit-status')) {
+                                nextRow.style.display = '';
+                                nextRow = nextRow.nextElementSibling;
+                            }
+                        } else {
+                            // Hide the permit header row and its related rows
+                            row.style.display = 'none';
+                            let nextRow = row.nextElementSibling;
+                            while (nextRow && !nextRow.hasAttribute('data-permit-status')) {
+                                nextRow.style.display = 'none';
+                                nextRow = nextRow.nextElementSibling;
+                            }
+                        }
+                    });
+                });
+            });
+        });
+
+        // Search functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.querySelector('input[placeholder="Search permit..."]');
+            const dateInput = document.querySelector('input[type="date"]');
+            
+            function filterRecords() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const dateValue = dateInput.value;
+                const permits = document.querySelectorAll('tbody tr[data-permit-status]');
+                let hasVisibleRecords = false;
+                
+                permits.forEach(permitRow => {
+                    // Get all record rows until next permit header
+                    let currentRow = permitRow.nextElementSibling;
+                    let recordRows = [];
+                    while (currentRow && !currentRow.hasAttribute('data-permit-status')) {
+                        if (!currentRow.querySelector('.text-gray-500')) { // Skip summary rows
+                            recordRows.push(currentRow);
+                        }
+                        currentRow = currentRow.nextElementSibling;
+                    }
+                    
+                    // Check if any record matches search criteria
+                    const hasMatch = recordRows.some(row => {
+                        const cells = row.querySelectorAll('td');
+                        const rowData = Array.from(cells).map(cell => cell.textContent.toLowerCase());
+                        const permitHeader = permitRow.querySelector('span.font-bold').textContent.toLowerCase();
+                        
+                        const matchesSearch = searchTerm === '' || 
+                            rowData.some(text => text.includes(searchTerm)) ||
+                            permitHeader.includes(searchTerm);
+                            
+                        const matchesDate = !dateValue || 
+                            cells[0].textContent.includes(dateValue);
+                        
+                        return matchesSearch && matchesDate;
+                    });
+                    
+                    // Show/hide the permit section based on matches
+                    const display = hasMatch ? '' : 'none';
+                    permitRow.style.display = display;
+                    
+                    // Show/hide all related rows
+                    let nextRow = permitRow.nextElementSibling;
+                    while (nextRow && !nextRow.hasAttribute('data-permit-status')) {
+                        nextRow.style.display = display;
+                        nextRow = nextRow.nextElementSibling;
+                    }
+                    
+                    if (hasMatch) {
+                        hasVisibleRecords = true;
+                    }
+                });
+                
+                // Show/hide no results message
+                const noResultsRow = document.querySelector('tr td[colspan="7"] div.text-gray-500');
+                if (noResultsRow) {
+                    noResultsRow.closest('tr').style.display = hasVisibleRecords ? 'none' : '';
+                }
+            }
+            
+            // Add event listeners for both search and date inputs
+            searchInput.addEventListener('input', filterRecords);
+            dateInput.addEventListener('change', filterRecords);
+        });
+    </script>
+</body>
+</html>

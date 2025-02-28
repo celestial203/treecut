@@ -5685,3 +5685,70 @@ Traceback (most recent call last):
     raise NoReverseMatch(msg)
 django.urls.exceptions.NoReverseMatch: Reverse for 'CuttingRecord' not found. 'CuttingRecord' is not a valid view function or pattern name.
 ERROR 2025-02-26 00:53:18,052 basehttp "GET /dashboard/ HTTP/1.1" 500 129585
+WARNING 2025-02-26 08:52:01,757 log Not Found: /favicon.ico
+WARNING 2025-02-26 08:52:01,760 basehttp "GET /favicon.ico HTTP/1.1" 404 6151
+WARNING 2025-02-28 20:15:49,409 log Not Found: /favicon.ico
+WARNING 2025-02-28 20:15:49,410 basehttp "GET /favicon.ico HTTP/1.1" 404 6151
+ERROR 2025-02-28 20:27:01,200 log Internal Server Error: /dashboard/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 85, in dashboard
+    return render(request, 'dashboard.html', context)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'cutting_register' not found. 'cutting_register' is not a valid view function or pattern name.
+ERROR 2025-02-28 20:27:01,206 basehttp "GET /dashboard/ HTTP/1.1" 500 130955
+WARNING 2025-02-28 20:34:07,333 log Not Found: /favicon.ico
+WARNING 2025-02-28 20:34:07,334 basehttp "GET /favicon.ico HTTP/1.1" 404 6151
+ERROR 2025-02-28 21:23:29,184 log Internal Server Error: /cutting/volume-records/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 493, in volume_records_list
+    records = VolumeRecord.objects.filter(cutting=cutting).order_by('-date_added')
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1701, in order_by
+    obj.query.add_ordering(*field_names)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\query.py", line 2249, in add_ordering
+    self.names_to_path(item.split(LOOKUP_SEP), self.model._meta)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\query.py", line 1768, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'date_added' into field. Choices are: cutting, cutting_id, date, id, remarks, volume, volume_type
+ERROR 2025-02-28 21:23:29,191 basehttp "GET /cutting/volume-records/ HTTP/1.1" 500 88358

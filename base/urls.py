@@ -27,6 +27,7 @@ urlpatterns = [
     path('cutting/records/', views.cutting_records, name='cutting_records'),
     path('cutting/volumes/', views.volumes, name='volumes'),
     path('check-permit-exists/', views.check_permit_exists, name='check-permit-exists'),
+    path('cutting/volume-records/', views.volume_records_list, name='volume_records_list'),
 ]
 
 if settings.DEBUG:
