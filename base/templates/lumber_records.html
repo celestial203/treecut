@@ -1,0 +1,40 @@
+<div class="bg-white shadow-xl rounded-lg overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-600 to-blue-600">
+        <h3 class="text-xl font-semibold text-white mb-4">
+            Lumber Records
+        </h3>
+        <div class="flex items-center justify-between space-x-4">
+            <!-- Search Bar -->
+            <!-- ... existing code ... -->
+            <!-- Export Button -->
+            <!-- ... existing code ... -->
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <div class="mb-4">
+            {% if expired_count > 0 %}
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
+                    Alert: {{ expired_count }} record{% if expired_count != 1 %}s{% endif %} expired
+                </div>
+            {% endif %}
+            
+            {% if expiring_soon_count > 0 %}
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
+                    Warning: {{ expiring_soon_count }} permit{% if expiring_soon_count != 1 %}s{% endif %} expiring soon
+                </div>
+            {% endif %}
+        </div>
+        <table class="min-w-full text-sm text-left text-gray-500">
+            <thead class="bg-gray-50 text-gray-700">
+                <!-- ... existing code ... -->
+            </thead>
+            <tbody class="divide-y divide-black-200">
+                {% for record in lumber_records %}
+                <tr class="hover:bg-black-50 transition-colors duration-150">
+                    <!-- ... existing code ... -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
