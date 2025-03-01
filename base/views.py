@@ -474,6 +474,9 @@ def cutting_records(request):
     elif status == 'active':
         # Filter only active permits
         cuttings = Cutting.objects.filter(expiry_date__gte=today).order_by('-created_at')
+    elif status == 'pending':
+        # Filter only pending permits (no cutting records)
+        cuttings = Cutting.objects.filter(cutting_records__isnull=True).order_by('-created_at')
     else:
         # Show all permits if no status filter
         cuttings = Cutting.objects.all().order_by('-created_at')
