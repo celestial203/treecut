@@ -4,6 +4,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,6 +31,8 @@ urlpatterns = [
     path('cutting/volumes/', views.volumes, name='volumes'),
     path('check-permit-exists/', views.check_permit_exists, name='check-permit-exists'),
     path('cutting/volume-records/', views.volume_records_list, name='volume_records_list'),
+    path('lumber/records/', views.lumber_records, name='lumber_records'),
+    path('lumber/<int:pk>/details/', views.view_lumber_details, name='view_lumber_details'),
 ]
 
 if settings.DEBUG:

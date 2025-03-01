@@ -106,6 +106,14 @@
                     </div>
                 </a>
 
+                <a href="{% url 'cutting_records' %}?status=pending" class="block">
+                    <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                        <div class="text-4xl font-bold text-yellow-600">{{ pending_cutting_count }}</div>
+                        <div class="text-yellow-900">Pending Cutting Permits</div>
+                        <div class="mt-2 text-sm text-gray-500">Waiting for Volume</div>
+                    </div>
+                </a>
+
                 <a href="{% url 'cutting_records' %}" class="block">
                     <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
                         <div class="text-4xl font-bold text-blue-600">{{ cutting_count }}</div>
@@ -118,7 +126,7 @@
                     <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
                         <div class="text-4xl font-bold text-purple-600">{{ volume_count }}</div>
                         <div class="text-purple-900">Volume Records</div>
-                        <div class="mt-2 text-sm text-gray-500">View all volume records</div>
+                        <div class="mt-2 text-sm text-gray-500"><strong>Total: {{ total_volume }} cu.m</strong></div>
                     </div>
                 </a>
             </div>
@@ -131,41 +139,46 @@
         <h1 class="text-5xl font-extrabold text-green-800 text-center font-serif mb-8 mt-10 ">LUMBER DEALERS</h1>
         <!-- Stats Overview for lumber dealers-->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
-                    <div class="text-4xl font-bold text-green-600">{{ cutting_count }}</div>
-                    <div class="text-gray-600">Registered Cutting Permits</div>
-                    <div class="mt-2 text-sm">
-                        <span class="text-red-500 font-semibold">{{ expired_cutting_count }}</span>
-                        <span class="text-gray-500"> expired</span>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+                <a href="{% url 'lumber' %}" class="block">
+                    <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                        <div class="text-4xl font-bold text-green-600">+</div>
+                        <div class="text-green-900">Add Lumber Dealers</div>
+                        <div class="mt-2 text-sm text-gray-500">Click to add new dealer</div>
                     </div>
-                </div>
-                
-                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
-                    <div class="text-4xl font-bold text-blue-600">{{ lumber_count }}</div>
-                    <div class="text-gray-600">Registered Lumber Records</div>
-                    <div class="mt-2 text-sm">
-                        <span class="text-red-500 font-semibold">{{ expired_lumber_count }}</span>
-                        <span class="text-gray-500"> expired</span>
-                    </div>
-                </div>
+                </a>
 
-                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
-                    <div class="text-4xl font-bold text-green-600">{{ chainsaw_count }}</div>
-                    <div class="text-gray-600">Registered Chainsaws</div>
-                    <div class="mt-2 text-sm">
-                        <span class="text-red-500 font-semibold">{{ expired_chainsaw_count }}</span>
-                        <span class="text-gray-500"> expired</span>
+                <a href="{% url 'lumber_records' %}?status=expired" class="block">
+                    <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                        <div class="text-4xl font-bold text-red-600">{{ expired_lumber_count }}</div>
+                        <div class="text-red-900">Expired Lumber Records</div>
+                        <div class="mt-2 text-sm text-gray-500">Out of {{ lumber_count }} total records</div>
                     </div>
-                </div>
-                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
-                    <div class="text-4xl font-bold text-red-600">{{ wood_count }}</div>
-                    <div class="text-gray-600">Registered Woods</div>
-                    <div class="mt-2 text-sm">
-                        <span class="text-red-500 font-semibold">{{ expired_wood_count }}</span>
-                        <span class="text-gray-500"> expired</span>
+                </a>
+
+                <a href="{% url 'lumber_records' %}?status=active" class="block">
+                    <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                        <div class="text-4xl font-bold text-green-600">{{ active_lumber_count }}</div>
+                        <div class="text-green-900">Active Lumber Records</div>
+                        <div class="mt-2 text-sm text-gray-500">Out of {{ lumber_count }} total records</div>
                     </div>
-                </div>
+                </a>
+
+                <a href="{% url 'lumber_records' %}?status=pending" class="block">
+                    <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                        <div class="text-4xl font-bold text-yellow-600">{{ pending_lumber_count }}</div>
+                        <div class="text-yellow-900">Pending Lumber Records</div>
+                        <div class="mt-2 text-sm text-gray-500">Waiting for approval</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'lumber_records' %}" class="block">
+                    <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                        <div class="text-4xl font-bold text-blue-600">{{ lumber_count }}</div>
+                        <div class="text-blue-900">Total Lumber Records</div>
+                        <div class="mt-2 text-sm text-gray-500">View all records</div>
+                    </div>
+                </a>
             </div>
         </div>
 

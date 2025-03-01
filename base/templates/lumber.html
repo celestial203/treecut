@@ -10,6 +10,8 @@
     <title>CENRO Argao - Lumber Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Add SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .modal-open {
             overflow: hidden;
@@ -212,6 +214,15 @@
         input[type="date"]::before {
             content: none;
         }
+
+        body {
+            background-color: #e6f7e6; /* Light mint green */
+        }
+
+        #user-menu-button {
+            position: relative;
+            z-index: 10;
+        }
     </style>
 </head>
 <body class="font-inter text-gray-900">
@@ -231,12 +242,11 @@
                         Welcome, {{ request.user.username }}
                     </div>
                     <div class="relative">
-                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                        <button type="button" class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                             ▼
                         </button>
                         <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
                             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
-                               
                                 <!-- Quick Actions -->
                                 <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
                                 <div class="grid grid-cols-1 gap-2">
@@ -245,7 +255,6 @@
                                     <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
                                     <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
                                     <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
-
                                 </div>
                                 <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
                                     <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -275,14 +284,6 @@
         </div>
     </nav>
 
-    <!-- Header Section -->
-    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-6 shadow-md">
-        <div class="max-w-7xl mx-auto px-4">
-            <h1 class="text-3xl font-bold mb-2">Lumber Management</h1>
-            <p class="text-sm opacity-90">Manage and track lumber records</p>
-        </div>
-    </div>
-
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Form Section -->
@@ -305,27 +306,27 @@
                 <!-- First Row -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">No.*</label>
-                        <input type="text" name="no" class="form-input" placeholder="Enter number" required>
+                        <label class="block text-sm font-medium text-gray-700">No.</label>
+                        <input type="text" name="no" class="form-input" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Trade Name*</label>
-                        <input type="text" name="trade_name" class="form-input" placeholder="Enter trade name" required>
+                        <label class="block text-sm font-medium text-gray-700">Trade Name</label>
+                        <input type="text" name="trade_name" class="form-input" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Manager/Owner*</label>
-                        <input type="text" name="manager_owner" class="form-input" placeholder="Enter manager/owner name" required>
+                        <label class="block text-sm font-medium text-gray-700">Manager/Owner</label>
+                        <input type="text" name="manager_owner" class="form-input" required>
                     </div>
                 </div>
 
                 <!-- Second Row -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Contact No.*</label>
-                        <input type="tel" name="contact_no" class="form-input" placeholder="Enter contact number" pattern="^(09|\+639)\d{9}$" title="Please enter a valid Philippine mobile number" required>
+                        <label class="block text-sm font-medium text-gray-700">Contact No.</label>
+                        <input type="text" name="contact_number" class="form-input" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Gender*</label>
+                        <label class="block text-sm font-medium text-gray-700">Gender</label>
                         <select name="gender" class="form-input" required>
                             <option value="">Select Gender</option>
                             <option value="Male">Male</option>
@@ -337,27 +338,27 @@
                 <!-- Third Row -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Barangay*</label>
-                        <input type="text" name="brgy" class="form-input" placeholder="Enter barangay" required>
+                        <label class="block text-sm font-medium text-gray-700">Barangay</label>
+                        <input type="text" name="brgy" class="form-input" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Municipality*</label>
-                        <input type="text" name="municipality" class="form-input" placeholder="Enter municipality" required>
+                        <label class="block text-sm font-medium text-gray-700">Municipality</label>
+                        <input type="text" name="municipality" class="form-input" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Province*</label>
-                        <input type="text" name="province" class="form-input" placeholder="Enter province" required>
+                        <label class="block text-sm font-medium text-gray-700">Province</label>
+                        <input type="text" name="province" class="form-input" required>
                     </div>
                 </div>
 
                 <!-- Fourth Row -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Permit No.*</label>
-                        <input type="text" name="permit_no" class="form-input" placeholder="Enter permit number" required>
+                        <label class="block text-sm font-medium text-gray-700">Permit No.</label>
+                        <input type="text" name="permit_no" class="form-input" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
+                        <label class="block text-sm font-medium text-gray-700">Date Issued</label>
                         <input type="text" 
                                name="date_issued" 
                                class="form-input date-input"
@@ -367,7 +368,7 @@
                                required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
+                        <label class="block text-sm font-medium text-gray-700">Expiry Date</label>
                         <input type="text" 
                                name="expiry_date" 
                                class="form-input date-input"
@@ -381,37 +382,49 @@
                 <!-- Fifth Row -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Source/Supplier*</label>
-                        <input type="text" name="source_supplier" class="form-input" placeholder="Enter source/supplier" required>
+                        <label class="block text-sm font-medium text-gray-700">Source/Supplier</label>
+                        <input type="text" name="source_supplier" class="form-input" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Volume (cubic meter)* </label>
-                        <input type="number" name="volume_cubic_meter" class="form-input" placeholder="Enter volume" step="0.01" min="0.01" required>
+                        <label class="block text-sm font-medium text-gray-700">Volume (cubic meter) </label>
+                        <input type="number" name="volume_cubic_meter" class="form-input" step="0.01" min="0.01" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Species*</label>
-                        <input type="text" name="species" class="form-input" placeholder="Enter species" required>
+                        <label class="block text-sm font-medium text-gray-700">Species</label>
+                        <input type="text" name="species" class="form-input" required>
                     </div>
                 </div>
 
                 <!-- File Upload -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700">Attach File</label>
+                    <input type="file" name="file" id="id_file" class="form-input mt-1 block w-full" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                </div>
 
                 <!-- Submit Button -->
-                <div class="flex justify-end mt-6">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
-                        Save Record
+                <div class="flex justify-end gap-4 mt-6">
+                    <button type="reset" class="border border-red-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-100 transition duration-200 shadow-md">
+                        Clear Form
                     </button>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                        </svg>
+                        Submit
+                    </button>
+                    <a href="{% url 'lumber_records' %}" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition duration-200 shadow-md flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                        </svg>
+                        View Records
+                    </a>
                 </div>
             </form>
         </div>
-
-        <!-- Include the Lumber Records Table -->
-        {% include 'treecut/base/templates/lumber_records.html' %}
     </div>
-
     <!-- Footer -->
-    <footer class="bg-blue-900 text-white mt-auto py-6">
-        <div class="max-w-7xl mx-auto text-center">
+    <footer class="bg-blue-800 text-white w-full py-8">
+        <div class="text-center">
             <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
             <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
         </div>
@@ -522,14 +535,14 @@
             });
 
             // Get the form element
-            const form = document.getElementById('lumberForm');
+            let form = document.getElementById('lumberForm');
             
             // Define required fields and their labels
             const requiredFields = [
                 { name: 'no', label: 'No.' },
                 { name: 'trade_name', label: 'Trade Name' },
                 { name: 'manager_owner', label: 'Manager/Owner' },
-                { name: 'contact_no', label: 'Contact No.' },
+                { name: 'contact_number', label: 'Contact No.' },
                 { name: 'gender', label: 'Gender' },
                 { name: 'permit_no', label: 'Permit No.' },
                 { name: 'date_issued', label: 'Date Issued' },
@@ -542,32 +555,26 @@
                 { name: 'province', label: 'Province' }
             ];
 
-            // Add form submission handler
+            // Modify the form submission validation for dates
             form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
                 let hasError = false;
                 let firstErrorField = null;
+                let errorMessages = [];
 
                 // Check each required field
                 requiredFields.forEach(field => {
                     const input = form.querySelector(`[name="${field.name}"]`);
-                    const errorDiv = input.parentElement.querySelector('.error-message') || 
-                                   document.createElement('div');
-                    
-                    errorDiv.className = 'error-message text-red-500 text-sm mt-1';
                     
                     // Remove any existing error styling
                     input.classList.remove('border-red-500');
-                    errorDiv.textContent = '';
 
                     // Check if field is empty
                     if (!input.value.trim()) {
                         hasError = true;
                         input.classList.add('border-red-500');
-                        errorDiv.textContent = `${field.label} is required`;
-                        
-                        if (!input.parentElement.querySelector('.error-message')) {
-                            input.parentElement.appendChild(errorDiv);
-                        }
+                        errorMessages.push(`${field.label} is required`);
                         
                         if (!firstErrorField) {
                             firstErrorField = input;
@@ -575,68 +582,134 @@
                     }
                 });
 
-                // If there are errors, prevent form submission and show error message
+                // Validate contact number format
+                const contactNo = form.querySelector('[name="contact_number"]');
+                if (contactNo.value.trim() && !/^09\d{9}$/.test(contactNo.value.trim())) {
+                    hasError = true;
+                    contactNo.classList.add('border-red-500');
+                    errorMessages.push('Contact No. must be a valid Philippine mobile number (11 digits starting with 09)');
+                    if (!firstErrorField) firstErrorField = contactNo;
+                }
+
+                // Validate date fields - updated to check 3-month rule
+                const dateIssued = form.querySelector('[name="date_issued"]');
+                const expiryDate = form.querySelector('[name="expiry_date"]');
+                
+                if (dateIssued.value && expiryDate.value) {
+                    const issued = new Date(dateIssued.value);
+                    const expiry = new Date(expiryDate.value);
+                    
+                    // Calculate minimum expiry (issue date)
+                    const minExpiry = new Date(issued);
+                    
+                    // Calculate recommended expiry (3 months from issue date)
+                    const recommendedExpiry = new Date(issued);
+                    recommendedExpiry.setMonth(recommendedExpiry.getMonth() + 3);
+                    
+                    if (expiry < minExpiry) {
+                        hasError = true;
+                        expiryDate.classList.add('border-red-500');
+                        errorMessages.push('Expiry date cannot be earlier than date issued');
+                        if (!firstErrorField) firstErrorField = expiryDate;
+                    }
+                    
+                    // Check if expiry date is different from recommended 3 months
+                    const daysDifference = Math.abs(Math.ceil((expiry - recommendedExpiry) / (1000 * 60 * 60 * 24)));
+                    if (daysDifference > 7) { // Allow a week of flexibility
+                        // This is just a warning, not an error
+                        const warningMessage = 'The expiry date differs from the standard 3-month period. Please confirm this is intentional.';
+                        
+                        // We'll show this warning after validation if there are no errors
+                        if (!hasError) {
+                            const confirmSubmit = confirm(warningMessage + "\n\nDo you want to proceed with submission?");
+                            if (!confirmSubmit) {
+                                e.preventDefault();
+                                return;
+                            }
+                        } else {
+                            errorMessages.push(warningMessage);
+                        }
+                    }
+                }
+
+                // Validate volume is positive
+                const volume = form.querySelector('[name="volume_cubic_meter"]');
+                if (volume.value && parseFloat(volume.value) <= 0) {
+                    hasError = true;
+                    volume.classList.add('border-red-500');
+                    errorMessages.push('Volume must be greater than zero');
+                    if (!firstErrorField) firstErrorField = volume;
+                }
+
+                // Ensure contact number is not empty
+                const contactNoValue = contactNo.value.trim();
+                if (!contactNoValue) {
+                    hasError = true;
+                    contactNo.classList.add('border-red-500');
+                    errorMessages.push('Contact No. is required');
+                    if (!firstErrorField) firstErrorField = contactNo;
+                }
+
+                // If there are errors, show SweetAlert with error messages
                 if (hasError) {
-                    e.preventDefault();
-                    showNotification('Please fill in all required fields', 'error');
-                    
-                    // Scroll to first error field
-                    if (firstErrorField) {
-                        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }
-            });
-
-            // Add real-time validation for each field
-            requiredFields.forEach(field => {
-                const input = form.querySelector(`[name="${field.name}"]`);
-                
-                input.addEventListener('blur', function() {
-                    const errorDiv = this.parentElement.querySelector('.error-message') || 
-                                   document.createElement('div');
-                    errorDiv.className = 'error-message text-red-500 text-sm mt-1';
-                    
-                    if (!this.value.trim()) {
-                        this.classList.add('border-red-500');
-                        errorDiv.textContent = `${field.label} is required`;
-                        if (!this.parentElement.querySelector('.error-message')) {
-                            this.parentElement.appendChild(errorDiv);
+                    Swal.fire({
+                        title: 'Validation Error',
+                        html: `<div class="text-left"><ul class="list-disc pl-5">
+                            ${errorMessages.map(msg => `<li>${msg}</li>`).join('')}
+                        </ul></div>`,
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#3085d6'
+                    }).then(() => {
+                        // Scroll to first error field
+                        if (firstErrorField) {
+                            firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            firstErrorField.focus();
                         }
-                    } else {
-                        this.classList.remove('border-red-500');
-                        errorDiv.remove();
-                    }
-                });
-
-                // Clear error styling on input
-                input.addEventListener('input', function() {
-                    if (this.value.trim()) {
-                        this.classList.remove('border-red-500');
-                        const errorDiv = this.parentElement.querySelector('.error-message');
-                        if (errorDiv) {
-                            errorDiv.remove();
-                        }
-                    }
-                });
-            });
-
-            // Updated notification function
-            function showNotification(message, type) {
-                const notification = document.getElementById('notification');
-                const notificationMessage = document.getElementById('notificationMessage');
-                
-                // Set message
-                notificationMessage.textContent = message;
-                
-                // Set styles based on type
-                if (type === 'success') {
-                    notification.classList.remove('bg-red-500');
-                    notification.classList.add('bg-green-500', 'text-white');
+                    });
                 } else {
-                    notification.classList.remove('bg-green-500');
-                    notification.classList.add('bg-red-500', 'text-white');
+                    // Show confirmation dialog
+                    Swal.fire({
+                        title: 'Confirm Submission',
+                        text: 'Are you sure you want to submit this lumber record?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, submit it!',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Show loading state
+                            Swal.fire({
+                                title: 'Saving...',
+                                html: 'Please wait while we process your submission.',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            
+                            // Submit the form
+                            form.submit();
+                        }
+                    });
                 }
             });
+
+            // Replace the old showNotification function with SweetAlert
+            function showNotification(message, type) {
+                Swal.fire({
+                    title: type === 'success' ? 'Success!' : 'Error!',
+                    text: message,
+                    icon: type,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            }
 
             // Call this for messages
             {% if messages %}
@@ -645,12 +718,9 @@
                 {% endfor %}
             {% endif %}
 
-            // Add this new code for number validation
-            document.addEventListener('DOMContentLoaded', function() {
-                const noInput = document.querySelector('[name="no"]');
-                const noError = document.getElementById('noError');
-                const form = document.getElementById('lumberForm');
-                
+            // Replace the number validation with SweetAlert
+            const noInput = document.querySelector('[name="no"]');
+            if (noInput) {
                 // Create an array of existing numbers from the table
                 const existingNumbers = Array.from(document.querySelectorAll('tbody tr')).map(
                     row => row.cells[0].textContent.trim()
@@ -659,34 +729,28 @@
                 noInput.addEventListener('change', function() {
                     const value = this.value.trim();
                     if (existingNumbers.includes(value)) {
-                        noError.classList.remove('hidden');
                         this.classList.add('border-red-500');
+                        Swal.fire({
+                            title: 'Duplicate Record',
+                            text: 'This record number already exists!',
+                            icon: 'warning',
+                            confirmButtonColor: '#3085d6'
+                        });
                     } else {
-                        noError.classList.add('hidden');
                         this.classList.remove('border-red-500');
                     }
                 });
-
-                form.addEventListener('submit', function(e) {
-                    const value = noInput.value.trim();
-                    if (existingNumbers.includes(value)) {
-                        e.preventDefault();
-                        noError.classList.remove('hidden');
-                        noInput.classList.add('border-red-500');
-                        showNotification('Record number already exists!', 'error');
-                    }
-                });
-            });
+            }
 
             // Show a toast notification for form submission
-            const form = document.getElementById('lumberForm');
-            
-            form.addEventListener('submit', function() {
-                // Show loading state
-                const submitButton = form.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                submitButton.innerHTML = 'Saving...';
-            });
+            if (form) {
+                form.addEventListener('submit', function() {
+                    // Show loading state
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = 'Saving...';
+                });
+            }
 
             const tradeName = document.querySelector('[name="trade_name"]');
             const permitNo = document.querySelector('[name="permit_no"]');
@@ -707,47 +771,123 @@
                 permitNo.addEventListener('blur', function() {
                     const permitValue = this.value.trim();
                     
-                    // Check if the permit number is numeric and at least 6 digits long
-                    if (!/^\d{6,}$/.test(permitValue)) {
-                        this.setCustomValidity('Permit number must be numeric and at least 6 digits long');
+                    // Check if the permit number is numeric
+                    if (!/^\d+$/.test(permitValue)) {
+                        this.setCustomValidity('Permit number must be numeric');
                     } else {
                         this.setCustomValidity('');
                     }
                 });
             }
 
-            // Date validation
+            // Date functionality - auto-set expiry date 3 months from issue date
             const dateIssued = document.querySelector('[name="date_issued"]');
             const expiryDate = document.querySelector('[name="expiry_date"]');
             
             if (dateIssued && expiryDate) {
+                dateIssued.addEventListener('change', function() {
+                    if (this.value) {
+                        // Calculate expiry date (3 months from issue date)
+                        const issued = new Date(this.value);
+                        const expiry = new Date(issued);
+                        expiry.setMonth(expiry.getMonth() + 3);
+                        
+                        // Format the date as YYYY-MM-DD for the input
+                        const year = expiry.getFullYear();
+                        const month = String(expiry.getMonth() + 1).padStart(2, '0');
+                        const day = String(expiry.getDate()).padStart(2, '0');
+                        expiryDate.value = `${year}-${month}-${day}`;
+                        
+                        // If the expiry date input is still in text mode, change it to date
+                        expiryDate.type = 'date';
+                        
+                        // Show notification about expiry date
+                        const expiryFormatted = expiry.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        
+                        Swal.fire({
+                            title: 'Expiry Date Set',
+                            html: `The permit will expire on <strong>${expiryFormatted}</strong> (3 months from issue date).<br><br>You can adjust this date if needed.`,
+                            icon: 'info',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    }
+                });
+                
+                // Validate expiry date on change
                 expiryDate.addEventListener('change', function() {
-                    const issued = new Date(dateIssued.value);
-                    const expiry = new Date(this.value);
-                    const maxDate = new Date(issued);
-                    maxDate.setFullYear(maxDate.getFullYear() + 5);
-
-                    if (expiry < issued) {
-                        this.setCustomValidity('Expiry date cannot be earlier than date issued');
-                    } else if (expiry > maxDate) {
-                        this.setCustomValidity('Expiry date cannot be more than 5 years from date issued');
-                    } else {
-                        this.setCustomValidity('');
+                    if (dateIssued.value && this.value) {
+                        const issued = new Date(dateIssued.value);
+                        const expiry = new Date(this.value);
+                        
+                        // Check if expiry is before issue date
+                        if (expiry < issued) {
+                            Swal.fire({
+                                title: 'Invalid Date',
+                                text: 'Expiry date cannot be earlier than date issued',
+                                icon: 'error',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#3085d6'
+                            });
+                            
+                            // Reset to 3 months from issue date
+                            const newExpiry = new Date(issued);
+                            newExpiry.setMonth(newExpiry.getMonth() + 3);
+                            const year = newExpiry.getFullYear();
+                            const month = String(newExpiry.getMonth() + 1).padStart(2, '0');
+                            const day = String(newExpiry.getDate()).padStart(2, '0');
+                            this.value = `${year}-${month}-${day}`;
+                        }
+                        
+                        // Check if expiry is approaching (within 30 days)
+                        const today = new Date();
+                        const daysUntilExpiry = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+                        
+                        if (daysUntilExpiry <= 30 && daysUntilExpiry > 0) {
+                            Swal.fire({
+                                title: 'Expiry Warning',
+                                html: `This permit will expire in <strong>${daysUntilExpiry} day${daysUntilExpiry !== 1 ? 's' : ''}</strong>.<br>Please ensure timely renewal.`,
+                                icon: 'warning',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#3085d6'
+                            });
+                        } else if (daysUntilExpiry <= 0) {
+                            Swal.fire({
+                                title: 'Expired Permit',
+                                text: 'This permit has already expired or will expire today. Please renew immediately.',
+                                icon: 'error',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#3085d6'
+                            });
+                        }
                     }
                 });
             }
 
             // Phone number validation
-            const contactNo = document.querySelector('[name="contact_no"]');
+            const contactNo = document.querySelector('[name="contact_number"]');
             if (contactNo) {
                 contactNo.addEventListener('input', function() {
-                    const phonePattern = /^\+?[0-9]{10,15}$/;
-                    if (this.value && !phonePattern.test(this.value)) {
-                        this.setCustomValidity('Please enter a valid phone number');
-                    } else {
-                        this.setCustomValidity('');
+                    // Remove any non-digit characters
+                    this.value = this.value.replace(/\D/g, '');
+                    
+                    // Ensure it starts with '09'
+                    if (this.value.length >= 2 && this.value.substring(0, 2) !== '09') {
+                        this.value = '09' + this.value.substring(2);
+                    }
+                    
+                    // Limit to 11 digits
+                    if (this.value.length > 11) {
+                        this.value = this.value.substring(0, 11);
                     }
                 });
+                
+                // Add required attribute to ensure it's not empty
+                contactNo.setAttribute('required', 'required');
             }
 
             // Enhanced search functionality
@@ -826,37 +966,108 @@
                 });
             });
 
-        function exportTableToCSV(filename) {
-            const table = document.querySelector('table');
-            const rows = table.querySelectorAll('tr');
-            let csv = [];
+            // Quick Actions button functionality
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
             
-            for (let i = 0; i < rows.length; i++) {
-                const row = [], cols = rows[i].querySelectorAll('td, th');
+            if (userMenuButton && userMenu) {
+                userMenuButton.addEventListener('click', function(event) {
+                    console.log('Button clicked'); // Debug line
+                    event.stopPropagation();
+                    userMenu.classList.toggle('hidden');
+                });
                 
-                for (let j = 0; j < cols.length; j++) {
-                    // Get the text content and clean it up
-                    let data = cols[j].textContent.replace(/(\r\n|\n|\r)/gm, '').trim();
-                    // Escape double quotes and wrap field in quotes
-                    data = data.replace(/"/g, '""');
-                    row.push('"' + data + '"');
-                }
-                csv.push(row.join(','));
+                // Close the menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userMenu.contains(event.target) && !userMenuButton.contains(event.target)) {
+                        userMenu.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Add SweetAlert confirmation for export
+            window.exportTableToCSV = function(filename) {
+                Swal.fire({
+                    title: 'Export Data',
+                    text: 'Do you want to export the table data to CSV?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, export it!',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const table = document.querySelector('table');
+                        const rows = table.querySelectorAll('tr');
+                        let csv = [];
+                        
+                        for (let i = 0; i < rows.length; i++) {
+                            const row = [], cols = rows[i].querySelectorAll('td, th');
+                            
+                            for (let j = 0; j < cols.length; j++) {
+                                // Get the text content and clean it up
+                                let data = cols[j].textContent.replace(/(\r\n|\n|\r)/gm, '').trim();
+                                // Escape double quotes and wrap field in quotes
+                                data = data.replace(/"/g, '""');
+                                row.push('"' + data + '"');
+                            }
+                            csv.push(row.join(','));
+                        }
+                        
+                        const csvString = csv.join('\n');
+                        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+                        const link = document.createElement('a');
+                        if (navigator.msSaveBlob) {
+                            navigator.msSaveBlob(blob, filename);
+                        } else {
+                            link.href = URL.createObjectURL(blob);
+                            link.setAttribute('download', filename);
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        }
+                        
+                        Swal.fire({
+                            title: 'Exported!',
+                            text: 'Your file has been exported successfully.',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                });
             }
             
-            const csvString = csv.join('\n');
-            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            if (navigator.msSaveBlob) {
-                navigator.msSaveBlob(blob, filename);
-            } else {
-                link.href = URL.createObjectURL(blob);
-                link.setAttribute('download', filename);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+            // Add SweetAlert for form reset confirmation
+            const resetButton = form.querySelector('button[type="reset"]');
+            if (resetButton) {
+                resetButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Clear Form',
+                        text: 'Are you sure you want to clear all form fields?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Yes, clear it!',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.reset();
+                            Swal.fire({
+                                title: 'Cleared!',
+                                text: 'The form has been cleared.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        }
+                    });
+                });
             }
-        }
+        });
     </script>
 </body>
 </html>

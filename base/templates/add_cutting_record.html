@@ -1,5 +1,5 @@
 {% load static %}
-{% load form_filters %}
+{% load mathfilters %}
 {% load widget_tweaks %}
 {% load custom_filters %}
 
@@ -8,123 +8,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Cutting Record - CENRO Argao</title>
+    <title>View Cutting Record</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(to bottom right, #1a1a1a, #2d2d2d);
-        }
-        .bg-denr {
-            background-color: #2B5019;
-        }
-        .from-denr {
-            --tw-gradient-from: #2B5019;
-        }
-        .to-denr-light {
-            --tw-gradient-to: #3D7324;
-        }
-        .text-denr {
-            color: #2B5019;
-        }
-        .border-denr {
-            border-color: #2B5019;
-        }
-        .hover\:bg-denr-dark:hover {
-            background-color: #1F3B12;
-        }
-
-        /* Enhanced Modern Styling */
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .gradient-header {
-            background: linear-gradient(to right, #2B5019, #3D7324);
-            color: white;
-            border-radius: 8px 8px 0 0;
-        }
-
-        .input-field {
-            transition: all 0.2s ease;
-        }
-
-        .input-field:focus {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.1);
-        }
-
-        /* Table Styling */
-        .modern-table {
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-
-        .modern-table th {
-            background: #f8f9fa;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            border-bottom: 2px solid #e5e7eb;
-            color: #111827;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-        }
-
-        .modern-table tr:hover {
-            background-color: rgba(0, 0, 0, 0.02);
-            transition: all 0.2s ease;
-        }
-
-        @keyframes highlight {
-            0% { background-color: #93C5FD; }
-            100% { background-color: #EFF6FF; }
-        }
-        
-        .animate-highlight {
-            animation: highlight 2s ease-in-out;
+            background: linear-gradient(to bottom right, #e2f3e5, #c6f6d5);
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="font-inter text-gray-900">
     <!-- Navigation Bar -->
-    <div class="bg-black text-white py-3 px-6 border-b border-gray-800">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-xl font-medium">
-                    <span class="text-green-400">Tree Cutting </span>
-                    <span class="text-blue-400">Records</span>
-                </h1>
-            </div>
-            <div class="flex items-center gap-4">
-                <a href="{% url 'view_cutting' cutting.id %}" 
-                   class="inline-flex items-center px-4 py-2 bg-gray-900/50 hover:bg-gray-800 rounded-lg transition-all duration-200">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
-                    <span class="text-sm text-gray-300 hover:text-white">
-                        Return to View Records ({{ cutting.permit_type }} {{ cutting.permit_number }})
-                    </span>
-                </a>
+    <nav class="bg-transparent shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0">
+                        <span class="text-xl font-bold text-green-700">FUS-CENRO-ARGAO</span>
+                    </div>
+                </div>
+                <!-- User Menu -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <div class="text-lg text-gray-900 font-medium">
+                        Welcome, {{ request.user.username }}
+                    </div>
+                    <div class="relative">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                            ▼
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                               
+                                <!-- Quick Actions -->
+                                <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
+                                    <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
+                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
+                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
+                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+
+                                </div>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                    </svg>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // User menu toggle
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+
+            userMenuButton.addEventListener('click', function() {
+                userMenu.classList.toggle('hidden');
+            });
+
+            // Close user menu when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                    userMenu.classList.add('hidden');
+                }
+            });
+
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+        });
+    </script>
 
     <!-- Main Content -->
-
         <!-- Header -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <h1 class="text-3xl font-bold text-gray-900">ADD VOLUME RECORD</h1>
+            <p class="mt-2 text-sm text-gray-600">Add a new volume record for this cutting permit.</p>
+        </div>
         {% if messages %}
             {% for message in messages %}
                 <div class="max-w-7xl mx-auto px-4 py-2 mb-4">
@@ -161,7 +147,7 @@
                 </div>
                 <div>
                     <h3 class="text-sm font-medium text-gray-900">Date Issued</h3>
-                    <p class="mt-1 text-lg font-semibold {% if cutting.permit_issue_date %}text-gray-900{% else %}text-red-600{% endif %}">{% if cutting.permit_issue_date %}{{ cutting.permit_issue_date|date:"Y-m-d" }}{% else %}Not yet issued{% endif %}</p>
+                    <p class="mt-1 text-lg font-semibold {% if cutting.date_issued %}text-gray-900{% else %}text-red-600{% endif %}">{% if cutting.date_issued %}{{ cutting.date_issued|date:"Y-m-d" }}{% else %}Not yet issued{% endif %}</p>
                 </div>
                 <div>
                     <h3 class="text-sm font-medium text-gray-900">Expiry Date</h3>
@@ -178,7 +164,7 @@
         </div>
 
         <!-- Volume Information Card -->
-        <div class="card bg-gradient-to-r from-blue-50 to-green-200 p-6 mb-6">
+        <div class="card bg-blue-100 p-6 mb-6">
             <h2 class="text-xl font-semibold text-blue-900 mb-4">Volume Information</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="card bg-white p-4">
@@ -200,9 +186,6 @@
 
         <!-- Add Record Form -->
         <div class="card p-6 mb-6">
-            <div class="gradient-header p-4 mb-6">
-                <h2 class="text-xl font-semibold text-white">ADD VOLUME RECORD</h2>
-            </div>
             <form method="POST" id="addRecordForm" class="space-y-6">
                 {% csrf_token %}
                 
@@ -267,7 +250,7 @@
         <!-- Volume Breakdown Table -->
         <div class="card overflow-hidden">
             <div class="gradient-header p-4 flex justify-between items-center">
-                <h2 class="text-xl font-bold text-white">VOLUME BREAKDOWN <span class="text-gray-200">{{ cutting.tcp_no }}</span></h2>
+                <h2 class="text-xl font-bold text-black-600">VOLUME BREAKDOWN <span class="text-gray-200">{{ cutting.tcp_no }}</span></h2>
                 <div class="text-right">
                     <p class="text-sm text-black-600">Total Volume Granted: 
                         <span class="font-semibold">{{ cutting.total_volume_granted }} cu.m.</span>

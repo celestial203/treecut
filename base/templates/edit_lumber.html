@@ -1,164 +1,544 @@
 {% load static %}
-{% load form_filters %}
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CENRO Argao - Edit Lumber Record</title>
+    <title>Edit Lumber Record - CENRO Argao</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to bottom right, #e2f3e5, #c6f6d5);
+            font-family: 'Inter', sans-serif;
+        }
+        /* Add form styling */
+        input, select, textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            border: 1px solid #D1D5DB;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #10B981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-tl from-blue-400 to-green-400">
+<body class="min-h-screen">
     <!-- Navigation Bar -->
-    <nav class="bg-white shadow-lg">
+    <nav class="bg-transparent shadow-lg border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
                     <!-- Logo -->
-                    <div class="flex-shrink-0 flex items-center">
-                             <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO-FUS</span>
-                            </div>
-
-                    <!-- Navigation Links -->
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{% url 'dashboard' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Dashboard
-                        </a>
-                        <a href="{% url 'cutting' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Tree Cutting Permits 
-                        </a>
-                        <a href="{% url 'lumber' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Lumber Dealers
-                        </a>
-                        <a href="{% url 'chainsaw' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Chainsaw
-                        </a>
-                        <a href="{% url 'wood' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            WPP
-                        </a>
+                    <div class="flex-shrink-0">
+                        <span class="text-xl font-bold text-green-700">FUS-CENRO-ARGAO</span>
                     </div>
                 </div>
                 <!-- User Menu -->
-                <div class="flex items-center">
-                    <div class="text-m text-gray-800">
+                <div class="hidden md:flex items-center space-x-4">
+                    <div class="text-lg text-gray-900 font-medium">
                         Welcome, {{ request.user.username }}
                     </div>
-                    <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
-                        Sign Out
-                    </a>
+                    <div class="relative">
+                        <button type="button" class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                            ▼
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                                <!-- Quick Actions -->
+                                <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
+                                    <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
+                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
+                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
+                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                </div>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                    </svg>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <!-- Page Header -->
-        <div class="px-4 py-6 sm:px-0">
-            <h1 class="text-3xl font-bold text-gray-900">Edit Lumber Record</h1>
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">Edit Lumber Record</h1>
+            <p class="text-gray-600">Update the information for this lumber record.</p>
         </div>
 
-        <!-- Form Section -->
-        <div class="bg-white shadow-lg rounded-lg p-8 mb-8 border border-gray-100">
-            <form method="POST" class="space-y-6">
+        <!-- Form Card -->
+        <div class="bg-white shadow-md rounded-lg p-6 mb-8">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 
-                {% if messages %}
-                {% for message in messages %}
-                <div class="{% if message.tags == 'success' %}bg-green-100 border-green-500 text-green-700{% else %}bg-red-100 border-red-500 text-red-700{% endif %} border-l-4 p-4 mb-4 rounded-r">
-                    {{ message }}
+                {% if form.errors %}
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
+                    <p class="font-bold">Please correct the following errors:</p>
+                    <ul>
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
                 </div>
-                {% endfor %}
                 {% endif %}
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Left Column -->
-                    <div class="space-y-5">
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">NO:</label>
-                            {{ form.no|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                
+                <!-- Form Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Basic Information -->
+                    <div class="space-y-4">
+                        <h2 class="text-lg font-medium text-gray-900">Basic Information</h2>
+                        
+                        <!-- No. -->
+                        <div>
+                            <label for="{{ form.no.id_for_label }}" class="block text-sm font-medium text-gray-700">No.</label>
+                            <input type="text" name="no" id="{{ form.no.id_for_label }}" value="{{ form.no.value|default:'' }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
                         </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">TRADE NAME:</label>
-                            {{ form.trade_name|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                        
+                        <!-- Trade Name -->
+                        <div>
+                            <label for="{{ form.trade_name.id_for_label }}" class="block text-sm font-medium text-gray-700">Trade Name</label>
+                            <input type="text" name="trade_name" id="{{ form.trade_name.id_for_label }}" value="{{ form.trade_name.value|default:'' }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
                         </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">MANAGER/OWNER:</label>
-                            {{ form.manager_owner|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                        
+                        <!-- Manager/Owner -->
+                        <div>
+                            <label for="{{ form.manager_owner.id_for_label }}" class="block text-sm font-medium text-gray-700">Manager/Owner</label>
+                            <input type="text" name="manager_owner" id="{{ form.manager_owner.id_for_label }}" value="{{ form.manager_owner.value|default:'' }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
                         </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">CONTACT NO.:</label>
-                            {{ form.contact_no|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                        
+                        <!-- Contact Number -->
+                        <div>
+                            <label for="{{ form.contact_number.id_for_label }}" class="block text-sm font-medium text-gray-700">Contact Number</label>
+                            <input type="text" name="contact_number" id="{{ form.contact_number.id_for_label }}" value="{{ form.contact_number.value|default:'' }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50"
+                                pattern="^09\d{9}$" placeholder="09XXXXXXXXX" maxlength="11">
+                            <p class="mt-1 text-xs text-gray-500">Format: 09XXXXXXXXX (11 digits)</p>
                         </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">GENDER:</label>
-                            {{ form.gender|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                        
+                        <!-- Gender -->
+                        <div>
+                            <label for="{{ form.gender.id_for_label }}" class="block text-sm font-medium text-gray-700">Gender</label>
+                            <select name="gender" id="{{ form.gender.id_for_label }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
+                                <option value="">Select Gender</option>
+                                <option value="Male" {% if form.gender.value == "Male" %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if form.gender.value == "Female" %}selected{% endif %}>Female</option>
+                            </select>
                         </div>
                     </div>
-
-                    <!-- Middle Column -->
-                    <div class="space-y-5">
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">LOCATION:</label>
-                            <div class="grid grid-cols-3 gap-2">
-                                {{ form.brgy|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                                {{ form.municipality|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                                {{ form.province|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                            </div>
+                    
+                    <!-- Location Information -->
+                    <div class="space-y-4">
+                        <h2 class="text-lg font-medium text-gray-900">Location Information</h2>
+                        
+                        <!-- Barangay -->
+                        <div>
+                            <label for="{{ form.brgy.id_for_label }}" class="block text-sm font-medium text-gray-700">Barangay</label>
+                            <input type="text" name="brgy" id="{{ form.brgy.id_for_label }}" value="{{ form.brgy.value|default:'' }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
                         </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">PERMIT NO.:</label>
-                            {{ form.permit_no|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                        
+                        <!-- Municipality -->
+                        <div>
+                            <label for="{{ form.municipality.id_for_label }}" class="block text-sm font-medium text-gray-700">Municipality</label>
+                            <input type="text" name="municipality" id="{{ form.municipality.id_for_label }}" value="{{ form.municipality.value|default:'' }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
                         </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">DATE ISSUED:</label>
-                            {{ form.date_issued|format_date|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                        
+                        <!-- Province -->
+                        <div>
+                            <label for="{{ form.province.id_for_label }}" class="block text-sm font-medium text-gray-700">Province</label>
+                            <input type="text" name="province" id="{{ form.province.id_for_label }}" value="{{ form.province.value|default:'' }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
                         </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">EXPIRY DATE:</label>
-                            {{ form.expiry_date|format_date|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                        
+                        <!-- Source/Supplier -->
+                        <div>
+                            <label for="{{ form.source_supplier.id_for_label }}" class="block text-sm font-medium text-gray-700">Source/Supplier</label>
+                            <input type="text" name="source_supplier" id="{{ form.source_supplier.id_for_label }}" value="{{ form.source_supplier.value|default:'' }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
                         </div>
                     </div>
-
-                    <!-- Right Column -->
-                    <div class="space-y-5">
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">SOURCE/SUPPLIER:</label>
-                            {{ form.source_supplier|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                    
+                    <!-- Permit Information -->
+                    <div class="space-y-4">
+                        <h2 class="text-lg font-medium text-gray-900">Permit Information</h2>
+                        
+                        <!-- Permit No. -->
+                        <div>
+                            <label for="{{ form.permit_no.id_for_label }}" class="block text-sm font-medium text-gray-700">Permit No.</label>
+                            <input type="text" name="permit_no" id="{{ form.permit_no.id_for_label }}" value="{{ form.permit_no.value|default:'' }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
                         </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">VOLUME IN CUBIC METER:</label>
-                            {{ form.volume_cubic_meter|format_decimal|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                        
+                        <!-- Date Issued -->
+                        <div>
+                            <label for="{{ form.date_issued.id_for_label }}" class="block text-sm font-medium text-gray-700">Date Issued</label>
+                            <input type="date" name="date_issued" id="{{ form.date_issued.id_for_label }}" value="{{ form.date_issued.value|date:'Y-m-d'|default:'' }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
                         </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">SPECIES:</label>
-                            {{ form.species|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                        
+                        <!-- Expiry Date -->
+                        <div>
+                            <label for="{{ form.expiry_date.id_for_label }}" class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                            <input type="date" name="expiry_date" id="{{ form.expiry_date.id_for_label }}" value="{{ form.expiry_date.value|date:'Y-m-d'|default:'' }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
+                        </div>
+                    </div>
+                    
+                    <!-- Volume Information -->
+                    <div class="space-y-4">
+                        <h2 class="text-lg font-medium text-gray-900">Volume Information</h2>
+                        
+                        <!-- Volume (cubic meter) -->
+                        <div>
+                            <label for="{{ form.volume_cubic_meter.id_for_label }}" class="block text-sm font-medium text-gray-700">Volume (cubic meter)</label>
+                            <input type="number" step="0.01" name="volume_cubic_meter" id="{{ form.volume_cubic_meter.id_for_label }}" value="{{ form.volume_cubic_meter.value|default:'' }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
+                        </div>
+                        
+                        <!-- Species -->
+                        <div>
+                            <label for="{{ form.species.id_for_label }}" class="block text-sm font-medium text-gray-700">Species</label>
+                            <input type="text" name="species" id="{{ form.species.id_for_label }}" value="{{ form.species.value|default:'' }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 bg-gray-50">
+                        </div>
+                        
+                        <!-- File Upload -->
+                        <div>
+                            <label for="{{ form.file.id_for_label }}" class="block text-sm font-medium text-gray-700">File Attachment</label>
+                            {% if lumber.file %}
+                                <div class="mb-2">
+                                    <a href="{{ lumber.file.url }}" target="_blank" class="text-blue-600 hover:underline">View current file</a>
+                                    <p class="text-xs text-gray-500">Current file: {{ lumber.file.name }}</p>
+                                </div>
+                            {% endif %}
+                            <input type="file" name="file" id="{{ form.file.id_for_label }}" 
+                                class="mt-1 block w-full text-gray-700 bg-gray-50 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500">
+                            <p class="mt-1 text-sm text-gray-500">Upload a new file to replace the current one (optional)</p>
                         </div>
                     </div>
                 </div>
-
-                <!-- Remarks -->
-                <div class="mt-6">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Remarks</label>
-                    {{ form.remarks|trim_whitespace|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 h-24" }}
-                </div>
-
-                <div class="flex justify-end space-x-4 pt-4">
-                    <a href="{% url 'lumber' %}" class="bg-gray-500 text-white px-6 py-2.5 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 font-medium">
+                
+                <!-- Form Actions -->
+                <div class="mt-8 flex justify-end space-x-3">
+                    <a href="{% url 'lumber_records' %}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
                         Cancel
                     </a>
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2.5 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 font-medium">
-                        Update Record
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                        Save Changes
                     </button>
                 </div>
             </form>
         </div>
     </div>
-    <footer class="bg-blue-900 text-white mt-auto py-6">
-        <div class="max-w-7xl mx-auto text-center">
-            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white mt-auto py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-sm">&copy; {% now "Y" %} Department of Environment and Natural Resources. All rights reserved.</p>
             <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
         </div>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            
+            if (userMenuButton && userMenu) {
+                userMenuButton.addEventListener('click', function(event) {
+                    event.stopPropagation();
+                    userMenu.classList.toggle('hidden');
+                });
+                
+                // Close the menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userMenu.contains(event.target) && !userMenuButton.contains(event.target)) {
+                        userMenu.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Date functionality - auto-set expiry date 3 months from issue date
+            const dateIssued = document.querySelector('[name="date_issued"]');
+            const expiryDate = document.querySelector('[name="expiry_date"]');
+            
+            if (dateIssued && expiryDate) {
+                // Store original expiry date when page loads
+                const originalExpiryDate = expiryDate.value;
+                let userModifiedExpiry = false;
+                
+                // Function to calculate and set expiry date (3 months from issue date)
+                function setExpiryDate(issueDate) {
+                    const issued = new Date(issueDate);
+                    const expiry = new Date(issued);
+                    expiry.setMonth(expiry.getMonth() + 3);
+                    
+                    // Format the date as YYYY-MM-DD for the input
+                    const year = expiry.getFullYear();
+                    const month = String(expiry.getMonth() + 1).padStart(2, '0');
+                    const day = String(expiry.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                }
+                
+                // Set expiry date on page load if issue date exists but expiry date is empty
+                if (dateIssued.value && !expiryDate.value) {
+                    expiryDate.value = setExpiryDate(dateIssued.value);
+                }
+                
+                dateIssued.addEventListener('change', function() {
+                    if (this.value) {
+                        // Only auto-update if user hasn't manually changed the expiry date
+                        // or if they're changing the issue date for the first time
+                        if (!userModifiedExpiry) {
+                            expiryDate.value = setExpiryDate(this.value);
+                            
+                            // Show notification about expiry date
+                            const expiry = new Date(expiryDate.value);
+                            const expiryFormatted = expiry.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            });
+                            
+                            // Use SweetAlert for notification
+                            Swal.fire({
+                                title: 'Expiry Date Set',
+                                html: `The permit will expire on <strong>${expiryFormatted}</strong> (3 months from issue date).<br><br>You can adjust this date if needed.`,
+                                icon: 'info',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#3085d6'
+                            });
+                        } else {
+                            // Ask if user wants to recalculate expiry date
+                            Swal.fire({
+                                title: 'Update Expiry Date?',
+                                text: 'Do you want to recalculate the expiry date to be 3 months from the new issue date?',
+                                icon: 'question',
+                                showCancelButton: true,
+                                confirmButtonText: 'Yes, update it',
+                                cancelButtonText: 'No, keep current date',
+                                confirmButtonColor: '#3085d6',
+                                cancelButtonColor: '#d33'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    expiryDate.value = setExpiryDate(dateIssued.value);
+                                    userModifiedExpiry = false;
+                                    
+                                    Swal.fire({
+                                        title: 'Updated',
+                                        text: 'Expiry date has been recalculated.',
+                                        icon: 'success',
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                }
+                            });
+                        }
+                    }
+                });
+                
+                // Track if user manually changes expiry date
+                expiryDate.addEventListener('change', function() {
+                    if (this.value) {
+                        const issued = new Date(dateIssued.value);
+                        const expiry = new Date(this.value);
+                        
+                        // Check if expiry is before issue date
+                        if (expiry < issued) {
+                            Swal.fire({
+                                title: 'Invalid Date',
+                                text: 'Expiry date cannot be earlier than date issued',
+                                icon: 'error',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#3085d6'
+                            }).then(() => {
+                                // Reset to 3 months from issue date
+                                this.value = setExpiryDate(dateIssued.value);
+                                userModifiedExpiry = false;
+                            });
+                        } else {
+                            // Mark that user has manually modified the expiry date
+                            userModifiedExpiry = true;
+                            
+                            // Check if expiry is approaching (within 30 days)
+                            const today = new Date();
+                            const daysUntilExpiry = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+                            
+                            if (daysUntilExpiry <= 30 && daysUntilExpiry > 0) {
+                                Swal.fire({
+                                    title: 'Expiry Warning',
+                                    html: `This permit will expire in <strong>${daysUntilExpiry} day${daysUntilExpiry !== 1 ? 's' : ''}</strong>.<br>Please ensure timely renewal.`,
+                                    icon: 'warning',
+                                    confirmButtonText: 'OK',
+                                    confirmButtonColor: '#3085d6'
+                                });
+                            } else if (daysUntilExpiry <= 0) {
+                                Swal.fire({
+                                    title: 'Expired Permit',
+                                    text: 'This permit has already expired or will expire today. Please renew immediately.',
+                                    icon: 'error',
+                                    confirmButtonText: 'OK',
+                                    confirmButtonColor: '#3085d6'
+                                });
+                            }
+                            
+                            // Check if expiry date differs significantly from standard 3 months
+                            const standardExpiry = new Date(issued);
+                            standardExpiry.setMonth(standardExpiry.getMonth() + 3);
+                            const daysDifference = Math.abs(Math.ceil((expiry - standardExpiry) / (1000 * 60 * 60 * 24)));
+                            
+                            if (daysDifference > 7) { // More than a week difference
+                                Swal.fire({
+                                    title: 'Non-Standard Expiry',
+                                    text: 'The expiry date differs from the standard 3-month period. Please confirm this is intentional.',
+                                    icon: 'info',
+                                    confirmButtonText: 'This is intentional',
+                                    confirmButtonColor: '#3085d6'
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Form submission validation with SweetAlert
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Prevent default submission
+                    
+                    let hasErrors = false;
+                    
+                    // Validate required fields
+                    const requiredFields = [
+                        { name: 'no', label: 'No.' },
+                        { name: 'trade_name', label: 'Trade Name' },
+                        { name: 'manager_owner', label: 'Manager/Owner' },
+                        { name: 'permit_no', label: 'Permit No.' },
+                        { name: 'date_issued', label: 'Date Issued' },
+                        { name: 'expiry_date', label: 'Expiry Date' }
+                    ];
+                    
+                    let errorMessages = [];
+                    let firstErrorField = null;
+                    
+                    requiredFields.forEach(field => {
+                        const input = document.querySelector(`[name="${field.name}"]`);
+                        if (!input.value.trim()) {
+                            hasErrors = true;
+                            errorMessages.push(`${field.label} is required`);
+                            input.classList.add('border-red-500');
+                            
+                            if (!firstErrorField) {
+                                firstErrorField = input;
+                            }
+                        } else {
+                            input.classList.remove('border-red-500');
+                        }
+                    });
+                    
+                    // Validate contact number format if provided
+                    const contactNo = document.querySelector('[name="contact_number"]');
+                    if (contactNo && contactNo.value.trim() && !/^09\d{9}$/.test(contactNo.value.trim())) {
+                        hasErrors = true;
+                        errorMessages.push('Contact Number must be a valid Philippine mobile number (11 digits starting with 09)');
+                        contactNo.classList.add('border-red-500');
+                        
+                        if (!firstErrorField) {
+                            firstErrorField = contactNo;
+                        }
+                    }
+                    
+                    // Validate dates
+                    if (dateIssued.value && expiryDate.value) {
+                        const issued = new Date(dateIssued.value);
+                        const expiry = new Date(expiryDate.value);
+                        
+                        if (expiry < issued) {
+                            hasErrors = true;
+                            errorMessages.push('Expiry date cannot be earlier than date issued');
+                            expiryDate.classList.add('border-red-500');
+                            
+                            if (!firstErrorField) {
+                                firstErrorField = expiryDate;
+                            }
+                        }
+                    }
+                    
+                    if (hasErrors) {
+                        Swal.fire({
+                            title: 'Validation Error',
+                            html: `<div class="text-left"><ul class="list-disc pl-5">
+                                ${errorMessages.map(msg => `<li>${msg}</li>`).join('')}
+                            </ul></div>`,
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#3085d6'
+                        }).then(() => {
+                            // Focus on first error field
+                            if (firstErrorField) {
+                                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                firstErrorField.focus();
+                            }
+                        });
+                    } else {
+                        // Show confirmation dialog
+                        Swal.fire({
+                            title: 'Confirm Update',
+                            text: 'Are you sure you want to update this lumber record?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Yes, update it!',
+                            cancelButtonText: 'Cancel',
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Show loading state
+                                Swal.fire({
+                                    title: 'Saving...',
+                                    html: 'Please wait while we process your update.',
+                                    allowOutsideClick: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();
+                                    }
+                                });
+                                
+                                // Submit the form
+                                form.submit();
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+
+    <!-- Add SweetAlert2 CDN if not already included -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html> 

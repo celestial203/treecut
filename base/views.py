@@ -56,11 +56,31 @@ def dashboard(request):
     active_cutting_count = Cutting.objects.filter(
         expiry_date__gte=current_date
     ).count()
+    
+    # Calculate pending cutting permits (no volume records yet)
+    # A permit is pending when it has no cutting records
+    pending_cutting_count = Cutting.objects.filter(
+        cutting_records__isnull=True
+    ).count()
 
     # Lumber Records counts
     lumber_count = Lumber.objects.count()
+    
+    # For expired lumber records, we need to check if current date is past the expiry date
     expired_lumber_count = Lumber.objects.filter(
         expiry_date__lt=current_date
+    ).count()
+    
+    # For active lumber records, the current date should be before or equal to expiry date
+    active_lumber_count = Lumber.objects.filter(
+        expiry_date__gte=current_date
+    ).count()
+    
+    # For pending lumber records, use records created in the last 7 days that are not expired
+    seven_days_ago = current_date - timedelta(days=7)
+    pending_lumber_count = Lumber.objects.filter(
+        created_at__gte=seven_days_ago,
+        expiry_date__gte=current_date
     ).count()
 
     # Chainsaw counts
@@ -77,18 +97,34 @@ def dashboard(request):
 
     # Add Volume Records count
     volume_count = CuttingRecord.objects.count()
+    
+    # Calculate total volume from all cutting records
+    total_volume = CuttingRecord.objects.aggregate(
+        total=Sum('calculated_volume')
+    )['total'] or 0
+    
+    # Convert to Decimal for consistent display
+    if not isinstance(total_volume, Decimal):
+        total_volume = Decimal(str(total_volume))
+    
+    # Format to 2 decimal places
+    total_volume = total_volume.quantize(Decimal('0.01'))
 
     context = {
         'cutting_count': cutting_count,
         'expired_cutting_count': expired_cutting_count,
         'active_cutting_count': active_cutting_count,
+        'pending_cutting_count': pending_cutting_count,
         'lumber_count': lumber_count,
         'expired_lumber_count': expired_lumber_count,
+        'active_lumber_count': active_lumber_count,
+        'pending_lumber_count': pending_lumber_count,
         'chainsaw_count': chainsaw_count,
         'expired_chainsaw_count': expired_chainsaw_count,
         'wood_count': wood_count,
         'expired_wood_count': expired_wood_count,
         'volume_count': volume_count,
+        'total_volume': total_volume,  # Add the total volume to the context
     }
 
     return render(request, 'dashboard.html', context)
@@ -159,7 +195,35 @@ def wood(request):
 @login_required
 def lumber(request):
     current_date = timezone.now().date()
+    
+    if request.method == 'POST':
+        form = LumberForm(request.POST, request.FILES)
+        if form.is_valid():
+            lumber_record = form.save(commit=False)
+            lumber_record.created_by = request.user
+            
+            # Debug file upload
+            if 'file' in request.FILES:
+                print(f"File received: {request.FILES['file'].name}")
+                print(f"File size: {request.FILES['file'].size} bytes")
+                lumber_record.file = request.FILES['file']
+            else:
+                print("No file was uploaded")
+            
+            lumber_record.save()
+            messages.success(request, 'Lumber record added successfully!')
+            return redirect('lumber')
+        else:
+            messages.error(request, 'Error adding lumber record. Please check the form.')
+            print(f"Form errors: {form.errors}")
+    else:
+        form = LumberForm()
+    
+    # Get all lumber records
     lumber_records = Lumber.objects.all()
+    
+    # Check for any expiring records to show notification
+    any_expiring_records = any(record.expiry_warning for record in lumber_records)
     
     # Count expired records
     expired_count = Lumber.objects.filter(expiry_date__lt=current_date).count()
@@ -172,7 +236,9 @@ def lumber(request):
     ).count()
 
     context = {
+        'form': form,
         'lumber_records': lumber_records,
+        'any_expiring_records': any_expiring_records,
         'expired_count': expired_count,
         'expiring_soon_count': expiring_soon_count,
     }
@@ -227,19 +293,19 @@ def profile(request):
 @login_required
 def edit_recordlumber(request, pk):
     lumber = get_object_or_404(Lumber, pk=pk)
+    
     if request.method == 'POST':
-        form = LumberForm(request.POST, instance=lumber)
+        form = LumberForm(request.POST, request.FILES, instance=lumber)
         if form.is_valid():
             form.save()
             messages.success(request, 'Lumber record updated successfully!')
-            return redirect('lumber')
+            return redirect('lumber_records')
     else:
         form = LumberForm(instance=lumber)
     
-    return render(request, 'edit_lumber.html', {
-        'form': form,
-        'lumber': lumber
-    })
+    return render(request, 'edit_lumber.html', {'form': form, 'lumber': lumber})
+
+
 #FOR CUTTING ####
 @login_required
 def edit_cutting(request, cutting_id):
@@ -499,7 +565,17 @@ def volume_records_list(request):
     cuttings = Cutting.objects.all()
     grouped_records = {}
     
+    # Get search parameter and validate
+    search_permit = request.GET.get('permit', '').strip()
+    search_performed = 'permit' in request.GET
+    no_results = False
+    
     for cutting in cuttings:
+        # Skip this cutting if it doesn't match the search query
+        permit_key = f"{cutting.permit_type}-{cutting.permit_number}"
+        if search_permit and search_permit.lower() not in permit_key.lower():
+            continue
+            
         records = CuttingRecord.objects.filter(parent_tcp=cutting).order_by('-date_added')
         total_volume_used = sum(record.calculated_volume for record in records) if records else 0
         latest_record = records.first()
@@ -507,7 +583,7 @@ def volume_records_list(request):
         
         status = get_permit_status(cutting, remaining_balance, today)
         
-        grouped_records[f"{cutting.permit_type}-{cutting.permit_number}"] = {
+        grouped_records[permit_key] = {
             'cutting': cutting,
             'records': records,
             'total_volume_used': total_volume_used,
@@ -515,9 +591,58 @@ def volume_records_list(request):
             'status': status
         }
     
+    # Check if search was performed but no results found
+    if search_performed and search_permit and not grouped_records:
+        no_results = True
+    
     context = {
         'grouped_records': grouped_records,
         'today': today,
+        'search_permit': search_permit,
+        'no_results': no_results,
+        'search_performed': search_performed
     }
     
     return render(request, 'volume_records_list.html', context)
+
+@login_required
+def lumber_records(request):
+    current_date = timezone.now().date()
+    lumber_records = Lumber.objects.all().order_by('-date_issued')
+    
+    # Count expired records
+    expired_count = Lumber.objects.filter(expiry_date__lt=current_date).count()
+    
+    # Count records expiring in next 30 days but not expired yet
+    thirty_days_from_now = current_date + timedelta(days=30)
+    expiring_soon_count = Lumber.objects.filter(
+        expiry_date__gte=current_date,
+        expiry_date__lte=thirty_days_from_now
+    ).count()
+
+    context = {
+        'lumber_records': lumber_records,
+        'expired_count': expired_count,
+        'expiring_soon_count': expiring_soon_count,
+    }
+    
+    return render(request, 'lumber_records.html', context)
+
+@login_required
+def view_lumber_details(request, pk):
+    """View detailed information about a specific lumber record."""
+    lumber = get_object_or_404(Lumber, pk=pk)
+    
+    # Calculate days until expiry
+    if lumber.expiry_date:
+        today = timezone.now().date()
+        days_until_expiry = (lumber.expiry_date - today).days
+    else:
+        days_until_expiry = None
+    
+    context = {
+        'lumber': lumber,
+        'days_until_expiry': days_until_expiry,
+    }
+    
+    return render(request, 'view_lumber_details.html', context)

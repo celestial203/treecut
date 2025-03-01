@@ -52,11 +52,18 @@ class LumberForm(forms.ModelForm):
             'no',
             'trade_name',
             'manager_owner',
+            'contact_number',
+            'gender',
+            'brgy',
+            'municipality',
+            'province',
+            'source_supplier',
             'permit_no',
             'date_issued',
             'expiry_date',
             'volume_cubic_meter',
-            'species'
+            'species',
+            'file'
         ]
         widgets = {
             'date_issued': forms.DateInput(attrs={'type': 'date'}),

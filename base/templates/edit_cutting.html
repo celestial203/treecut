@@ -11,6 +11,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
+        body {
+            background: linear-gradient(to bottom right, #e2f3e5, #c6f6d5);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
         .required:after {
             content: " *";
             color: red;
@@ -18,38 +23,77 @@
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="font-inter bg-gradient-to-tl from-blue-800 to-green-600 min-h-screen">
-    <!-- Header -->
-    <div class="bg-black text-white py-3 px-6 border-b border-gray-800">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-xl font-medium">
-                    <span class="text-green-400">Edit Cutting</span>
-                    <span class="text-blue-400">Record</span>
-                </h1>
-            </div>
-            <div class="flex items-center gap-4">
-                <a href="{% url 'view_cutting' cutting.id %}" 
-                   class="inline-flex items-center px-3 py-2 bg-gray-900/50 hover:bg-gray-800 rounded-lg transition-all duration-200">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
-                    <span class="text-sm text-gray-300 hover:text-white">Back to View</span>
-                </a>
+<body class="font-inter text-gray-900">
+    <!-- Navigation Bar -->
+    <nav class="bg-transparent shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0">
+                        <span class="text-xl font-bold text-green-700">FUS-CENRO-ARGAO</span>
+                    </div>
+                </div>
+                <!-- User Menu -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <div class="text-lg text-gray-900 font-medium">
+                        Welcome, {{ request.user.username }}
+                    </div>
+                    <div class="relative">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                            ▼
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                               
+                                <!-- Quick Actions -->
+                                <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
+                                    <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
+                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
+                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
+                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                </div>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                    </svg>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
+        <!-- Mobile Menu -->
+        <div class="md:hidden" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
+            </div>
+        </div>
+    </nav>
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header Section -->
+        <div class="bg-green-100 p-6 rounded-t-xl">
+            <h1 class="text-3xl font-bold text-gray-800">Edit Cutting Record</h1>
+            <p class="text-gray-600 mt-2">Update the information for this cutting record.</p>
+        </div>
+
         <div class="bg-white rounded-xl shadow-xl overflow-hidden">
             <!-- Form Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-green-600 px-6 py-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-white text-xl font-semibold">Edit Permit Details</h2>
-                </div>
-            </div>
-
+          
             <!-- Alert should go here, right after the header -->
             {% if messages %}
                 {% for message in messages %}
@@ -275,6 +319,34 @@
     <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Toggle user menu
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            
+            if (userMenuButton && userMenu) {
+                userMenuButton.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent event from bubbling up
+                    userMenu.classList.toggle('hidden');
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                        userMenu.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.style.display = mobileMenu.style.display === 'block' ? 'none' : 'block';
+                });
+            }
+
             // Volume calculation
             const grossVolumeInput = document.getElementById('gross_volume');
             const netVolumeInput = document.getElementById('net_volume');
@@ -351,61 +423,106 @@
                 calculateExpiryDate();
             }
 
-            // Form submission handling with SweetAlert
+            // Form validation and submission with SweetAlert
             if (editForm) {
                 editForm.addEventListener('submit', function(e) {
                     e.preventDefault();
-
-                    Swal.fire({
-                        title: 'Saving changes...',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
+                    
+                    // Validate required fields
+                    const requiredFields = [
+                        { id: 'date_issued', name: 'Date Issued' },
+                        { id: 'id_permit_number', name: 'Permit Number' },
+                        { id: 'id_permittee', name: 'Permittee Name' },
+                        { id: 'id_location', name: 'Location' }
+                    ];
+                    
+                    let missingFields = [];
+                    
+                    requiredFields.forEach(field => {
+                        const element = document.getElementById(field.id);
+                        if (element && !element.value.trim()) {
+                            missingFields.push(field.name);
                         }
                     });
-
-                    const formData = new FormData(this);
-
-                    fetch(this.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: 'Changes have been saved successfully.',
-                                confirmButtonColor: '#3B82F6'
-                            }).then((result) => {
-                                window.location.href = "{% url 'view_cutting' cutting.id %}";
-                            });
-                        } else {
-                            let errorMessage = data.error;
-                            if (data.errors) {
-                                errorMessage = Object.entries(data.errors)
-                                    .map(([field, error]) => `${field}: ${error}`)
-                                    .join('\n');
-                            }
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error!',
-                                text: errorMessage,
-                                confirmButtonColor: '#3B82F6'
-                            });
-                        }
-                    })
-                    .catch(error => {
+                    
+                    if (missingFields.length > 0) {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Error!',
-                            text: 'An error occurred while saving changes.',
+                            title: 'Required Fields Missing',
+                            html: `Please fill in the following required fields:<br><br>${missingFields.join('<br>')}`,
                             confirmButtonColor: '#3B82F6'
                         });
+                        return;
+                    }
+                    
+                    // Confirm before saving
+                    Swal.fire({
+                        title: 'Save Changes?',
+                        text: 'Are you sure you want to save these changes?',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#10B981',
+                        cancelButtonColor: '#EF4444',
+                        confirmButtonText: 'Yes, save changes',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Show loading state
+                            Swal.fire({
+                                title: 'Saving changes...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            
+                            // Submit the form via AJAX
+                            const formData = new FormData(this);
+                            
+                            fetch(this.action, {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success!',
+                                        text: 'Changes have been saved successfully.',
+                                        confirmButtonColor: '#3B82F6'
+                                    }).then(() => {
+                                        window.location.href = "{% url 'view_cutting' cutting.id %}";
+                                    });
+                                } else {
+                                    let errorMessage = data.error || 'An error occurred while saving changes.';
+                                    if (data.errors) {
+                                        errorMessage = Object.entries(data.errors)
+                                            .map(([field, error]) => `${field}: ${error}`)
+                                            .join('<br>');
+                                    }
+                                    
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error!',
+                                        html: errorMessage,
+                                        confirmButtonColor: '#3B82F6'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error!',
+                                    text: 'An unexpected error occurred. Please try again.',
+                                    confirmButtonColor: '#3B82F6'
+                                });
+                            });
+                        }
                     });
                 });
             }

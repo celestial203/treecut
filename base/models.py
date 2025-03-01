@@ -16,6 +16,12 @@ class Lumber(models.Model):
     no = models.CharField(max_length=50)
     trade_name = models.CharField(max_length=200)
     manager_owner = models.CharField(max_length=200)
+    contact_number = models.CharField(max_length=20, blank=True, null=True)
+    gender = models.CharField(max_length=10, blank=True, default="")
+    brgy = models.CharField(max_length=100, blank=True, default="")
+    municipality = models.CharField(max_length=100, blank=True, default="")
+    province = models.CharField(max_length=100, blank=True, default="")
+    source_supplier = models.CharField(max_length=200, blank=True, default="")
     permit_no = models.CharField(max_length=100)
     date_issued = models.DateField()
     expiry_date = models.DateField()
@@ -24,6 +30,7 @@ class Lumber(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    file = models.FileField(upload_to='lumber_files/', null=True, blank=True)
 
     def __str__(self):
         return f"{self.trade_name} - {self.permit_no}"
@@ -97,6 +104,45 @@ class Lumber(models.Model):
         elif self.is_expiring_soon:
             return 'Expiring Soon'
         return 'Active'
+
+    @property
+    def expiry_warning(self):
+        """
+        Returns True if the permit is expiring within 30 days or has already expired
+        """
+        if not self.expiry_date:
+            return False
+            
+        today = timezone.now().date()
+        thirty_days_from_now = today + timedelta(days=30)
+        
+        # Return True if expiry date is within the next 30 days or has passed
+        return self.expiry_date <= thirty_days_from_now
+
+    @property
+    def location(self):
+        """Returns a formatted location string combining brgy, municipality, and province"""
+        location_parts = []
+        if self.brgy:
+            location_parts.append(self.brgy)
+        if self.municipality:
+            location_parts.append(self.municipality)
+        if self.province:
+            location_parts.append(self.province)
+        
+        if location_parts:
+            return ", ".join(location_parts)
+        return "No location specified"
+
+    @property
+    def is_complete(self):
+        """Check if the record has all required information"""
+        required_fields = [
+            self.no, self.trade_name, self.manager_owner, 
+            self.permit_no, self.date_issued, self.expiry_date,
+            self.volume_cubic_meter, self.species
+        ]
+        return all(required_fields)
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
