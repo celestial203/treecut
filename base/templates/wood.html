@@ -7,692 +7,822 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CENRO Argao - Wood Management</title>
+    <title>CENRO Argao - Wood Processing Plant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* Input field styles */
-        input, select, textarea {
-            background-color: #ffffff;
-            border: 1px solid rgb(206, 212, 218);
-            border-radius: 4px;
-            padding: 6px 12px;
-            height: 38px;
-            width: 100%;
-            color: rgb(73, 80, 87);
-            font-size: 16px;
-            line-height: 24px;
+        body {
+            background-color: #f0fdf4; /* Light green background */
+        }
+        .modal-open {
+            overflow: hidden;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        #notificationModal {
+            animation: fadeIn 0.3s ease-out;
         }
 
-        input::placeholder {
-            color: rgb(173, 181, 189);
+        /* Add smooth transition for validation info */
+        .validation-info {
+            transition: all 0.3s ease-in-out;
+            opacity: 0;
+            transform: translateY(-10px);
         }
 
-        input:focus, select:focus, textarea:focus {
-            color: rgb(73, 80, 87);
-            background-color: #fff;
-            border-color: #80bdff;
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        .validation-info:not(.hidden) {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        /* Form input specific styles */
-        .form-input {
+        /* Make form labels more readable */
+        .form-group label {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
             display: block;
+        }
+
+        /* Style form inputs */
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            font-size: 1rem;
+            padding: 0.5rem;
             width: 100%;
-            padding: 6px 12px;
-            font-size: 16px;
-            line-height: 24px;
-            color: rgb(73, 80, 87);
-            background-color: #fff;
-            background-clip: padding-box;
-            border: 1px solid rgb(206, 212, 218);
-            border-radius: 4px;
-            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+            border-radius: 0.375rem;
+            border: 1px solid #D1D5DB;
+        }
+
+        /* Hover effect for inputs */
+        .form-group input:hover,
+        .form-group select:hover,
+        .form-group textarea:hover {
+            border-color: #9CA3AF;
+        }
+
+        /* Focus effect for inputs */
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563EB;
+            ring: 2px;
+            ring-color: #93C5FD;
+        }
+
+        .form-input {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                   focus:border-blue-500 focus:ring-blue-500 
+                   bg-gray-50 text-gray-900; /* Updated to match theme */
+            padding: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .form-input:hover {
+            @apply border-blue-400;
         }
 
         .form-input:focus {
-            color: rgb(73, 80, 87);
-            background-color: #fff;
-            border-color: #80bdff;
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            @apply ring-2 ring-blue-200;
         }
 
-        /* Label styles */
-        label {
-            display: inline-block;
-            margin-bottom: 8px;
+        .form-input:invalid {
+            @apply border-red-300;
         }
 
-        /* Section headers */
-        h3 {
-            color: #111827;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 16px;
+        .form-input:invalid:focus {
+            @apply ring-red-200;
         }
 
-        /* Remove number input spinners */
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type="number"] {
-            -moz-appearance: textfield;
+        /* Custom styling for date inputs */
+        input[type="date"].form-input {
+            @apply p-2;
         }
 
-        /* Date input specific styles */
-        input[type="date"] {
-            height: 42px;
-            padding: 8px 12px;
-            color: #4B5563;
-        }
-
-        /* Select field styles */
-        select {
-            height: 42px;
-            padding: 8px 12px;
+        /* Custom styling for select inputs */
+        select.form-input {
+            @apply pr-8;
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.75rem center;
+            background-position: right 0.5rem center;
             background-repeat: no-repeat;
-            background-size: 1.25em 1.25em;
-            padding-right: 2.5rem;
+            background-size: 1.5em 1.5em;
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
         }
 
-        /* Hover states */
-        input:hover, select:hover, textarea:hover {
-            border-color: #d1d5db;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Error states */
-        .error {
-            border-color: #ef4444;
-        }
-
+        /* Error message styling */
         .error-message {
-            color: #ef4444;
-            font-size: 12px;
-            margin-top: 4px;
+            @apply text-red-500 text-sm mt-1;
+            display: none;
         }
 
-        /* Form group spacing */
-        .form-group {
-            margin-bottom: 16px;
+        /* Required field indicator */
+        label:after {
+            content: " *";
+            @apply text-red-500;
         }
 
-        /* Grid gap adjustments */
-        .gap-6 {
-            gap: 16px;
+        input, select, textarea {
+            background-color: #f8fafc; /* Light gray background */
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            width: 100%;
+            color: #4B5563; /* Dark gray text */
+        }
+        input::placeholder, select::placeholder, textarea::placeholder {
+            color: #6B7280;
+            opacity: 0.8;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        .form-input {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                   focus:border-blue-500 focus:ring-blue-500 
+                   bg-gray-50 text-gray-900;
+        }
+        input[type="date"] {
+            padding: 0.4rem;
+            color: #4B5563;
+        }
+        select {
+            background-color: #f8fafc;
+            padding: 0.4rem;
+            color: #4B5563;
+        }
+        input:hover, select:hover, textarea:hover {
+            border-color: #60A5FA;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Add specific styling for date inputs to show the placeholder */
+        input[type="date"]::before {
+            content: attr(placeholder);
+            position: absolute;
+            color: #6B7280;
+        }
+
+        input[type="date"]:focus::before,
+        input[type="date"]:valid::before {
+            display: none;
+        }
+
+        /* Style file input */
+        input[type="file"] {
+            padding: 0.375rem;
+        }
+        input[type="file"]::-webkit-file-upload-button {
+            padding: 0.5rem 1rem;
+            margin-right: 1rem;
+            background-color: #E5E7EB;
+            border: none;
+            border-radius: 0.375rem;
+            color: #374151;
+            cursor: pointer;
+        }
+        input[type="file"]::-webkit-file-upload-button:hover {
+            background-color: #D1D5DB;
+        }
+
+        /* Remove the previous date input styles and add these new ones */
+        .date-input {
+            position: relative;
+            background-color: #f8fafc;
+        }
+
+        .date-input::-webkit-calendar-picker-indicator {
+            background: transparent;
+            bottom: 0;
+            color: transparent;
+            cursor: pointer;
+            height: auto;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: auto;
+        }
+
+        /* Remove the previous ::before pseudo-element styles for date inputs */
+        input[type="date"]::before {
+            content: none;
+        }
+
+        /* Add these styles to your existing style section */
+        .validation-message {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .validation-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .no-results-message {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Add visual feedback for updates */
+        .updated {
+            animation: highlight 0.3s ease-out;
+        }
+        
+        @keyframes highlight {
+            0% { background-color: #fff; }
+            50% { background-color: #e3f2fd; }
+            100% { background-color: #fff; }
+        }
+
+        /* Style for readonly net volume field */
+        #netVolume {
+            background-color: #f8fafc;
+            color: #4B5563;
+            cursor: default;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            outline: none;
+        }
+
+        input[type="number"]:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        input[readonly] {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        /* Situation dropdown styling */
+        select[name="situation"] {
+            @apply bg-white border border-gray-300 rounded-md shadow-sm;
+            padding: 0.5rem;
+            width: 100%;
+        }
+
+        select[name="situation"]:focus {
+            @apply ring-2 ring-blue-500 border-blue-500;
+            outline: none;
+        }
+
+        /* Style for the options */
+        select[name="situation"] option[value="Good"] {
+            color: #059669;
+        }
+
+        select[name="situation"] option[value="Pending"] {
+            color: #d97706;
+        }
+
+        .bg-blue-600 {
+            background-color: #3b82f6; /* Updated to match theme */
+        }
+        .bg-blue-700 {
+            background-color: #2563eb; /* Updated to match theme */
+        }
+        .bg-white {
+            background-color: #ffffff; /* White background for forms */
+        }
+        .text-gray-700 {
+            color: #4B5563; /* Dark gray text */
+        }
+
+        /* Add validation styles */
+        .error-message {
+            @apply text-red-500 text-sm mt-1;
+            display: none;
+        }
+
+        .invalid-input {
+            @apply border-red-500 !important;
+        }
+
+        .valid-input {
+            @apply border-green-500 !important;
         }
     </style>
+    <!-- Add SweetAlert2 CSS and JS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
-    <!-- Navigation Bar -->
-    <nav class="bg-white shadow-lg">
+<body class="bg-green-100 text-gray-900">
+    <!-- Header with Logo -->
+    <nav class="bg-transparent shadow-lg border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
                     <!-- Logo -->
-                    <div class="flex-shrink-0 flex items-center">
-                             <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO-FUS</span>
-                            </div>
-
-                    <!-- Navigation Links -->
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{% url 'dashboard' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Dashboard
-                        </a>
-                        <a href="{% url 'cutting' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Tree Cutting Permits 
-                        </a>
-                        <a href="{% url 'lumber' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Lumber Dealers
-                        </a>
-                        <a href="{% url 'chainsaw' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Chainsaw
-                        </a>
-                        <a href="{% url 'wood' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            WPP
-                        </a>
+                    <div class="flex-shrink-0">
+                        <span class="text-xl font-bold text-green-700">FUS-CENRO-ARGAO</span>
                     </div>
                 </div>
                 <!-- User Menu -->
-                <div class="flex items-center">
-                    <div class="text-m text-gray-800">
+                <div class="hidden md:flex items-center space-x-4">
+                    <div class="text-lg text-gray-900 font-medium">
                         Welcome, {{ request.user.username }}
                     </div>
-                    <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
-                        Sign Out
-                    </a>
+                    <div class="relative">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                            ▼
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                                <!-- Quick Actions -->
+                                <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
+                                    <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
+                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
+                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
+                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                </div>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                    </svg>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="md:hidden" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
             </div>
         </div>
     </nav>
 
-    <!-- Messages Section -->
-    {% if messages %}
-        {% for message in messages %}
-            <div class="p-4 {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% endif %} mb-4">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-bold mb-6">Add New Wood Record</h2>
 
-    <!-- Header Section -->
-    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-6 shadow-md">
-        <div class="max-w-7xl mx-auto px-4">
-            <h1 class="text-3xl font-bold mb-2">Wood Input Data Form</h1>
-            <p class="text-sm opacity-90">Enter new wood information</p>
-        </div>
-    </div>
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
 
-    <!-- Form Section -->
-    <div class="max-w-5xl mx-auto bg-white p-8 mt-8 shadow-xl rounded-lg">
-        <h2 class="text-2xl font-bold mb-6">Add New Wood Record</h2>
-        {% if form.errors %}
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-            <strong class="font-bold">Please correct the following errors:</strong>
-            <ul class="list-disc list-inside">
-                {% for field in form %}
-                    {% for error in field.errors %}
-                        <li>{{ field.label }}: {{ error }}</li>
-                    {% endfor %}
-                {% endfor %}
-                {% for error in form.non_field_errors %}
-                    <li>{{ error }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-        <form method="POST" id="woodForm" class="space-y-6" enctype="multipart/form-data">
-            {% csrf_token %}
-            
-            <!-- Name and Type -->
-            <div class="grid grid-cols-2 gap-6 mb-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Name*</label>
-                    <input type="text" name="{{ form.name.name }}" class="form-input" placeholder="Enter name" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Type*</label>
-                    <input type="text" name="{{ form.type.name }}" class="form-input" placeholder="Enter type" required>
-                </div>
-            </div>
-
-            <!-- Integrated and WPP -->
-            <div class="grid grid-cols-2 gap-6 mb-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Integrated*</label>
-                    <input type="text" name="{{ form.integrated.name }}" class="form-input" placeholder="Enter integrated status" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">WPP Number*</label>
-                    <input type="text" name="{{ form.wpp_number.name }}" class="form-input" placeholder="Enter WPP number" required>
-                </div>
-            </div>
-
-            <!-- Location Details -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">LOCATION</h3>
-                <div class="grid grid-cols-2 gap-6 mb-6">
+                <!-- First Row: Name and Type -->
+                <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Business*</label>
-                        <input type="text" name="{{ form.business.name }}" class="form-input" placeholder="Enter business name" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Plant*</label>
-                        <input type="text" name="{{ form.plant.name }}" class="form-input" placeholder="Enter plant name" required>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- DRC and ALR -->
-            <div class="grid grid-cols-2 gap-6 mb-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">DRC (cu.m)*</label>
-                    <input type="number" step="0.01" name="{{ form.drc.name }}" class="form-input" placeholder="Enter DRC value" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">ALR (m³)</label>
-                    <input type="number" step="0.01" name="{{ form.alr.name }}" class="form-input" readonly>
-                </div>
-            </div>
-
-            <!-- Coordinates -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">COORDINATES</h3>
-                <div class="grid grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Longitude*</label>
-                        <input type="text" name="{{ form.longitude.name }}" class="form-input" placeholder="Enter longitude" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Latitude*</label>
-                        <input type="text" name="{{ form.latitude.name }}" class="form-input" placeholder="Enter latitude" required>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Volume Contracted -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">VOLUME CONTRACTED</h3>
-                <div class="grid grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Local*</label>
-                        <input type="number" step="0.01" name="{{ form.local_volume.name }}" class="form-input" placeholder="Enter local volume" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Export*</label>
-                        <input type="number" step="0.01" name="{{ form.export_volume.name }}" class="form-input" placeholder="Enter export volume" required>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Dates -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">DATES</h3>
-                <div class="grid grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
-                        <input type="date" name="{{ form.date_issued.name }}" class="form-input" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
-                        <input type="date" name="{{ form.expiry_date.name }}" class="form-input" required>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="flex justify-end">
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-                    Save Record
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Adding Records Table Section -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="bg-white shadow-xl rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-600 to-blue-600">
-                <h3 class="text-xl font-semibold text-white mb-4">
-                    Wood Records
-                </h3>
-                <div class="flex items-center justify-between space-x-4">
-                    <!-- Search Bar -->
-                    <div class="relative flex-1 max-w-md">
+                        <label class="block text-sm font-medium text-gray-700">Name</label>
                         <input type="text" 
-                               id="searchInput" 
-                               placeholder="Search records..." 
-                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700"
-                        >
-                        <span class="absolute right-3 top-2.5 text-gray-400">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                        </span>
-                        <!-- Updated validation message element with red styling -->
-                        <div id="searchValidation" class="absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md hidden"></div>
+                               name="name" 
+                               class="form-input mt-1 w-full" 
+                               placeholder="Enter name"
+                               required>
                     </div>
-                    <!-- Export Button -->
-                    <button onclick="exportTableToCSV('wood_records.csv')" 
-                            class="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition duration-200 flex items-center space-x-2 shadow-sm">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                        </svg>
-                        <span>Export to CSV</span>
-                    </button>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Type</label>
+                        <select name="type" class="form-input mt-1 w-full" required>
+                            <option value="">Select Type</option>
+                            <option value="Resawmill-renewal">Resawmill-renewal</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Expiry Warnings -->
-            <div class="p-4">
-                {% with expired_records=wood_records|expired_records %}
-                    {% if expired_records %}
-                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
-                            Alert: {{ expired_records|length }} record{{ expired_records|length|pluralize }} expired
-                        </div>
-                    {% endif %}
-                {% endwith %}
-                
-                {% with expiring_records=wood_records|expiring_records %}
-                    {% if expiring_records %}
-                        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
-                            Warning: {{ expiring_records|length }} permit{{ expiring_records|length|pluralize }} expiring soon
-                        </div>
-                    {% endif %}
-                {% endwith %}
-            </div>
+                <!-- Second Row: WPP Number and Integrated -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">WPP Number</label>
+                        <input type="text" 
+                               name="wpp_number" 
+                               class="form-input mt-1 w-full" 
+                               placeholder="Enter WPP Number"
+                               required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Integrated</label>
+                        <select name="integrated" class="form-input mt-1 w-full" required>
+                            <option value="">Select Status</option>
+                            <option value="Not Applicable">Not Applicable</option>
+                            <option value="Applicable">Applicable</option>
+                        </select>
+                    </div>
+                </div>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No.</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name & Address of Supplier</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">WPP Number</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plant</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Longitude</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Latitude</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Local Volume</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Export Volume</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Issued</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Released</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expiry Date</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for record in wood_records %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ forloop.counter }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ record.name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.type }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.supplier_info }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.wpp_number }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.business }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.plant }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.longitude }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.latitude }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.local_volume }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.export_volume }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.date_issued|date:"F d, Y" }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.date_released|date:"F d, Y" }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ record.expiry_date|date:"F d, Y" }}
-                                <div class="text-xs mt-1">
-                                    {% if record.is_expired %}
-                                        <span class="text-red-600">Expired {{ record.days_since_expiry }} days ago</span>
-                                    {% else %}
-                                    
-                                    {% endif %}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    {% if record.is_expired %}
-                                        bg-red-100 text-red-800
-                                    {% elif record.is_expiring_soon %}
-                                        bg-yellow-100 text-yellow-800
-                                    {% else %}
-                                        bg-green-100 text-green-800
-                                    {% endif %}">
-                                    {% if record.is_expired %}
-                                        Expired
-                                    {% elif record.is_expiring_soon %}
-                                        Expiring Soon
-                                    {% else %}
-                                        Active
-                                    {% endif %}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{% url 'edit_wood' record.id %}" class="text-blue-600 hover:text-blue-900">Edit</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                <!-- Location Section -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">Location</h3>
+                </div>
+
+                <!-- Third Row: Business and Plant -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Business</label>
+                        <input type="text" name="business" class="form-input mt-1 w-full" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Plant</label>
+                        <input type="text" name="plant" class="form-input mt-1 w-full" required>
+                    </div>
+                </div>
+
+                <!-- Fourth Row: DRC and ALR -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">DRC (cu.m)</label>
+                        <input type="number" 
+                               step="0.01" 
+                               name="drc" 
+                               class="form-input mt-1 w-full" 
+                               placeholder=""
+                               oninput="calculateALR()"
+                               required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">ALR (m³)</label>
+                        <input type="number" 
+                               step="0.01" 
+                               name="alr" 
+                               class="form-input mt-1 w-full" 
+                               placeholder=""
+                               readonly>
+                    </div>
+                </div>
+
+                <!-- Coordinates Section -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">Coordinates</h3>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Longitude</label>
+                            <input type="text" 
+                                   name="longitude" 
+                                   class="form-input mt-1 w-full" 
+                                   required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Latitude</label>
+                            <input type="text" 
+                                   name="latitude" 
+                                   class="form-input mt-1 w-full" 
+                                   required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supplier Section -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">Supplier</h3>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Name</label>
+                            <input type="text" name="supplier_name" class="form-input mt-1 w-full" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Address</label>
+                            <input type="text" name="supplier_address" class="form-input mt-1 w-full" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Volume Contracted Section -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">Volume Contracted</h3>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Local</label>
+                            <input type="text" name="local_volume" class="form-input mt-1 w-full">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Imported</label>
+                            <input type="number" step="0.01" name="imported_volume" class="form-input mt-1 w-full">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Fields -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Area (ha)</label>
+                        <input type="number" step="0.01" name="area" class="form-input mt-1 w-full" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Approved by</label>
+                        <input type="text" name="approved_by" class="form-input mt-1 w-full" required>
+                    </div>
+                </div>
+
+                <!-- Dates Section -->
+                <div class="grid grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date Issued</label>
+                        <input type="date" name="date_issued" class="form-input mt-1 w-full" required onchange="updateExpiryDate()">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date Released</label>
+                        <input type="date" name="date_released" class="form-input mt-1 w-full" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                        <input type="date" name="expiry_date" class="form-input mt-1 w-full" readonly>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700">Status</label>
+                    <select name="status" class="form-input mt-1 w-full" required>
+                        <option value="">Select Status</option>
+                        <option value="active/new">Active/New</option>
+                        <option value="active/renew">Active/Renew</option>
+                        <option value="expired">Expired</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+
+                <!-- File Attachment -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700">Attach File</label>
+                    <input type="file" 
+                           name="attachment" 
+                           class="form-input mt-1 w-full" 
+                           required>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="flex justify-end space-x-4 mt-6">
+                    <button type="button" 
+                            onclick="clearForm()" 
+                            class="px-6 py-2 bg-transparent hover:bg-red-100 text-red-500 border border-red-500 rounded-md transition duration-200 flex items-center">
+                        <span>Clear Form</span>
+                    </button>
+                    
+                    <button type="submit" 
+                            class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-200 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        <span>Submit</span>
+                    </button>
+                    <a href="{% url 'wood_records' %}" 
+                       class="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition duration-200 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <span>View Records</span>
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Replace the existing noResultsMessage div with this enhanced version -->
-    <div id="noResultsMessage" class="hidden p-8 text-center">
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div class="flex items-center justify-center">
-                <svg class="h-6 w-6 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-                <span class="text-yellow-800">No records found matching your search.</span>
-            </div>
-            <p class="text-yellow-600 text-sm mt-2">Try adjusting your search term or check for typos.</p>
-        </div>
-    </div>
-    
-    <footer class="bg-blue-900 text-white mt-auto py-6">
-        <div class="max-w-7xl mx-auto text-center">
-            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
-            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
-        </div>
-    </footer>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Calculate ALR function
-            function calculateALR() {
-                const drcInput = document.querySelector('input[name="drc"]');
-                const alrInput = document.querySelector('input[name="alr"]');
-                
-                if (drcInput && drcInput.value) {
-                    const drc = parseFloat(drcInput.value);
-                    const alr = (drc * 290 * 0.80).toFixed(2);
-                    alrInput.value = alr;
-                } else if (alrInput) {
-                    alrInput.value = '';
-                }
-            }
+            // User menu dropdown toggle
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
 
-            // Add event listener for DRC input
-            const drcInput = document.querySelector('input[name="drc"]');
-            if (drcInput) {
-                drcInput.addEventListener('input', calculateALR);
-                // Initial calculation if DRC has a value
-                calculateALR();
-            }
-
-            // Form validation and submission
-            const form = document.querySelector('#woodForm');
-            form.addEventListener('submit', function(event) {
-                event.preventDefault(); // Prevent default submission temporarily
-                
-                // Recalculate ALR before submission
-                calculateALR();
-                
-                let isValid = true;
-                
-                // Basic required field validation
-                const requiredFields = form.querySelectorAll('[required]');
-                requiredFields.forEach(field => {
-                    if (!field.value.trim()) {
-                        isValid = false;
-                        field.classList.add('error');
-                    }
-                });
-
-                // If everything is valid, submit the form
-                if (isValid) {
-                    form.submit();
-                } else {
-                    alert('Please fill in all required fields');
-                }
+            // Toggle desktop user menu
+            userMenuButton.addEventListener('click', function() {
+                const isExpanded = userMenuButton.getAttribute('aria-expanded') === 'true';
+                userMenuButton.setAttribute('aria-expanded', !isExpanded);
+                userMenu.classList.toggle('hidden');
             });
 
-            // Remove error class on input
-            document.querySelectorAll('.form-input').forEach(input => {
-                input.addEventListener('input', function() {
-                    this.classList.remove('error');
-                });
+            // Toggle mobile menu
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'block' : 'none';
             });
 
-            // Enhanced search functionality
-            const searchInput = document.getElementById('searchInput');
-            const noResultsMessage = document.getElementById('noResultsMessage');
-            const searchValidation = document.getElementById('searchValidation');
-            
-            if (searchInput) {
-                let debounceTimer;
-
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(debounceTimer);
-                    
-                    // Show "Searching..." message while typing
-                    searchValidation.textContent = 'Searching...';
-                    searchValidation.className = 'absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md';
-                    searchValidation.style.display = 'block';
-
-                    debounceTimer = setTimeout(() => {
-                        const searchTerm = this.value.toLowerCase().trim();
-                        const rows = document.querySelectorAll('tbody tr');
-                        let hasResults = false;
-                        let visibleCount = 0;
-                        
-                        // Hide validation message if search is empty
-                        if (searchTerm === '') {
-                            searchValidation.style.display = 'none';
-                            noResultsMessage.classList.add('hidden');
-                            rows.forEach(row => row.style.display = '');
-                            return;
-                        }
-
-                        rows.forEach(row => {
-                            const nameCell = row.querySelector('td:nth-child(2)');
-                            const wppNumberCell = row.querySelector('td:nth-child(5)');
-                            const businessCell = row.querySelector('td:nth-child(6)');
-                            
-                            let shouldShow = false;
-                            
-                            if (nameCell && wppNumberCell && businessCell) {
-                                const name = nameCell.textContent.toLowerCase();
-                                const wppNumber = wppNumberCell.textContent.toLowerCase();
-                                const business = businessCell.textContent.toLowerCase();
-                                
-                                if (name.includes(searchTerm) || 
-                                    wppNumber.includes(searchTerm) || 
-                                    business.includes(searchTerm)) {
-                                    shouldShow = true;
-                                    hasResults = true;
-                                    visibleCount++;
-                                }
-                            }
-                            
-                            row.style.display = shouldShow ? '' : 'none';
-                        });
-                        
-                        // Update validation message - now always in red
-                        if (hasResults) {
-                            searchValidation.textContent = `Found ${visibleCount} matching record${visibleCount !== 1 ? 's' : ''}`;
-                            searchValidation.className = 'absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md';
-                            noResultsMessage.classList.add('hidden');
-                        } else {
-                            searchValidation.textContent = 'No matches found';
-                            searchValidation.className = 'absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md';
-                            noResultsMessage.classList.remove('hidden');
-                        }
-                    }, 300);
-                });
-
-                // Clear validation on focus
-                searchInput.addEventListener('focus', function() {
-                    if (!this.value) {
-                        searchValidation.style.display = 'none';
-                    }
-                });
-            }
-
-            // Enhanced date validation and notification
-            function validateDatesAndNotify() {
-                const dateIssuedInput = document.querySelector('input[name="date_issued"]');
-                const expiryDateInput = document.querySelector('input[name="expiry_date"]');
-                
-                if (dateIssuedInput && expiryDateInput && dateIssuedInput.value && expiryDateInput.value) {
-                    const dateIssued = new Date(dateIssuedInput.value);
-                    const expiryDate = new Date(expiryDateInput.value);
-                    const today = new Date();
-
-                    // Calculate remaining time
-                    const totalDays = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
-                    const years = Math.floor(totalDays / 365);
-                    const months = Math.floor((totalDays % 365) / 30);
-                    const days = Math.floor((totalDays % 365) % 30);
-
-                    // Create notification message
-                    let message = '';
-                    if (totalDays < 0) {
-                        message = `This record has expired ${Math.abs(totalDays)} days ago`;
-                    } else {
-                        message = `Time remaining: ${years} years, ${months} months, and ${days} days`;
-                    }
-
-                    // Show notification
-                    const notificationDiv = document.createElement('div');
-                    notificationDiv.className = totalDays < 0 ? 'bg-red-100 text-red-700 p-4 mb-4 rounded' : 'bg-blue-100 text-blue-700 p-4 mb-4 rounded';
-                    notificationDiv.textContent = message;
-
-                    // Remove any existing notification
-                    const existingNotification = document.querySelector('.expiry-notification');
-                    if (existingNotification) {
-                        existingNotification.remove();
-                    }
-
-                    // Add new notification after the expiry date input
-                    notificationDiv.classList.add('expiry-notification');
-                    expiryDateInput.parentElement.appendChild(notificationDiv);
+            // Close menus when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                    userMenu.classList.add('hidden');
+                    userMenuButton.setAttribute('aria-expanded', 'false');
                 }
-            }
-
-            // Add event listeners for date changes
-            const dateInputs = document.querySelectorAll('input[type="date"]');
-            dateInputs.forEach(input => {
-                input.addEventListener('change', validateDatesAndNotify);
+                
+                if (!mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                    mobileMenu.style.display = 'none';
+                }
             });
-
-            // Initial validation
-            validateDatesAndNotify();
         });
 
-        function exportTableToCSV(filename) {
-            const table = document.querySelector('table');
-            const rows = table.querySelectorAll('tr');
-            const csv = [];
+        function calculateALR() {
+            const drcInput = document.querySelector('input[name="drc"]');
+            const alrInput = document.querySelector('input[name="alr"]');
             
-            for (let i = 0; i < rows.length; i++) {
-                const row = [], cols = rows[i].querySelectorAll('td, th');
-                
-                for (let j = 0; j < cols.length; j++) {
-                    // Get the text content and clean it up
-                    let data = cols[j].textContent.replace(/(\r\n|\n|\r)/gm, '').trim();
-                    // Remove multiple spaces
-                    data = data.replace(/\s+/g, ' ');
-                    // Escape quotes and wrap in quotes if contains comma
-                    if (data.includes(',')) {
-                        data = '"' + data.replace(/"/g, '""') + '"';
-                    }
-                    row.push(data);
-                }
-                
-                csv.push(row.join(','));
-            }
-
-            // Create and download the CSV file
-            const csvContent = csv.join('\n');
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            
-            if (navigator.msSaveBlob) { // IE 10+
-                navigator.msSaveBlob(blob, filename);
-            } else {
-                const link = document.createElement('a');
-                if (link.download !== undefined) {
-                    const url = URL.createObjectURL(blob);
-                    link.setAttribute('href', url);
-                    link.setAttribute('download', filename);
-                    link.style.visibility = 'hidden';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }
+            if (drcInput && drcInput.value) {
+                const drc = parseFloat(drcInput.value);
+                // Formula: DRC × 290 × 0.80
+                const alr = (drc * 290 * 0.80).toFixed(2);
+                alrInput.value = alr;
+            } else if (alrInput) {
+                alrInput.value = '';
             }
         }
+
+        function clearForm() {
+            document.querySelector('form').reset();
+            document.querySelector('input[name="alr"]').value = '';
+        }
+
+        function updateExpiryDate() {
+            const issuedDate = document.querySelector('input[name="date_issued"]').value;
+            if (issuedDate) {
+                const expiryDate = new Date(issuedDate);
+                expiryDate.setFullYear(expiryDate.getFullYear() + 5);
+                document.querySelector('input[name="expiry_date"]').value = expiryDate.toISOString().split('T')[0];
+            }
+        }
+
+        // Add form validation functions
+        function validateForm() {
+            let isValid = true;
+            
+            // Validate Name (letters, spaces, and hyphens only)
+            const nameInput = document.querySelector('input[name="name"]');
+            if (!/^[A-Za-z\s-]+$/.test(nameInput.value.trim())) {
+                showError(nameInput, 'Name should contain only letters, spaces, and hyphens');
+                isValid = false;
+            } else {
+                showSuccess(nameInput);
+            }
+
+            // Validate WPP Number (alphanumeric)
+            const wppInput = document.querySelector('input[name="wpp_number"]');
+            if (!/^[A-Za-z0-9-]+$/.test(wppInput.value.trim())) {
+                showError(wppInput, 'WPP Number should contain only letters, numbers, and hyphens');
+                isValid = false;
+            } else {
+                showSuccess(wppInput);
+            }
+
+            // Validate Numeric Fields (excluding local_volume)
+            const numericInputs = ['drc', 'area', 'imported_volume'];
+            numericInputs.forEach(fieldName => {
+                const input = document.querySelector(`input[name="${fieldName}"]`);
+                if (input && input.value) {
+                    const value = parseFloat(input.value);
+                    if (isNaN(value) || value < 0) {
+                        showError(input, 'Please enter a valid positive number');
+                        isValid = false;
+                    } else {
+                        showSuccess(input);
+                    }
+                }
+            });
+
+            // Validate Dates
+            const dateIssued = new Date(document.querySelector('input[name="date_issued"]').value);
+            const dateReleased = new Date(document.querySelector('input[name="date_released"]').value);
+            
+            if (dateReleased < dateIssued) {
+                showError(document.querySelector('input[name="date_released"]'), 
+                         'Release date cannot be earlier than issue date');
+                isValid = false;
+            } else {
+                showSuccess(document.querySelector('input[name="date_released"]'));
+            }
+
+            return isValid;
+        }
+
+        function showError(input, message) {
+            input.classList.add('invalid-input');
+            input.classList.remove('valid-input');
+            
+            // Create or update error message
+            let errorDiv = input.parentElement.querySelector('.error-message');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                input.parentElement.appendChild(errorDiv);
+            }
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showSuccess(input) {
+            input.classList.remove('invalid-input');
+            input.classList.add('valid-input');
+            
+            const errorDiv = input.parentElement.querySelector('.error-message');
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        // Add form submission handler with SweetAlert
+        document.querySelector('form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                return;
+            }
+
+            try {
+                const formData = new FormData(this);
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                });
+
+                if (response.ok) {
+                    // Show success message
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Wood record has been successfully added',
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#10B981', // Green color to match theme
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Clear form after successful submission
+                            clearForm();
+                            // Optionally redirect to records page
+                            // window.location.href = "{% url 'wood_records' %}";
+                        }
+                    });
+                } else {
+                    // Show error message
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'There was a problem adding the record. Please try again.',
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#EF4444', // Red color
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'There was a problem connecting to the server. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#EF4444',
+                });
+            }
+        });
+
+        // Add confirmation for form clearing
+        function clearForm() {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This will clear all form fields!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#10B981',
+                cancelButtonColor: '#EF4444',
+                confirmButtonText: 'Yes, clear it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.querySelector('form').reset();
+                    document.querySelector('input[name="alr"]').value = '';
+                    // Reset validation styles
+                    document.querySelectorAll('.invalid-input, .valid-input').forEach(input => {
+                        input.classList.remove('invalid-input', 'valid-input');
+                    });
+                    document.querySelectorAll('.error-message').forEach(msg => {
+                        msg.style.display = 'none';
+                    });
+                }
+            });
+        }
+
+        // Add real-time validation for inputs
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('blur', function() {
+                validateForm();
+            });
+        });
     </script>
 </body>
 </html>

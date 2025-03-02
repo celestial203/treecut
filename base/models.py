@@ -389,80 +389,176 @@ class Chainsaw(models.Model):
             return 'Active'
 
 class Wood(models.Model):
+    TYPE_CHOICES = [
+        ('Integrated', 'Integrated'),
+        ('Not Applicable', 'Not Applicable'),
+    ]
+    
+    INTEGRATED_CHOICES = [
+        ('Applicable', 'Applicable'),
+        ('Not Applicable', 'Not Applicable'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('EXISTING', 'Existing'),
+        ('EXPIRED', 'Expired/Renewed'),
+        ('ACTIVE_NEW', 'Active/New')
+    ]
+
+    # Basic Information
     name = models.CharField(max_length=200, null=True, blank=True)
-    type = models.CharField(max_length=200, null=True, blank=True)
-    integrated = models.CharField(
-        max_length=20,
-        choices=[
-            ('APPLICABLE', 'Applicable'),
-            ('NOT_APPLICABLE', 'Not Applicable'),
-        ],
-        default='NOT_APPLICABLE',
-        null=True,
-        blank=True
+    type = models.CharField(max_length=50, null=True, blank=True)  # Changed to text input
+    integrated = models.CharField(  # Changed from BooleanField to CharField
+        max_length=50,
+        choices=INTEGRATED_CHOICES,
+        default='Not Applicable'
     )
-    wpp_number = models.CharField(max_length=100, null=True, blank=True)
+    wpp_number = models.CharField(max_length=100, blank=True, null=True)
     business = models.CharField(max_length=200, null=True, blank=True)
     plant = models.CharField(max_length=200, null=True, blank=True)
-    drc = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    alr = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    longitude = models.CharField(max_length=50, null=True, blank=True)
-    latitude = models.CharField(max_length=50, null=True, blank=True)
-    local_volume = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
-    imported_volume = models.DecimalField(max_digits=10, decimal_places=3, null=True, blank=True)
-    supplier_info = models.CharField(max_length=500, null=True, blank=True)
-    area = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    date_issued = models.DateField(null=True, blank=True)
-    date_released = models.DateField(null=True, blank=True)
-    expiry_date = models.DateField(null=True, blank=True)
-    approved_by = models.CharField(max_length=200, null=True, blank=True)
-    wood_status = models.CharField(  # Changed from 'status' to 'wood_status'
-        max_length=20,
-        choices=[
-            ('ACTIVE_NEW', 'Active/New'),
-            ('ACTIVE_RENEWAL', 'Active/Renewed'),
-            ('EXISTING', 'Existing'),
-            ('EXPIRED', 'Expired'),
-            ('CANCELLED', 'Cancelled')
-        ],
-        default='ACTIVE_NEW',
+    
+    # Measurements
+    drc = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))],
+        help_text="DRC in cubic meters",
+        default=Decimal('0.00')
+    )
+    alr = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))],
+        help_text="ALR in cubic meters",
         null=True,
         blank=True
     )
-
-    def __str__(self):
-        return f"{self.name} - {self.wpp_number}"
+    
+    # Location Information
+    supplier_info = models.CharField(
+        max_length=500, 
+        help_text="Location/Address of supplier",
+        null=True,
+        blank=True
+    )
+    latitude = models.DecimalField(
+        max_digits=9, 
+        decimal_places=6,
+        null=True,
+        blank=True
+    )
+    longitude = models.DecimalField(
+        max_digits=9, 
+        decimal_places=6,
+        null=True,
+        blank=True
+    )
+    
+    # Volume Contracted
+    local_volume = models.DecimalField(
+        max_digits=10, 
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.000'))],
+        help_text="Local volume in cubic meters",
+        default=Decimal('0.000')
+    )
+    imported_volume = models.DecimalField(
+        max_digits=10, 
+        decimal_places=3,
+        validators=[MinValueValidator(Decimal('0.000'))],
+        help_text="Imported volume in cubic meters",
+        default=Decimal('0.000')
+    )
+    area = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.00'))],
+        help_text="Area in hectares",
+        default=Decimal('0.00')
+    )
+    
+    # Dates
+    date_issued = models.DateField(default=timezone.now)
+    date_released = models.DateField(default=timezone.now)
+    expiry_date = models.DateField(default=timezone.now)
+    
+    # Approval and Status
+    approved_by = models.CharField(max_length=200, null=True, blank=True, default='')  # Made optional with default
+    wood_status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='ACTIVE_NEW'
+    )
+    
+    # File Attachment
+    attachment = models.FileField(
+        upload_to='wood_files/',
+        null=True,
+        blank=True
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        if not self.pk:  # If this is a new record
-            self.wood_status = 'ACTIVE_NEW'
-        elif self.expiry_date and self.expiry_date < timezone.now().date():
-            self.wood_status = 'EXPIRED'
+        # Calculate ALR if DRC is provided
+        if self.drc:
+            self.alr = round(float(self.drc) * 290 * 0.80, 2)
         super().save(*args, **kwargs)
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        
+        # Validate dates
+        if self.date_issued and self.expiry_date:
+            if self.expiry_date <= self.date_issued:
+                raise ValidationError('Expiry date must be after date issued')
+            
+            if self.date_released and self.date_released < self.date_issued:
+                raise ValidationError('Release date cannot be before date issued')
+
+        # Validate volumes
+        if self.local_volume is not None and self.local_volume < 0:
+            raise ValidationError('Local volume cannot be negative')
+            
+        if self.imported_volume is not None and self.imported_volume < 0:
+            raise ValidationError('Imported volume cannot be negative')
+            
+        if self.area is not None and self.area <= 0:
+            raise ValidationError('Area must be greater than 0')
+
+    @property
+    def total_volume(self):
+        """Calculate total volume (local + imported)"""
+        local = self.local_volume or 0
+        imported = self.imported_volume or 0
+        return local + imported
 
     @property
     def days_remaining(self):
+        """Calculate days remaining until expiry"""
         if self.expiry_date:
             remaining = (self.expiry_date - timezone.now().date()).days
             return max(remaining, 0)
         return 0
 
     @property
-    def is_expiring_soon(self):
-        remaining = self.days_remaining
-        return 0 < remaining <= 30
-
-    @property
     def is_expired(self):
+        """Check if the record is expired"""
         return self.days_remaining <= 0
 
     @property
-    def status(self):
-        if self.is_expired:
-            return 'Expired'
-        elif self.is_expiring_soon:
-            return 'Expiring Soon'
-        return 'Active'
+    def is_expiring_soon(self):
+        """Check if the record is expiring within 30 days"""
+        remaining = self.days_remaining
+        return 0 < remaining <= 30
+
+    def __str__(self):
+        return f"{self.name} - {self.wpp_number or 'No WPP'}"
+
+    class Meta:
+        ordering = ['-date_issued']
 
 class CuttingRecord(models.Model):
     VOLUME_TYPE_CHOICES = [

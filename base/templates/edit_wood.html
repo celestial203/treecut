@@ -1,235 +1,161 @@
+{% extends 'base.html' %}
 {% load static %}
-{% load form_filters %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CENRO Argao - Edit Wood Record</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gradient-to-tl from-blue-400 to-green-400">
-    <!-- Navigation Bar -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <!-- Logo -->
-                    <div class="flex-shrink-0 flex items-center">
-                             <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO-FUS</span>
-                            </div>
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Edit Wood Record</h2>
+            <a href="{% url 'wood_records' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
+                Back to List
+            </a>
+        </div>
 
-                    <!-- Navigation Links -->
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{% url 'dashboard' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Dashboard
-                        </a>
-                        <a href="{% url 'cutting' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Tree Cutting Permits 
-                        </a>
-                        <a href="{% url 'lumber' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Lumber Dealers
-                        </a>
-                        <a href="{% url 'chainsaw' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Chainsaw
-                        </a>
-                        <a href="{% url 'wood' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            WPP
-                        </a>
-                    </div>
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Basic Information -->
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Name</label>
+                    <input type="text" name="name" value="{{ wood.name }}" class="form-input mt-1">
                 </div>
-                <!-- User Menu -->
-                <div class="flex items-center">
-                    <div class="text-m text-gray-800">
-                        Welcome, {{ request.user.username }}
-                    </div>
-                    <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
-                        Sign Out
-                    </a>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Type</label>
+                    <input type="text" name="type" value="{{ wood.type }}" class="form-input mt-1">
                 </div>
             </div>
-        </div>
-    </nav>
 
-
-
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <!-- Page Header -->
-        <div class="px-4 py-6 sm:px-0">
-            <h1 class="text-3xl font-bold text-gray-900">Edit Wood Record</h1>
-        </div>
-
-        <!-- Form Section -->
-        <div class="bg-white shadow-lg rounded-lg p-8 mb-8 border border-gray-100">
-            <form method="POST" class="space-y-6">
-                {% csrf_token %}
-                
-                {% if messages %}
-                {% for message in messages %}
-                <div class="{% if message.tags == 'success' %}bg-green-100 border-green-500 text-green-700{% else %}bg-red-100 border-red-500 text-red-700{% endif %} border-l-4 p-4 mb-4 rounded-r">
-                    {{ message }}
+            <!-- Additional Information -->
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">WPP Number</label>
+                    <input type="text" name="wpp_number" value="{{ wood.wpp_number }}" class="form-input mt-1">
                 </div>
-                {% endfor %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Business</label>
+                    <input type="text" name="business" value="{{ wood.business }}" class="form-input mt-1" required>
+                </div>
+            </div>
+
+            <!-- Plant and Measurements -->
+            <div class="grid grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Plant</label>
+                    <input type="text" name="plant" value="{{ wood.plant }}" class="form-input mt-1" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">DRC (cu.m)</label>
+                    <input type="number" step="0.01" name="drc" value="{{ wood.drc }}" class="form-input mt-1" onchange="calculateALR()" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">ALR (m³)</label>
+                    <input type="number" step="0.01" name="alr" value="{{ wood.alr }}" class="form-input mt-1" readonly>
+                </div>
+            </div>
+
+            <!-- Location Information -->
+            <div class="grid grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Location</label>
+                    <input type="text" name="supplier_info" value="{{ wood.supplier_info }}" class="form-input mt-1" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Latitude</label>
+                    <input type="number" step="0.000001" name="latitude" value="{{ wood.latitude }}" class="form-input mt-1">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Longitude</label>
+                    <input type="number" step="0.000001" name="longitude" value="{{ wood.longitude }}" class="form-input mt-1">
+                </div>
+            </div>
+
+            <!-- Volume Information -->
+            <div class="grid grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Local Volume</label>
+                    <input type="number" step="0.001" name="local_volume" value="{{ wood.local_volume }}" class="form-input mt-1" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Imported Volume</label>
+                    <input type="number" step="0.001" name="imported_volume" value="{{ wood.imported_volume }}" class="form-input mt-1" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Area (ha)</label>
+                    <input type="number" step="0.01" name="area" value="{{ wood.area }}" class="form-input mt-1" required>
+                </div>
+            </div>
+
+            <!-- Dates -->
+            <div class="grid grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date Issued</label>
+                    <input type="date" name="date_issued" value="{{ wood.date_issued|date:'Y-m-d' }}" class="form-input mt-1" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date Released</label>
+                    <input type="date" name="date_released" value="{{ wood.date_released|date:'Y-m-d' }}" class="form-input mt-1" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                    <input type="date" name="expiry_date" value="{{ wood.expiry_date|date:'Y-m-d' }}" class="form-input mt-1" required>
+                </div>
+            </div>
+
+            <!-- Status and Approval -->
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Status</label>
+                    <select name="wood_status" class="form-input mt-1" required>
+                        <option value="EXISTING" {% if wood.wood_status == 'EXISTING' %}selected{% endif %}>Existing</option>
+                        <option value="EXPIRED" {% if wood.wood_status == 'EXPIRED' %}selected{% endif %}>Expired/Renewed</option>
+                        <option value="ACTIVE_NEW" {% if wood.wood_status == 'ACTIVE_NEW' %}selected{% endif %}>Active/New</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Approved By</label>
+                    <input type="text" name="approved_by" value="{{ wood.approved_by }}" class="form-input mt-1" required>
+                </div>
+            </div>
+
+            <!-- File Attachment -->
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700">Attachment</label>
+                {% if wood.attachment %}
+                    <p class="text-sm text-gray-600 mb-2">Current file: {{ wood.attachment.name }}</p>
                 {% endif %}
+                <input type="file" name="attachment" class="form-input mt-1">
+            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Left Column -->
-                    <div class="space-y-5">
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Name:</label>
-                            {{ form.name|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Type:</label>
-                            {{ form.type|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Integrated:</label>
-                            {{ form.integrated|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">WPP Number:</label>
-                            {{ form.wpp_number|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                    </div>
-
-                    <!-- Middle Column -->
-                    <div class="space-y-5">
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Business:</label>
-                            {{ form.business|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Plant:</label>
-                            {{ form.plant|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">DRC:</label>
-                            {{ form.drc|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">ALR:</label>
-                            {{ form.alr|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                    </div>
-
-                    <!-- Right Column -->
-                    <div class="space-y-5">
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Date Issued:</label>
-                            {{ form.date_issued|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Date Released:</label>
-                            {{ form.date_released|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Expiry Date:</label>
-                            {{ form.expiry_date|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Status:</label>
-                            {{ form.wood_status|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Additional Fields -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                    <div class="space-y-5">
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Longitude:</label>
-                            {{ form.longitude|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Latitude:</label>
-                            {{ form.latitude|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                    </div>
-                    <div class="space-y-5">
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Local Volume:</label>
-                            {{ form.local_volume|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Imported Volume:</label>
-                            {{ form.imported_volume|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Supplier Info and Area -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                    <div class="form-group">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Supplier Info:</label>
-                        {{ form.supplier_info|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                    </div>
-                    <div class="form-group">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Area:</label>
-                        {{ form.area|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                    </div>
-                </div>
-
-                <!-- Approved By -->
-                <div class="mt-6">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Approved By:</label>
-                    {{ form.approved_by|addclass:"w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                </div>
-
-                <div class="flex justify-end space-x-4 pt-4">
-                    <a href="{% url 'wood' %}" class="bg-gray-500 text-white px-6 py-2.5 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 font-medium">
-                        Cancel
-                    </a>
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2.5 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 font-medium">
-                        Update Record
-                    </button>
-                </div>
-            </form>
-        </div>
+            <!-- Submit Buttons -->
+            <div class="flex justify-end space-x-4 mt-6">
+                <button type="button" onclick="window.history.back()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded">
+                    Cancel
+                </button>
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded">
+                    Save Changes
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 
-    <footer class="bg-blue-900 text-white mt-auto py-6">
-        <div class="max-w-7xl mx-auto text-center">
-            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
-            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
-        </div>
-    </footer>
+<script>
+    function calculateALR() {
+        const drcInput = document.querySelector('input[name="drc"]');
+        const alrInput = document.querySelector('input[name="alr"]');
+        
+        if (drcInput && drcInput.value) {
+            const drc = parseFloat(drcInput.value);
+            // Formula: DRC × 290 × 0.80
+            const alr = (drc * 290 * 0.80).toFixed(2);
+            alrInput.value = alr;
+        } else if (alrInput) {
+            alrInput.value = '';
+        }
+    }
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const dateIssuedInput = document.querySelector('input[name="date_issued"]');
-            const expiryDateInput = document.querySelector('input[name="expiry_date"]');
-            const statusSelect = document.querySelector('select[name="wood_status"]');
-
-            function validateDates() {
-                if (dateIssuedInput.value && expiryDateInput.value) {
-                    const dateIssued = new Date(dateIssuedInput.value);
-                    const expiryDate = new Date(expiryDateInput.value);
-                    const today = new Date();
-                    
-                    const maxExpiryDate = new Date(dateIssued);
-                    maxExpiryDate.setFullYear(maxExpiryDate.getFullYear() + 5);
-
-                    if (expiryDate < dateIssued) {
-                        alert('Expiry date cannot be before date issued');
-                        expiryDateInput.value = '';
-                        return;
-                    }
-
-                    if (expiryDate > maxExpiryDate) {
-                        alert('Expiry date cannot be more than 5 years from date issued');
-                        expiryDateInput.value = '';
-                        return;
-                    }
-                }
-            }
-
-            if (dateIssuedInput && expiryDateInput) {
-                dateIssuedInput.addEventListener('change', validateDates);
-                expiryDateInput.addEventListener('change', validateDates);
-            }
-        });
-    </script>
-</body>
-</html>
+    // Calculate ALR on page load
+    document.addEventListener('DOMContentLoaded', calculateALR);
+</script>
+{% endblock %}

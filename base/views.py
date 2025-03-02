@@ -9,7 +9,7 @@ from django.utils import timezone
 import os
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from decimal import Decimal
 from django.http import JsonResponse
 from django.urls import reverse
@@ -180,29 +180,28 @@ def cutting(request):
 
 @login_required
 def wood(request):
-    current_date = timezone.now().date()
-    
-    # Get all records
-    wood_records = Wood.objects.all().order_by('-date_issued')
-    
-    # Count expired records from the actual table data
-    expired_records = [record for record in wood_records if record.expiry_date and record.expiry_date < current_date]
-    expired_count = len(expired_records)
-    
-    # Count records expiring soon from the actual table data
-    thirty_days_from_now = current_date + timedelta(days=30)
-    expiring_soon_records = [
-        record for record in wood_records 
-        if record.expiry_date 
-        and record.expiry_date > current_date 
-        and record.expiry_date <= thirty_days_from_now
-    ]
-    expiring_soon_count = len(expiring_soon_records)
+    if request.method == 'POST':
+        form = WoodForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                wood_record = form.save(commit=False)
+                
+                # Calculate ALR based on DRC
+                if wood_record.drc:
+                    wood_record.alr = round(float(wood_record.drc) * 290 * 0.80, 2)
+                
+                wood_record.save()
+                messages.success(request, 'Wood record added successfully!')
+                return redirect('wood_records')
+            except Exception as e:
+                messages.error(request, f'Error saving record: {str(e)}')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = WoodForm(initial={'date_issued': timezone.now().date()})
 
     context = {
-        'wood_records': wood_records,
-        'expired_count': expired_count,
-        'expiring_soon_count': expiring_soon_count,
+        'form': form,
     }
     return render(request, 'wood.html', context)
 
@@ -449,14 +448,81 @@ def your_save_view(request):
 def edit_wood(request, pk):
     wood = get_object_or_404(Wood, pk=pk)
     if request.method == 'POST':
-        form = WoodForm(request.POST, instance=wood)
+        form = WoodForm(request.POST, request.FILES, instance=wood)
         if form.is_valid():
-            form.save()
+            wood_record = form.save(commit=False)
+            if wood_record.drc:
+                wood_record.alr = round(float(wood_record.drc) * 290 * 0.80, 2)
+            wood_record.save()
             messages.success(request, 'Wood record updated successfully!')
-            return redirect('wood')
+            return redirect('wood_records')
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = WoodForm(instance=wood)
-    return render(request, 'edit_wood.html', {'form': form, 'wood': wood})
+    
+    return render(request, 'edit_wood.html', {
+        'form': form,
+        'wood': wood
+    })
+
+@login_required
+def update_wood(request, pk):
+    # This is an alias for edit_wood to maintain compatibility
+    return edit_wood(request, pk)
+
+@login_required
+def wood_records(request):
+    current_date = timezone.now().date()
+    search = request.GET.get('search', '')
+    status = request.GET.get('status', '')
+    
+    wood_records = Wood.objects.all()
+    
+    if search:
+        wood_records = wood_records.filter(
+            Q(name__icontains=search) |
+            Q(wpp_number__icontains=search) |
+            Q(business__icontains=search) |
+            Q(supplier_info__icontains=search)
+        )
+    
+    if status == 'active':
+        wood_records = wood_records.filter(
+            wood_status='ACTIVE_NEW',
+            expiry_date__gte=current_date
+        )
+    elif status == 'expired':
+        wood_records = wood_records.filter(
+            Q(wood_status='EXPIRED') | Q(expiry_date__lt=current_date)
+        )
+    elif status == 'existing':
+        wood_records = wood_records.filter(wood_status='EXISTING')
+    
+    wood_records = wood_records.order_by('-date_issued')
+    
+    context = {
+        'wood_records': wood_records,
+        'current_date': current_date,
+        'status': status,
+        'search': search,
+    }
+    
+    return render(request, 'wood_record.html', context)
+
+@login_required
+def wood_detail(request, pk):
+    wood = get_object_or_404(Wood, pk=pk)
+    return render(request, 'wood_detail.html', {'wood': wood})
+
+@login_required
+def delete_wood(request, pk):
+    wood = get_object_or_404(Wood, pk=pk)
+    if request.method == 'POST':
+        wood.delete()
+        messages.success(request, 'Wood record deleted successfully!')
+        return redirect('wood_records')
+    return render(request, 'wood_confirm_delete.html', {'wood': wood})
 
 def login_page(request):
     return render(request, 'login.html')
