@@ -1,206 +1,109 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CENRO Argao - Wood Records Management</title>
+    <title>CENRO Argao - Wood Processing Plant Records</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <!-- Add SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        .modal-open {
-            overflow: hidden;
+        body {
+            background-color: #f0fdf4;
+            font-family: 'Inter', sans-serif;
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .gradient-bg {
+            background: linear-gradient(90deg, #22c55e 0%, #0ea5e9 100%);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
         }
         
-        #notificationModal {
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        /* Add smooth transition for validation info */
-        .validation-info {
-            transition: all 0.3s ease-in-out;
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-
-        .validation-info:not(.hidden) {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* Make form labels more readable */
-        .form-group label {
-            font-size: 1rem;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        /* Style form inputs */
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            font-size: 1rem;
-            padding: 0.5rem;
-            width: 100%;
-            border-radius: 0.375rem;
-            border: 1px solid #D1D5DB;
-        }
-
-        /* Hover effect for inputs */
-        .form-group input:hover,
-        .form-group select:hover,
-        .form-group textarea:hover {
-            border-color: #9CA3AF;
-        }
-
-        /* Focus effect for inputs */
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #2563EB;
-            ring: 2px;
-            ring-color: #93C5FD;
-        }
-
-        .form-input {
-            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
-                   focus:border-blue-500 focus:ring-blue-500 
-                   bg-gray-50 text-gray-900;
-            padding: 0.5rem;
+        .filter-button {
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 500;
             transition: all 0.2s;
         }
-
-        .form-input:hover {
-            @apply border-blue-400;
+        
+        .filter-button.active {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
-
-        .form-input:focus {
-            @apply ring-2 ring-blue-200;
+        
+        .filter-button:hover {
+            transform: translateY(-1px);
         }
-
-        .form-input:invalid {
-            @apply border-red-300;
+        
+        .white-button {
+            background-color: white;
+            color: #3b82f6;
         }
-
-        .form-input:invalid:focus {
-            @apply ring-red-200;
+        
+        .green-button {
+            background-color: #22c55e;
+            color: white;
         }
-
-        /* Custom styling for date inputs */
-        input[type="date"].form-input {
-            @apply p-2;
+        
+        .red-button {
+            background-color: #ef4444;
+            color: white;
         }
-
-        /* Custom styling for select inputs */
-        select.form-input {
-            @apply pr-8;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        
+        .yellow-button {
+            background-color: #eab308;
+            color: white;
+        }
+        
+        .search-input {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+        }
+        
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .date-input {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            appearance: none;
+        }
+        
+        .export-button {
+            background-color: #15803d;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .export-button:hover {
+            background-color: #166534;
+        }
+        
+        /* Style for date input calendar icon */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+        
+        /* Style for select dropdown arrow */
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
             background-position: right 0.5rem center;
             background-repeat: no-repeat;
             background-size: 1.5em 1.5em;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-        }
-
-        /* Error message styling */
-        .error-message {
-            @apply mt-1 text-sm text-red-600;
-        }
-
-        /* Required field indicator */
-        label:after {
-            content: " *";
-            @apply text-red-500;
-        }
-
-        input, select, textarea {
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            padding: 0.5rem;
-            border-radius: 0.375rem;
-            width: 100%;
-            color: #4B5563;
-        }
-        input::placeholder, select::placeholder, textarea::placeholder {
-            color: #6B7280;
-            opacity: 0.8;
-        }
-        input:focus, select:focus, textarea:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-            outline: none;
-        }
-        .form-input {
-            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
-                   focus:border-blue-500 focus:ring-blue-500 
-                   bg-gray-50 text-gray-900;
-        }
-        input[type="date"] {
-            padding: 0.4rem;
-            color: #4B5563;
-        }
-        select {
-            background-color: #f8fafc;
-            padding: 0.4rem;
-            color: #4B5563;
-        }
-        input:hover, select:hover, textarea:hover {
-            border-color: #60A5FA;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Style file input */
-        input[type="file"] {
-            padding: 0.375rem;
-        }
-        input[type="file"]::-webkit-file-upload-button {
-            padding: 0.5rem 1rem;
-            margin-right: 1rem;
-            background-color: #E5E7EB;
-            border: none;
-            border-radius: 0.375rem;
-            color: #374151;
-            cursor: pointer;
-        }
-        input[type="file"]::-webkit-file-upload-button:hover {
-            background-color: #D1D5DB;
-        }
-
-        /* Date input styling */
-        .date-input {
-            position: relative;
-            background-color: #f8fafc;
-        }
-
-        .date-input::-webkit-calendar-picker-indicator {
-            background: transparent;
-            bottom: 0;
-            color: transparent;
-            cursor: pointer;
-            height: auto;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            width: auto;
-        }
-
-        body {
-            background-color: #e6f7e6; /* Light mint green */
-        }
-
-        #user-menu-button {
-            position: relative;
-            z-index: 10;
         }
     </style>
 </head>
@@ -221,7 +124,8 @@
                         Welcome, {{ request.user.username }}
                     </div>
                     <div class="relative">
-                        <button type="button" class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" 
+                                id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                             ▼
                         </button>
                         <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
@@ -236,7 +140,7 @@
                                     <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
                                 </div>
                                 <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
-                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
                                     </svg>
                                     Sign Out
@@ -248,7 +152,7 @@
                 <!-- Mobile Menu Button -->
                 <div class="md:hidden">
                     <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
                         </svg>
                     </button>
@@ -266,47 +170,36 @@
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="bg-white shadow-xl rounded-lg overflow-hidden">
-            <!-- Filter Tabs -->
-            <div class="bg-green-700 p-4">
-                <div class="flex flex-wrap gap-2 mb-4">
-                    <a href="{% url 'wood_records' %}" class="px-4 py-2 rounded-lg bg-white text-green-700 hover:bg-gray-100 transition">All Records</a>
-                    <a href="{% url 'wood_records' %}?status=active" class="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition">Active</a>
-                    <a href="{% url 'wood_records' %}?status=expired" class="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition">Expired</a>
-                    <a href="{% url 'wood_records' %}?status=pending" class="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 transition">Pending</a>
-                    <a href="{% url 'wood_records' %}?type=all_permits" class="px-4 py-2 rounded-lg bg-teal-500 text-white hover:bg-teal-600 transition">All Permits</a>
-                    <a href="{% url 'wood_records' %}?type=stcp" class="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition">STCP</a>
-                    <a href="{% url 'wood_records' %}?type=tcp" class="px-4 py-2 rounded-lg bg-indigo-500 text-white hover:bg-indigo-600 transition">TCP</a>
-                    <a href="{% url 'wood_records' %}?type=pltp" class="px-4 py-2 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition">PLTP</a>
-                    <a href="{% url 'wood_records' %}?type=spltp" class="px-4 py-2 rounded-lg bg-pink-500 text-white hover:bg-pink-600 transition">SPLTP</a>
+            <!-- Filter Section with Gradient Background -->
+            <div class="gradient-bg p-6 rounded-lg mb-8">
+                <!-- Filter Buttons -->
+                <div class="flex flex-wrap gap-4 mb-6">
+                    <a href="{% url 'wood_records' %}" class="filter-button white-button">All Records</a>
+                    <a href="{% url 'wood_records' %}?status=active" class="filter-button green-button">Active</a>
+                    <a href="{% url 'wood_records' %}?status=expired" class="filter-button red-button">Expired</a>
+                    <a href="{% url 'wood_records' %}?status=expiring" class="filter-button yellow-button">Expiring Soon</a>
                 </div>
 
                 <!-- Search and Filter Controls -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                    <!-- Permit Number Search -->
                     <div>
-                        <label class="block text-sm font-medium text-white mb-1">Permit Number</label>
-                        <input type="text" id="permitSearch" placeholder="Search permit..." 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <label class="block text-sm font-medium text-white mb-1">Search Record</label>
+                        <input type="text" id="permitSearch" placeholder="Search record..." 
+                               class="search-input w-full">
                     </div>
-                    
-                    <!-- Start Date Filter -->
                     <div>
                         <label class="block text-sm font-medium text-white mb-1">Start Date</label>
-                        <input type="date" id="startDateFilter" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 date-input">
+                        <input type="date" id="startDateFilter" class="date-input w-full" 
+                               placeholder="dd/mm/yyyy">
                     </div>
-                    
-                    <!-- End Date Filter -->
                     <div>
                         <label class="block text-sm font-medium text-white mb-1">End Date</label>
-                        <input type="date" id="endDateFilter" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 date-input">
+                        <input type="date" id="endDateFilter" class="date-input w-full"
+                               placeholder="dd/mm/yyyy">
                     </div>
-                    
-                    <!-- Year Filter -->
                     <div>
                         <label class="block text-sm font-medium text-white mb-1">Filter by Year</label>
-                        <select id="yearFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <select id="yearFilter" class="date-input w-full">
                             <option value="">All Years</option>
                             {% for year in available_years %}
                                 <option value="{{ year }}">{{ year }}</option>
@@ -316,10 +209,10 @@
                 </div>
                 
                 <!-- Export Button -->
-                <div class="flex justify-end">
+                <div class="flex justify-end mt-4">
                     <button onclick="exportTableToCSV('wood_records.csv')" 
-                            class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition flex items-center space-x-2">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="export-button">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                         </svg>
                         <span>Export</span>
@@ -329,22 +222,21 @@
 
             <!-- Alerts Section -->
             <div class="p-4">
-                {% with expired_records=wood_records|expired_records %}
-                    {% if expired_records %}
-                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
-                            Alert: {{ expired_records|length }} record{{ expired_records|length|pluralize }} expired
-                        </div>
-                    {% endif %}
-                {% endwith %}
+                {% if expired_records %}
+                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
+                        Alert: {{ expired_records|length }} record{{ expired_records|length|pluralize }} expired
+                    </div>
+                {% endif %}
                 
-                {% with expiring_records=wood_records|expiring_records %}
-                    {% if expiring_records %}
-                        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
-                            Warning: {{ expiring_records|length }} permit{{ expiring_records|length|pluralize }} expiring soon
-                        </div>
-                    {% endif %}
-                {% endwith %}
+                {% if expiring_records %}
+                    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
+                        Warning: {{ expiring_records|length }} permit{{ expiring_records|length|pluralize }} expiring soon
+                    </div>
+                {% endif %}
             </div>
+
+            <!-- Add space between filter section and table -->
+            <div class="py-6"></div>
 
             <!-- Wood Records Table -->
             <div class="overflow-x-auto">
@@ -503,6 +395,14 @@
         </div>
     </div>
 
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white mt-auto py-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+        </div>
+    </footer>
+
     <!-- JavaScript for functionality -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -511,14 +411,20 @@
             const userMenu = document.getElementById('user-menu');
             
             if (userMenuButton && userMenu) {
-                userMenuButton.addEventListener('click', function() {
-                    userMenu.classList.toggle('hidden');
+                userMenuButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    if (userMenu.style.display === 'none' || userMenu.style.display === '') {
+                        userMenu.style.display = 'block';
+                    } else {
+                        userMenu.style.display = 'none';
+                    }
                 });
                 
-                // Close menu when clicking outside
                 document.addEventListener('click', function(event) {
                     if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
-                        userMenu.classList.add('hidden');
+                        userMenu.style.display = 'none';
                     }
                 });
             }
@@ -561,3 +467,82 @@
                         const permitNumberCell = row.querySelector('td:nth-child(4)');
                         const dateIssuedCell = row.querySelector('td:nth-child(7)');
                         
+                        if (!permitNumberCell || !dateIssuedCell) return;
+                        
+                        const permitNumber = permitNumberCell.textContent.toLowerCase().trim();
+                        const dateIssuedText = dateIssuedCell.textContent.trim();
+                        const dateIssued = new Date(dateIssuedText);
+                        
+                        // Check permit number filter
+                        const matchesPermit = permitValue === '' || permitNumber.includes(permitValue);
+                        
+                        // Check date range filter
+                        const matchesStartDate = !startDate || dateIssued >= startDate;
+                        const matchesEndDate = !endDate || dateIssued <= endDate;
+                        
+                        // Check year filter
+                        const matchesYear = yearValue === '' || (dateIssued.getFullYear().toString() === yearValue);
+                        
+                        // Combine all filters
+                        const isVisible = matchesPermit && matchesStartDate && matchesEndDate && matchesYear;
+                        
+                        row.style.display = isVisible ? '' : 'none';
+                        
+                        if (isVisible) visibleCount++;
+                    });
+                    
+                    // Show/hide no results message
+                    if (noResultsMessage) {
+                        noResultsMessage.style.display = visibleCount === 0 ? 'block' : 'none';
+                    }
+                    
+                    // Update results counter if it exists
+                    const resultsCounter = document.getElementById('resultsCounter');
+                    if (resultsCounter) {
+                        resultsCounter.textContent = `Showing ${visibleCount} of ${rows.length} records`;
+                    }
+                }
+                
+                // Add event listeners to filters
+                if (permitSearch) permitSearch.addEventListener('input', applyFilters);
+                if (startDateFilter) startDateFilter.addEventListener('change', applyFilters);
+                if (endDateFilter) endDateFilter.addEventListener('change', applyFilters);
+                if (yearFilter) yearFilter.addEventListener('change', applyFilters);
+            }
+        });
+        
+        // Export table to CSV function
+        function exportTableToCSV(filename) {
+            const table = document.querySelector('table');
+            const rows = table.querySelectorAll('tr');
+            let csv = [];
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = [], cols = rows[i].querySelectorAll('td, th');
+                
+                for (let j = 0; j < cols.length; j++) {
+                    // Get the text content and clean it up
+                    let data = cols[j].textContent.replace(/(\r\n|\n|\r)/gm, '').trim();
+                    // Escape double quotes and wrap field in quotes
+                    data = data.replace(/"/g, '""');
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(','));
+            }
+            
+            const csvString = csv.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (navigator.msSaveBlob) {
+                navigator.msSaveBlob(blob, filename);
+            } else {
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute('download', filename);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+    </script>
+</body>
+</html>

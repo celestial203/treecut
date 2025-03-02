@@ -473,39 +473,19 @@ def update_wood(request, pk):
 
 @login_required
 def wood_records(request):
-    current_date = timezone.now().date()
-    search = request.GET.get('search', '')
-    status = request.GET.get('status', '')
-    
     wood_records = Wood.objects.all()
     
-    if search:
-        wood_records = wood_records.filter(
-            Q(name__icontains=search) |
-            Q(wpp_number__icontains=search) |
-            Q(business__icontains=search) |
-            Q(supplier_info__icontains=search)
-        )
+    # Calculate expired and expiring records
+    today = date.today()
+    soon = today + timedelta(days=30)
     
-    if status == 'active':
-        wood_records = wood_records.filter(
-            wood_status='ACTIVE_NEW',
-            expiry_date__gte=current_date
-        )
-    elif status == 'expired':
-        wood_records = wood_records.filter(
-            Q(wood_status='EXPIRED') | Q(expiry_date__lt=current_date)
-        )
-    elif status == 'existing':
-        wood_records = wood_records.filter(wood_status='EXISTING')
-    
-    wood_records = wood_records.order_by('-date_issued')
+    expired_records = [record for record in wood_records if record.expiry_date < today]
+    expiring_records = [record for record in wood_records if record.expiry_date >= today and record.expiry_date <= soon]
     
     context = {
         'wood_records': wood_records,
-        'current_date': current_date,
-        'status': status,
-        'search': search,
+        'expired_records': expired_records,
+        'expiring_records': expiring_records,
     }
     
     return render(request, 'wood_record.html', context)
