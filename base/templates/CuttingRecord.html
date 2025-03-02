@@ -394,53 +394,177 @@
     <!-- Search and Export Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Populate year dropdown with years up to 2050
+            // Populate year dropdown with years from 2010 to current year
             const yearSelect = document.getElementById('yearFilter');
-            const endYear = 2050;
-            const startYear = new Date().getFullYear();
+            const currentYear = new Date().getFullYear();
+            const startYear = 2010;
             
-            // Add default "All Years" option
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = 'All Years';
-            yearSelect.appendChild(defaultOption);
+            // Add "All Years" option
+            const allYearsOption = document.createElement('option');
+            allYearsOption.value = '';
+            allYearsOption.textContent = 'All Years';
+            yearSelect.appendChild(allYearsOption);
             
-            // Add years from current year up to 2050
-            for (let year = startYear; year <= endYear; year++) {
+            // Add years from 2010 to current year
+            for (let year = currentYear; year >= startYear; year--) {
                 const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
+                option.value = year.toString();
+                option.textContent = year.toString();
                 yearSelect.appendChild(option);
             }
-
+            
+            // Apply black text color to dropdown options
+            const style = document.createElement('style');
+            style.textContent = `
+                #yearFilter option {
+                    color: black !important;
+                }
+                .dropdown-menu option {
+                    color: black !important;
+                }
+            `;
+            document.head.appendChild(style);
+            
             // Search and filter functionality
             const permitSearch = document.getElementById('permitSearch');
             const startDate = document.getElementById('startDate');
             const endDate = document.getElementById('endDate');
             const yearFilter = document.getElementById('yearFilter');
 
-            function filterTable() {
+            // Improved date parsing function
+            function parseDate(dateStr) {
+                if (!dateStr) return null;
+                console.log('Parsing date:', dateStr);
+                
+                // Try different date formats
+                const formats = [
+                    // YYYY-MM-DD (HTML date input format)
+                    str => {
+                        if (str.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            return new Date(str);
+                        }
+                        return null;
+                    },
+                    // DD/MM/YYYY
+                    str => {
+                        const parts = str.split('/');
+                        if (parts.length === 3) {
+                            return new Date(parts[2], parts[1] - 1, parts[0]);
+                        }
+                        return null;
+                    },
+                    // MM/DD/YYYY
+                    str => {
+                        const parts = str.split('/');
+                        if (parts.length === 3) {
+                            return new Date(parts[2], parts[0] - 1, parts[1]);
+                        }
+                        return null;
+                    },
+                    // MMM DD, YYYY (e.g., Mar 04, 2025)
+                    str => {
+                        const date = new Date(str);
+                        if (!isNaN(date.getTime())) {
+                            return date;
+                        }
+                        return null;
+                    }
+                ];
+                
+                for (const format of formats) {
+                    const date = format(dateStr);
+                    if (date && !isNaN(date.getTime())) {
+                        console.log('Successfully parsed date:', dateStr, 'to', date);
+                        return date;
+                    }
+                }
+                
+                console.warn('Failed to parse date:', dateStr);
+                return null;
+            }
+
+            function filterRecords() {
                 const rows = document.querySelectorAll('tbody tr');
                 const permitTerm = permitSearch.value.toLowerCase();
                 const startDateVal = startDate.value ? new Date(startDate.value) : null;
                 const endDateVal = endDate.value ? new Date(endDate.value) : null;
                 const yearVal = yearFilter.value;
 
+                if (startDateVal) startDateVal.setHours(0, 0, 0, 0); // Start of day
+                
+                // If we have an end date, set it to end of day for inclusive comparison
+                const endOfDay = endDateVal ? new Date(endDateVal) : null;
+                if (endOfDay) endOfDay.setHours(23, 59, 59, 999);
+                
+                console.log('Filtering by date range:', 
+                    startDateVal ? startDateVal.toISOString() : 'none', 
+                    endOfDay ? endOfDay.toISOString() : 'none');
+
                 let hasResults = false;
 
-                rows.forEach(row => {
+                rows.forEach((row, index) => {
                     if (!row.id || row.id !== 'noResultsRow') {
+                        // Get the permit number for text search
                         const permitText = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                        const dateCell = row.querySelector('td:nth-child(10)').textContent; // Date Issued column
-                        const rowDate = new Date(dateCell);
-                        const rowYear = rowDate.getFullYear().toString();
-
+                        
+                        // Get the date issued cell (column 18)
+                        const dateIssuedCell = row.querySelector('td:nth-child(18)');
+                        
+                        let matchesDateRange = true;
+                        
+                        if (dateIssuedCell && (startDateVal || endOfDay)) {
+                            const dateIssuedText = dateIssuedCell.textContent.trim();
+                            console.log(`Row ${index} date issued text:`, dateIssuedText);
+                            
+                            const dateIssued = parseDate(dateIssuedText);
+                            
+                            if (dateIssued) {
+                                // Check if date is after or equal to start date
+                                if (startDateVal && dateIssued < startDateVal) {
+                                    console.log(`Row ${index}: Date ${dateIssued.toDateString()} is before start date ${startDateVal.toDateString()}`);
+                                    matchesDateRange = false;
+                                }
+                                
+                                // Check if date is before or equal to end date
+                                if (endOfDay && matchesDateRange && dateIssued > endOfDay) {
+                                    console.log(`Row ${index}: Date ${dateIssued.toDateString()} is after end date ${endOfDay.toDateString()}`);
+                                    matchesDateRange = false;
+                                }
+                            } else {
+                                console.warn(`Row ${index}: Could not parse date "${dateIssuedText}"`);
+                            }
+                        }
+                        
+                        // Get the year for year filter
+                        const rowYear = row.querySelector('td:nth-child(18)').textContent;
+                        const yearMatch = rowYear.match(/\d{4}/);
+                        const extractedYear = yearMatch ? yearMatch[0] : '';
+                        const matchesYear = !yearVal || extractedYear === yearVal;
+                        
+                        // Check permit type filter
+                        const permitType = row.querySelector('td:nth-child(1)').textContent.trim();
+                        const matchesPermitType = currentPermitType === 'all' || permitType.includes(currentPermitType);
+                        
+                        // Check status filter
+                        const expiryDateText = row.querySelector('td:nth-child(19)').textContent.trim();
+                        const expiryDate = parseDate(expiryDateText);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        
+                        let statusMatch = true;
+                        if (currentStatus !== 'all') {
+                            if (currentStatus === 'active' && expiryDate && expiryDate < today) {
+                                statusMatch = false;
+                            } else if (currentStatus === 'expired' && (!expiryDate || expiryDate >= today)) {
+                                statusMatch = false;
+                            } else if (currentStatus === 'pending') {
+                                // Add logic for pending status if needed
+                            }
+                        }
+                        
                         const matchesPermit = permitText.includes(permitTerm);
-                        const matchesDateRange = (!startDateVal || rowDate >= startDateVal) && 
-                                              (!endDateVal || rowDate <= endDateVal);
-                        const matchesYear = !yearVal || rowYear === yearVal;
-
-                        if (matchesPermit && matchesDateRange && matchesYear) {
+                        
+                        if (matchesPermit && matchesDateRange && matchesYear && matchesPermitType && statusMatch) {
                             row.style.display = '';
                             hasResults = true;
                         } else {
@@ -469,87 +593,36 @@
                 }
             }
 
-            // Add event listeners
-            permitSearch.addEventListener('input', filterTable);
-            startDate.addEventListener('change', filterTable);
-            endDate.addEventListener('change', filterTable);
-            yearFilter.addEventListener('change', filterTable);
+            // Add event listeners for date inputs
+            startDate.addEventListener('input', function() {
+                console.log('Start date input changed:', this.value);
+                filterRecords();
+            });
+            
+            startDate.addEventListener('change', function() {
+                console.log('Start date changed:', this.value);
+                filterRecords();
+            });
+            
+            endDate.addEventListener('input', function() {
+                console.log('End date input changed:', this.value);
+                filterRecords();
+            });
+            
+            endDate.addEventListener('change', function() {
+                console.log('End date changed:', this.value);
+                filterRecords();
+            });
+
+            // Add event listener for year filter change
+            yearFilter.addEventListener('change', function() {
+                console.log('Year filter changed to:', this.value);
+                filterRecords();
+            });
 
             // Track current filters
             let currentPermitType = 'all';
             let currentStatus = 'all';
-
-            function filterRecords() {
-                const rows = document.querySelectorAll('tbody tr');
-                const today = new Date();
-                let hasResults = false;
-
-                rows.forEach(row => {
-                    if (row.id !== 'noResultsRow') {
-                        const permitTypeCell = row.querySelector('td:first-child');
-                        const issueDateCell = row.querySelector('td:nth-child(18)'); // Issue date column
-                        const expiryDateCell = row.querySelector('td:nth-child(19)'); // Expiry date column
-                        const situationCell = row.querySelector('td:nth-child(20) span');
-
-                        if (permitTypeCell && issueDateCell && expiryDateCell && situationCell) {
-                            const rowPermitType = permitTypeCell.textContent.trim();
-                            const issueDate = new Date(issueDateCell.textContent);
-                            const expiryDate = new Date(expiryDateCell.textContent);
-                            const isPending = situationCell.textContent.trim() === 'Pending';
-                            
-                            // Active/Expired only depends on dates
-                            const isExpired = expiryDate < today;
-                            const isActive = !isExpired;  // Active if not expired, regardless of pending status
-
-                            // Check if row matches both permit type and status filters
-                            let matchesPermitType = currentPermitType === 'all' || rowPermitType === currentPermitType;
-                            let matchesStatus = true;
-
-                            switch(currentStatus) {
-                                case 'active':
-                                    matchesStatus = isActive;
-                                    break;
-                                case 'expired':
-                                    matchesStatus = isExpired;
-                                    break;
-                                case 'pending':
-                                    matchesStatus = isPending;
-                                    break;
-                                case 'all':
-                                    matchesStatus = true;
-                                    break;
-                            }
-
-                            // Show row only if it matches both permit type and status
-                            if (matchesPermitType && matchesStatus) {
-                                row.style.display = '';
-                                hasResults = true;
-                            } else {
-                                row.style.display = 'none';
-                            }
-                        }
-                    }
-                });
-
-                // Handle no results message
-                const existingNoResults = document.getElementById('noResultsRow');
-                if (!hasResults) {
-                    if (!existingNoResults) {
-                        const tbody = document.querySelector('tbody');
-                        const noResultsRow = document.createElement('tr');
-                        noResultsRow.id = 'noResultsRow';
-                        noResultsRow.innerHTML = `
-                            <td colspan="21" class="px-6 py-8 text-center">
-                                <div class="text-gray-500 text-lg">No matching records found</div>
-                                <div class="text-gray-400 text-sm mt-2">Try adjusting your filter criteria</div>
-                            </td>
-                        `;
-                        tbody.appendChild(noResultsRow);
-                    }
-                } else if (existingNoResults) {
-                    existingNoResults.remove();
-                }
-            }
 
             // Permit Type button click handlers
             document.getElementById('allPermitsBtn').addEventListener('click', function() {
@@ -633,28 +706,57 @@
             document.getElementById('allRecordsBtn').classList.add('ring-2', 'ring-white');
         });
 
-        // Export functionality
+        // Export function that only exports visible rows
         function exportTableToCSV(filename) {
-            const table = document.querySelector('table');
-            let csv = [];
-            const rows = table.querySelectorAll('tr');
+            const csv = [];
+            const rows = document.querySelectorAll('table tr');
             
-            for (let i = 0; i < rows.length; i++) {
-                const row = [], cols = rows[i].querySelectorAll('td, th');
+            // Get all visible rows (header + filtered data rows)
+            const visibleRows = Array.from(rows).filter(row => {
+                // Always include header row
+                if (row.parentElement.tagName === 'THEAD') {
+                    return true;
+                }
+                // Only include visible body rows
+                return row.style.display !== 'none' && !row.id?.includes('noResultsRow');
+            });
+            
+            console.log(`Exporting ${visibleRows.length} rows (including header)`);
+            
+            visibleRows.forEach(row => {
+                const rowData = [];
+                const cols = row.querySelectorAll('td, th');
                 
-                for (let j = 0; j < cols.length; j++) 
-                    row.push(cols[j].innerText);
+                cols.forEach(col => {
+                    // Replace any commas in the cell text to avoid CSV issues
+                    let text = col.innerText.replace(/,/g, ';');
+                    // Remove any quotes to avoid CSV issues
+                    text = text.replace(/"/g, '');
+                    // Wrap in quotes to handle any remaining special characters
+                    rowData.push('"' + text + '"');
+                });
                 
-                csv.push(row.join(','));        
-            }
-
-            const csvFile = new Blob([csv.join('\n')], { type: 'text/csv' });
+                csv.push(rowData.join(','));
+            });
+            
+            // Download CSV file
+            downloadCSV(csv.join('\n'), filename);
+            console.log('Export complete');
+        }
+        
+        function downloadCSV(csv, filename) {
+            const csvFile = new Blob([csv], {type: 'text/csv'});
             const downloadLink = document.createElement('a');
+            
+            // Create a link to download the CSV file
             downloadLink.download = filename;
             downloadLink.href = window.URL.createObjectURL(csvFile);
             downloadLink.style.display = 'none';
+            
+            // Trigger download
             document.body.appendChild(downloadLink);
             downloadLink.click();
+            document.body.removeChild(downloadLink);
         }
 
         // Add this to your existing JavaScript

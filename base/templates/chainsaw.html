@@ -308,8 +308,8 @@
         }
     </style>
 </head>
-<body class="bg-green-100 text-gray-900">
-    <!-- Header with Logo -->
+<body class="font-inter text-gray-900">
+    <!-- Navigation Bar -->
     <nav class="bg-transparent shadow-lg border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
@@ -399,55 +399,60 @@
             <!-- First Row -->
             <div class="grid grid-cols-3 gap-6 mb-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">No.*</label>
-                    <input type="text" name="{{ form.no.name }}" class="form-input" placeholder="Enter number" required>
+                    <label class="block text-sm font-medium text-gray-700">No.</label>
+                    <input type="text" name="{{ form.no.name }}" class="form-input" placeholder="" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Year*</label>
-                    <input type="text" name="{{ form.year.name }}" class="form-input" placeholder="Enter year" required>
+                    <label class="block text-sm font-medium text-gray-700">Year</label>
+                    <input type="text" name="{{ form.year.name }}" class="form-input" placeholder="" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Region*</label>
-                    <input type="text" name="{{ form.region.name }}" class="form-input" placeholder="Enter region" required>
+                    <label class="block text-sm font-medium text-gray-700">Region</label>
+                    <input type="text" name="{{ form.region.name }}" class="form-input" placeholder="" required>
                 </div>
             </div>
 
             <!-- Second Row -->
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">PENRO*</label>
-                    <input type="text" name="{{ form.penro.name }}" class="form-input" placeholder="Enter PENRO" required>
+                    <label class="block text-sm font-medium text-gray-700">PENRO</label>
+                    <input type="text" name="{{ form.penro.name }}" class="form-input" placeholder="" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">CENRO*</label>
-                    <input type="text" name="{{ form.cenro.name }}" class="form-input" placeholder="Enter CENRO" required>
+                    <label class="block text-sm font-medium text-gray-700">CENRO</label>
+                    <input type="text" name="{{ form.cenro.name }}" class="form-input" placeholder="" required>
                 </div>
             </div>
 
             <!-- Third Row -->
             <div class="grid grid-cols-3 gap-6 mb-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Name*</label>
-                    <input type="text" name="{{ form.name.name }}" class="form-input" placeholder="Enter name" required>
+                    <label class="block text-sm font-medium text-gray-700">Name</label>
+                    <input type="text" name="{{ form.name.name }}" class="form-input" placeholder="" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Municipality/City*</label>
-                    <input type="text" name="{{ form.municipality.name }}" class="form-input" placeholder="Enter municipality/city" required>
+                    <label class="block text-sm font-medium text-gray-700">Municipality/City</label>
+                    <input type="text" name="{{ form.municipality.name }}" class="form-input" placeholder="" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Province*</label>
-                    <input type="text" name="{{ form.province.name }}" class="form-input" placeholder="Enter province" required>
+                    <label class="block text-sm font-medium text-gray-700">Province</label>
+                    <input type="text" name="{{ form.province.name }}" class="form-input" placeholder="" required>
                 </div>
             </div>
 
             <!-- Fourth Row -->
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Purpose/Use of Chainsaw*</label>
-                    <input type="text" name="{{ form.purpose.name }}" class="form-input" placeholder="Enter purpose" required>
+                    <label class="block text-sm font-medium text-gray-700">Purpose/Use of Chainsaw</label>
+                    <select name="{{ form.purpose.name }}" class="form-input" required>
+                        <option value="" disabled selected>Select purpose</option>
+                        {% for value, label in form.fields.purpose.choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Date of Acquisition*</label>
+                    <label class="block text-sm font-medium text-gray-700">Date of Acquisition</label>
                     <input type="date" name="{{ form.date_acquired.name }}" class="form-input" required>
                 </div>
             </div>
@@ -455,48 +460,54 @@
             <!-- Fifth Row -->
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Certificate of Registration Number*</label>
-                    <input type="text" name="{{ form.cert_reg_number.name }}" class="form-input" placeholder="Enter registration number" required>
+                    <label class="block text-sm font-medium text-gray-700">Certificate of Registration Number</label>
+                    <input type="text" name="{{ form.cert_reg_number.name }}" class="form-input" placeholder="" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">CTPO/PTPR/Tenure Number*</label>
-                    <input type="text" name="{{ form.ctpo_number.name }}" class="form-input" placeholder="Enter CTPO/PTPR/Tenure number" required>
+                    <label class="block text-sm font-medium text-gray-700">CTPO/PTPR/Tenure Number</label>
+                    <input type="text" name="{{ form.ctpo_number.name }}" class="form-input" placeholder="" required>
                 </div>
             </div>
 
             <!-- Sixth Row -->
             <div class="grid grid-cols-4 gap-6 mb-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Brand*</label>
-                    <input type="text" name="{{ form.brand.name }}" class="form-input" placeholder="Enter brand" required>
+                    <label class="block text-sm font-medium text-gray-700">Brand</label>
+                    <input type="text" name="{{ form.brand.name }}" class="form-input" placeholder="" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Model*</label>
-                    <input type="text" name="{{ form.model.name }}" class="form-input" placeholder="Enter model" required>
+                    <label class="block text-sm font-medium text-gray-700">Model</label>
+                    <input type="text" name="{{ form.model.name }}" class="form-input" placeholder="" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Serial Number*</label>
-                    <input type="text" name="{{ form.serial_number.name }}" class="form-input" placeholder="Enter serial number" required>
+                    <label class="block text-sm font-medium text-gray-700">Serial Number</label>
+                    <input type="text" name="{{ form.serial_number.name }}" class="form-input" placeholder="" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Color*</label>
-                    <input type="text" name="{{ form.color.name }}" class="form-input" placeholder="Enter color" required>
+                    <label class="block text-sm font-medium text-gray-700">Color</label>
+                    <input type="text" name="{{ form.color.name }}" class="form-input" placeholder="" required>
                 </div>
             </div>
 
             <!-- Seventh Row -->
             <div class="grid grid-cols-4 gap-6 mb-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
+                    <label class="block text-sm font-medium text-gray-700">Date Issued</label>
                     <input type="date" name="{{ form.date_issued.name }}" class="form-input" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
-                    <input type="date" name="{{ form.expiry_date.name }}" class="form-input" required>
+                    <label class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                    <input type="date" name="{{ form.expiry_date.name }}" class="form-input" readonly 
+                           title="Expiry date is automatically set to 2 years after the date issued">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Status of Registration*</label>
-                    <input type="text" name="{{ form.registration_status.name }}" class="form-input" placeholder="Enter status" required>
+                    <label class="block text-sm font-medium text-gray-700">Status of Registration</label>
+                    <select name="{{ form.registration_status.name }}" class="form-input" required>
+                        <option value="" disabled selected>Select status</option>
+                        {% for value, label in form.fields.registration_status.choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Date of Renewal</label>
@@ -507,58 +518,121 @@
             <!-- Eighth Row -->
             <div class="grid grid-cols-3 gap-6 mb-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Horse Power*</label>
-                    <input type="text" name="{{ form.horse_power.name }}" class="form-input" placeholder="Enter horse power" required>
+                    <label class="block text-sm font-medium text-gray-700">Horse Power</label>
+                    <input type="text" name="{{ form.horse_power.name }}" class="form-input" placeholder="" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Maximum Length of Guidebar (inches)*</label>
-                    <input type="text" name="{{ form.guidebar_length.name }}" class="form-input" placeholder="Enter guidebar length" required>
+                    <label class="block text-sm font-medium text-gray-700">Maximum Length of Guidebar (inches)</label>
+                    <input type="text" name="{{ form.guidebar_length.name }}" class="form-input" placeholder="" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">DENR Sticker Number*</label>
-                    <input type="text" name="{{ form.denr_sticker.name }}" class="form-input" placeholder="Enter DENR sticker number" required>
+                    <label class="block text-sm font-medium text-gray-700">DENR Sticker Number</label>
+                    <input type="text" name="{{ form.denr_sticker.name }}" class="form-input" placeholder="" required>
                 </div>
             </div>
 
             <!-- File Upload -->
             <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700">Attach File</label>
-                <input type="file" name="{{ form.file.name }}" class="form-input">
+                <label class="block text-sm font-medium text-gray-700">
+                    Attach File 
+                </label>
+                <div class="mt-1 p-2 border border-gray-300 bg-white rounded-lg">
+                    <input type="file" 
+                           name="{{ form.file.name }}" 
+                           id="fileInput"
+                           class="hidden">
+                    <div class="flex items-center">
+                        <button type="button" 
+                                onclick="document.getElementById('fileInput').click()" 
+                                class="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg mr-3">
+                            Choose File
+                        </button>
+                        <span id="fileNameDisplay">No file chosen</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Submit Button -->
-            <div class="flex justify-between items-center">
-                <button type="button" onclick="clearForm()" class="bg-white text-red-600 border border-red-600 px-6 py-2 rounded-lg hover:bg-red-50">
+            <div class="flex justify-end items-center space-x-4 mt-8">
+                <button type="button" onclick="clearForm()" class="bg-white text-gray-700 border border-red-300 px-6 py-2 rounded-lg hover:bg-red-50">
                     Clear Form
                 </button>
-                <div class="flex space-x-4">
-                    <a href="{% url 'chainsaw_records' %}" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                        </svg>
-                        View Records
-                    </a>
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        Submit
-                    </button>
-                </div>
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Submit
+                </button>
+                <a href="{% url 'chainsaw_record' %}" class="bg-green-100 text-green-700 px-6 py-2 rounded-lg hover:bg-green-200 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    View Records
+                </a>
             </div>
         </form>
     </div>
 
-    <footer class="bg-blue-900 text-white mt-auto py-6">
-        <div class="max-w-7xl mx-auto text-center">
-            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
-            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
-        </div>
-    </footer>
+    <!-- Add space before footer -->
+   
+  <!-- Footer -->
+  <footer class="bg-blue-900 text-white mt-auto py-6">
+    <div class="max-w-7xl mx-auto text-center">
+        <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+        <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+    </div>
+</footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Form input styling (existing code)
+            console.log('DOM loaded, initializing toggle menu functionality');
+            
+            // User menu dropdown toggle
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            
+            if (userMenuButton && userMenu) {
+                console.log('User menu elements found');
+                
+                userMenuButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // Direct toggle
+                    if (userMenu.style.display === 'none' || userMenu.style.display === '') {
+                        userMenu.style.display = 'block';
+                        console.log('Menu opened');
+                    } else {
+                        userMenu.style.display = 'none';
+                        console.log('Menu closed');
+                    }
+                });
+                
+                // Close the menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                        userMenu.style.display = 'none';
+                    }
+                });
+            } else {
+                console.error('User menu elements not found');
+            }
+            
+            // File input display
+            const fileInput = document.getElementById('fileInput');
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            
+            if (fileInput) {
+                fileInput.addEventListener('change', function() {
+                    if (this.files.length > 0) {
+                        fileNameDisplay.textContent = this.files[0].name;
+                    } else {
+                        fileNameDisplay.textContent = 'No file chosen';
+                    }
+                });
+            }
+            
+            // Your existing form input styling code
             const inputs = document.querySelectorAll('input, select, textarea');
             inputs.forEach(input => {
                 input.classList.add(
@@ -574,101 +648,126 @@
                     'text-gray-900'
                 );
             });
-
-            // Enhanced search functionality
-            const searchInput = document.getElementById('searchInput');
-            const searchValidation = document.getElementById('searchValidation');
             
-            if (searchInput) {
-                let debounceTimer;
-
-                searchInput.addEventListener('input', function() {
-                    clearTimeout(debounceTimer);
-                    
-                    debounceTimer = setTimeout(() => {
-                        const searchTerm = this.value.toLowerCase().trim();
-                        const rows = document.querySelectorAll('tbody tr');
-                        let visibleCount = 0;
+            // Auto-calculate expiry date when date issued changes
+            const dateIssuedInput = document.querySelector('input[name="{{ form.date_issued.name }}"]');
+            const expiryDateInput = document.querySelector('input[name="{{ form.expiry_date.name }}"]');
+            const dateAcquiredInput = document.querySelector('input[name="{{ form.date_acquired.name }}"]');
+            
+            if (dateIssuedInput && expiryDateInput) {
+                dateIssuedInput.addEventListener('change', function() {
+                    if (this.value) {
+                        // Calculate expiry date (2 years from date issued)
+                        const dateIssued = new Date(this.value);
+                        const expiryDate = new Date(dateIssued);
+                        expiryDate.setFullYear(dateIssued.getFullYear() + 2);
                         
-                        // Clear validation if search is empty
-                        if (searchTerm === '') {
-                            searchValidation.style.display = 'none';
-                            rows.forEach(row => row.style.display = '');
-                            return;
-                        }
-
-                        rows.forEach(row => {
-                            // Get all cells in the row
-                            const cells = row.querySelectorAll('td');
-                            let shouldShow = false;
-                            
-                            cells.forEach(cell => {
-                                const cellText = cell.textContent.toLowerCase().trim();
-                                if (cellText.includes(searchTerm)) {
-                                    shouldShow = true;
-                                }
-                            });
-                            
-                            row.style.display = shouldShow ? '' : 'none';
-                            if (shouldShow) visibleCount++;
-                        });
-                        
-                        // Update validation message with appropriate styling
-                        if (visibleCount > 0) {
-                            searchValidation.textContent = `Found ${visibleCount} matching record${visibleCount !== 1 ? 's' : ''}`;
-                            searchValidation.className = 'absolute mt-1 text-sm font-medium text-green-600 bg-green-50 px-2 py-1 rounded-md';
-                        } else {
-                            searchValidation.textContent = 'No matches found';
-                            searchValidation.className = 'absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md';
-                        }
-                        searchValidation.style.display = 'block';
-                    }, 300);
-                });
-
-                // Clear validation on focus if empty
-                searchInput.addEventListener('focus', function() {
-                    if (!this.value.trim()) {
-                        searchValidation.style.display = 'none';
+                        // Format the date as YYYY-MM-DD for the input
+                        const formattedDate = expiryDate.toISOString().split('T')[0];
+                        expiryDateInput.value = formattedDate;
                     }
                 });
             }
 
-            // Add placeholder text indicating search fields
-            searchInput.placeholder = "Search records..";
+            // Function to validate dates
+            function validateDates() {
+                const dateAcquired = dateAcquiredInput.value ? new Date(dateAcquiredInput.value) : null;
+                const dateIssued = dateIssuedInput.value ? new Date(dateIssuedInput.value) : null;
+                
+                // Clear previous error messages
+                const errorMessages = document.querySelectorAll('.date-error-message');
+                errorMessages.forEach(msg => msg.remove());
+                
+                // Reset styles
+                dateAcquiredInput.style.borderColor = '';
+                dateIssuedInput.style.borderColor = '';
+                
+                if (dateAcquired && dateIssued) {
+                    console.log('Validating dates:', 
+                        dateAcquired.toISOString().split('T')[0], 
+                        dateIssued.toISOString().split('T')[0]);
+                    
+                    // Check if date acquired is after date issued
+                    if (dateAcquired > dateIssued) {
+                        console.log('Validation failed: Date acquired is after date issued');
+                        
+                        // Create error message
+                        const errorMsg = document.createElement('p');
+                        errorMsg.className = 'date-error-message text-red-600 text-sm mt-1';
+                        errorMsg.textContent = 'Date acquired must be before date issued';
+                        
+                        // Add error styling
+                        dateAcquiredInput.style.borderColor = '#ef4444';
+                        
+                        // Add error message after the input
+                        dateAcquiredInput.parentNode.appendChild(errorMsg);
+                        
+                        return false;
+                    } else {
+                        console.log('Date validation passed');
+                        return true;
+                    }
+                }
+                return true; // If either date is not set, validation passes
+            }
+            
+            // Add event listeners for both date inputs
+            if (dateAcquiredInput && dateIssuedInput) {
+                dateAcquiredInput.addEventListener('change', validateDates);
+                dateIssuedInput.addEventListener('change', validateDates);
+                
+                // Add form submission validation
+                const form = document.getElementById('chainsawForm');
+                if (form) {
+                    form.addEventListener('submit', function(event) {
+                        if (!validateDates()) {
+                            event.preventDefault();
+                            // Scroll to the error
+                            dateAcquiredInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    });
+                }
+            }
         });
-        // Add to the script section of each template
-function exportTableToCSV(filename) {
-    const table = document.querySelector('table');
-    const rows = table.querySelectorAll('tr');
-    let csv = [];
-    
-    for (let i = 0; i < rows.length; i++) {
-        const row = [], cols = rows[i].querySelectorAll('td, th');
         
-        for (let j = 0; j < cols.length; j++) {
-            // Get the text content and clean it up
-            let data = cols[j].textContent.replace(/(\r\n|\n|\r)/gm, '').trim();
-            // Escape double quotes and wrap field in quotes
-            data = data.replace(/"/g, '""');
-            row.push('"' + data + '"');
+        // Clear form function
+        function clearForm() {
+            document.getElementById('chainsawForm').reset();
+            document.getElementById('fileNameDisplay').textContent = 'No file chosen';
         }
-        csv.push(row.join(','));
-    }
-    
-    const csvString = csv.join('\n');
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (navigator.msSaveBlob) {
-        navigator.msSaveBlob(blob, filename);
-    } else {
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute('download', filename);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-}
         
+        // Export table to CSV function
+        function exportTableToCSV(filename) {
+            const table = document.querySelector('table');
+            const rows = table.querySelectorAll('tr');
+            let csv = [];
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = [], cols = rows[i].querySelectorAll('td, th');
+                
+                for (let j = 0; j < cols.length; j++) {
+                    // Get the text content and clean it up
+                    let data = cols[j].textContent.replace(/(\r\n|\n|\r)/gm, '').trim();
+                    // Escape double quotes and wrap field in quotes
+                    data = data.replace(/"/g, '""');
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(','));
+            }
+            
+            const csvString = csv.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (navigator.msSaveBlob) {
+                navigator.msSaveBlob(blob, filename);
+            } else {
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute('download', filename);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
     </script>
 </body>
 </html>

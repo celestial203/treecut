@@ -1,265 +1,1310 @@
 {% load static %}
+{% load form_filters %}
+{% load widget_tweaks %}
 
-<!-- Records Table Section -->
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="bg-white shadow-xl rounded-lg overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-600 to-blue-600">
-            <h3 class="text-xl font-semibold text-white mb-4">
-                Chainsaw Records
-            </h3>
-            <div class="flex items-center justify-between space-x-4">
-                <!-- Search Bar -->
-                <div class="relative flex-1 max-w-md">
-                    <input type="text" 
-                           id="searchInput" 
-                           placeholder="Search records..." 
-                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700"
-                    >
-                    <span class="absolute right-3 top-2.5 text-gray-400">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                    </span>
-                    <!-- Updated validation message element -->
-                    <div id="searchValidation" class="absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md hidden"></div>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>CENRO Argao - Chainsaw Records</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+        <style>
+            /* Enhanced styling */
+            body {
+                background: linear-gradient(to bottom right, #e2f3e5, #c6f6d5);
+                font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            }
+    
+            .table-container {
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            }
+    
+            /* Table styling to match your example */
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+    
+            /* Header styling */
+            thead th {
+                background-color: #f3f4f6;
+                color: #1f2937;
+                font-weight: 600;
+                text-transform: uppercase;
+                padding: 0.75rem 1rem;
+                text-align: left;
+                font-size: 0.75rem;
+                letter-spacing: 0.05em;
+            }
+    
+            /* Row styling */
+            tbody tr {
+                border-bottom: 1px solid #e5e7eb;
+            }
+    
+            /* Cell styling */
+            tbody td {
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+                color: #1f2937;
+            }
+    
+            /* Alternating row colors exactly like your example */
+            tbody tr:nth-child(3n+1) {
+                background-color: #ecfdf5; /* Light green */
+            }
+    
+            tbody tr:nth-child(3n+2) {
+                background-color: #fff7ed; /* Light orange/peach */
+            }
+    
+            tbody tr:nth-child(3n+3) {
+                background-color: #fef2f2; /* Light red/pink */
+            }
+    
+            /* Hover effect */
+            tbody tr:hover {
+                background-color: rgba(243, 244, 246, 0.8) !important; /* Light gray on hover */
+                transition: background-color 0.2s ease;
+            }
+    
+            /* First column (NO.) styling */
+            tbody td:first-child {
+                font-weight: 600;
+            }
+    
+            /* Status badges */
+            .status-badge {
+                padding: 0.25rem 0.75rem;
+                border-radius: 9999px;
+                font-weight: 500;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+    
+            .status-active {
+                background-color: #dcfce7; /* Light green for active status */
+                color: #166534; /* Dark green text */
+            }
+    
+            .status-expired {
+                background-color: #fee2e2; /* Light red for expired status */
+                color: #991b1b; /* Dark red text */
+            }
+    
+            .status-pending {
+                background-color: #fef3c7; /* Light yellow for pending status */
+                color: #92400e; /* Dark yellow text */
+            }
+    
+            /* Action buttons */
+            .action-button {
+                background-color: #f0fdf4; /* Light green for buttons */
+                color: #2f855a; /* Dark green text */
+                padding: 0.5rem 1rem;
+                border-radius: 6px;
+                transition: all 0.2s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-weight: 500;
+            }
+    
+            .action-button:hover {
+                background-color: #68d391; /* Darker green on hover */
+                transform: translateY(-1px);
+            }
+    
+            /* Search bar enhancement */
+            .search-container {
+                position: relative;
+                max-width: 500px;
+            }
+    
+            .search-input {
+                width: 100%;
+                padding: 0.75rem 1rem 0.75rem 2.5rem;
+                border-radius: 8px;
+                border: 2px solid #e5e7eb;
+                background-color: white;
+                transition: all 0.2s ease;
+            }
+    
+            .search-input:focus {
+                border-color: #2563eb;
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            }
+    
+            .search-icon {
+                position: absolute;
+                left: 0.75rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #6b7280;
+            }
+            
+            /* Add these new styles for row coloring */
+            .row-expired {
+                background-color: #ffebee !important;
+            }
+            .row-expired:hover {
+                background-color: #ffcdd2 !important;
+            }
+            
+            .row-active {
+                background-color: #e8f5e9 !important; /* Lighter green to match your sample */
+            }
+            .row-active:hover {
+                background-color: #c8e6c9 !important;
+            }
+            
+            .row-expiring {
+                background-color: #fff0d9 !important;
+            }
+            .row-expiring:hover {
+                background-color: #ffe0b2 !important;
+            }
+            
+            /* Status-specific styling */
+            .bg-green-50 {
+                background-color: rgba(240, 253, 244, 0.6); /* Lighter green */
+            }
+            
+            .bg-red-50 {
+                background-color: rgba(254, 242, 242, 0.6); /* Lighter red */
+            }
+            
+            .bg-orange-50 {
+                background-color: rgba(255, 247, 237, 0.6); /* Lighter orange */
+            }
+            
+            /* Special styling for date columns */
+            /* Date Issued column (assuming it's column 16) */
+            td:nth-child(16) {
+                position: relative;
+                transition: all 0.2s ease;
+            }
+            
+            /* Expiry Date column (assuming it's column 17) */
+            td:nth-child(17) {
+                position: relative;
+                transition: all 0.2s ease;
+            }
+            
+            /* Hover effect for date columns */
+            tr:hover td:nth-child(16),
+            tr:hover td:nth-child(17) {
+                background-color: rgba(243, 244, 246, 0.8); /* Light gray background */
+                color: #1F2937; /* Darker text for better contrast */
+                font-weight: 500; /* Slightly bolder */
+            }
+            
+            /* Special styling for expiry dates that are coming up soon */
+            td:nth-child(17).expiring-soon {
+                color: #F59E0B; /* Amber/orange color */
+                font-weight: 500;
+            }
+            
+            /* Special styling for expired dates */
+            td:nth-child(17).expired {
+                color: #EF4444; /* Red color */
+                font-weight: 500;
+            }
+        </style>
+    </head>
+<body>
+<!-- Navigation Bar -->
+<nav class="bg-transparent shadow-lg border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+            <div class="flex items-center">
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <span class="text-xl font-bold text-green-700">FUS-CENRO-ARGAO</span>
                 </div>
-                <!-- Export Button -->
-                <button onclick="exportTableToCSV('chainsaw_records.csv')" 
-                        class="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition duration-200 flex items-center space-x-2 shadow-sm">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </div>
+            <!-- User Menu -->
+            <div class="hidden md:flex items-center space-x-4">
+                <div class="text-lg text-gray-900 font-medium">
+                    Welcome, {{ request.user.username }}
+                </div>
+                <div class="relative">
+                    <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                        ▼
+                    </button>
+                    <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                        <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                           
+                            <!-- Quick Actions -->
+                            <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
+                            <div class="grid grid-cols-1 gap-2">
+                                <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
+                                <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
+                                <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
+                                <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
+                                <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                            </div>
+                            <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
+                                <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                </svg>
+                                Sign Out
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+                <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
                     </svg>
-                    <span>Export CSV</span>
                 </button>
             </div>
         </div>
-        <div class="overflow-x-auto">
-            <div class="mb-4">
-                {% with expired_records=chainsaw_records|expired_records %}
-                    {% if expired_records %}
-                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
-                            Alert: {{ expired_records|length }} record{{ expired_records|length|pluralize }} expired
-                        </div>
-                    {% endif %}
-                {% endwith %}
-                
-                {% with expiring_records=chainsaw_records|expiring_records %}
-                    {% if expiring_records %}
-                        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
-                            Warning: {{ expiring_records|length }} permit{{ expiring_records|length|pluralize }} expiring soon
-                        </div>
-                    {% endif %}
-                {% endwith %}
+    </div>
+    <!-- Mobile Menu -->
+    <div class="md:hidden" id="mobile-menu" style="display: none;">
+        <div class="px-2 pt-2 pb-3 space-y-1">
+            <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Search Section -->
+<div class="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+    <div class="bg-gradient-to-r from-green-600 to-blue-400 p-6 rounded-xl shadow-lg">
+        <!-- Filter Buttons Row -->
+        <div class="flex gap-4 mb-6 flex-wrap">
+            <button id="allRecordsBtn" 
+                    class="px-6 py-2 bg-transparent text-white rounded-full transition-all duration-200 text-sm font-medium border-2 border-white">
+                All Records
+            </button>
+            <button id="activeRecordsBtn" 
+                    class="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
+                Active
+            </button>
+            <button id="expiredRecordsBtn" 
+                    class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
+                Expired
+            </button>
+            <button id="expiringSoonRecordsBtn" 
+                    class="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
+                Expiring Soon
+            </button>
+        </div>
+        
+        <!-- Search and filters row -->
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <!-- Search Record -->
+            <div class="md:col-span-1">
+                <label class="block text-white text-sm mb-2">Search Record</label>
+                <input type="text" id="recordSearch" placeholder="Search record..." 
+                       class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
             </div>
-            <!-- Expiry Warnings -->
-            <div class="mb-4">
-                {% for record in chainsaw_records %}
-                    {% if record.expiry_date %}
-                        {% if record.is_expiring_soon and not record.is_expired %}
-                            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
-                                Warning: Registration {{ record.no }} for {{ record.name }} will expire in {{ record.days_remaining }} days
-                            </div>
-                        {% elif record.is_expired %}
-                            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
-                                Alert: Registration {{ record.no }} for {{ record.name }} has expired
-                            </div>
-                        {% endif %}
-                    {% endif %}
-                {% endfor %}
+            
+            <!-- Start Date -->
+            <div class="md:col-span-1">
+                <label class="block text-white text-sm mb-2">Start Date</label>
+                <input type="date" id="startDate" class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
             </div>
-            <!-- Records Table -->
-            <table class="min-w-full text-sm text-left text-gray-500">
-                <thead class="bg-gray-50 text-gray-700">
-                    <tr>
-                        <th class="px-6 py-4 font-semibold">No.</th>
-                        <th class="px-6 py-4 font-semibold">Year</th>
-                        <th class="px-6 py-4 font-semibold">Region</th>
-                        <th class="px-6 py-4 font-semibold">PENRO</th>
-                        <th class="px-6 py-4 font-semibold">CENRO</th>
-                        <th class="px-6 py-4 font-semibold">Name</th>
-                        <th class="px-6 py-4 font-semibold">Municipality/City</th>
-                        <th class="px-6 py-4 font-semibold">Province</th>
-                        <th class="px-6 py-4 font-semibold">Purpose/Use</th>
-                        <th class="px-6 py-4 font-semibold">Date Acquired</th>
-                        <th class="px-6 py-4 font-semibold">Cert. Reg. #</th>
-                        <th class="px-6 py-4 font-semibold">CTPO/PTPR/Tenure #</th>
-                        <th class="px-6 py-4 font-semibold">Brand</th>
-                        <th class="px-6 py-4 font-semibold">Model</th>
-                        <th class="px-6 py-4 font-semibold">Serial #</th>
-                        <th class="px-6 py-4 font-semibold">Color</th>
-                        <th class="px-6 py-4 font-semibold">Date Issued</th>
-                        <th class="px-6 py-4 font-semibold">Expiry Date</th>
-                        <th class="px-6 py-4 font-semibold">Status of Registration</th>
-                        <th class="px-6 py-4 font-semibold">Date of Renewal</th>
-                        <th class="px-6 py-4 font-semibold">Horse Power</th>
-                        <th class="px-6 py-4 font-semibold">Guidebar Length</th>
-                        <th class="px-6 py-4 font-semibold">DENR Sticker #</th>
-                        <th class="px-6 py-4 font-semibold">File</th>
-                        <th class="px-6 py-4 font-semibold">Status</th>
-                        <th class="px-6 py-4 font-semibold">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    {% for record in chainsaw_records %}
-                    <tr class="hover:bg-gray-50 transition-colors duration-150">
-                        <td class="px-6 py-4">{{ record.no }}</td>
-                        <td class="px-6 py-4">{{ record.year }}</td>
-                        <td class="px-6 py-4">{{ record.region }}</td>
-                        <td class="px-6 py-4">{{ record.penro }}</td>
-                        <td class="px-6 py-4">{{ record.cenro }}</td>
-                        <td class="px-6 py-4">{{ record.name }}</td>
-                        <td class="px-6 py-4">{{ record.municipality }}</td>
-                        <td class="px-6 py-4">{{ record.province }}</td>
-                        <td class="px-6 py-4">{{ record.purpose }}</td>
-                        <td class="px-6 py-4">{{ record.date_acquired|date:"F d, Y" }}</td>
-                        <td class="px-6 py-4">{{ record.cert_reg_number }}</td>
-                        <td class="px-6 py-4">{{ record.ctpo_number }}</td>
-                        <td class="px-6 py-4">{{ record.brand }}</td>
-                        <td class="px-6 py-4">{{ record.model }}</td>
-                        <td class="px-6 py-4">{{ record.serial_number }}</td>
-                        <td class="px-6 py-4">{{ record.color }}</td>
-                        <td class="px-6 py-4">{{ record.date_issued|date:"F d, Y" }}</td>
-                        <td class="px-6 py-4">{{ record.expiry_date|date:"F d, Y" }}</td>
-                        <td class="px-6 py-4">{{ record.registration_status }}</td>
-                        <td class="px-6 py-4">{{ record.date_renewal|date:"F d, Y" }}</td>
-                        <td class="px-6 py-4">{{ record.horse_power }}</td>
-                        <td class="px-6 py-4">{{ record.guidebar_length }}"</td>
-                        <td class="px-6 py-4">{{ record.denr_sticker }}</td>
-                        <td class="px-6 py-4">
-                            {% if record.file %}
-                                <a href="{{ record.file.url }}" 
-                                   class="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                                   target="_blank">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                    </svg>
-                                    View File
-                                </a>
-                            {% else %}
-                                <span class="text-gray-400">No file</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4">
-                            {% if record.is_expired %}
-                                <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Expired</span>
-                            {% elif record.is_expiring_soon %}
-                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Expiring Soon</span>
-                            {% else %}
-                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Active</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center space-x-3">
-                                <a href="{% url 'edit_chainsaw' record.id %}" 
-                                   class="text-blue-600 hover:text-blue-800 font-medium">
-                                    Edit
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            
+            <!-- End Date -->
+            <div class="md:col-span-1">
+                <label class="block text-white text-sm mb-2">End Date</label>
+                <input type="date" id="endDate" class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+            </div>
+            
+            <!-- Year Filter -->
+            <div class="md:col-span-1">
+                <label class="block text-white text-sm mb-2">Filter by Year</label>
+                <select id="yearFilter" 
+                        class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-black-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                    <option value="">All Years</option>
+                </select>
+            </div>
+            
+            <!-- Export Button -->
+            <div class="md:col-span-1 flex items-end">
+                <button onclick="exportTableToCSV('chainsaw_records.csv')" 
+                        class="w-full px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 flex items-center justify-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Export
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
+<!-- Records Section - Full Width with Scroll -->
+<div class="w-full py-4">
+    <div class="table-container overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead>
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Reg. No.</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Year</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Region</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">PENRO</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">CENRO</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Owner</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Municipality</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Purpose</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Date Acquired</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Cert. Reg. No.</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">CTPO No.</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Brand</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Model</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Serial No.</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Color</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Date Issued</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Expiry Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Reg. Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Date Renewal</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Horse Power</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Guidebar Length</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">DENR Sticker</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">File</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% if chainsaw_records %}
+                    {% for record in chainsaw_records %}
+                    <tr>
+                        <td class="px-6 py-3 text-xs font-bold text-gray-900 whitespace-nowrap">{{ record.no }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.year }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.region }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.penro }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.cenro }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.name }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.municipality }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.purpose }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.date_acquired|date:"M d, Y" }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.cert_reg_number }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.ctpo_number }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.brand }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.model }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.serial_number }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.color }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.date_issued|date:"M d, Y" }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.expiry_date|date:"M d, Y" }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.registration_status }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                            {% if record.date_renewal %}
+                                {{ record.date_renewal|date:"M d, Y" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-3 text-xs  text-gray-900 whitespace-nowrap">{{ record.horse_power }}</td>
+                        <td class="px-6 py-3 text-xs  text-gray-900 whitespace-nowrap">{{ record.guidebar_length }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.denr_sticker }}</td>
+                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                            {% if record.file %}
+                                <a href="{{ record.file.url }}" class="text-blue-600 hover:text-blue-900" target="_blank">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                                </svg>
+                                View
+                            </a>
+                            {% else %}
+                                <span class="text-gray-400">No file</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-3 text-xs font-bold text-gray-900 whitespace-nowrap">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'view_chainsaw' record.id %}" class="text-blue-600 hover:text-blue-900">View</a>
+                                <a href="{% url 'edit_chainsaw' record.id %}" class="text-orange-600 hover:text-orange-900">Edit</a>
+                                {% if record.is_expired %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr id="noRecordsRow">
+                        <td colspan="24" class="px-6 py-4 text-center text-gray-500">No records found matching your criteria.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<footer class="bg-blue-900 text-white py-8">
+    <div class="max-w-7xl mx-auto text-center">
+        <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+        <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+    </div>
+</footer>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Enhanced search functionality
-        const searchInput = document.getElementById('searchInput');
-        const searchValidation = document.getElementById('searchValidation');
+        console.log('DOM loaded, initializing toggle menu functionality');
         
-        if (searchInput) {
-            let debounceTimer;
-
-            searchInput.addEventListener('input', function() {
-                clearTimeout(debounceTimer);
+        // User menu dropdown toggle
+        const userMenuButton = document.getElementById('user-menu-button');
+        const userMenu = document.getElementById('user-menu');
+        
+        if (userMenuButton && userMenu) {
+            console.log('User menu elements found');
+            
+            userMenuButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
                 
-                debounceTimer = setTimeout(() => {
-                    const searchTerm = this.value.toLowerCase().trim();
-                    const rows = document.querySelectorAll('tbody tr');
-                    let visibleCount = 0;
-                    
-                    // Clear validation if search is empty
-                    if (searchTerm === '') {
-                        searchValidation.style.display = 'none';
-                        rows.forEach(row => row.style.display = '');
+                // Toggle the 'hidden' class
+                if (userMenu.classList.contains('hidden')) {
+                    userMenu.classList.remove('hidden');
+                    console.log('User menu opened');
+                } else {
+                    userMenu.classList.add('hidden');
+                    console.log('User menu closed');
+                }
+            });
+            
+            // Close the menu when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                    userMenu.classList.add('hidden');
+                }
+            });
+        } else {
+            console.error('User menu elements not found:', {
+                userMenuButton: !!userMenuButton,
+                userMenu: !!userMenu
+            });
+        }
+        
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        if (mobileMenuButton && mobileMenu) {
+            console.log('Mobile menu elements found');
+            
+            mobileMenuButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                // Toggle the display style directly
+                if (mobileMenu.style.display === 'none' || mobileMenu.style.display === '') {
+                    mobileMenu.style.display = 'block';
+                    console.log('Mobile menu opened');
+                } else {
+                    mobileMenu.style.display = 'none';
+                    console.log('Mobile menu closed');
+                }
+            });
+        } else {
+            console.error('Mobile menu elements not found:', {
+                mobileMenuButton: !!mobileMenuButton,
+                mobileMenu: !!mobileMenu
+            });
+        }
+    });
+</script>
+
+<!-- Add this JavaScript to improve the year filter functionality -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, initializing year filter functionality');
+        
+        // Year filter functionality
+        const yearFilter = document.getElementById('yearFilter');
+        const tableBody = document.querySelector('tbody');
+        
+        if (yearFilter && tableBody) {
+            console.log('Year filter and table body found');
+            
+            // Clear existing options first
+            while (yearFilter.options.length > 1) {
+                yearFilter.remove(1);
+            }
+            
+            // Get current year
+            const currentYear = new Date().getFullYear();
+            
+            // Add years from 2010 to current year in descending order
+            for (let year = currentYear; year >= 2010; year--) {
+                const option = document.createElement('option');
+                option.value = year.toString();
+                option.textContent = year.toString();
+                yearFilter.appendChild(option);
+            }
+            
+            console.log('Year filter populated with years from 2010 to', currentYear);
+            
+            // Add event listener for year filter change
+            yearFilter.addEventListener('change', function() {
+                const selectedYear = this.value;
+                console.log('Year filter changed to:', selectedYear);
+                
+                // Get all rows except the "No records found" row
+                const rows = Array.from(tableBody.querySelectorAll('tr:not(#noRecordsRow)'));
+                let visibleRowCount = 0;
+                
+                rows.forEach(row => {
+                    // Skip if it's a "No records found" row
+                    if (row.querySelector('td[colspan]') && row.id !== 'noRecordsRow') {
                         return;
                     }
-
-                    rows.forEach(row => {
-                        // Get all cells in the row
-                        const cells = row.querySelectorAll('td');
-                        let shouldShow = false;
-                        
-                        cells.forEach(cell => {
-                            const cellText = cell.textContent.toLowerCase().trim();
-                            if (cellText.includes(searchTerm)) {
-                                shouldShow = true;
-                            }
-                        });
-                        
-                        row.style.display = shouldShow ? '' : 'none';
-                        if (shouldShow) visibleCount++;
-                    });
                     
-                    // Update validation message with appropriate styling
-                    if (visibleCount > 0) {
-                        searchValidation.textContent = `Found ${visibleCount} matching record${visibleCount !== 1 ? 's' : ''}`;
-                        searchValidation.className = 'absolute mt-1 text-sm font-medium text-green-600 bg-green-50 px-2 py-1 rounded-md';
-                    } else {
-                        searchValidation.textContent = 'No matches found';
-                        searchValidation.className = 'absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md';
+                    // If no year selected, show all rows
+                    if (!selectedYear) {
+                        row.style.display = '';
+                        visibleRowCount++;
+                        return;
                     }
-                    searchValidation.style.display = 'block';
-                }, 300);
+                    
+                    // Check issued date column (column 16)
+                    const issuedDateCell = row.querySelector('td:nth-child(16)');
+                    if (issuedDateCell) {
+                        const dateText = issuedDateCell.textContent.trim();
+                        // Extract year from date format like "Jan 15, 2023"
+                        const match = dateText.match(/\d{4}$/);
+                        if (match && match[0] === selectedYear) {
+                            row.style.display = '';
+                            visibleRowCount++;
+                            console.log('Showing row with issued date year:', selectedYear);
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                
+                console.log('Visible rows after year filtering:', visibleRowCount);
+                
+                // Show "No records found" row if no matches
+                const noRecordsRow = document.getElementById('noRecordsRow');
+                if (noRecordsRow) {
+                    if (visibleRowCount === 0 && selectedYear !== '') {
+                        noRecordsRow.style.display = '';
+                        console.log('Showing no records message');
+                    } else {
+                        noRecordsRow.style.display = 'none';
+                        console.log('Hiding no records message');
+                    }
+                }
             });
+            
+            console.log('Year filter event listener added');
+        } else {
+            console.error('Year filter elements not found:', {
+                yearFilter: !!yearFilter,
+                tableBody: !!tableBody
+            });
+        }
+    });
+</script>
 
-            // Clear validation on focus if empty
-            searchInput.addEventListener('focus', function() {
-                if (!this.value.trim()) {
-                    searchValidation.style.display = 'none';
+<!-- Add this JavaScript to fix the filter buttons functionality -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, initializing filter buttons functionality');
+        
+        // Get filter buttons
+        const allRecordsBtn = document.getElementById('allRecordsBtn');
+        const activeRecordsBtn = document.getElementById('activeRecordsBtn');
+        const expiredRecordsBtn = document.getElementById('expiredRecordsBtn');
+        const expiringSoonRecordsBtn = document.getElementById('expiringSoonRecordsBtn');
+        
+        // Get table body
+        const tableBody = document.querySelector('tbody');
+        
+        if (!tableBody) {
+            console.error('Table body not found!');
+            return;
+        }
+        
+        // Helper function to highlight the active button
+        function highlightActiveButton(activeButton) {
+            // Remove highlight from all buttons
+            [allRecordsBtn, activeRecordsBtn, expiredRecordsBtn, expiringSoonRecordsBtn].forEach(btn => {
+                if (btn) {
+                    if (btn === allRecordsBtn) {
+                        btn.classList.remove('bg-white', 'text-blue-600');
+                        btn.classList.add('bg-transparent', 'text-white', 'border-2', 'border-white');
+                    } else {
+                        btn.classList.remove('border-2', 'border-white', 'bg-transparent');
+                    }
+                }
+            });
+            
+            // Add highlight to active button
+            if (activeButton === allRecordsBtn) {
+                activeButton.classList.remove('bg-transparent', 'text-white');
+                activeButton.classList.add('bg-white', 'text-blue-600');
+            } else {
+                activeButton.classList.add('border-2', 'border-white');
+            }
+        }
+        
+        // All Records button
+        if (allRecordsBtn) {
+            allRecordsBtn.addEventListener('click', function() {
+                console.log('All Records button clicked');
+                
+                // Show all rows
+                const rows = tableBody.querySelectorAll('tr:not(#noRecordsRow)');
+                rows.forEach(row => {
+                    row.style.display = '';
+                });
+                
+                // Hide "No records found" row
+                const noRecordsRow = document.getElementById('noRecordsRow');
+                if (noRecordsRow) {
+                    noRecordsRow.style.display = 'none';
+                }
+                
+                // Highlight this button
+                highlightActiveButton(allRecordsBtn);
+            });
+        }
+        
+        // Active Records button
+        if (activeRecordsBtn) {
+            activeRecordsBtn.addEventListener('click', function() {
+                console.log('Active Records button clicked');
+                
+                const rows = tableBody.querySelectorAll('tr:not(#noRecordsRow)');
+                const today = new Date();
+                let visibleRowCount = 0;
+                
+                rows.forEach(row => {
+                    // Skip if it's a "No records found" row
+                    if (row.querySelector('td[colspan]')) {
+                        return;
+                    }
+                    
+                    // Get the Expiry Date cell (column 17)
+                    const expiryDateCell = row.querySelector('td:nth-child(17)');
+                    
+                    if (expiryDateCell) {
+                        const expiryDateText = expiryDateCell.textContent.trim();
+                        
+                        if (expiryDateText) {
+                            // Parse the expiry date (format: "Jan 15, 2023")
+                            const expiryDate = new Date(expiryDateText);
+                            
+                            // Check if the date is valid and in the future (active)
+                            if (!isNaN(expiryDate.getTime()) && expiryDate >= today) {
+                                row.style.display = '';
+                                visibleRowCount++;
+                                console.log('Showing active row with expiry date:', expiryDateText);
+                            } else {
+                                row.style.display = 'none';
+                                console.log('Hiding inactive row with expiry date:', expiryDateText);
+                            }
+                        } else {
+                            row.style.display = 'none';
+                            console.log('Hiding row - no expiry date');
+                        }
+                    } else {
+                        row.style.display = 'none';
+                        console.log('Hiding row - no expiry date cell');
+                    }
+                });
+                
+                console.log('Total visible rows after filtering:', visibleRowCount);
+                
+                // Show "No records found" row if no matches
+                const noRecordsRow = document.getElementById('noRecordsRow');
+                if (noRecordsRow) {
+                    if (visibleRowCount === 0) {
+                        noRecordsRow.style.display = '';
+                        console.log('Showing no records message');
+                    } else {
+                        noRecordsRow.style.display = 'none';
+                        console.log('Hiding no records message');
+                    }
+                }
+                
+                // Highlight this button
+                highlightActiveButton(activeRecordsBtn);
+            });
+        }
+        
+        // Expired Records button
+        if (expiredRecordsBtn) {
+            expiredRecordsBtn.addEventListener('click', function() {
+                console.log('Expired Records button clicked');
+                
+                const rows = tableBody.querySelectorAll('tr:not(#noRecordsRow)');
+                const today = new Date();
+                let visibleRowCount = 0;
+                
+                rows.forEach(row => {
+                    // Skip if it's a "No records found" row
+                    if (row.querySelector('td[colspan]')) {
+                        return;
+                    }
+                    
+                    // Get the Expiry Date cell (column 17)
+                    const expiryDateCell = row.querySelector('td:nth-child(17)');
+                    
+                    if (expiryDateCell) {
+                        const expiryDateText = expiryDateCell.textContent.trim();
+                        
+                        if (expiryDateText) {
+                            // Parse the expiry date (format: "Jan 15, 2023")
+                            const expiryDate = new Date(expiryDateText);
+                            
+                            // Check if the date is valid and in the past (expired)
+                            if (!isNaN(expiryDate.getTime()) && expiryDate < today) {
+                                row.style.display = '';
+                                visibleRowCount++;
+                                console.log('Showing expired row with expiry date:', expiryDateText);
+                            } else {
+                                row.style.display = 'none';
+                                console.log('Hiding non-expired row with expiry date:', expiryDateText);
+                            }
+                        } else {
+                            row.style.display = 'none';
+                            console.log('Hiding row - no expiry date');
+                        }
+                    } else {
+                        row.style.display = 'none';
+                        console.log('Hiding row - no expiry date cell');
+                    }
+                });
+                
+                console.log('Total visible rows after filtering:', visibleRowCount);
+                
+                // Show "No records found" row if no matches
+                const noRecordsRow = document.getElementById('noRecordsRow');
+                if (noRecordsRow) {
+                    if (visibleRowCount === 0) {
+                        noRecordsRow.style.display = '';
+                        console.log('Showing no records message');
+                    } else {
+                        noRecordsRow.style.display = 'none';
+                        console.log('Hiding no records message');
+                    }
+                }
+                
+                // Highlight this button
+                highlightActiveButton(expiredRecordsBtn);
+            });
+        }
+        
+        // Expiring Soon Records button
+        if (expiringSoonRecordsBtn) {
+            expiringSoonRecordsBtn.addEventListener('click', function() {
+                console.log('Expiring Soon Records button clicked');
+                
+                const rows = tableBody.querySelectorAll('tr:not(#noRecordsRow)');
+                const today = new Date();
+                const threeMonthsLater = new Date();
+                threeMonthsLater.setMonth(today.getMonth() + 3);
+                
+                console.log('Date range for expiring soon:', 
+                    today.toISOString().split('T')[0], 'to', 
+                    threeMonthsLater.toISOString().split('T')[0]);
+                
+                let visibleRowCount = 0;
+                
+                rows.forEach(row => {
+                    // Skip if it's a "No records found" row
+                    if (row.querySelector('td[colspan]')) {
+                        return;
+                    }
+                    
+                    // Get the Expiry Date cell (column 17)
+                    const expiryDateCell = row.querySelector('td:nth-child(17)');
+                    
+                    if (expiryDateCell) {
+                        const expiryDateText = expiryDateCell.textContent.trim();
+                        
+                        if (expiryDateText) {
+                            // Parse the expiry date (format: "Jan 15, 2023")
+                            const expiryDate = new Date(expiryDateText);
+                            
+                            // Check if the date is valid and within the next 3 months
+                            if (!isNaN(expiryDate.getTime()) && 
+                                expiryDate >= today && 
+                                expiryDate <= threeMonthsLater) {
+                                row.style.display = '';
+                                visibleRowCount++;
+                                console.log('Showing expiring soon row with expiry date:', expiryDateText);
+                            } else {
+                                row.style.display = 'none';
+                                console.log('Hiding row - not expiring soon with expiry date:', expiryDateText);
+                            }
+                        } else {
+                            row.style.display = 'none';
+                            console.log('Hiding row - no expiry date');
+                        }
+                    } else {
+                        row.style.display = 'none';
+                        console.log('Hiding row - no expiry date cell');
+                    }
+                });
+                
+                console.log('Total visible rows after filtering:', visibleRowCount);
+                
+                // Show "No records found" row if no matches
+                const noRecordsRow = document.getElementById('noRecordsRow');
+                if (noRecordsRow) {
+                    if (visibleRowCount === 0) {
+                        noRecordsRow.style.display = '';
+                        console.log('Showing no records message');
+                    } else {
+                        noRecordsRow.style.display = 'none';
+                        console.log('Hiding no records message');
+                    }
+                }
+                
+                // Highlight this button
+                highlightActiveButton(expiringSoonRecordsBtn);
+            });
+        }
+        
+        // Create "No records found" row if it doesn't exist
+        let noRecordsRow = document.getElementById('noRecordsRow');
+        if (!noRecordsRow) {
+            noRecordsRow = document.createElement('tr');
+            noRecordsRow.id = 'noRecordsRow';
+            noRecordsRow.style.display = 'none'; // Hidden by default
+            
+            const noRecordsCell = document.createElement('td');
+            noRecordsCell.colSpan = document.querySelector('thead tr').children.length;
+            noRecordsCell.className = 'px-6 py-8 text-center text-gray-500';
+            noRecordsCell.textContent = 'No records found matching your criteria.';
+            
+            noRecordsRow.appendChild(noRecordsCell);
+            tableBody.appendChild(noRecordsRow);
+            console.log('Created "No records found" row');
+        }
+        
+        // Highlight the "All Records" button by default
+        if (allRecordsBtn) {
+            highlightActiveButton(allRecordsBtn);
+        }
+        
+        console.log('Filter buttons functionality initialized');
+    });
+</script>
+
+<!-- Add this JavaScript for date range filtering -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, initializing date range filter functionality');
+        
+        // Get date filter inputs
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const tableBody = document.querySelector('tbody');
+        
+        if (startDateInput && endDateInput && tableBody) {
+            console.log('Date filter inputs and table body found');
+            
+            // Set default values to current date and 7 days later
+            const today = new Date();
+            const defaultEndDate = new Date();
+            defaultEndDate.setDate(today.getDate() + 7);
+            
+            // Format date as YYYY-MM-DD for input value
+            function formatDateForInput(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+            
+            // Set default values
+            startDateInput.value = formatDateForInput(today);
+            endDateInput.value = formatDateForInput(defaultEndDate);
+            
+            // Function to apply date filtering
+            function applyDateFilter() {
+                const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+                const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+                
+                if (!startDate && !endDate) {
+                    console.log('No date range specified, showing all records');
+                    return;
+                }
+                
+                console.log('Filtering by date range:', 
+                    startDate ? startDate.toISOString().split('T')[0] : 'any', 
+                    'to', 
+                    endDate ? endDate.toISOString().split('T')[0] : 'any');
+                
+                // Set time to end of day for end date to include the entire day
+                if (endDate) {
+                    endDate.setHours(23, 59, 59, 999);
+                }
+                
+                const rows = tableBody.querySelectorAll('tr:not(#noRecordsRow)');
+                let visibleRowCount = 0;
+                
+                rows.forEach(row => {
+                    // Skip if it's a "No records found" row
+                    if (row.querySelector('td[colspan]')) {
+                        return;
+                    }
+                    
+                    // Get the Date Issued cell (column 16)
+                    const issuedDateCell = row.querySelector('td:nth-child(16)');
+                    
+                    if (issuedDateCell) {
+                        const issuedDateText = issuedDateCell.textContent.trim();
+                        
+                        if (issuedDateText) {
+                            // Parse the issued date (format: "Jan 15, 2023")
+                            const issuedDate = new Date(issuedDateText);
+                            
+                            if (!isNaN(issuedDate.getTime())) {
+                                let showRow = true;
+                                
+                                // Check if date is within range
+                                if (startDate && issuedDate < startDate) {
+                                    showRow = false;
+                                }
+                                
+                                if (endDate && issuedDate > endDate) {
+                                    showRow = false;
+                                }
+                                
+                                if (showRow) {
+                                    row.style.display = '';
+                                    visibleRowCount++;
+                                    console.log('Showing row with issued date:', issuedDateText);
+                                } else {
+                                    row.style.display = 'none';
+                                    console.log('Hiding row - date out of range:', issuedDateText);
+                                }
+                            } else {
+                                console.log('Invalid date format:', issuedDateText);
+                                row.style.display = 'none';
+                            }
+                        } else {
+                            console.log('Empty date cell');
+                            row.style.display = 'none';
+                        }
+                    } else {
+                        console.log('Date cell not found');
+                        row.style.display = 'none';
+                    }
+                });
+                
+                console.log('Total visible rows after date filtering:', visibleRowCount);
+                
+                // Show "No records found" row if no matches
+                const noRecordsRow = document.getElementById('noRecordsRow');
+                if (noRecordsRow) {
+                    if (visibleRowCount === 0) {
+                        noRecordsRow.style.display = '';
+                        console.log('Showing no records message');
+                    } else {
+                        noRecordsRow.style.display = 'none';
+                        console.log('Hiding no records message');
+                    }
+                }
+            }
+            
+            // Add event listeners for date inputs
+            startDateInput.addEventListener('change', applyDateFilter);
+            endDateInput.addEventListener('change', applyDateFilter);
+            
+            // Add event listeners for date picker icons if they exist
+            const startDateIcon = document.querySelector('[data-start-date-icon]');
+            const endDateIcon = document.querySelector('[data-end-date-icon]');
+            
+            if (startDateIcon) {
+                startDateIcon.addEventListener('click', function() {
+                    startDateInput.showPicker();
+                });
+            }
+            
+            if (endDateIcon) {
+                endDateIcon.addEventListener('click', function() {
+                    endDateInput.showPicker();
+                });
+            }
+            
+            console.log('Date filter event listeners added');
+        } else {
+            console.error('Date filter elements not found:', {
+                startDateInput: !!startDateInput,
+                endDateInput: !!endDateInput,
+                tableBody: !!tableBody
+            });
+        }
+    });
+</script>
+
+<!-- Add this JavaScript to apply status-based classes to rows -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, applying status-based styling to rows');
+        
+        // Apply status classes to rows based on expiry date
+        function applyStatusClasses() {
+            const rows = document.querySelectorAll('tbody tr:not(#noRecordsRow)');
+            const today = new Date();
+            const threeMonthsLater = new Date();
+            threeMonthsLater.setMonth(today.getMonth() + 3);
+            
+            console.log('Applying status classes to rows. Today:', today.toISOString().split('T')[0], 
+                        'Three months later:', threeMonthsLater.toISOString().split('T')[0]);
+            
+            rows.forEach(row => {
+                // Skip if it's a "No records found" row
+                if (row.querySelector('td[colspan]')) {
+                    return;
+                }
+                
+                // Get the expiry date cell (column 17)
+                const expiryDateCell = row.querySelector('td:nth-child(17)');
+                
+                if (expiryDateCell) {
+                    const expiryDateText = expiryDateCell.textContent.trim();
+                    
+                    if (expiryDateText) {
+                        // Parse the expiry date (format: "Jan 15, 2023")
+                        const expiryDate = new Date(expiryDateText);
+                        
+                        if (!isNaN(expiryDate.getTime())) {
+                            // Remove any existing status classes
+                            row.classList.remove('active-record', 'expired-record', 'expiring-soon-record');
+                            
+                            // Apply appropriate class based on date
+                            if (expiryDate < today) {
+                                // Expired
+                                row.classList.add('expired-record');
+                                console.log('Row marked as expired:', expiryDateText);
+                            } else if (expiryDate <= threeMonthsLater) {
+                                // Expiring soon (within 3 months)
+                                row.classList.add('expiring-soon-record');
+                                console.log('Row marked as expiring soon:', expiryDateText);
+                            } else {
+                                // Active
+                                row.classList.add('active-record');
+                                console.log('Row marked as active:', expiryDateText);
+                            }
+                        }
+                    }
                 }
             });
         }
-
-        // Add placeholder text indicating search fields
-        searchInput.placeholder = "Search records..";
+        
+        // Apply status classes when page loads
+        applyStatusClasses();
+        
+        // Apply status classes after any filtering
+        const filterButtons = [
+            document.getElementById('allRecordsBtn'),
+            document.getElementById('activeRecordsBtn'),
+            document.getElementById('expiredRecordsBtn'),
+            document.getElementById('expiringSoonRecordsBtn'),
+            document.getElementById('yearFilter')
+        ];
+        
+        filterButtons.forEach(button => {
+            if (button) {
+                button.addEventListener('click', function() {
+                    setTimeout(applyStatusClasses, 10);
+                });
+            }
+        });
+        
+        // Apply status classes after search
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                setTimeout(applyStatusClasses, 10);
+            });
+        }
     });
+</script>
 
+<!-- Add this JavaScript to initialize search functionality -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, initializing search functionality');
+        
+        // Get the search input element
+        const searchInput = document.querySelector('input[placeholder="Search record..."]');
+        const tableBody = document.querySelector('tbody');
+        
+        if (searchInput && tableBody) {
+            console.log('Search input and table body found');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                console.log('Searching for:', searchTerm);
+                
+                // Get all rows except the "No records found" row
+                const rows = Array.from(tableBody.querySelectorAll('tr:not(#noRecordsRow)'));
+                let visibleRowCount = 0;
+                
+                rows.forEach(row => {
+                    // Skip if it's a "No records found" row with colspan
+                    if (row.querySelector('td[colspan]')) {
+                        return;
+                    }
+                    
+                    // Get all cells in the row
+                    const cells = Array.from(row.querySelectorAll('td'));
+                    
+                    // If search term is empty, show all rows
+                    if (!searchTerm) {
+                        row.style.display = '';
+                        visibleRowCount++;
+                        return;
+                    }
+                    
+                    // Check if any cell contains the search term
+                    const rowText = cells.map(cell => cell.textContent.toLowerCase()).join(' ');
+                    if (rowText.includes(searchTerm)) {
+                        row.style.display = '';
+                        visibleRowCount++;
+                        console.log('Row matches search term');
+                    } else {
+                        row.style.display = 'none';
+                        console.log('Row does not match search term');
+                    }
+                });
+                
+                console.log('Total visible rows after search:', visibleRowCount);
+                
+                // Show "No records found" row if no matches
+                const noRecordsRow = document.getElementById('noRecordsRow');
+                if (noRecordsRow) {
+                    if (visibleRowCount === 0 && searchTerm) {
+                        noRecordsRow.style.display = '';
+                        console.log('Showing no records message');
+                    } else {
+                        noRecordsRow.style.display = 'none';
+                        console.log('Hiding no records message');
+                    }
+                }
+            });
+            
+            // Add clear search button functionality if it exists
+            const clearSearchButton = document.querySelector('.clear-search-button');
+            if (clearSearchButton) {
+                clearSearchButton.addEventListener('click', function() {
+                    searchInput.value = '';
+                    // Trigger the input event to refresh the table
+                    searchInput.dispatchEvent(new Event('input'));
+                });
+            }
+            
+            console.log('Search functionality initialized');
+        } else {
+            console.error('Search elements not found:', {
+                searchInput: !!searchInput,
+                tableBody: !!tableBody
+            });
+        }
+    });
+</script>
+
+<!-- Add this script or modify your existing exportTableToCSV function -->
+<script>
+    // Function to export only visible table rows to CSV
     function exportTableToCSV(filename) {
+        console.log('Exporting visible table rows to CSV');
+        
         const table = document.querySelector('table');
-        const rows = table.querySelectorAll('tr');
+        if (!table) {
+            console.error('Table not found for export');
+            return;
+        }
+        
+        // Get header row
+        const headerRow = table.querySelector('thead tr');
+        if (!headerRow) {
+            console.error('Table header row not found');
+            return;
+        }
+        
+        // Get all visible rows from tbody (excluding the "No records found" row)
+        const visibleRows = Array.from(table.querySelectorAll('tbody tr')).filter(row => {
+            // Only include rows that are currently visible and not the "No records found" row
+            return row.style.display !== 'none' && !row.querySelector('td[colspan]');
+        });
+        
+        console.log(`Found ${visibleRows.length} visible rows to export`);
+        
+        if (visibleRows.length === 0) {
+            alert('No records to export. Please adjust your filters to show some records first.');
+            return;
+        }
+        
         let csv = [];
         
-        for (let i = 0; i < rows.length; i++) {
-            const row = [], cols = rows[i].querySelectorAll('td, th');
-            
-            for (let j = 0; j < cols.length; j++) {
-                // Get the text content and clean it up
-                let data = cols[j].textContent.replace(/(\r\n|\n|\r)/gm, '').trim();
-                // Escape double quotes and wrap field in quotes
-                data = data.replace(/"/g, '""');
-                row.push('"' + data + '"');
-            }
-            csv.push(row.join(','));
-        }
+        // Add header row
+        const headerCells = headerRow.querySelectorAll('th');
+        const headerData = [];
+        headerCells.forEach(cell => {
+            // Clean and format the header text
+            let text = cell.textContent.replace(/(\r\n|\n|\r)/gm, '').trim();
+            text = text.replace(/"/g, '""'); // Escape double quotes
+            headerData.push(`"${text}"`);
+        });
+        csv.push(headerData.join(','));
         
+        // Add data rows
+        visibleRows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const rowData = [];
+            
+            cells.forEach(cell => {
+                // Clean and format the cell text
+                let text = cell.textContent.replace(/(\r\n|\n|\r)/gm, '').trim();
+                text = text.replace(/"/g, '""'); // Escape double quotes
+                rowData.push(`"${text}"`);
+            });
+            
+            csv.push(rowData.join(','));
+        });
+        
+        // Create and download the CSV file
         const csvString = csv.join('\n');
         const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        
+        // Create download link
         const link = document.createElement('a');
-        if (navigator.msSaveBlob) {
-            navigator.msSaveBlob(blob, filename);
-        } else {
-            link.href = URL.createObjectURL(blob);
-            link.setAttribute('download', filename);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('CSV export complete');
     }
+    
+    // Make sure the export button uses this function
+    document.addEventListener('DOMContentLoaded', function() {
+        const exportButton = document.getElementById('exportButton');
+        if (exportButton) {
+            exportButton.addEventListener('click', function() {
+                // Generate filename with current date
+                const today = new Date();
+                const formattedDate = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+                exportTableToCSV(`chainsaw_records_${formattedDate}.csv`);
+            });
+            console.log('Export button event listener added');
+        }
+    });
 </script>
+</body>
+</html>

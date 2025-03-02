@@ -115,63 +115,72 @@
     </nav>
     
     
-    <!-- Compact search area with gradient background -->
+    <!-- Search Section -->
     <div class="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-    <div class="bg-gradient-to-r from-green-600 to-blue-200 rounded-lg p-4 mb-6">
-        <!-- Filter buttons row -->
-        <div class="flex flex-wrap gap-2 mb-3">
-            <button id="allRecordsBtn" 
-                    class="px-4 py-2 bg-blue-500/80 hover:bg-blue-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
-                All Records
-            </button>
-            <button id="activeRecordsBtn" 
-                    class="px-4 py-2 bg-green-500/80 hover:bg-green-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
-                Active
-            </button>
-            <button id="expiredRecordsBtn" 
-                    class="px-4 py-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
-                Expired
-            </button>
-            <button id="expiringSoonRecordsBtn" 
-                    class="px-4 py-2 bg-yellow-500/80 hover:bg-yellow-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
-                Expiring Soon
-            </button>
-        </div>
-        
-        <!-- Search and filters row -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
-            <!-- Permit Number -->
-            <div>
-                <label class="block text-white text-sm mb-1">Record Number</label>
-                <input type="text" placeholder="Search record..." 
-                       class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500">
-            </div>
-            
-            <!-- Start Date -->
-            <div>
-                <label class="block text-white text-sm mb-1">Start Date</label>
-                <input type="date" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500">
-            </div>
-            
-            <!-- End Date -->
-            <div>
-                <label class="block text-white text-sm mb-1">End Date</label>
-                <input type="date" class="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500">
-            </div>
-            
-            <!-- Export Button -->
-            <div class="flex items-end">
-                <button onclick="exportTableToCSV('lumber_records.csv')" 
-                        class="px-4 py-1.5 bg-green-700 text-white rounded-md hover:bg-green-800 w-full flex items-center justify-center">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                    </svg>
-                    Export
+        <div class="bg-gradient-to-r from-green-600 to-blue-400 p-6 rounded-xl shadow-lg">
+            <!-- Filter Buttons Row -->
+            <div class="flex gap-4 mb-6 flex-wrap">
+                <button id="allRecordsBtn" 
+                        class="px-6 py-2 bg-transparent text-white rounded-full transition-all duration-200 text-sm font-medium border-2 border-white">
+                    All Records
                 </button>
+                <button id="activeRecordsBtn" 
+                        class="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
+                    Active
+                </button>
+                <button id="expiredRecordsBtn" 
+                        class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
+                    Expired
+                </button>
+                <button id="expiringSoonRecordsBtn" 
+                        class="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
+                    Expiring Soon
+                </button>
+            </div>
+            
+            <!-- Search and filters row -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <!-- Search Record -->
+                <div class="md:col-span-1">
+                    <label class="block text-white text-sm mb-2">Search Record</label>
+                    <input type="text" id="recordSearch" placeholder="Search record..." 
+                           class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                </div>
+                
+                <!-- Start Date -->
+                <div class="md:col-span-1">
+                    <label class="block text-white text-sm mb-2">Start Date</label>
+                    <input type="date" id="startDate" class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                </div>
+                
+                <!-- End Date -->
+                <div class="md:col-span-1">
+                    <label class="block text-white text-sm mb-2">End Date</label>
+                    <input type="date" id="endDate" class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                </div>
+                
+                <!-- Year Filter -->
+                <div class="md:col-span-1">
+                    <label class="block text-white text-sm mb-2">Filter by Year</label>
+                    <select id="yearFilter" 
+                            class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                        <option value="">All Years</option>
+                    </select>
+                </div>
+                
+                <!-- Export Button -->
+                <div class="md:col-span-1 flex items-end">
+                    <button onclick="exportTableToCSV('lumber_records.csv')" 
+                            class="w-full px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 flex items-center justify-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Export
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     
     
@@ -204,38 +213,37 @@
                                 {% if lumber_records %}
                                     {% for record in lumber_records %}
                                     <tr class="hover:bg-gray-50 transition-colors duration-150 {% if record.is_expired %}bg-red-50{% endif %}">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.no }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.trade_name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.manager_owner }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.no }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.trade_name }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.manager_owner }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
                                             {% if record.contact_number %}
                                                 {{ record.contact_number }}
                                             {% else %}
                                                 <span class="text-gray-400">N/A</span>
                                             {% endif %}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.gender }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.brgy }}, {{ record.municipality }}, {{ record.province }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.permit_no }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.date_issued|date:"d/m/Y" }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.expiry_date|date:"d/m/Y" }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.source_supplier }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.volume_cubic_meter }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.species }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.gender }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.brgy }}, {{ record.municipality }}, {{ record.province }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.permit_no }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.date_issued|date:"d/m/Y" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.expiry_date|date:"d/m/Y" }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.source_supplier }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.volume_cubic_meter }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.species }}</td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
                                             {% if record.file %}
                                             <a href="{{ record.file.url }}" class="text-blue-600 hover:underline flex items-center" target="_blank">
-                                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                                 </svg>
-                                                View File 
+                                                View 
                                             </a>
                                             {% else %}
                                             <span class="text-gray-400">No file</span>
                                             {% endif %}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
                                             <div class="flex space-x-4">
                                                 <a href="{% url 'view_lumber_details' record.id %}" class="text-blue-600 hover:text-blue-800 font-medium">
                                                     View
@@ -501,8 +509,10 @@
             allRecordsBtn.classList.add('ring-2', 'ring-white');
         }
         
-        // Add search functionality
-        const searchInput = document.querySelector('input[placeholder="Search record..."]');
+        // Get the search input element
+        const searchInput = document.getElementById('recordSearch');
+        
+        // Add event listener for search input
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase().trim();
@@ -510,72 +520,218 @@
                 
                 rows.forEach(row => {
                     // Skip if it's the "No records found" row
-                    if (row.querySelector('td[colspan="14"]')) {
+                    if (row.querySelector('td[colspan]')) {
                         return;
                     }
                     
-                    let found = false;
-                    const cells = row.querySelectorAll('td');
+                    // Get all cell text in the row
+                    const rowText = Array.from(row.querySelectorAll('td'))
+                        .map(cell => cell.textContent.toLowerCase())
+                        .join(' ');
                     
-                    cells.forEach(cell => {
-                        if (cell.textContent.toLowerCase().includes(searchTerm)) {
-                            found = true;
-                        }
-                    });
-                    
-                    row.style.display = found ? '' : 'none';
+                    // Show/hide row based on search term
+                    if (searchTerm === '' || rowText.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
                 });
             });
         }
         
         // Date range filtering
-        const startDateInput = document.querySelector('input[type="date"]:nth-of-type(1)');
-        const endDateInput = document.querySelector('input[type="date"]:nth-of-type(2)');
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
         
         if (startDateInput && endDateInput) {
-            function filterByDateRange() {
-                const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
-                const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+            console.log('Date inputs found:', startDateInput, endDateInput);
+            
+            // Improved date parsing function
+            function parseDate(dateStr) {
+                if (!dateStr) return null;
+                console.log('Parsing date:', dateStr);
                 
-                if (!startDate && !endDate) return; // No filtering needed
+                // Try different date formats
+                const formats = [
+                    // YYYY-MM-DD (HTML date input format)
+                    str => {
+                        if (str.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            return new Date(str);
+                        }
+                        return null;
+                    },
+                    // DD/MM/YYYY
+                    str => {
+                        const parts = str.split('/');
+                        if (parts.length === 3) {
+                            return new Date(parts[2], parts[1] - 1, parts[0]);
+                        }
+                        return null;
+                    },
+                    // MM/DD/YYYY
+                    str => {
+                        const parts = str.split('/');
+                        if (parts.length === 3) {
+                            return new Date(parts[2], parts[0] - 1, parts[1]);
+                        }
+                        return null;
+                    },
+                    // MMM DD, YYYY (e.g., Mar 04, 2025)
+                    str => {
+                        const date = new Date(str);
+                        if (!isNaN(date.getTime())) {
+                            return date;
+                        }
+                        return null;
+                    }
+                ];
+                
+                for (const format of formats) {
+                    const date = format(dateStr);
+                    if (date && !isNaN(date.getTime())) {
+                        console.log('Successfully parsed date:', dateStr, 'to', date);
+                        return date;
+                    }
+                }
+                
+                console.warn('Failed to parse date:', dateStr);
+                return null;
+            }
+            
+            function filterByDateRange() {
+                const startDateValue = startDateInput.value;
+                const endDateValue = endDateInput.value;
+                
+                console.log('Filtering by date range:', startDateValue, 'to', endDateValue);
+                
+                if (!startDateValue && !endDateValue) {
+                    console.log('No dates selected, showing all records');
+                    // No filtering needed, show all records
+                    const rows = document.querySelectorAll('tbody tr');
+                    rows.forEach(row => {
+                        // Skip if it's the "No records found" row
+                        if (row.querySelector('td[colspan]')) {
+                            return;
+                        }
+                        row.style.display = '';
+                    });
+                    return;
+                }
+                
+                // Convert input values to Date objects
+                const startDate = startDateValue ? new Date(startDateValue) : null;
+                const endDate = endDateValue ? new Date(endDateValue) : null;
+                
+                if (startDate) startDate.setHours(0, 0, 0, 0); // Start of day
+                
+                // If we have an end date, set it to end of day for inclusive comparison
+                const endOfDay = endDate ? new Date(endDate) : null;
+                if (endOfDay) endOfDay.setHours(23, 59, 59, 999);
+                
+                console.log('Parsed filter dates:', 
+                    startDate ? startDate.toISOString() : 'none', 
+                    endOfDay ? endOfDay.toISOString() : 'none');
                 
                 const rows = document.querySelectorAll('tbody tr');
+                console.log('Total rows to filter:', rows.length);
                 
-                rows.forEach(row => {
+                let matchCount = 0;
+                let noResultsRow = document.querySelector('tr.no-results');
+                
+                rows.forEach((row, index) => {
                     // Skip if it's the "No records found" row
-                    if (row.querySelector('td[colspan="14"]')) {
+                    if (row.querySelector('td[colspan]') || row.classList.contains('no-results')) {
                         return;
                     }
                     
+                    // Get the date issued cell (column 8 - adjust if needed)
                     const dateIssuedCell = row.querySelector('td:nth-child(8)');
+                    
                     if (dateIssuedCell) {
-                        const dateIssued = parseDate(dateIssuedCell.textContent.trim());
+                        const dateIssuedText = dateIssuedCell.textContent.trim();
+                        console.log(`Row ${index} date issued text:`, dateIssuedText);
+                        
+                        const dateIssued = parseDate(dateIssuedText);
                         
                         if (dateIssued) {
                             let showRow = true;
                             
+                            // Check if date is after or equal to start date
                             if (startDate && dateIssued < startDate) {
+                                console.log(`Row ${index}: Date ${dateIssued.toDateString()} is before start date ${startDate.toDateString()}`);
                                 showRow = false;
                             }
                             
-                            if (endDate) {
-                                // Set end date to end of day for inclusive comparison
-                                const endOfDay = new Date(endDate);
-                                endOfDay.setHours(23, 59, 59, 999);
-                                
-                                if (dateIssued > endOfDay) {
-                                    showRow = false;
-                                }
+                            // Check if date is before or equal to end date
+                            if (endOfDay && showRow && dateIssued > endOfDay) {
+                                console.log(`Row ${index}: Date ${dateIssued.toDateString()} is after end date ${endOfDay.toDateString()}`);
+                                showRow = false;
                             }
                             
+                            console.log(`Row ${index}: Show = ${showRow}`);
                             row.style.display = showRow ? '' : 'none';
+                            
+                            if (showRow) {
+                                matchCount++;
+                            }
+                        } else {
+                            console.warn(`Row ${index}: Could not parse date "${dateIssuedText}"`);
+                            // If we can't parse the date, show the row by default
+                            row.style.display = '';
                         }
+                    } else {
+                        console.warn(`Row ${index}: No date issued cell found`);
+                        // If there's no date cell, show the row by default
+                        row.style.display = '';
                     }
                 });
+                
+                console.log(`Filtering complete. ${matchCount} rows match the date range.`);
+                
+                // Show or hide "No results" message
+                if (matchCount === 0) {
+                    if (!noResultsRow) {
+                        const tbody = document.querySelector('tbody');
+                        noResultsRow = document.createElement('tr');
+                        noResultsRow.classList.add('no-results');
+                        noResultsRow.innerHTML = `
+                            <td colspan="14" class="px-6 py-8 text-center">
+                                <div class="text-gray-500 text-lg">No matching records found</div>
+                                <div class="text-gray-400 text-sm mt-2">Try adjusting your filter criteria</div>
+                            </td>
+                        `;
+                        tbody.appendChild(noResultsRow);
+                    } else {
+                        noResultsRow.style.display = '';
+                    }
+                } else if (noResultsRow) {
+                    noResultsRow.style.display = 'none';
+                }
             }
             
-            startDateInput.addEventListener('change', filterByDateRange);
-            endDateInput.addEventListener('change', filterByDateRange);
+            // Handle start date change
+            startDateInput.addEventListener('input', function() {
+                console.log('Start date input changed:', this.value);
+                filterByDateRange();
+            });
+            
+            startDateInput.addEventListener('change', function() {
+                console.log('Start date changed:', this.value);
+                filterByDateRange();
+            });
+            
+            // Handle end date change
+            endDateInput.addEventListener('input', function() {
+                console.log('End date input changed:', this.value);
+                filterByDateRange();
+            });
+            
+            endDateInput.addEventListener('change', function() {
+                console.log('End date changed:', this.value);
+                filterByDateRange();
+            });
+        } else {
+            console.warn('Date inputs not found!');
         }
         
         // Fix file display issue - ensure file links are working
@@ -603,50 +759,117 @@
                 setTimeout(applyStatusClasses, 100);
             });
         });
-    });
-    
-    // CSV Export Function
-    function exportTableToCSV(filename) {
-        const table = document.querySelector('table');
-        let csv = [];
-        let rows = table.querySelectorAll('tr');
-        
-        for (let i = 0; i < rows.length; i++) {
-            let row = [], cols = rows[i].querySelectorAll('td, th');
+
+        // Populate year dropdown with years from 2010 to current year
+        const yearFilter = document.getElementById('yearFilter');
+        if (yearFilter) {
+            const currentYear = new Date().getFullYear();
+            const startYear = 2010;
             
-            for (let j = 0; j < cols.length; j++) {
-                // Replace any commas in the cell text to avoid CSV formatting issues
-                let text = cols[j].innerText.replace(/,/g, ' ');
-                // Remove multiple spaces and trim
-                text = text.replace(/\s+/g, ' ').trim();
-                // Add quotes around the cell text
-                row.push('"' + text + '"');
+            // Add years from current year down to 2010
+            for (let year = currentYear; year >= startYear; year--) {
+                const option = document.createElement('option');
+                option.value = year.toString();
+                option.textContent = year.toString();
+                yearFilter.appendChild(option);
             }
             
-            csv.push(row.join(','));
+            // Add event listener for year filter change
+            yearFilter.addEventListener('change', function() {
+                console.log('Year filter changed to:', this.value);
+                filterByYear(this.value);
+            });
         }
+    });
+    
+    // CSV Export Function - Only exports visible (filtered) rows
+    function exportTableToCSV(filename) {
+        const csv = [];
+        const rows = document.querySelectorAll('table tr');
+        
+        // Get all visible rows (header + filtered data rows)
+        const visibleRows = Array.from(rows).filter(row => {
+            // Always include header row
+            if (row.parentElement.tagName === 'THEAD') {
+                return true;
+            }
+            // Only include visible body rows and exclude "no results" row
+            return row.style.display !== 'none' && !row.classList.contains('no-results');
+        });
+        
+        console.log(`Exporting ${visibleRows.length} rows (including header)`);
+        
+        visibleRows.forEach(row => {
+            const rowData = [];
+            const cols = row.querySelectorAll('td, th');
+            
+            cols.forEach(col => {
+                // Replace any commas in the cell text to avoid CSV issues
+                let text = col.innerText.replace(/,/g, ';');
+                // Remove any quotes to avoid CSV issues
+                text = text.replace(/"/g, '');
+                // Wrap in quotes to handle any remaining special characters
+                rowData.push('"' + text + '"');
+            });
+            
+            csv.push(rowData.join(','));
+        });
         
         // Download CSV file
         downloadCSV(csv.join('\n'), filename);
+        console.log('Export complete');
     }
     
     function downloadCSV(csv, filename) {
-        let csvFile = new Blob([csv], {type: "text/csv"});
-        let downloadLink = document.createElement("a");
+        const csvFile = new Blob([csv], {type: 'text/csv'});
+        const downloadLink = document.createElement('a');
         
-        // Create a download link
+        // Create a link to download the CSV file
         downloadLink.download = filename;
         downloadLink.href = window.URL.createObjectURL(csvFile);
-        downloadLink.style.display = "none";
+        downloadLink.style.display = 'none';
         
-        // Add the link to the DOM
+        // Trigger download
         document.body.appendChild(downloadLink);
-        
-        // Click the download link
         downloadLink.click();
-        
-        // Clean up
         document.body.removeChild(downloadLink);
+    }
+
+    // Function to filter records by year
+    function filterByYear(year) {
+        if (!year) {
+            // If no year selected, show all records
+            const rows = document.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                // Skip if it's the "No records found" row
+                if (row.querySelector('td[colspan="14"]')) {
+                    return;
+                }
+                row.style.display = '';
+            });
+            return;
+        }
+        
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            // Skip if it's the "No records found" row
+            if (row.querySelector('td[colspan="14"]')) {
+                return;
+            }
+            
+            // Check date issued cell (column 8) for the year
+            const dateIssuedCell = row.querySelector('td:nth-child(8)');
+            if (dateIssuedCell) {
+                const dateText = dateIssuedCell.textContent.trim();
+                const dateIssued = parseDate(dateText);
+                
+                if (dateIssued && dateIssued.getFullYear().toString() === year) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
     }
 </script>
 

@@ -111,6 +111,18 @@ def dashboard(request):
     # Format to 2 decimal places
     total_volume = total_volume.quantize(Decimal('0.01'))
 
+    # Calculate active chainsaw records (not expired)
+    active_chainsaw_count = Chainsaw.objects.filter(
+        expiry_date__gte=current_date
+    ).count()
+
+    # For chainsaws expiring soon (within 3 months but not expired)
+    three_months_from_now = current_date + timedelta(days=90)  # 90 days = ~3 months
+    expiring_soon_chainsaw_count = Chainsaw.objects.filter(
+        expiry_date__gt=current_date,  # Not expired yet
+        expiry_date__lte=three_months_from_now  # But will expire within 3 months
+    ).count()
+
     context = {
         'cutting_count': cutting_count,
         'expired_cutting_count': expired_cutting_count,
@@ -126,6 +138,8 @@ def dashboard(request):
         'expired_wood_count': expired_wood_count,
         'volume_count': volume_count,
         'total_volume': total_volume,  # Add the total volume to the context
+        'active_chainsaw_count': active_chainsaw_count,
+        'expiring_soon_chainsaw_count': expiring_soon_chainsaw_count,
     }
 
     return render(request, 'dashboard.html', context)
@@ -680,31 +694,70 @@ def chainsaw_records(request):
     elif status == 'active':
         chainsaw_records = Chainsaw.objects.filter(expiry_date__gte=current_date).order_by('-date_issued')
     elif status == 'expiring_soon':
-        thirty_days_from_now = current_date + timedelta(days=30)
+        # For chainsaws expiring soon (within 3 months but not expired)
+        three_months_from_now = current_date + timedelta(days=90)  # 90 days = ~3 months
         chainsaw_records = Chainsaw.objects.filter(
-            expiry_date__gte=current_date,
-            expiry_date__lte=thirty_days_from_now
+            expiry_date__gt=current_date,  # Not expired yet
+            expiry_date__lte=three_months_from_now  # But will expire within 3 months
         ).order_by('-date_issued')
+        
+        # Debug output to check if any records match this filter
+        print(f"Current date: {current_date}")
+        print(f"Three months from now: {three_months_from_now}")
+        print(f"Expiring soon records count: {chainsaw_records.count()}")
+        for record in chainsaw_records:
+            print(f"Record ID: {record.id}, Expiry date: {record.expiry_date}")
     else:
         # Default: show all records
         chainsaw_records = Chainsaw.objects.all().order_by('-date_issued')
     
-    # Count expired records
-    expired_count = Chainsaw.objects.filter(
-        expiry_date__lt=current_date
-    ).count()
-    
-    # Count records expiring in next 30 days but not expired yet
-    thirty_days_from_now = current_date + timedelta(days=30)
-    expiring_soon_count = Chainsaw.objects.filter(
-        expiry_date__gt=current_date,
-        expiry_date__lte=thirty_days_from_now
-    ).count()
-
+    # Make sure we're passing the records to the template
     context = {
         'chainsaw_records': chainsaw_records,
-        'expired_count': expired_count,
-        'expiring_soon_count': expiring_soon_count,
+        'current_date': current_date,
+        'status': status,  # Pass the current status to highlight the active filter
     }
     
     return render(request, 'chainsaw_record.html', context)
+
+@login_required
+def view_chainsaw(request, pk):
+    """View detailed information about a specific chainsaw record."""
+    chainsaw = get_object_or_404(Chainsaw, pk=pk)
+    
+    context = {
+        'chainsaw': chainsaw,
+        'days_remaining': chainsaw.days_remaining,
+    }
+    
+    return render(request, 'view_chainsaw.html', context)
+
+@login_required
+def renew_chainsaw(request, pk):
+    """Renew a chainsaw registration."""
+    chainsaw = get_object_or_404(Chainsaw, pk=pk)
+    
+    if request.method == 'POST':
+        form = ChainsawForm(request.POST, request.FILES, instance=chainsaw)
+        if form.is_valid():
+            chainsaw = form.save(commit=False)
+            # Update renewal date to today
+            chainsaw.date_renewal = timezone.now().date()
+            # Update registration status
+            chainsaw.registration_status = 'RENEWED'
+            # Update date issued to today
+            chainsaw.date_issued = timezone.now().date()
+            # Expiry date will be automatically calculated in the save method
+            chainsaw.save()
+            messages.success(request, f'Successfully renewed chainsaw registration for {chainsaw.name}')
+            return redirect('chainsaw_record')
+    else:
+        form = ChainsawForm(instance=chainsaw)
+    
+    context = {
+        'form': form,
+        'chainsaw': chainsaw,
+        'is_renewal': True,
+    }
+    
+    return render(request, 'chainsaw.html', context)

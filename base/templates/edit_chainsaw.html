@@ -9,249 +9,613 @@
     <title>Edit Chainsaw Registration - CENRO Argao</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-</head>
-<body class="bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
-    <!-- Navigation Bar -->
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <!-- Logo -->
-                    <div class="flex-shrink-0 flex items-center">
-                             <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO-FUS</span>
-                            </div>
-
-                    <!-- Navigation Links -->
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="{% url 'dashboard' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Dashboard
-                        </a>
-                        <a href="{% url 'cutting' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Tree Cutting Permits 
-                        </a>
-                        <a href="{% url 'lumber' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Lumber Dealers
-                        </a>
-                        <a href="{% url 'chainsaw' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            Chainsaw
-                        </a>
-                        <a href="{% url 'wood' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
-                            WPP
-                        </a>
-                    </div>
-                </div>
-                <!-- User Menu -->
-                <div class="flex items-center">
-                    <div class="text-m text-gray-800">
-                        Welcome, {{ request.user.username }}
-                    </div>
-                    <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
-                        Sign Out
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Region*</label>
-                    {{ form.region|add_class:"form-input"|attr:"placeholder:Enter region" }}
-                </div>
-            </div>
-
-            <!-- Location Details -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Location Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">PENRO*</label>
-                        {{ form.penro|add_class:"form-input"|attr:"placeholder:Enter PENRO" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">CENRO*</label>
-                        {{ form.cenro|add_class:"form-input"|attr:"placeholder:Enter CENRO" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Province*</label>
-                        {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province" }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Owner Details -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Owner Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Name*</label>
-                        {{ form.name|add_class:"form-input"|attr:"placeholder:Enter owner name" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Municipality/City*</label>
-                        {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality/city" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Province*</label>
-                        {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province" }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chainsaw Details -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Chainsaw Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Brand*</label>
-                        {{ form.brand|add_class:"form-input"|attr:"placeholder:Enter brand" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Model*</label>
-                        {{ form.model|add_class:"form-input"|attr:"placeholder:Enter model" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Serial Number*</label>
-                        {{ form.serial_number|add_class:"form-input"|attr:"placeholder:Enter serial number" }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Additional Chainsaw Information -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Chainsaw Information</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Purpose/Use of Chainsaw*</label>
-                        {{ form.purpose|add_class:"form-input" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Date of Acquisition*</label>
-                        {{ form.date_acquired|add_class:"form-input" }}
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Certificate of Registration Number*</label>
-                        {{ form.cert_reg_number|add_class:"form-input"|attr:"placeholder:Enter registration number" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Color*</label>
-                        {{ form.color|add_class:"form-input"|attr:"placeholder:Enter color" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Status of Registration*</label>
-                        {{ form.registration_status|add_class:"form-input" }}
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Date of Renewal</label>
-                        {{ form.date_renewal|add_class:"form-input" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Horse Power*</label>
-                        {{ form.horse_power|add_class:"form-input"|attr:"placeholder:Enter horse power" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Max. Length of Guidebar (inches)*</label>
-                        {{ form.guidebar_length|add_class:"form-input"|attr:"placeholder:Enter length in inches" }}
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700">DENR Sticker Number*</label>
-                    {{ form.denr_sticker|add_class:"form-input"|attr:"placeholder:Enter DENR sticker number" }}
-                </div>
-            </div>
-
-            <!-- Permit Details -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Permit Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">CTPO Number*</label>
-                        {{ form.ctpo_number|add_class:"form-input"|attr:"placeholder:Enter CTPO number" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
-                        {{ form.date_issued|add_class:"form-input" }}
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
-                        {{ form.expiry_date|add_class:"form-input" }}
-                    </div>
-                </div>
-            </div>
-
-            <!-- File Upload -->
-            <div class="mt-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Documentation</h3>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Upload Files</label>
-                    {{ form.file|add_class:"form-input" }}
-                    {% if chainsaw.file %}
-                        <p class="mt-2 text-sm text-gray-600">Current file: <a href="{{ chainsaw.file.url }}" class="text-blue-600 hover:text-blue-800" target="_blank">View</a></p>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex justify-end space-x-4 mt-6">
-                <a href="{% url 'chainsaw' %}" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition duration-200 shadow-md">
-                    Cancel
-                </a>
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
-                    Update Record
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <footer class="bg-blue-900 text-white mt-8 py-6">
-        <div class="max-w-7xl mx-auto text-center">
-            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
-            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
-        </div>
-    </footer>
-
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
     <style>
+        body {
+            background: linear-gradient(to bottom right, #e2f3e5, #c6f6d5);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
         input, select, textarea {
-            background-color: #f8fafc;
+            background-color: #ffffff;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
             padding: 0.5rem;
             border-radius: 0.375rem;
             width: 100%;
             color: #4B5563;
         }
+        
         input::placeholder, select::placeholder, textarea::placeholder {
             color: #6B7280;
             opacity: 0.8;
         }
+        
         input:focus, select:focus, textarea:focus {
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
             outline: none;
         }
+        
         .form-input {
-            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
-                   focus:border-blue-500 focus:ring-blue-500 
-                   bg-gray-50 text-gray-900;
+            margin-top: 0.25rem;
+            display: block;
+            width: 100%;
+            border-radius: 0.375rem;
+            border-color: #d1d5db;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            background-color: #ffffff;
+            color: #111827;
         }
+        
         input[type="date"] {
             padding: 0.4rem;
             color: #4B5563;
         }
+        
         select {
-            background-color: #f8fafc;
+            background-color: #ffffff;
             padding: 0.4rem;
             color: #4B5563;
         }
+        
         input:hover, select:hover, textarea:hover {
             border-color: #60A5FA;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+        
+        .error-field {
+            border-color: #ef4444 !important;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
         }
     </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="bg-transparent shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0">
+                        <span class="text-xl font-bold text-green-700">FUS-CENRO-ARGAO</span>
+                    </div>
+                </div>
+                <!-- User Menu -->
+                <div class="flex items-center">
+                    <div class="text-lg text-gray-900 font-medium">
+                        Welcome, {{ request.user.username }}
+                    </div>
+                    <div class="relative ml-4">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                            ▼
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                                <!-- Quick Actions -->
+                                <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
+                                    <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
+                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
+                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
+                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                </div>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                    </svg>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">Edit Chainsaw Record</h1>
+            <p class="text-gray-600">Update the information for this chainsaw registration.</p>
+        </div>
+
+        <div class="form-card">
+            <form method="POST" enctype="multipart/form-data" id="chainsawForm">
+                {% csrf_token %}
+                
+                <!-- Registration Details -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-green-700 mb-4">Registration Details</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Registration No.*</label>
+                            {{ form.no|add_class:"form-input"|attr:"placeholder:Enter registration number" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Year*</label>
+                            {{ form.year|add_class:"form-input"|attr:"placeholder:Enter year" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Region*</label>
+                            {{ form.region|add_class:"form-input"|attr:"placeholder:Enter region" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Details -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-green-700 mb-4">Location Details</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">PENRO*</label>
+                            {{ form.penro|add_class:"form-input"|attr:"placeholder:Enter PENRO" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">CENRO*</label>
+                            {{ form.cenro|add_class:"form-input"|attr:"placeholder:Enter CENRO" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Province*</label>
+                            {{ form.province|add_class:"form-input"|attr:"placeholder:Enter province" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Owner Details -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-green-700 mb-4">Owner Details</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Name*</label>
+                            {{ form.name|add_class:"form-input"|attr:"placeholder:Enter owner name" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Municipality/City*</label>
+                            {{ form.municipality|add_class:"form-input"|attr:"placeholder:Enter municipality/city" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chainsaw Details -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-green-700 mb-4">Chainsaw Details</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Brand*</label>
+                            {{ form.brand|add_class:"form-input"|attr:"placeholder:Enter brand" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Model*</label>
+                            {{ form.model|add_class:"form-input"|attr:"placeholder:Enter model" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Serial Number*</label>
+                            {{ form.serial_number|add_class:"form-input"|attr:"placeholder:Enter serial number" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Chainsaw Information -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-green-700 mb-4">Additional Chainsaw Information</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Purpose/Use of Chainsaw*</label>
+                            {{ form.purpose|add_class:"form-input" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Date of Acquisition*</label>
+                            {{ form.date_acquired|add_class:"form-input" }}
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Certificate of Registration Number*</label>
+                            {{ form.cert_reg_number|add_class:"form-input"|attr:"placeholder:Enter registration number" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Color*</label>
+                            {{ form.color|add_class:"form-input"|attr:"placeholder:Enter color" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Status of Registration*</label>
+                            {{ form.registration_status|add_class:"form-input" }}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Date of Renewal</label>
+                            {{ form.date_renewal|add_class:"form-input" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Horse Power*</label>
+                            {{ form.horse_power|add_class:"form-input"|attr:"placeholder:Enter horse power" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Max. Length of Guidebar (inches)*</label>
+                            {{ form.guidebar_length|add_class:"form-input"|attr:"placeholder:Enter length in inches" }}
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700">DENR Sticker Number*</label>
+                        {{ form.denr_sticker|add_class:"form-input"|attr:"placeholder:Enter DENR sticker number" }}
+                    </div>
+                </div>
+
+                <!-- Permit Details -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-green-700 mb-4">Permit Details</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">CTPO Number*</label>
+                            {{ form.ctpo_number|add_class:"form-input"|attr:"placeholder:Enter CTPO number" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Date Issued*</label>
+                            {{ form.date_issued|add_class:"form-input" }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Expiry Date*</label>
+                            {{ form.expiry_date|add_class:"form-input" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Upload -->
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-green-700 mb-4">Documentation</h2>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Upload Files</label>
+                        {{ form.file|add_class:"form-input" }}
+                        {% if chainsaw.file %}
+                            <p class="mt-2 text-sm text-gray-600">Current file: <a href="{{ chainsaw.file.url }}" class="text-blue-600 hover:text-blue-800" target="_blank">View</a></p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end space-x-4 mt-6">
+                    <a href="{% url 'chainsaw_record' %}" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition duration-200 shadow-md">
+                        Cancel
+                    </a>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md">
+                        Update Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Display Django form errors with SweetAlert -->
+    {% if form.errors %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let errorMessages = [];
+            {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                    errorMessages.push("{{ field|title }}: {{ error }}");
+                {% endfor %}
+            {% endfor %}
+            
+            Swal.fire({
+                title: 'Form Validation Error',
+                html: errorMessages.join('<br>'),
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#3085d6'
+            });
+        });
+    </script>
+    {% endif %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing toggle menu functionality');
+            
+            // User menu dropdown toggle
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            
+            if (userMenuButton && userMenu) {
+                console.log('User menu elements found');
+                
+                userMenuButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // Toggle the 'hidden' class
+                    userMenu.classList.toggle('hidden');
+                    console.log('User menu toggled:', userMenu.classList.contains('hidden') ? 'hidden' : 'visible');
+                });
+                
+                // Close the menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                        userMenu.classList.add('hidden');
+                    }
+                });
+            } else {
+                console.error('User menu elements not found:', {
+                    userMenuButton: !!userMenuButton,
+                    userMenu: !!userMenu
+                });
+            }
+            
+            // Mobile menu toggle if it exists
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                console.log('Mobile menu elements found');
+                
+                mobileMenuButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    // Toggle the display style directly
+                    if (mobileMenu.style.display === 'none' || mobileMenu.style.display === '') {
+                        mobileMenu.style.display = 'block';
+                        console.log('Mobile menu opened');
+                    } else {
+                        mobileMenu.style.display = 'none';
+                        console.log('Mobile menu closed');
+                    }
+                });
+            }
+            
+            // Auto-calculate expiry date (2 years from issued date)
+            const dateIssuedField = document.querySelector('[name="date_issued"]');
+            const expiryDateField = document.querySelector('[name="expiry_date"]');
+            
+            if (dateIssuedField && expiryDateField) {
+                dateIssuedField.addEventListener('change', function() {
+                    if (this.value) {
+                        // Parse the issued date
+                        const issuedDate = new Date(this.value);
+                        
+                        // Add 2 years to the issued date
+                        const expiryDate = new Date(issuedDate);
+                        expiryDate.setFullYear(expiryDate.getFullYear() + 2);
+                        
+                        // Format the expiry date as YYYY-MM-DD for the input field
+                        const year = expiryDate.getFullYear();
+                        const month = String(expiryDate.getMonth() + 1).padStart(2, '0');
+                        const day = String(expiryDate.getDate()).padStart(2, '0');
+                        
+                        // Set the expiry date field value
+                        expiryDateField.value = `${year}-${month}-${day}`;
+                    }
+                });
+            }
+            
+            // Form validation with SweetAlert
+            const form = document.getElementById('chainsawForm');
+            
+            form.addEventListener('submit', function(event) {
+                let isValid = true;
+                let errorMessages = [];
+                
+                // Get all required fields
+                const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
+                
+                // Reset previous error styling
+                const allFields = form.querySelectorAll('input, select, textarea');
+                allFields.forEach(field => {
+                    field.classList.remove('error-field');
+                    const errorMsg = field.parentElement.querySelector('.error-message');
+                    if (errorMsg) {
+                        errorMsg.remove();
+                    }
+                });
+                
+                // Check each required field
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        isValid = false;
+                        field.classList.add('error-field');
+                        
+                        // Get field label
+                        const label = field.parentElement.querySelector('label');
+                        const fieldName = label ? label.textContent.replace('*', '').trim() : field.name;
+                        
+                        errorMessages.push(`${fieldName} is required`);
+                        
+                        // Add error message below the field
+                        const errorMsg = document.createElement('p');
+                        errorMsg.className = 'error-message';
+                        errorMsg.textContent = `${fieldName} is required`;
+                        field.parentElement.appendChild(errorMsg);
+                    }
+                });
+                
+                // Validate date fields
+                const dateFields = form.querySelectorAll('input[type="date"]');
+                dateFields.forEach(field => {
+                    if (field.value) {
+                        const dateValue = new Date(field.value);
+                        if (isNaN(dateValue.getTime())) {
+                            isValid = false;
+                            field.classList.add('error-field');
+                            
+                            const label = field.parentElement.querySelector('label');
+                            const fieldName = label ? label.textContent.replace('*', '').trim() : field.name;
+                            
+                            errorMessages.push(`${fieldName} has an invalid date format`);
+                            
+                            const errorMsg = document.createElement('p');
+                            errorMsg.className = 'error-message';
+                            errorMsg.textContent = `Invalid date format`;
+                            field.parentElement.appendChild(errorMsg);
+                        }
+                    }
+                });
+                
+                // Check if expiry date is after date issued
+                const dateIssued = form.querySelector('[name="date_issued"]');
+                const expiryDate = form.querySelector('[name="expiry_date"]');
+                
+                if (dateIssued && expiryDate && dateIssued.value && expiryDate.value) {
+                    const issuedDate = new Date(dateIssued.value);
+                    const expiry = new Date(expiryDate.value);
+                    
+                    if (expiry <= issuedDate) {
+                        isValid = false;
+                        expiryDate.classList.add('error-field');
+                        errorMessages.push('Expiry date must be after the date issued');
+                        
+                        const errorMsg = document.createElement('p');
+                        errorMsg.className = 'error-message';
+                        errorMsg.textContent = 'Expiry date must be after the date issued';
+                        expiryDate.parentElement.appendChild(errorMsg);
+                    }
+                }
+                
+                // If validation fails, show SweetAlert and prevent form submission
+                if (!isValid) {
+                    event.preventDefault();
+                    
+                    Swal.fire({
+                        title: 'Validation Error',
+                        html: errorMessages.join('<br>'),
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#3085d6'
+                    });
+                } else {
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Updating Record',
+                        text: 'Please wait while we update the chainsaw record...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                }
+            });
+            
+            // Success message if redirected back after successful update
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('success') === 'true') {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Chainsaw record has been updated successfully.',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        });
+    </script>
+
+    <!-- Add this JavaScript for date validation in the edit form -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get date input fields
+            const dateAcquiredInput = document.querySelector('input[name="date_acquired"]');
+            const dateIssuedInput = document.querySelector('input[name="date_issued"]');
+            
+            if (dateAcquiredInput && dateIssuedInput) {
+                console.log('Date input fields found in edit form, adding validation');
+                
+                // Function to validate dates
+                function validateDates() {
+                    const dateAcquired = dateAcquiredInput.value ? new Date(dateAcquiredInput.value) : null;
+                    const dateIssued = dateIssuedInput.value ? new Date(dateIssuedInput.value) : null;
+                    
+                    // Clear previous error messages
+                    const errorMessages = document.querySelectorAll('.date-error-message');
+                    errorMessages.forEach(msg => msg.remove());
+                    
+                    // Reset styles
+                    dateAcquiredInput.classList.remove('error-field');
+                    
+                    if (dateAcquired && dateIssued) {
+                        console.log('Validating dates:', 
+                            dateAcquired.toISOString().split('T')[0], 
+                            dateIssued.toISOString().split('T')[0]);
+                        
+                        // Check if date acquired is after date issued
+                        if (dateAcquired > dateIssued) {
+                            console.log('Validation failed: Date acquired is after date issued');
+                            
+                            // Create error message
+                            const errorMsg = document.createElement('p');
+                            errorMsg.className = 'date-error-message error-message';
+                            errorMsg.textContent = 'Date acquired must be before date issued';
+                            
+                            // Add error styling
+                            dateAcquiredInput.classList.add('error-field');
+                            
+                            // Add error message after the input
+                            dateAcquiredInput.parentElement.appendChild(errorMsg);
+                            
+                            return false;
+                        } else {
+                            console.log('Date validation passed');
+                            return true;
+                        }
+                    }
+                    return true; // If either date is not set, validation passes
+                }
+                
+                // Add event listeners for both date inputs
+                dateAcquiredInput.addEventListener('change', validateDates);
+                dateIssuedInput.addEventListener('change', validateDates);
+                
+                // Add form submission validation
+                const form = document.getElementById('chainsawForm');
+                if (form) {
+                    const originalSubmitHandler = form.onsubmit;
+                    
+                    form.addEventListener('submit', function(event) {
+                        if (!validateDates()) {
+                            event.preventDefault();
+                            
+                            // Show validation error in SweetAlert
+                            Swal.fire({
+                                title: 'Validation Error',
+                                text: 'Date acquired must be before date issued',
+                                icon: 'error',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#3085d6'
+                            });
+                            
+                            // Scroll to the error
+                            dateAcquiredInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            
+                            return false;
+                        }
+                        
+                        // If we have an original submit handler, let it run
+                        if (typeof originalSubmitHandler === 'function') {
+                            return originalSubmitHandler.call(this, event);
+                        }
+                        
+                        return true;
+                    });
+                }
+            }
+        });
+    </script>
 </body>
 </html>

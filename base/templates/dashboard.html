@@ -182,46 +182,50 @@
         </div>
 
     <!-- Chainsaws -->
-    <h1 class="text-5xl font-extrabold text-green-800 text-center font-serif mb-8 mt-10 "">CHAINSAWS    </h1>
-        <!-- Stats Overview for chainsaw dealers-->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <h1 class="text-5xl font-extrabold text-green-800 text-center font-serif mb-8 mt-10">CHAINSAWS</h1>
+    <!-- Stats Overview for chainsaw records -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+            <a href="{% url 'chainsaw' %}" class="block">
                 <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
-                    <div class="text-4xl font-bold text-green-600">{{ cutting_count }}</div>
-                    <div class="text-gray-600">Registered Cutting Permits</div>
-                    <div class="mt-2 text-sm">
-                        <span class="text-red-500 font-semibold">{{ expired_cutting_count }}</span>
-                        <span class="text-gray-500"> expired</span>
-                    </div>
+                    <div class="text-4xl font-bold text-green-600">+</div>
+                    <div class="text-green-900">Register Chainsaw</div>
+                    <div class="mt-2 text-sm text-gray-500">Click to add new chainsaw</div>
                 </div>
-                
-                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
-                    <div class="text-4xl font-bold text-blue-600">{{ lumber_count }}</div>
-                    <div class="text-gray-600">Registered Lumber Records</div>
-                    <div class="mt-2 text-sm">
-                        <span class="text-red-500 font-semibold">{{ expired_lumber_count }}</span>
-                        <span class="text-gray-500"> expired</span>
-                    </div>
-                </div>
+            </a>
 
+            <a href="{% url 'chainsaw_record' %}?status=expired" class="block">
                 <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
-                    <div class="text-4xl font-bold text-green-600">{{ chainsaw_count }}</div>
-                    <div class="text-gray-600">Registered Chainsaws</div>
-                    <div class="mt-2 text-sm">
-                        <span class="text-red-500 font-semibold">{{ expired_chainsaw_count }}</span>
-                        <span class="text-gray-500"> expired</span>
-                    </div>
+                    <div class="text-4xl font-bold text-red-600">{{ expired_chainsaw_count }}</div>
+                    <div class="text-red-900">Expired Chainsaw Rec.</div>
+                    <div class="mt-2 text-sm text-gray-500">Out of {{ chainsaw_count }} total records</div>
                 </div>
+            </a>
+
+            <a href="{% url 'chainsaw_record' %}?status=active" class="block">
                 <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
-                    <div class="text-4xl font-bold text-red-600">{{ wood_count }}</div>
-                    <div class="text-gray-600">Registered Woods</div>
-                    <div class="mt-2 text-sm">
-                        <span class="text-red-500 font-semibold">{{ expired_wood_count }}</span>
-                        <span class="text-gray-500"> expired</span>
-                    </div>
+                    <div class="text-4xl font-bold text-green-600">{{ active_chainsaw_count }}</div>
+                    <div class="text-green-900">Active Chainsaw Records</div>
+                    <div class="mt-2 text-sm text-gray-500">Out of {{ chainsaw_count }} total records</div>
                 </div>
-            </div>
+            </a>
+
+            <a href="{% url 'chainsaw_record' %}?status=expiring_soon" class="block">
+                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                    <div class="text-4xl font-bold text-yellow-600">{{ expiring_soon_chainsaw_count }}</div>
+                    <div class="text-yellow-900">Chainsaw Records Near Expiration</div>
+                </div>
+            </a>
+
+            <a href="{% url 'chainsaw_record' %}" class="block">
+                <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                    <div class="text-4xl font-bold text-blue-600">{{ chainsaw_count }}</div>
+                    <div class="text-blue-900">Total Chainsaw Records</div>
+                    <div class="mt-2 text-sm text-gray-500">View all records</div>
+                </div>
+            </a>
         </div>
+    </div>
 
          <!-- WPP -->
     <h1 class="text-5xl font-extrabold text-green-800 text-center font-serif mb-8 mt-10 ">WOOD PROCESSING PERMIT </h1>

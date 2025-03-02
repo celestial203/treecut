@@ -343,6 +343,20 @@ class Chainsaw(models.Model):
     def __str__(self):
         return f"{self.name} - {self.serial_number}"
 
+    def save(self, *args, **kwargs):
+        # Calculate expiry date (2 years from date issued)
+        if self.date_issued:
+            self.expiry_date = self.date_issued + timedelta(days=730)  # 2 years (365*2)
+            
+            # Update registration status based on expiry date
+            today = timezone.now().date()
+            if today > self.expiry_date:
+                self.registration_status = 'EXPIRED'
+            elif (self.expiry_date - today).days <= 90:  # If within 90 days of expiry
+                self.registration_status = 'FOR RENEWAL'
+            
+        super().save(*args, **kwargs)
+
     @property
     def days_remaining(self):
         if self.expiry_date:
@@ -363,6 +377,16 @@ class Chainsaw(models.Model):
             days = self.days_remaining
             return 0 < days <= 30
         return False
+        
+    @property
+    def expiry_status(self):
+        """Returns the expiry status for display purposes"""
+        if self.is_expired:
+            return 'EXPIRED'
+        elif self.is_expiring_soon:
+            return f'Expires in {self.days_remaining} days'
+        else:
+            return 'Active'
 
 class Wood(models.Model):
     name = models.CharField(max_length=200, null=True, blank=True)
