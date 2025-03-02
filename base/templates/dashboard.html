@@ -164,11 +164,10 @@
                     </div>
                 </a>
 
-                <a href="{% url 'lumber_records' %}?status=pending" class="block">
+                <a href="{% url 'lumber_records' %}?status=expiring_soon" class="block">
                     <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
-                        <div class="text-4xl font-bold text-yellow-600">{{ pending_lumber_count }}</div>
-                        <div class="text-yellow-900">Pending Lumber Records</div>
-                        <div class="mt-2 text-sm text-gray-500">Waiting for approval</div>
+                        <div class="text-4xl font-bold text-yellow-600">{{ expiring_soon_lumber_count }}</div>
+                        <div class="text-yellow-900">Lumber Records Near Expiration</div>
                     </div>
                 </a>
 

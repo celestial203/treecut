@@ -1,0 +1,265 @@
+{% load static %}
+
+<!-- Records Table Section -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white shadow-xl rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-600 to-blue-600">
+            <h3 class="text-xl font-semibold text-white mb-4">
+                Chainsaw Records
+            </h3>
+            <div class="flex items-center justify-between space-x-4">
+                <!-- Search Bar -->
+                <div class="relative flex-1 max-w-md">
+                    <input type="text" 
+                           id="searchInput" 
+                           placeholder="Search records..." 
+                           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700"
+                    >
+                    <span class="absolute right-3 top-2.5 text-gray-400">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </span>
+                    <!-- Updated validation message element -->
+                    <div id="searchValidation" class="absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md hidden"></div>
+                </div>
+                <!-- Export Button -->
+                <button onclick="exportTableToCSV('chainsaw_records.csv')" 
+                        class="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition duration-200 flex items-center space-x-2 shadow-sm">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    <span>Export CSV</span>
+                </button>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <div class="mb-4">
+                {% with expired_records=chainsaw_records|expired_records %}
+                    {% if expired_records %}
+                        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
+                            Alert: {{ expired_records|length }} record{{ expired_records|length|pluralize }} expired
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                
+                {% with expiring_records=chainsaw_records|expiring_records %}
+                    {% if expiring_records %}
+                        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
+                            Warning: {{ expiring_records|length }} permit{{ expiring_records|length|pluralize }} expiring soon
+                        </div>
+                    {% endif %}
+                {% endwith %}
+            </div>
+            <!-- Expiry Warnings -->
+            <div class="mb-4">
+                {% for record in chainsaw_records %}
+                    {% if record.expiry_date %}
+                        {% if record.is_expiring_soon and not record.is_expired %}
+                            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
+                                Warning: Registration {{ record.no }} for {{ record.name }} will expire in {{ record.days_remaining }} days
+                            </div>
+                        {% elif record.is_expired %}
+                            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
+                                Alert: Registration {{ record.no }} for {{ record.name }} has expired
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <!-- Records Table -->
+            <table class="min-w-full text-sm text-left text-gray-500">
+                <thead class="bg-gray-50 text-gray-700">
+                    <tr>
+                        <th class="px-6 py-4 font-semibold">No.</th>
+                        <th class="px-6 py-4 font-semibold">Year</th>
+                        <th class="px-6 py-4 font-semibold">Region</th>
+                        <th class="px-6 py-4 font-semibold">PENRO</th>
+                        <th class="px-6 py-4 font-semibold">CENRO</th>
+                        <th class="px-6 py-4 font-semibold">Name</th>
+                        <th class="px-6 py-4 font-semibold">Municipality/City</th>
+                        <th class="px-6 py-4 font-semibold">Province</th>
+                        <th class="px-6 py-4 font-semibold">Purpose/Use</th>
+                        <th class="px-6 py-4 font-semibold">Date Acquired</th>
+                        <th class="px-6 py-4 font-semibold">Cert. Reg. #</th>
+                        <th class="px-6 py-4 font-semibold">CTPO/PTPR/Tenure #</th>
+                        <th class="px-6 py-4 font-semibold">Brand</th>
+                        <th class="px-6 py-4 font-semibold">Model</th>
+                        <th class="px-6 py-4 font-semibold">Serial #</th>
+                        <th class="px-6 py-4 font-semibold">Color</th>
+                        <th class="px-6 py-4 font-semibold">Date Issued</th>
+                        <th class="px-6 py-4 font-semibold">Expiry Date</th>
+                        <th class="px-6 py-4 font-semibold">Status of Registration</th>
+                        <th class="px-6 py-4 font-semibold">Date of Renewal</th>
+                        <th class="px-6 py-4 font-semibold">Horse Power</th>
+                        <th class="px-6 py-4 font-semibold">Guidebar Length</th>
+                        <th class="px-6 py-4 font-semibold">DENR Sticker #</th>
+                        <th class="px-6 py-4 font-semibold">File</th>
+                        <th class="px-6 py-4 font-semibold">Status</th>
+                        <th class="px-6 py-4 font-semibold">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for record in chainsaw_records %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-150">
+                        <td class="px-6 py-4">{{ record.no }}</td>
+                        <td class="px-6 py-4">{{ record.year }}</td>
+                        <td class="px-6 py-4">{{ record.region }}</td>
+                        <td class="px-6 py-4">{{ record.penro }}</td>
+                        <td class="px-6 py-4">{{ record.cenro }}</td>
+                        <td class="px-6 py-4">{{ record.name }}</td>
+                        <td class="px-6 py-4">{{ record.municipality }}</td>
+                        <td class="px-6 py-4">{{ record.province }}</td>
+                        <td class="px-6 py-4">{{ record.purpose }}</td>
+                        <td class="px-6 py-4">{{ record.date_acquired|date:"F d, Y" }}</td>
+                        <td class="px-6 py-4">{{ record.cert_reg_number }}</td>
+                        <td class="px-6 py-4">{{ record.ctpo_number }}</td>
+                        <td class="px-6 py-4">{{ record.brand }}</td>
+                        <td class="px-6 py-4">{{ record.model }}</td>
+                        <td class="px-6 py-4">{{ record.serial_number }}</td>
+                        <td class="px-6 py-4">{{ record.color }}</td>
+                        <td class="px-6 py-4">{{ record.date_issued|date:"F d, Y" }}</td>
+                        <td class="px-6 py-4">{{ record.expiry_date|date:"F d, Y" }}</td>
+                        <td class="px-6 py-4">{{ record.registration_status }}</td>
+                        <td class="px-6 py-4">{{ record.date_renewal|date:"F d, Y" }}</td>
+                        <td class="px-6 py-4">{{ record.horse_power }}</td>
+                        <td class="px-6 py-4">{{ record.guidebar_length }}"</td>
+                        <td class="px-6 py-4">{{ record.denr_sticker }}</td>
+                        <td class="px-6 py-4">
+                            {% if record.file %}
+                                <a href="{{ record.file.url }}" 
+                                   class="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                   target="_blank">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                    View File
+                                </a>
+                            {% else %}
+                                <span class="text-gray-400">No file</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if record.is_expired %}
+                                <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Expired</span>
+                            {% elif record.is_expiring_soon %}
+                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Expiring Soon</span>
+                            {% else %}
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Active</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center space-x-3">
+                                <a href="{% url 'edit_chainsaw' record.id %}" 
+                                   class="text-blue-600 hover:text-blue-800 font-medium">
+                                    Edit
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Enhanced search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchValidation = document.getElementById('searchValidation');
+        
+        if (searchInput) {
+            let debounceTimer;
+
+            searchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                
+                debounceTimer = setTimeout(() => {
+                    const searchTerm = this.value.toLowerCase().trim();
+                    const rows = document.querySelectorAll('tbody tr');
+                    let visibleCount = 0;
+                    
+                    // Clear validation if search is empty
+                    if (searchTerm === '') {
+                        searchValidation.style.display = 'none';
+                        rows.forEach(row => row.style.display = '');
+                        return;
+                    }
+
+                    rows.forEach(row => {
+                        // Get all cells in the row
+                        const cells = row.querySelectorAll('td');
+                        let shouldShow = false;
+                        
+                        cells.forEach(cell => {
+                            const cellText = cell.textContent.toLowerCase().trim();
+                            if (cellText.includes(searchTerm)) {
+                                shouldShow = true;
+                            }
+                        });
+                        
+                        row.style.display = shouldShow ? '' : 'none';
+                        if (shouldShow) visibleCount++;
+                    });
+                    
+                    // Update validation message with appropriate styling
+                    if (visibleCount > 0) {
+                        searchValidation.textContent = `Found ${visibleCount} matching record${visibleCount !== 1 ? 's' : ''}`;
+                        searchValidation.className = 'absolute mt-1 text-sm font-medium text-green-600 bg-green-50 px-2 py-1 rounded-md';
+                    } else {
+                        searchValidation.textContent = 'No matches found';
+                        searchValidation.className = 'absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md';
+                    }
+                    searchValidation.style.display = 'block';
+                }, 300);
+            });
+
+            // Clear validation on focus if empty
+            searchInput.addEventListener('focus', function() {
+                if (!this.value.trim()) {
+                    searchValidation.style.display = 'none';
+                }
+            });
+        }
+
+        // Add placeholder text indicating search fields
+        searchInput.placeholder = "Search records..";
+    });
+
+    function exportTableToCSV(filename) {
+        const table = document.querySelector('table');
+        const rows = table.querySelectorAll('tr');
+        let csv = [];
+        
+        for (let i = 0; i < rows.length; i++) {
+            const row = [], cols = rows[i].querySelectorAll('td, th');
+            
+            for (let j = 0; j < cols.length; j++) {
+                // Get the text content and clean it up
+                let data = cols[j].textContent.replace(/(\r\n|\n|\r)/gm, '').trim();
+                // Escape double quotes and wrap field in quotes
+                data = data.replace(/"/g, '""');
+                row.push('"' + data + '"');
+            }
+            csv.push(row.join(','));
+        }
+        
+        const csvString = csv.join('\n');
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (navigator.msSaveBlob) {
+            navigator.msSaveBlob(blob, filename);
+        } else {
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+</script>

@@ -11,191 +11,370 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* Input field styles */
-        input, select, textarea {
-            background-color: #ffffff;
-            border: 1px solid rgb(206, 212, 218);
-            border-radius: 4px;
-            padding: 6px 12px;
-            height: 38px;
-            width: 100%;
-            color: rgb(73, 80, 87);
-            font-size: 16px;
-            line-height: 24px;
+        body {
+            background-color: #f0fdf4; /* Light green background */
+        }
+        .modal-open {
+            overflow: hidden;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        #notificationModal {
+            animation: fadeIn 0.3s ease-out;
         }
 
-        input::placeholder {
-            color: rgb(173, 181, 189);
+        /* Add smooth transition for validation info */
+        .validation-info {
+            transition: all 0.3s ease-in-out;
+            opacity: 0;
+            transform: translateY(-10px);
         }
 
-        input:focus, select:focus, textarea:focus {
-            color: rgb(73, 80, 87);
-            background-color: #fff;
-            border-color: #80bdff;
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        .validation-info:not(.hidden) {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        /* Form input specific styles */
-        .form-input {
+        /* Make form labels more readable */
+        .form-group label {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
             display: block;
+        }
+
+        /* Style form inputs */
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            font-size: 1rem;
+            padding: 0.5rem;
             width: 100%;
-            padding: 6px 12px;
-            font-size: 16px;
-            line-height: 24px;
-            color: rgb(73, 80, 87);
-            background-color: #fff;
-            background-clip: padding-box;
-            border: 1px solid rgb(206, 212, 218);
-            border-radius: 4px;
-            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+            border-radius: 0.375rem;
+            border: 1px solid #D1D5DB;
+        }
+
+        /* Hover effect for inputs */
+        .form-group input:hover,
+        .form-group select:hover,
+        .form-group textarea:hover {
+            border-color: #9CA3AF;
+        }
+
+        /* Focus effect for inputs */
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563EB;
+            ring: 2px;
+            ring-color: #93C5FD;
+        }
+
+        .form-input {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                   focus:border-blue-500 focus:ring-blue-500 
+                   bg-gray-50 text-gray-900; /* Updated to match theme */
+            padding: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .form-input:hover {
+            @apply border-blue-400;
         }
 
         .form-input:focus {
-            color: rgb(73, 80, 87);
-            background-color: #fff;
-            border-color: #80bdff;
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            @apply ring-2 ring-blue-200;
         }
 
-        /* Label styles */
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
+        .form-input:invalid {
+            @apply border-red-300;
         }
 
-        /* Section headers */
-        h3 {
-            color: #111827;
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 16px;
+        .form-input:invalid:focus {
+            @apply ring-red-200;
         }
 
-        /* Remove number input spinners */
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type="number"] {
-            -moz-appearance: textfield;
+        /* Custom styling for date inputs */
+        input[type="date"].form-input {
+            @apply p-2;
         }
 
-        /* Date input specific styles */
-        input[type="date"] {
-            height: 42px;
-            padding: 8px 12px;
-            color: #4B5563;
-        }
-
-        /* Select field styles */
-        select {
-            height: 42px;
-            padding: 8px 12px;
+        /* Custom styling for select inputs */
+        select.form-input {
+            @apply pr-8;
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.75rem center;
+            background-position: right 0.5rem center;
             background-repeat: no-repeat;
-            background-size: 1.25em 1.25em;
-            padding-right: 2.5rem;
+            background-size: 1.5em 1.5em;
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
         }
 
-        /* Hover states */
-        input:hover, select:hover, textarea:hover {
-            border-color: #d1d5db;
-        }
-
-        /* Error states */
-        .error {
-            border-color: #ef4444;
-        }
-
+        /* Error message styling */
         .error-message {
-            color: #ef4444;
-            font-size: 12px;
-            margin-top: 4px;
+            @apply mt-1 text-sm text-red-600;
         }
 
-        /* Form group spacing */
-        .form-group {
-            margin-bottom: 16px;
+        /* Required field indicator */
+        label:after {
+            content: " *";
+            @apply text-red-500;
         }
 
-        /* Grid gap adjustments */
-        .gap-6 {
-            gap: 16px;
-        }
-
-        input {
-            display: block;
+        input, select, textarea {
+            background-color: #f8fafc; /* Light gray background */
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
             width: 100%;
-            padding: 0.375rem 0.75rem;
-            font-size: 1rem;
-            line-height: 1.5;
-            color: #495057;
-            background-color: #fff;
-            background-clip: padding-box;
-            border: 1px solid #ced4da;
-            border-radius: 0.25rem;
-            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-            height: 38px;
+            color: #4B5563; /* Dark gray text */
+        }
+        input::placeholder, select::placeholder, textarea::placeholder {
+            color: #6B7280;
+            opacity: 0.8;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        .form-input {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                   focus:border-blue-500 focus:ring-blue-500 
+                   bg-gray-50 text-gray-900;
+        }
+        input[type="date"] {
+            padding: 0.4rem;
+            color: #4B5563;
+        }
+        select {
+            background-color: #f8fafc;
+            padding: 0.4rem;
+            color: #4B5563;
+        }
+        input:hover, select:hover, textarea:hover {
+            border-color: #60A5FA;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        input:focus {
-            color: #495057;
-            background-color: #fff;
-            border-color: #80bdff;
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        /* Add specific styling for date inputs to show the placeholder */
+        input[type="date"]::before {
+            content: attr(placeholder);
+            position: absolute;
+            color: #6B7280;
         }
 
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
+        input[type="date"]:focus::before,
+        input[type="date"]:valid::before {
+            display: none;
+        }
+
+        /* Style file input */
+        input[type="file"] {
+            padding: 0.375rem;
+        }
+        input[type="file"]::-webkit-file-upload-button {
+            padding: 0.5rem 1rem;
+            margin-right: 1rem;
+            background-color: #E5E7EB;
+            border: none;
+            border-radius: 0.375rem;
+            color: #374151;
+            cursor: pointer;
+        }
+        input[type="file"]::-webkit-file-upload-button:hover {
+            background-color: #D1D5DB;
+        }
+
+        /* Remove the previous date input styles and add these new ones */
+        .date-input {
+            position: relative;
+            background-color: #f8fafc;
+        }
+
+        .date-input::-webkit-calendar-picker-indicator {
+            background: transparent;
+            bottom: 0;
+            color: transparent;
+            cursor: pointer;
+            height: auto;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: auto;
+        }
+
+        /* Remove the previous ::before pseudo-element styles for date inputs */
+        input[type="date"]::before {
+            content: none;
+        }
+
+        /* Add these styles to your existing style section */
+        .validation-message {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .validation-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .no-results-message {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Add visual feedback for updates */
+        .updated {
+            animation: highlight 0.3s ease-out;
+        }
+        
+        @keyframes highlight {
+            0% { background-color: #fff; }
+            50% { background-color: #e3f2fd; }
+            100% { background-color: #fff; }
+        }
+
+        /* Style for readonly net volume field */
+        #netVolume {
+            background-color: #f8fafc;
+            color: #4B5563;
+            cursor: default;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            outline: none;
+        }
+
+        input[type="number"]:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        input[readonly] {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        /* Situation dropdown styling */
+        select[name="situation"] {
+            @apply bg-white border border-gray-300 rounded-md shadow-sm;
+            padding: 0.5rem;
+            width: 100%;
+        }
+
+        select[name="situation"]:focus {
+            @apply ring-2 ring-blue-500 border-blue-500;
+            outline: none;
+        }
+
+        /* Style for the options */
+        select[name="situation"] option[value="Good"] {
+            color: #059669;
+        }
+
+        select[name="situation"] option[value="Pending"] {
+            color: #d97706;
+        }
+
+        .bg-blue-600 {
+            background-color: #3b82f6; /* Updated to match theme */
+        }
+        .bg-blue-700 {
+            background-color: #2563eb; /* Updated to match theme */
+        }
+        .bg-white {
+            background-color: #ffffff; /* White background for forms */
+        }
+        .text-gray-700 {
+            color: #4B5563; /* Dark gray text */
         }
     </style>
 </head>
-<body class="font-inter bg-gradient-to-tl from-blue-400 to-green-400 text-gray-900">
-    <!-- Navigation Bar -->
-    <nav class="bg-white shadow-lg">
+<body class="bg-green-100 text-gray-900">
+    <!-- Header with Logo -->
+    <nav class="bg-transparent shadow-lg border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
                     <!-- Logo -->
-                    <div class="flex-shrink-0 flex items-center">
-                        <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO</span>
-                    </div>
-                    <!-- Navigation Links -->
-                    <div class="hidden sm:ml-8 sm:flex sm:space-x-8">
-                        <a href="{% url 'dashboard' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
-                            Dashboard
-                        </a>
-                        <a href="{% url 'cutting' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
-                            Cutting
-                        </a>
-                        <a href="{% url 'lumber' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
-                            Lumber
-                        </a>
-                        <a href="{% url 'chainsaw' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
-                            Chainsaw
-                        </a>
-                        <a href="{% url 'wood' %}" class="text-gray-700 inline-flex items-center px-3 pt-1 border-b-2 border-transparent hover:border-blue-600 hover:text-blue-600 transition-colors duration-200 text-m font-medium">
-                            Wood
-                        </a>
+                    <div class="flex-shrink-0">
+                        <span class="text-xl font-bold text-green-700">FUS-CENRO-ARGAO</span>
                     </div>
                 </div>
-                <div class="flex items-center">
-                    <div class="text-m text-gray-800">
+                <!-- User Menu -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <div class="text-lg text-gray-900 font-medium">
                         Welcome, {{ request.user.username }}
                     </div>
-                    <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
-                        Sign Out
-                    </a>
+                    <div class="relative">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                            ▼
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                               
+                                <!-- Quick Actions -->
+                                <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
+                                    <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
+                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
+                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
+                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                </div>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                    </svg>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Error Check -->
+        {% if form.errors %}
+        <div class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg shadow-sm">
+            <strong>Please fix the following errors:</strong>
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    <li>{{ field }}: {{ errors|join:", " }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        <!-- Mobile Menu -->
+        <div class="md:hidden" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
             </div>
         </div>
     </nav>
@@ -210,14 +389,6 @@
             {% endfor %}
         </div>
     {% endif %}
-
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-6 shadow-md">
-        <div class="max-w-7xl mx-auto px-4">
-            <h1 class="text-3xl font-bold mb-2">Chainsaw Registration Form</h1>
-            <p class="text-sm opacity-90">Enter chainsaw registration information</p>
-        </div>
-    </div>
 
     <!-- Form Section -->
     <div class="max-w-5xl mx-auto bg-white p-8 mt-8 shadow-xl rounded-lg">
@@ -356,180 +527,28 @@
             </div>
 
             <!-- Submit Button -->
-            <div class="flex justify-end">
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
-                    Save Record
+            <div class="flex justify-between items-center">
+                <button type="button" onclick="clearForm()" class="bg-white text-red-600 border border-red-600 px-6 py-2 rounded-lg hover:bg-red-50">
+                    Clear Form
                 </button>
+                <div class="flex space-x-4">
+                    <a href="{% url 'chainsaw_records' %}" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        View Records
+                    </a>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Submit
+                    </button>
+                </div>
             </div>
         </form>
     </div>
 
-    <!-- Records Table Section -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="bg-white shadow-xl rounded-lg overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-600 to-blue-600">
-                <h3 class="text-xl font-semibold text-white mb-4">
-                    Chainsaw Records
-                </h3>
-                <div class="flex items-center justify-between space-x-4">
-                    <!-- Search Bar -->
-                    <div class="relative flex-1 max-w-md">
-                        <input type="text" 
-                               id="searchInput" 
-                               placeholder="Search records..." 
-                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-700"
-                        >
-                        <span class="absolute right-3 top-2.5 text-gray-400">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                        </span>
-                        <!-- Updated validation message element -->
-                        <div id="searchValidation" class="absolute mt-1 text-sm font-medium text-red-600 bg-red-50 px-2 py-1 rounded-md hidden"></div>
-                    </div>
-                    <!-- Export Button -->
-                    <button onclick="exportTableToCSV('chainsaw_records.csv')" 
-                            class="bg-white text-green-600 px-4 py-2 rounded-lg hover:bg-green-50 transition duration-200 flex items-center space-x-2 shadow-sm">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                        </svg>
-                        <span>Export CSV</span>
-                    </button>
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <div class="mb-4">
-                    {% with expired_records=chainsaw_records|expired_records %}
-                        {% if expired_records %}
-                            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
-                                Alert: {{ expired_records|length }} record{{ expired_records|length|pluralize }} expired
-                            </div>
-                        {% endif %}
-                    {% endwith %}
-                    
-                    {% with expiring_records=chainsaw_records|expiring_records %}
-                        {% if expiring_records %}
-                            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
-                                Warning: {{ expiring_records|length }} permit{{ expiring_records|length|pluralize }} expiring soon
-                            </div>
-                        {% endif %}
-                    {% endwith %}
-                </div>
-                <!-- Expiry Warnings -->
-                <div class="mb-4">
-                    {% for record in chainsaw_records %}
-                        {% if record.expiry_date %}
-                            {% if record.is_expiring_soon and not record.is_expired %}
-                                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
-                                    Warning: Registration {{ record.no }} for {{ record.name }} will expire in {{ record.days_remaining }} days
-                                </div>
-                            {% elif record.is_expired %}
-                                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
-                                    Alert: Registration {{ record.no }} for {{ record.name }} has expired
-                                </div>
-                            {% endif %}
-                        {% endif %}
-                    {% endfor %}
-                </div>
-                <!-- Records Table -->
-                <table class="min-w-full text-sm text-left text-gray-500">
-                    <thead class="bg-gray-50 text-gray-700">
-                        <tr>
-                            <th class="px-6 py-4 font-semibold">No.</th>
-                            <th class="px-6 py-4 font-semibold">Year</th>
-                            <th class="px-6 py-4 font-semibold">Region</th>
-                            <th class="px-6 py-4 font-semibold">PENRO</th>
-                            <th class="px-6 py-4 font-semibold">CENRO</th>
-                            <th class="px-6 py-4 font-semibold">Name</th>
-                            <th class="px-6 py-4 font-semibold">Municipality/City</th>
-                            <th class="px-6 py-4 font-semibold">Province</th>
-                            <th class="px-6 py-4 font-semibold">Purpose/Use</th>
-                            <th class="px-6 py-4 font-semibold">Date Acquired</th>
-                            <th class="px-6 py-4 font-semibold">Cert. Reg. #</th>
-                            <th class="px-6 py-4 font-semibold">CTPO/PTPR/Tenure #</th>
-                            <th class="px-6 py-4 font-semibold">Brand</th>
-                            <th class="px-6 py-4 font-semibold">Model</th>
-                            <th class="px-6 py-4 font-semibold">Serial #</th>
-                            <th class="px-6 py-4 font-semibold">Color</th>
-                            <th class="px-6 py-4 font-semibold">Date Issued</th>
-                            <th class="px-6 py-4 font-semibold">Expiry Date</th>
-                            <th class="px-6 py-4 font-semibold">Status of Registration</th>
-                            <th class="px-6 py-4 font-semibold">Date of Renewal</th>
-                            <th class="px-6 py-4 font-semibold">Horse Power</th>
-                            <th class="px-6 py-4 font-semibold">Guidebar Length</th>
-                            <th class="px-6 py-4 font-semibold">DENR Sticker #</th>
-                            <th class="px-6 py-4 font-semibold">File</th>
-                            <th class="px-6 py-4 font-semibold">Status</th>
-                            <th class="px-6 py-4 font-semibold">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        {% for record in chainsaw_records %}
-                        <tr class="hover:bg-gray-50 transition-colors duration-150">
-                            <td class="px-6 py-4">{{ record.no }}</td>
-                            <td class="px-6 py-4">{{ record.year }}</td>
-                            <td class="px-6 py-4">{{ record.region }}</td>
-                            <td class="px-6 py-4">{{ record.penro }}</td>
-                            <td class="px-6 py-4">{{ record.cenro }}</td>
-                            <td class="px-6 py-4">{{ record.name }}</td>
-                            <td class="px-6 py-4">{{ record.municipality }}</td>
-                            <td class="px-6 py-4">{{ record.province }}</td>
-                            <td class="px-6 py-4">{{ record.purpose }}</td>
-                            <td class="px-6 py-4">{{ record.date_acquired|date:"F d, Y" }}</td>
-                            <td class="px-6 py-4">{{ record.cert_reg_number }}</td>
-                            <td class="px-6 py-4">{{ record.ctpo_number }}</td>
-                            <td class="px-6 py-4">{{ record.brand }}</td>
-                            <td class="px-6 py-4">{{ record.model }}</td>
-                            <td class="px-6 py-4">{{ record.serial_number }}</td>
-                            <td class="px-6 py-4">{{ record.color }}</td>
-                            <td class="px-6 py-4">{{ record.date_issued|date:"F d, Y" }}</td>
-                            <td class="px-6 py-4">{{ record.expiry_date|date:"F d, Y" }}</td>
-                            <td class="px-6 py-4">{{ record.registration_status }}</td>
-                            <td class="px-6 py-4">{{ record.date_renewal|date:"F d, Y" }}</td>
-                            <td class="px-6 py-4">{{ record.horse_power }}</td>
-                            <td class="px-6 py-4">{{ record.guidebar_length }}"</td>
-                            <td class="px-6 py-4">{{ record.denr_sticker }}</td>
-                            <td class="px-6 py-4">
-                                {% if record.file %}
-                                    <a href="{{ record.file.url }}" 
-                                       class="text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                                       target="_blank">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                        </svg>
-                                        View File
-                                    </a>
-                                {% else %}
-                                    <span class="text-gray-400">No file</span>
-                                {% endif %}
-                            </td>
-                            <td class="px-6 py-4">
-                                {% if record.is_expired %}
-                                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Expired</span>
-                                {% elif record.is_expiring_soon %}
-                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Expiring Soon</span>
-                                {% else %}
-                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Active</span>
-                                {% endif %}
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center space-x-3">
-                                    <a href="{% url 'edit_chainsaw' record.id %}" 
-                                       class="text-blue-600 hover:text-blue-800 font-medium">
-                                        Edit
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
     <footer class="bg-blue-900 text-white mt-auto py-6">
         <div class="max-w-7xl mx-auto text-center">
             <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>

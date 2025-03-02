@@ -68,16 +68,10 @@ class Lumber(models.Model):
             raise ValidationError({'no': 'Number can only contain letters, numbers, and hyphens.'})
 
     def save(self, *args, **kwargs):
-        self.full_clean()
-        
-        # Convert fields to uppercase before saving
-        if self.trade_name:
-            self.trade_name = self.trade_name.upper()
-        if self.permit_no:
-            self.permit_no = self.permit_no.upper()
-        if self.no:
-            self.no = self.no.upper()
-        
+        # If this is a new record or expiry_date hasn't been set
+        if not self.pk or not self.expiry_date:
+            # Set expiry date to 3 months from issue date
+            self.expiry_date = self.date_issued + timedelta(days=90)
         super().save(*args, **kwargs)
 
     @property

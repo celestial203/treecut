@@ -23,6 +23,7 @@ urlpatterns = [
     path('edit_recordlumber/<int:pk>/', views.edit_recordlumber, name='edit_recordlumber'),
     path('search/', views.search, name='search'),
     path('chainsaw/', views.chainsaw, name='chainsaw'),
+    path('chainsaw/records/', views.chainsaw_records, name='chainsaw_records'),
     path('edit-chainsaw/<str:pk>/', views.edit_chainsaw, name='edit_chainsaw'),
     path('edit-wood/<int:pk>/', views.edit_wood, name='edit_wood'),
     path('profile/', views.profile, name='profile'),

@@ -76,11 +76,12 @@ def dashboard(request):
         expiry_date__gte=current_date
     ).count()
     
-    # For pending lumber records, use records created in the last 7 days that are not expired
-    seven_days_ago = current_date - timedelta(days=7)
-    pending_lumber_count = Lumber.objects.filter(
-        created_at__gte=seven_days_ago,
-        expiry_date__gte=current_date
+    # For expiring soon lumber records, use records that expire within the next 30 days
+    # but are not yet expired
+    thirty_days_from_now = current_date + timedelta(days=30)
+    expiring_soon_lumber_count = Lumber.objects.filter(
+        expiry_date__gte=current_date,
+        expiry_date__lte=thirty_days_from_now
     ).count()
 
     # Chainsaw counts
@@ -118,7 +119,7 @@ def dashboard(request):
         'lumber_count': lumber_count,
         'expired_lumber_count': expired_lumber_count,
         'active_lumber_count': active_lumber_count,
-        'pending_lumber_count': pending_lumber_count,
+        'expiring_soon_lumber_count': expiring_soon_lumber_count,
         'chainsaw_count': chainsaw_count,
         'expired_chainsaw_count': expired_chainsaw_count,
         'wood_count': wood_count,
@@ -611,7 +612,23 @@ def volume_records_list(request):
 @login_required
 def lumber_records(request):
     current_date = timezone.now().date()
-    lumber_records = Lumber.objects.all().order_by('-date_issued')
+    
+    # Get status filter from URL
+    status = request.GET.get('status')
+    
+    # Apply filters based on status
+    if status == 'expired':
+        lumber_records = Lumber.objects.filter(expiry_date__lt=current_date).order_by('-date_issued')
+    elif status == 'active':
+        lumber_records = Lumber.objects.filter(expiry_date__gte=current_date).order_by('-date_issued')
+    elif status == 'expiring_soon':  # New filter for expiring soon records
+        thirty_days_from_now = current_date + timedelta(days=30)
+        lumber_records = Lumber.objects.filter(
+            expiry_date__gte=current_date,
+            expiry_date__lte=thirty_days_from_now
+        ).order_by('-date_issued')
+    else:
+        lumber_records = Lumber.objects.all().order_by('-date_issued')
     
     # Count expired records
     expired_count = Lumber.objects.filter(expiry_date__lt=current_date).count()
@@ -649,3 +666,45 @@ def view_lumber_details(request, pk):
     }
     
     return render(request, 'view_lumber_details.html', context)
+
+@login_required(login_url='login')
+def chainsaw_records(request):
+    current_date = timezone.now().date()
+    
+    # Get status filter from URL if provided
+    status = request.GET.get('status')
+    
+    # Apply filters based on status
+    if status == 'expired':
+        chainsaw_records = Chainsaw.objects.filter(expiry_date__lt=current_date).order_by('-date_issued')
+    elif status == 'active':
+        chainsaw_records = Chainsaw.objects.filter(expiry_date__gte=current_date).order_by('-date_issued')
+    elif status == 'expiring_soon':
+        thirty_days_from_now = current_date + timedelta(days=30)
+        chainsaw_records = Chainsaw.objects.filter(
+            expiry_date__gte=current_date,
+            expiry_date__lte=thirty_days_from_now
+        ).order_by('-date_issued')
+    else:
+        # Default: show all records
+        chainsaw_records = Chainsaw.objects.all().order_by('-date_issued')
+    
+    # Count expired records
+    expired_count = Chainsaw.objects.filter(
+        expiry_date__lt=current_date
+    ).count()
+    
+    # Count records expiring in next 30 days but not expired yet
+    thirty_days_from_now = current_date + timedelta(days=30)
+    expiring_soon_count = Chainsaw.objects.filter(
+        expiry_date__gt=current_date,
+        expiry_date__lte=thirty_days_from_now
+    ).count()
+
+    context = {
+        'chainsaw_records': chainsaw_records,
+        'expired_count': expired_count,
+        'expiring_soon_count': expiring_soon_count,
+    }
+    
+    return render(request, 'chainsaw_record.html', context)
