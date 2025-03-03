@@ -1,161 +1,569 @@
-{% extends 'base.html' %}
 {% load static %}
+{% load form_filters %} 
+{% load widget_tweaks %}
 
-{% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-8">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Edit Wood Record</h2>
-            <a href="{% url 'wood_records' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">
-                Back to List
-            </a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CENRO Argao - Edit Wood Processing Plant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-color: #f0fdf4; /* Light green background */
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(90deg, #22c55e 0%, #0ea5e9 100%);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+        }
+        
+        .invalid-input {
+            border-color: #ef4444 !important;
+        }
+        
+        .valid-input {
+            border-color: #10b981 !important;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body class="font-inter text-gray-900">
+    <!-- Navigation Bar -->
+    <nav class="bg-transparent shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0">
+                        <span class="text-xl font-bold text-green-700">FUS-CENRO-ARGAO</span>
+                    </div>
+                </div>
+                <!-- User Menu -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <div class="text-lg text-gray-900 font-medium">
+                        Welcome, {{ request.user.username }}
+                    </div>
+                    <div class="relative">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" 
+                                id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                            ▼
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                                <!-- Quick Actions -->
+                                <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
+                                    <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
+                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
+                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
+                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                </div>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                    </svg>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
+        <!-- Mobile Menu -->
+        <div class="md:hidden" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
+            </div>
+        </div>
+    </nav>
 
-        <form method="POST" enctype="multipart/form-data" class="space-y-6">
-            {% csrf_token %}
-
-            <!-- Basic Information -->
-            <div class="grid grid-cols-2 gap-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <div class="bg-gradient-to-r from-green-600 to-blue-400 px-6 py-4">
+                <h1 class="text-xl font-bold text-white">Edit Wood Processing Plant Record</h1>
+            </div>
+            
+            <!-- Form Errors -->
+            <div id="form-errors" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 hidden"></div>
+            
+            <!-- Form -->
+            <form method="POST" enctype="multipart/form-data" action="{% url 'update_wood' wood.id %}" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% csrf_token %}
+                
+                <!-- Name -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Name</label>
-                    <input type="text" name="name" value="{{ wood.name }}" class="form-input mt-1">
+                    <input type="text" 
+                           name="name" 
+                           value="{{ wood.name }}"
+                           required
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Type</label>
-                    <input type="text" name="type" value="{{ wood.type }}" class="form-input mt-1">
-                </div>
-            </div>
-
-            <!-- Additional Information -->
-            <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">WPP Number</label>
-                    <input type="text" name="wpp_number" value="{{ wood.wpp_number }}" class="form-input mt-1">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Business</label>
-                    <input type="text" name="business" value="{{ wood.business }}" class="form-input mt-1" required>
-                </div>
-            </div>
-
-            <!-- Plant and Measurements -->
-            <div class="grid grid-cols-3 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Plant</label>
-                    <input type="text" name="plant" value="{{ wood.plant }}" class="form-input mt-1" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">DRC (cu.m)</label>
-                    <input type="number" step="0.01" name="drc" value="{{ wood.drc }}" class="form-input mt-1" onchange="calculateALR()" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">ALR (m³)</label>
-                    <input type="number" step="0.01" name="alr" value="{{ wood.alr }}" class="form-input mt-1" readonly>
-                </div>
-            </div>
-
-            <!-- Location Information -->
-            <div class="grid grid-cols-3 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Location</label>
-                    <input type="text" name="supplier_info" value="{{ wood.supplier_info }}" class="form-input mt-1" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Latitude</label>
-                    <input type="number" step="0.000001" name="latitude" value="{{ wood.latitude }}" class="form-input mt-1">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Longitude</label>
-                    <input type="number" step="0.000001" name="longitude" value="{{ wood.longitude }}" class="form-input mt-1">
-                </div>
-            </div>
-
-            <!-- Volume Information -->
-            <div class="grid grid-cols-3 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Local Volume</label>
-                    <input type="number" step="0.001" name="local_volume" value="{{ wood.local_volume }}" class="form-input mt-1" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Imported Volume</label>
-                    <input type="number" step="0.001" name="imported_volume" value="{{ wood.imported_volume }}" class="form-input mt-1" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Area (ha)</label>
-                    <input type="number" step="0.01" name="area" value="{{ wood.area }}" class="form-input mt-1" required>
-                </div>
-            </div>
-
-            <!-- Dates -->
-            <div class="grid grid-cols-3 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Date Issued</label>
-                    <input type="date" name="date_issued" value="{{ wood.date_issued|date:'Y-m-d' }}" class="form-input mt-1" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Date Released</label>
-                    <input type="date" name="date_released" value="{{ wood.date_released|date:'Y-m-d' }}" class="form-input mt-1" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Expiry Date</label>
-                    <input type="date" name="expiry_date" value="{{ wood.expiry_date|date:'Y-m-d' }}" class="form-input mt-1" required>
-                </div>
-            </div>
-
-            <!-- Status and Approval -->
-            <div class="grid grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Status</label>
-                    <select name="wood_status" class="form-input mt-1" required>
-                        <option value="EXISTING" {% if wood.wood_status == 'EXISTING' %}selected{% endif %}>Existing</option>
-                        <option value="EXPIRED" {% if wood.wood_status == 'EXPIRED' %}selected{% endif %}>Expired/Renewed</option>
-                        <option value="ACTIVE_NEW" {% if wood.wood_status == 'ACTIVE_NEW' %}selected{% endif %}>Active/New</option>
+                
+                <!-- Type -->
+                <div class="form-group">
+                    <label for="id_type" class="block text-sm font-medium text-gray-700">Type</label>
+                    <select name="type" id="id_type" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                        {% for value, display_name in type_choices %}
+                            <option value="{{ value }}" {% if wood.type == value %}selected{% endif %}>{{ display_name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
+                
+                <!-- Integrated -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Integrated</label>
+                    <select name="integrated" 
+                            class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                        <option value="Yes" {% if wood.integrated == 'Yes' %}selected{% endif %}>Yes</option>
+                        <option value="No" {% if wood.integrated == 'No' %}selected{% endif %}>No</option>
+                    </select>
+                </div>
+                
+                <!-- WPP Number -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">WPP Number</label>
+                    <input type="text" 
+                           name="wpp_number" 
+                           value="{{ wood.wpp_number }}"
+                           required
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                </div>
+                
+                <!-- Business -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Business</label>
+                    <input type="text" 
+                           name="business" 
+                           value="{{ wood.business }}"
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                </div>
+                
+                <!-- Plant -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Plant</label>
+                    <input type="text" 
+                           name="plant" 
+                           value="{{ wood.plant }}"
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                </div>
+                
+                <!-- DRC -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">DRC (cu.m)</label>
+                    <input type="number" 
+                           name="drc" 
+                           value="{{ wood.drc }}"
+                           step="0.01"
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
+                           onchange="calculateALR()">
+                </div>
+                
+                <!-- ALR -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">ALR (m³)</label>
+                    <input type="number" 
+                           name="alr" 
+                           value="{{ wood.alr }}"
+                           step="0.01"
+                           readonly
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-50">
+                    <p class="text-sm text-gray-500 mt-1">Automatically calculated from DRC</p>
+                </div>
+                
+                <!-- Longitude -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Longitude</label>
+                    <input type="text" 
+                           name="longitude" 
+                           value="{{ wood.longitude }}"
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                </div>
+                
+                <!-- Latitude -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Latitude</label>
+                    <input type="text" 
+                           name="latitude" 
+                           value="{{ wood.latitude }}"
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                </div>
+                
+                <!-- Supplier Info -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Supplier Info</label>
+                    <input type="text" 
+                           name="supplier_info" 
+                           value="{{ wood.supplier_info }}"
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                </div>
+                
+                <!-- Local Volume -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Local Volume</label>
+                    <input type="number" 
+                           name="local_volume" 
+                           value="{{ wood.local_volume }}"
+                           step="0.01"
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                </div>
+                
+                <!-- Imported Volume -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Imported Volume</label>
+                    <input type="number" 
+                           name="imported_volume" 
+                           value="{{ wood.imported_volume }}"
+                           step="0.01"
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                </div>
+                
+                <!-- Area -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Area</label>
+                    <input type="text" 
+                           name="area" 
+                           value="{{ wood.area }}"
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                </div>
+                
+                <!-- Date Issued -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date Issued</label>
+                    <input type="date" 
+                           name="date_issued" 
+                           value="{{ wood.date_issued|date:'Y-m-d' }}"
+                           required
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
+                           onchange="updateExpiryDate()">
+                </div>
+                
+                <!-- Date Released -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date Released</label>
+                    <input type="date" 
+                           name="date_released" 
+                           value="{{ wood.date_released|date:'Y-m-d' }}"
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                </div>
+                
+                <!-- Expiry Date -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                    <input type="date" 
+                           name="expiry_date" 
+                           value="{{ wood.expiry_date|date:'Y-m-d' }}"
+                           required
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                </div>
+                
+                <!-- Approved By -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Approved By</label>
-                    <input type="text" name="approved_by" value="{{ wood.approved_by }}" class="form-input mt-1" required>
+                    <input type="text" 
+                           name="approved_by" 
+                           value="{{ wood.approved_by }}"
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
-            </div>
 
-            <!-- File Attachment -->
-            <div class="mt-4">
-                <label class="block text-sm font-medium text-gray-700">Attachment</label>
                 {% if wood.attachment %}
-                    <p class="text-sm text-gray-600 mb-2">Current file: {{ wood.attachment.name }}</p>
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700">Current File</label>
+                    <div class="mt-1 flex items-center">
+                        <span class="text-sm text-gray-500">{{ wood.attachment.name }}</span>
+                        <a href="{{ wood.attachment.url }}" target="_blank" class="ml-2 text-blue-600 hover:text-blue-800">
+                            View
+                        </a>
+                    </div>
+                </div>
                 {% endif %}
-                <input type="file" name="attachment" class="form-input mt-1">
-            </div>
 
-            <!-- Submit Buttons -->
-            <div class="flex justify-end space-x-4 mt-6">
-                <button type="button" onclick="window.history.back()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded">
-                    Cancel
-                </button>
-                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded">
-                    Save Changes
-                </button>
-            </div>
-        </form>
+                <!-- File Attachment -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700">Replace File</label>
+                    <input type="file" 
+                           name="attachment" 
+                           class="form-input mt-1 w-full">
+                    <p class="text-sm text-gray-500 mt-1">Leave empty to keep the current file</p>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="flex justify-end space-x-4 mt-6 col-span-2">
+                    <a href="{% url 'wood_records' %}" 
+                       class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition duration-200 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        <span>Cancel</span>
+                    </a>
+                    
+                    <button type="submit" 
+                            class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-200 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Update Record</span>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
-<script>
-    function calculateALR() {
-        const drcInput = document.querySelector('input[name="drc"]');
-        const alrInput = document.querySelector('input[name="alr"]');
-        
-        if (drcInput && drcInput.value) {
-            const drc = parseFloat(drcInput.value);
-            // Formula: DRC × 290 × 0.80
-            const alr = (drc * 290 * 0.80).toFixed(2);
-            alrInput.value = alr;
-        } else if (alrInput) {
-            alrInput.value = '';
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white mt-auto py-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // User menu dropdown toggle
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            // Toggle desktop user menu
+            userMenuButton.addEventListener('click', function() {
+                const isExpanded = userMenuButton.getAttribute('aria-expanded') === 'true';
+                userMenuButton.setAttribute('aria-expanded', !isExpanded);
+                userMenu.classList.toggle('hidden');
+            });
+
+            // Toggle mobile menu
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'block' : 'none';
+            });
+
+            // Close menus when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                    userMenu.classList.add('hidden');
+                    userMenuButton.setAttribute('aria-expanded', 'false');
+                }
+                
+                if (!mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                    mobileMenu.style.display = 'none';
+                }
+            });
+            
+            // Calculate ALR on page load
+            calculateALR();
+        });
+
+        function calculateALR() {
+            const drcInput = document.querySelector('input[name="drc"]');
+            const alrInput = document.querySelector('input[name="alr"]');
+            
+            if (drcInput && drcInput.value) {
+                const drc = parseFloat(drcInput.value);
+                // Formula: DRC × 290 × 0.80
+                const alr = (drc * 290 * 0.80).toFixed(2);
+                alrInput.value = alr;
+            } else if (alrInput) {
+                alrInput.value = '';
+            }
         }
-    }
 
-    // Calculate ALR on page load
-    document.addEventListener('DOMContentLoaded', calculateALR);
-</script>
-{% endblock %}
+        function updateExpiryDate() {
+            const issuedDate = document.querySelector('input[name="date_issued"]').value;
+            if (issuedDate) {
+                const expiryDate = new Date(issuedDate);
+                // Limit to 5 years maximum as per validation error
+                expiryDate.setFullYear(expiryDate.getFullYear() + 5);
+                // Subtract one day to ensure it's not more than 5 years
+                expiryDate.setDate(expiryDate.getDate() - 1);
+                document.querySelector('input[name="expiry_date"]').value = expiryDate.toISOString().split('T')[0];
+            }
+        }
+
+        // DRC input change handler
+        document.querySelector('input[name="drc"]').addEventListener('input', calculateALR);
+
+        // Form validation
+        function validateForm() {
+            let isValid = true;
+            const requiredFields = document.querySelectorAll('input[required], select[required]');
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    showError(field, 'This field is required');
+                    isValid = false;
+                } else {
+                    showSuccess(field);
+                }
+            });
+            
+            // Validate dates
+            const dateIssued = document.querySelector('input[name="date_issued"]');
+            const dateReleased = document.querySelector('input[name="date_released"]');
+            
+            if (dateIssued.value && dateReleased.value) {
+                const issuedDate = new Date(dateIssued.value);
+                const releasedDate = new Date(dateReleased.value);
+                
+                if (releasedDate < issuedDate) {
+                    showError(dateReleased, 'Release date cannot be before issue date');
+                    isValid = false;
+                }
+            }
+            
+            return isValid;
+        }
+
+        function showError(input, message) {
+            input.classList.add('invalid-input');
+            input.classList.remove('valid-input');
+            
+            let errorDiv = input.parentElement.querySelector('.error-message');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                input.parentElement.appendChild(errorDiv);
+            }
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function showSuccess(input) {
+            input.classList.remove('invalid-input');
+            input.classList.add('valid-input');
+            
+            const errorDiv = input.parentElement.querySelector('.error-message');
+            if (errorDiv) {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        // Add form submission handler
+        document.querySelector('form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                console.error('Form validation failed');
+                Swal.fire({
+                    title: 'Validation Error',
+                    text: 'Please correct the errors in the form before submitting.',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#EF4444',
+                });
+                return;
+            }
+            
+            try {
+                const formData = new FormData(this);
+                
+                // Add CSRF token if not already in the form
+                if (!formData.has('csrfmiddlewaretoken')) {
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    formData.append('csrfmiddlewaretoken', csrfToken);
+                }
+                
+                console.log('Submitting form data...');
+                
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                
+                // Try to get response text first for debugging
+                const responseText = await response.text();
+                console.log('Response text:', responseText);
+                
+                // Then parse as JSON if possible
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                    console.log('Response data:', result);
+                } catch (error) {
+                    console.error('Error parsing JSON response:', error);
+                    document.getElementById('form-errors').textContent = 'Server response: ' + responseText;
+                    document.getElementById('form-errors').classList.remove('hidden');
+                    throw new Error('Invalid server response');
+                }
+
+                if (response.ok && result.success) {
+                    console.log('Form submission successful');
+                    
+                    // Show success message
+                    Swal.fire({
+                        title: 'Success!',
+                        text: result.message || 'Wood record has been successfully updated',
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#10B981',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Redirect to records page
+                            window.location.href = "{% url 'wood_records' %}";
+                        }
+                    });
+                } else {
+                    console.error('Form submission failed:', result);
+                    
+                    // Show error message
+                    Swal.fire({
+                        title: 'Error!',
+                        text: result.message || 'There was a problem updating the record. Please try again.',
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#EF4444',
+                    });
+                    
+                    // Display detailed errors if available
+                    if (result.errors) {
+                        document.getElementById('form-errors').textContent = 'Validation errors: ' + JSON.stringify(result.errors);
+                        document.getElementById('form-errors').classList.remove('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Error during form submission:', error);
+                
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'There was a problem connecting to the server. Please try again.',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#EF4444',
+                });
+            }
+        });
+
+        // Add real-time validation for inputs
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('blur', function() {
+                validateForm();
+            });
+        });
+    </script>
+</body>
+</html>

@@ -505,30 +505,113 @@ def your_save_view(request):
 
 @login_required
 def edit_wood(request, pk):
+    """
+    Display form to edit an existing wood processing plant record.
+    """
     wood = get_object_or_404(Wood, pk=pk)
-    if request.method == 'POST':
-        form = WoodForm(request.POST, request.FILES, instance=wood)
-        if form.is_valid():
-            wood_record = form.save(commit=False)
-            if wood_record.drc:
-                wood_record.alr = round(float(wood_record.drc) * 290 * 0.80, 2)
-            wood_record.save()
-            messages.success(request, 'Wood record updated successfully!')
-            return redirect('wood_records')
-        else:
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        form = WoodForm(instance=wood)
     
-    return render(request, 'edit_wood.html', {
-        'form': form,
-        'wood': wood
-    })
+    # Get the valid choices for the type field from the model
+    type_choices = [
+        ('Resawmill-new', 'Resawmill-new'),
+        ('Resawmill-renew', 'Resawmill-renew')
+    ]  # Use the exact values from your model
+    
+    context = {
+        'wood': wood,
+        'title': 'Edit Wood Processing Plant',
+        'type_choices': type_choices,
+    }
+    
+    return render(request, 'edit_wood.html', context)
 
 @login_required
 def update_wood(request, pk):
-    # This is an alias for edit_wood to maintain compatibility
-    return edit_wood(request, pk)
+    """
+    Process the form submission to update a wood processing plant record.
+    """
+    wood = get_object_or_404(Wood, pk=pk)
+    
+    if request.method == 'POST':
+        # Handle AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            try:
+                # Update wood record fields
+                wood.name = request.POST.get('name')
+                wood.type = request.POST.get('type')
+                wood.wpp_number = request.POST.get('wpp_number')
+                wood.integrated = request.POST.get('integrated')
+                wood.business = request.POST.get('business')
+                wood.plant = request.POST.get('plant')
+                wood.drc = request.POST.get('drc')
+                wood.alr = request.POST.get('alr')
+                wood.longitude = request.POST.get('longitude')
+                wood.latitude = request.POST.get('latitude')
+                wood.supplier_name = request.POST.get('supplier_name')
+                wood.supplier_address = request.POST.get('supplier_address')
+                wood.local = request.POST.get('local')
+                wood.imported = request.POST.get('imported')
+                wood.area = request.POST.get('area')
+                wood.approved_by = request.POST.get('approved_by')
+                wood.date_issued = request.POST.get('date_issued')
+                wood.date_released = request.POST.get('date_released')
+                wood.expiry_date = request.POST.get('expiry_date')
+                wood.status = request.POST.get('status')
+                
+                # Handle file upload if a new file is provided
+                if 'attachment' in request.FILES:
+                    # Delete old file if it exists
+                    if wood.attachment:
+                        if os.path.isfile(wood.attachment.path):
+                            os.remove(wood.attachment.path)
+                    
+                    wood.attachment = request.FILES['attachment']
+                
+                # Validate the model
+                wood.full_clean()
+                
+                # Save the updated record
+                wood.save()
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Wood processing plant record updated successfully',
+                    'redirect': reverse('wood_records')
+                })
+                
+            except ValidationError as e:
+                # Return validation errors
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Validation error',
+                    'errors': e.message_dict
+                }, status=400)
+                
+            except Exception as e:
+                # Return any other errors
+                return JsonResponse({
+                    'success': False,
+                    'message': str(e)
+                }, status=500)
+        
+        # Handle regular form submission (non-AJAX)
+        else:
+            form = WoodForm(request.POST, request.FILES, instance=wood)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Wood processing plant record updated successfully')
+                return redirect('wood_records')
+            else:
+                messages.error(request, 'Please correct the errors below')
+    else:
+        form = WoodForm(instance=wood)
+    
+    context = {
+        'form': form,
+        'wood': wood,
+        'title': 'Edit Wood Processing Plant',
+    }
+    
+    return render(request, 'edit_wood.html', context)
 
 @login_required
 def wood_records(request):

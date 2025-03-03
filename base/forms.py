@@ -168,7 +168,14 @@ class WoodForm(forms.ModelForm):
             'date_released': forms.DateInput(attrs={'type': 'date'}),
             'expiry_date': forms.DateInput(attrs={'type': 'date'}),
         }
-
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Ensure the type field has both options
+        self.fields['type'].choices = [
+            ('', 'Select Type'),
+            ('Resawmill-new', 'Resawmill-new'),
+            ('Resawmill-renew', 'Resawmill-renew')
+        ]
     def clean(self):
         cleaned_data = super().clean()
         date_issued = cleaned_data.get('date_issued')

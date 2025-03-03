@@ -398,17 +398,13 @@ class Wood(models.Model):
     ]
     
     TYPE_CHOICES = [
-        ('RE-SAWMILL', 'Resawmill-new'),
-        ('SAWMILL', 'Sawmill'),
-        ('MINI-SAWMILL', 'Mini-Sawmill'),
-        ('VENEER PLANT', 'Veneer Plant'),
-        ('PLYWOOD PLANT', 'Plywood Plant'),
-        ('OTHER', 'Other'),
+        ('Resawmill-new', 'Resawmill-new'),
+        ('Resawmill-renew', 'Resawmill-renew'),
     ]
     
     # Basic Information
     name = models.CharField(max_length=200, default='', help_text="Name of the wood processing plant")
-    type = models.CharField(max_length=50, choices=TYPE_CHOICES, default='RE-SAWMILL')
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES)
     wpp_number = models.CharField(max_length=100, default='', help_text="WPP registration number")
     integrated = models.CharField(max_length=100, blank=True, null=True)
     business = models.CharField(max_length=200, default='', help_text="Business name")
