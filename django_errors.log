@@ -8232,3 +8232,5 @@ Traceback (most recent call last):
     raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
 django.template.exceptions.TemplateSyntaxError: Invalid filter: 'expired_records'
 ERROR 2025-03-02 23:56:41,599 basehttp "GET /wood/records/ HTTP/1.1" 500 232467
+WARNING 2025-03-03 08:17:37,776 log Not Found: /favicon.ico
+WARNING 2025-03-03 08:17:37,782 basehttp "GET /favicon.ico HTTP/1.1" 404 8231
