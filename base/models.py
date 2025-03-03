@@ -389,35 +389,32 @@ class Chainsaw(models.Model):
             return 'Active'
 
 class Wood(models.Model):
-    TYPE_CHOICES = [
-        ('Integrated', 'Integrated'),
-        ('Not Applicable', 'Not Applicable'),
-    ]
-    
-    INTEGRATED_CHOICES = [
-        ('Applicable', 'Applicable'),
-        ('Not Applicable', 'Not Applicable'),
-    ]
-    
     STATUS_CHOICES = [
-        ('EXISTING', 'Existing'),
-        ('EXPIRED', 'Expired/Renewed'),
-        ('ACTIVE_NEW', 'Active/New')
+        ('ACTIVE_NEW', 'Active (New)'),
+        ('ACTIVE_RENEWED', 'Active (Renewed)'),
+        ('EXPIRED', 'Expired'),
+        ('SUSPENDED', 'Suspended'),
+        ('CANCELLED', 'Cancelled'),
     ]
-
-    # Basic Information
-    name = models.CharField(max_length=200, null=True, blank=True)
-    type = models.CharField(max_length=50, null=True, blank=True)  # Changed to text input
-    integrated = models.CharField(  # Changed from BooleanField to CharField
-        max_length=50,
-        choices=INTEGRATED_CHOICES,
-        default='Not Applicable'
-    )
-    wpp_number = models.CharField(max_length=100, blank=True, null=True)
-    business = models.CharField(max_length=200, null=True, blank=True)
-    plant = models.CharField(max_length=200, null=True, blank=True)
     
-    # Measurements
+    TYPE_CHOICES = [
+        ('RE-SAWMILL', 'Resawmill-new'),
+        ('SAWMILL', 'Sawmill'),
+        ('MINI-SAWMILL', 'Mini-Sawmill'),
+        ('VENEER PLANT', 'Veneer Plant'),
+        ('PLYWOOD PLANT', 'Plywood Plant'),
+        ('OTHER', 'Other'),
+    ]
+    
+    # Basic Information
+    name = models.CharField(max_length=200, default='', help_text="Name of the wood processing plant")
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES, default='RE-SAWMILL')
+    wpp_number = models.CharField(max_length=100, default='', help_text="WPP registration number")
+    integrated = models.CharField(max_length=100, blank=True, null=True)
+    business = models.CharField(max_length=200, default='', help_text="Business name")
+    plant = models.CharField(max_length=200, default='', help_text="Plant location/address")
+    
+    # Technical Details
     drc = models.DecimalField(
         max_digits=10, 
         decimal_places=2,
@@ -435,12 +432,6 @@ class Wood(models.Model):
     )
     
     # Location Information
-    supplier_info = models.CharField(
-        max_length=500, 
-        help_text="Location/Address of supplier",
-        null=True,
-        blank=True
-    )
     latitude = models.DecimalField(
         max_digits=9, 
         decimal_places=6,
@@ -450,6 +441,12 @@ class Wood(models.Model):
     longitude = models.DecimalField(
         max_digits=9, 
         decimal_places=6,
+        null=True,
+        blank=True
+    )
+    supplier_info = models.CharField(
+        max_length=500, 
+        help_text="Location/Address of supplier",
         null=True,
         blank=True
     )
@@ -480,10 +477,10 @@ class Wood(models.Model):
     # Dates
     date_issued = models.DateField(default=timezone.now)
     date_released = models.DateField(default=timezone.now)
-    expiry_date = models.DateField(default=timezone.now)
+    expiry_date = models.DateField(null=True, blank=True)
     
     # Approval and Status
-    approved_by = models.CharField(max_length=200, null=True, blank=True, default='')  # Made optional with default
+    approved_by = models.CharField(max_length=200, null=True, blank=True, default='')
     wood_status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
@@ -498,13 +495,18 @@ class Wood(models.Model):
     )
     
     # Timestamps
-    created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         # Calculate ALR if DRC is provided
         if self.drc:
             self.alr = round(float(self.drc) * 290 * 0.80, 2)
+        
+        # Set expiry date to 5 years from date issued if not provided
+        if self.date_issued and not self.expiry_date:
+            self.expiry_date = self.date_issued + timedelta(days=365*5)
+            
         super().save(*args, **kwargs)
 
     def clean(self):
@@ -517,16 +519,6 @@ class Wood(models.Model):
             
             if self.date_released and self.date_released < self.date_issued:
                 raise ValidationError('Release date cannot be before date issued')
-
-        # Validate volumes
-        if self.local_volume is not None and self.local_volume < 0:
-            raise ValidationError('Local volume cannot be negative')
-            
-        if self.imported_volume is not None and self.imported_volume < 0:
-            raise ValidationError('Imported volume cannot be negative')
-            
-        if self.area is not None and self.area <= 0:
-            raise ValidationError('Area must be greater than 0')
 
     @property
     def total_volume(self):
@@ -555,10 +547,12 @@ class Wood(models.Model):
         return 0 < remaining <= 30
 
     def __str__(self):
-        return f"{self.name} - {self.wpp_number or 'No WPP'}"
+        return f"{self.name} - {self.wpp_number}"
 
     class Meta:
         ordering = ['-date_issued']
+        verbose_name = "Wood Processing Plant"
+        verbose_name_plural = "Wood Processing Plants"
 
 class CuttingRecord(models.Model):
     VOLUME_TYPE_CHOICES = [

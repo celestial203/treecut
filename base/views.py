@@ -14,6 +14,7 @@ from decimal import Decimal
 from django.http import JsonResponse
 from django.urls import reverse
 from decimal import Decimal
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 # Login view
 def login_view(request):
@@ -181,25 +182,83 @@ def cutting(request):
 @login_required
 def wood(request):
     if request.method == 'POST':
+        # Print request data for debugging
+        print(f"POST data: {request.POST}")
+        print(f"FILES data: {request.FILES}")
+        
+        # Create form with data
         form = WoodForm(request.POST, request.FILES)
+        
+        # Check form validity
         if form.is_valid():
             try:
+                # Create but don't save the record yet
                 wood_record = form.save(commit=False)
                 
                 # Calculate ALR based on DRC
                 if wood_record.drc:
                     wood_record.alr = round(float(wood_record.drc) * 290 * 0.80, 2)
                 
+                # Set expiry date if not provided
+                if wood_record.date_issued and not wood_record.expiry_date:
+                    wood_record.expiry_date = wood_record.date_issued + timedelta(days=365*5)
+                
+                # Print record before saving
+                print(f"About to save record: {wood_record.__dict__}")
+                
+                # Save the record to the database
                 wood_record.save()
+                
+                # Verify the record was saved
+                saved_record = Wood.objects.filter(id=wood_record.id).first()
+                print(f"Record saved with ID: {wood_record.id}, Retrieved: {saved_record is not None}")
+                
+                # Handle AJAX request
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Wood record added successfully!',
+                        'redirect': reverse('wood_records')
+                    })
+                
+                # Handle regular form submission
                 messages.success(request, 'Wood record added successfully!')
                 return redirect('wood_records')
+                
             except Exception as e:
+                # Print detailed error information
+                import traceback
+                print(f"Error saving record: {str(e)}")
+                print(traceback.format_exc())
+                
+                # Handle AJAX request
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Error: {str(e)}'
+                    }, status=500)
+                
+                # Handle regular form submission
                 messages.error(request, f'Error saving record: {str(e)}')
         else:
+            # Print form errors for debugging
+            print(f"Form validation errors: {form.errors}")
+            
+            # Handle AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Please correct the errors below.',
+                    'errors': form.errors.as_json()
+                }, status=400)
+            
+            # Handle regular form submission
             messages.error(request, 'Please correct the errors below.')
     else:
+        # GET request - display empty form
         form = WoodForm(initial={'date_issued': timezone.now().date()})
 
+    # Render the form
     context = {
         'form': form,
     }
@@ -473,27 +532,82 @@ def update_wood(request, pk):
 
 @login_required
 def wood_records(request):
-    wood_records = Wood.objects.all()
+    # Get status filter from URL
+    status = request.GET.get('status')
     
-    # Calculate expired and expiring records
-    today = date.today()
-    soon = today + timedelta(days=30)
+    # Get current date for filtering
+    current_date = timezone.now().date()
+    thirty_days_from_now = current_date + timedelta(days=30)
     
-    expired_records = [record for record in wood_records if record.expiry_date < today]
-    expiring_records = [record for record in wood_records if record.expiry_date >= today and record.expiry_date <= soon]
+    # Apply filters based on status
+    if status == 'expired':
+        wood_records = Wood.objects.filter(expiry_date__lt=current_date).order_by('-date_issued')
+    elif status == 'active':
+        wood_records = Wood.objects.filter(expiry_date__gte=current_date).order_by('-date_issued')
+    elif status == 'expiring_soon':
+        wood_records = Wood.objects.filter(
+            expiry_date__gte=current_date,
+            expiry_date__lte=thirty_days_from_now
+        ).order_by('-date_issued')
+    else:
+        # Default: show all records
+        wood_records = Wood.objects.all().order_by('-date_issued')
+    
+    # Set up pagination
+    paginator = Paginator(wood_records, 10)  # Show 10 records per page
+    page = request.GET.get('page')
+    
+    try:
+        wood_records = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page
+        wood_records = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range, deliver last page of results
+        wood_records = paginator.page(paginator.num_pages)
+    
+    # Count expired and expiring soon records for the filter buttons
+    expired_count = Wood.objects.filter(expiry_date__lt=current_date).count()
+    active_count = Wood.objects.filter(expiry_date__gte=current_date).count()
+    expiring_soon_count = Wood.objects.filter(
+        expiry_date__gte=current_date,
+        expiry_date__lte=thirty_days_from_now
+    ).count()
     
     context = {
         'wood_records': wood_records,
-        'expired_records': expired_records,
-        'expiring_records': expiring_records,
+        'expired_count': expired_count,
+        'active_count': active_count,
+        'expiring_soon_count': expiring_soon_count,
+        'current_status': status,  # Pass the current status to highlight the active filter
     }
     
     return render(request, 'wood_record.html', context)
 
 @login_required
 def wood_detail(request, pk):
+    """
+    View for displaying details of a specific wood processing plant
+    """
     wood = get_object_or_404(Wood, pk=pk)
-    return render(request, 'wood_detail.html', {'wood': wood})
+    
+    # Calculate if the permit is expired or expiring soon
+    today = timezone.now().date()
+    is_expired = False
+    is_expiring_soon = False
+    
+    if wood.expiry_date:
+        days_until_expiry = (wood.expiry_date - today).days
+        is_expired = days_until_expiry < 0
+        is_expiring_soon = 0 <= days_until_expiry <= 30
+    
+    context = {
+        'wood': wood,
+        'is_expired': is_expired,
+        'is_expiring_soon': is_expiring_soon,
+    }
+    
+    return render(request, 'view_wood.html', context)
 
 @login_required
 def delete_wood(request, pk):

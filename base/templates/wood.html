@@ -389,8 +389,11 @@
         <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-8">
             <h2 class="text-2xl font-bold mb-6">Add New Wood Record</h2>
 
-            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            <form method="post" action="{% url 'wood' %}" enctype="multipart/form-data" class="space-y-6">
                 {% csrf_token %}
+                
+                <!-- Add this for debugging -->
+                <div id="form-errors" class="text-red-500 mb-4 hidden"></div>
 
                 <!-- First Row: Name and Type -->
                 <div class="grid grid-cols-2 gap-6">
@@ -405,8 +408,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Type</label>
                         <select name="type" class="form-input mt-1 w-full" required>
-                            <option value="">Select Type</option>
-                            <option value="Resawmill-renewal">Resawmill-renewal</option>
+                            <option value="RE-SAWMILL">Resawmill-new</option>
                         </select>
                     </div>
                 </div>
@@ -552,13 +554,14 @@
 
                 <!-- Status -->
                 <div class="mt-6">
-                    <label class="block text-sm font-medium text-gray-700">Status</label>
-                    <select name="status" class="form-input mt-1 w-full" required>
+                    <label class="block text-sm font-medium text-gray-700">Wood Status</label>
+                    <select name="wood_status" class="form-input mt-1 w-full" required>
                         <option value="">Select Status</option>
-                        <option value="active/new">Active/New</option>
-                        <option value="active/renew">Active/Renew</option>
-                        <option value="expired">Expired</option>
-                        <option value="cancelled">Cancelled</option>
+                        <option value="ACTIVE_NEW">Active (New)</option>
+                        <option value="ACTIVE_RENEWED">Active (Renewed)</option>
+                        <option value="EXPIRED">Expired</option>
+                        <option value="SUSPENDED">Suspended</option>
+                        <option value="CANCELLED">Cancelled</option>
                     </select>
                 </div>
 
@@ -654,7 +657,10 @@
             const issuedDate = document.querySelector('input[name="date_issued"]').value;
             if (issuedDate) {
                 const expiryDate = new Date(issuedDate);
+                // Limit to 5 years maximum as per validation error
                 expiryDate.setFullYear(expiryDate.getFullYear() + 5);
+                // Subtract one day to ensure it's not more than 5 years
+                expiryDate.setDate(expiryDate.getDate() - 1);
                 document.querySelector('input[name="expiry_date"]').value = expiryDate.toISOString().split('T')[0];
             }
         }
@@ -741,11 +747,33 @@
             e.preventDefault();
             
             if (!validateForm()) {
+                console.error('Form validation failed');
+                Swal.fire({
+                    title: 'Validation Error',
+                    text: 'Please correct the errors in the form before submitting.',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#EF4444',
+                });
                 return;
             }
-
+            
             try {
                 const formData = new FormData(this);
+                
+                // Add CSRF token if not already in the form
+                if (!formData.has('csrfmiddlewaretoken')) {
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                    formData.append('csrfmiddlewaretoken', csrfToken);
+                }
+                
+                // Log form data for debugging
+                for (let pair of formData.entries()) {
+                    console.log(pair[0] + ': ' + pair[1]);
+                }
+                
+                console.log('Submitting form data...');
+                
                 const response = await fetch(this.action, {
                     method: 'POST',
                     body: formData,
@@ -753,35 +781,62 @@
                         'X-Requested-With': 'XMLHttpRequest',
                     }
                 });
+                
+                console.log('Response status:', response.status);
+                
+                // Try to get response text first for debugging
+                const responseText = await response.text();
+                console.log('Response text:', responseText);
+                
+                // Then parse as JSON if possible
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                    console.log('Response data:', result);
+                } catch (error) {
+                    console.error('Error parsing JSON response:', error);
+                    document.getElementById('form-errors').textContent = 'Server response: ' + responseText;
+                    document.getElementById('form-errors').classList.remove('hidden');
+                    throw new Error('Invalid server response');
+                }
 
-                if (response.ok) {
+                if (response.ok && result.success) {
+                    console.log('Form submission successful');
+                    
                     // Show success message
                     Swal.fire({
                         title: 'Success!',
-                        text: 'Wood record has been successfully added',
+                        text: result.message || 'Wood record has been successfully added',
                         icon: 'success',
                         confirmButtonText: 'OK',
-                        confirmButtonColor: '#10B981', // Green color to match theme
+                        confirmButtonColor: '#10B981',
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Clear form after successful submission
-                            clearForm();
-                            // Optionally redirect to records page
-                            // window.location.href = "{% url 'wood_records' %}";
+                            // Redirect to records page
+                            window.location.href = "{% url 'wood_records' %}";
                         }
                     });
                 } else {
+                    console.error('Form submission failed:', result);
+                    
                     // Show error message
                     Swal.fire({
                         title: 'Error!',
-                        text: 'There was a problem adding the record. Please try again.',
+                        text: result.message || 'There was a problem adding the record. Please try again.',
                         icon: 'error',
                         confirmButtonText: 'OK',
-                        confirmButtonColor: '#EF4444', // Red color
+                        confirmButtonColor: '#EF4444',
                     });
+                    
+                    // Display detailed errors if available
+                    if (result.errors) {
+                        document.getElementById('form-errors').textContent = 'Validation errors: ' + JSON.stringify(result.errors);
+                        document.getElementById('form-errors').classList.remove('hidden');
+                    }
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error during form submission:', error);
+                
                 Swal.fire({
                     title: 'Error!',
                     text: 'There was a problem connecting to the server. Please try again.',

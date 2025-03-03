@@ -241,10 +241,10 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 <!-- Permit Search -->
                 <div class="search-container">
-                    <label class="block text-white text-sm mb-2">Permit Number</label>
+                    <label class="block text-white text-sm mb-2">Search Record</label>
                     <input type="text" 
                            id="permitSearch" 
-                           placeholder="Search permit..." 
+                           placeholder="" 
                            class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
                 </div>
 
@@ -541,15 +541,19 @@
                         const extractedYear = yearMatch ? yearMatch[0] : '';
                         const matchesYear = !yearVal || extractedYear === yearVal;
                         
-                        // Check permit type filter
+                        // Check permit type filter - EXACT match instead of includes
                         const permitType = row.querySelector('td:nth-child(1)').textContent.trim();
-                        const matchesPermitType = currentPermitType === 'all' || permitType.includes(currentPermitType);
+                        const matchesPermitType = currentPermitType === 'all' || permitType === currentPermitType;
                         
                         // Check status filter
                         const expiryDateText = row.querySelector('td:nth-child(19)').textContent.trim();
                         const expiryDate = parseDate(expiryDateText);
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
+                        
+                        // Get the situation status (column 20)
+                        const situationCell = row.querySelector('td:nth-child(20)');
+                        const situationText = situationCell ? situationCell.textContent.trim() : '';
                         
                         let statusMatch = true;
                         if (currentStatus !== 'all') {
@@ -558,7 +562,8 @@
                             } else if (currentStatus === 'expired' && (!expiryDate || expiryDate >= today)) {
                                 statusMatch = false;
                             } else if (currentStatus === 'pending') {
-                                // Add logic for pending status if needed
+                                // Check if the situation text contains "Pending" or similar status
+                                statusMatch = situationText.toLowerCase().includes('pending');
                             }
                         }
                         
@@ -704,6 +709,12 @@
             // Initialize with all records shown
             document.getElementById('allPermitsBtn').classList.add('ring-2', 'ring-white');
             document.getElementById('allRecordsBtn').classList.add('ring-2', 'ring-white');
+
+            // Add event listener for real-time search on the permit search input
+            permitSearch.addEventListener('input', function() {
+                console.log('Permit search input changed:', this.value);
+                filterRecords();
+            });
         });
 
         // Export function that only exports visible rows

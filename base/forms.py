@@ -157,18 +157,16 @@ class WoodForm(forms.ModelForm):
     class Meta:
         model = Wood
         fields = [
-            'name', 'type', 'integrated', 'wpp_number', 'business', 
-            'plant', 'drc', 'alr', 'supplier_info', 'latitude', 
-            'longitude', 'local_volume', 'imported_volume', 'area',
-            'date_issued', 'date_released', 'expiry_date', 
+            'name', 'type', 'wpp_number', 'integrated', 'business', 'plant',
+            'drc', 'alr', 'latitude', 'longitude', 'supplier_info',
+            'local_volume', 'imported_volume', 'area',
+            'date_issued', 'date_released', 'expiry_date',
             'approved_by', 'wood_status', 'attachment'
         ]
         widgets = {
             'date_issued': forms.DateInput(attrs={'type': 'date'}),
             'date_released': forms.DateInput(attrs={'type': 'date'}),
             'expiry_date': forms.DateInput(attrs={'type': 'date'}),
-            'integrated': forms.Select(attrs={'class': 'form-select'}),
-            'wood_status': forms.Select(attrs={'class': 'form-select'})
         }
 
     def clean(self):

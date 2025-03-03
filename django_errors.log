@@ -8234,3 +8234,131 @@ django.template.exceptions.TemplateSyntaxError: Invalid filter: 'expired_records
 ERROR 2025-03-02 23:56:41,599 basehttp "GET /wood/records/ HTTP/1.1" 500 232467
 WARNING 2025-03-03 08:17:37,776 log Not Found: /favicon.ico
 WARNING 2025-03-03 08:17:37,782 basehttp "GET /favicon.ico HTTP/1.1" 404 8231
+WARNING 2025-03-03 09:50:27,630 log Not Found: /favicon.ico
+WARNING 2025-03-03 09:50:27,635 basehttp "GET /favicon.ico HTTP/1.1" 404 8231
+WARNING 2025-03-03 10:23:44,349 log Bad Request: /wood/
+WARNING 2025-03-03 10:23:44,350 basehttp "POST /wood/ HTTP/1.1" 400 414
+WARNING 2025-03-03 10:23:48,567 log Bad Request: /wood/
+WARNING 2025-03-03 10:23:48,567 basehttp "POST /wood/ HTTP/1.1" 400 414
+WARNING 2025-03-03 10:25:22,271 log Bad Request: /wood/
+WARNING 2025-03-03 10:25:22,272 basehttp "POST /wood/ HTTP/1.1" 400 414
+WARNING 2025-03-03 10:26:03,756 log Bad Request: /wood/
+WARNING 2025-03-03 10:26:03,757 basehttp "POST /wood/ HTTP/1.1" 400 414
+WARNING 2025-03-03 10:27:02,142 log Bad Request: /wood/
+WARNING 2025-03-03 10:27:02,143 basehttp "POST /wood/ HTTP/1.1" 400 414
+WARNING 2025-03-03 10:27:50,272 log Bad Request: /wood/
+WARNING 2025-03-03 10:27:50,273 basehttp "POST /wood/ HTTP/1.1" 400 414
+ERROR 2025-03-03 10:38:09,493 log Internal Server Error: /wood/1/view/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 590, in wood_detail
+    return render(request, 'wood_detail.html', {'wood': wood})
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: wood_detail.html
+ERROR 2025-03-03 10:38:09,504 basehttp "GET /wood/1/view/ HTTP/1.1" 500 87039
+ERROR 2025-03-03 10:43:21,075 log Internal Server Error: /wood/1/view/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 590, in wood_detail
+    return render(request, 'wood_detail.html', {'wood': wood})
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: wood_detail.html
+ERROR 2025-03-03 10:43:21,081 basehttp "GET /wood/1/view/ HTTP/1.1" 500 87286
+ERROR 2025-03-03 10:47:28,674 log Internal Server Error: /wood/1/view/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 598, in wood_detail
+    wood.is_expired = days_until_expiry < 0
+    ^^^^^^^^^^^^^^^
+AttributeError: property 'is_expired' of 'Wood' object has no setter
+ERROR 2025-03-03 10:47:28,680 basehttp "GET /wood/1/view/ HTTP/1.1" 500 72173
+ERROR 2025-03-03 10:54:07,621 log Internal Server Error: /wood/1/update/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 134, in render
+    compiled_parent = self.get_parent(context)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 131, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 109, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 163, in find_template
+    raise TemplateDoesNotExist(name, tried=tried)
+django.template.exceptions.TemplateDoesNotExist: base.html
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 531, in update_wood
+    return edit_wood(request, pk)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 523, in edit_wood
+    return render(request, 'edit_wood.html', {
+        'form': form,
+        'wood': wood
+    })
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 109, in render
+    reraise(exc, self.backend)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 130, in reraise
+    raise new from exc
+django.template.exceptions.TemplateDoesNotExist: base.html
+ERROR 2025-03-03 10:54:07,638 basehttp "GET /wood/1/update/ HTTP/1.1" 500 146174

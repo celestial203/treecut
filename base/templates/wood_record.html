@@ -167,74 +167,71 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="bg-white shadow-xl rounded-lg overflow-hidden">
+    <div class="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div class="bg-gradient-to-r from-green-600 to-blue-400 p-6 rounded-xl shadow-lg">
+            <!-- Filter Buttons Row -->
+            <div class="flex gap-4 mb-6 flex-wrap">
+                <button id="allRecordsBtn" 
+                        class="px-6 py-2 bg-transparent text-white rounded-full transition-all duration-200 text-sm font-medium border-2 border-white">
+                    All Records
+                </button>
+                <button id="activeRecordsBtn" 
+                        class="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
+                    Active
+                </button>
+                <button id="expiredRecordsBtn" 
+                        class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
+                    Expired
+                </button>
+                <button id="expiringSoonRecordsBtn" 
+                        class="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
+                    Expiring Soon
+                </button>
+            </div>
             
-            <!-- Filter Section with Gradient Background -->
-            <div class="gradient-bg p-6 rounded-lg mb-8">
-                <!-- Filter Buttons -->
-                <div class="flex flex-wrap gap-4 mb-6">
-                    <a href="{% url 'wood_records' %}" class="filter-button white-button">All Records</a>
-                    <a href="{% url 'wood_records' %}?status=active" class="filter-button green-button">Active</a>
-                    <a href="{% url 'wood_records' %}?status=expired" class="filter-button red-button">Expired</a>
-                    <a href="{% url 'wood_records' %}?status=expiring" class="filter-button yellow-button">Expiring Soon</a>
+            <!-- Search and filters row -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <!-- Search Record -->
+                <div class="md:col-span-1">
+                    <label class="block text-white text-sm mb-2">Search Record</label>
+                    <input type="text" id="recordSearch" placeholder="Search record..." 
+                           class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
                 </div>
-
-                <!-- Search and Filter Controls -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-1">Search Record</label>
-                        <input type="text" id="permitSearch" placeholder="Search record..." 
-                               class="search-input w-full">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-1">Start Date</label>
-                        <input type="date" id="startDateFilter" class="date-input w-full" 
-                               placeholder="dd/mm/yyyy">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-1">End Date</label>
-                        <input type="date" id="endDateFilter" class="date-input w-full"
-                               placeholder="dd/mm/yyyy">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-white mb-1">Filter by Year</label>
-                        <select id="yearFilter" class="date-input w-full">
-                            <option value="">All Years</option>
-                            {% for year in available_years %}
-                                <option value="{{ year }}">{{ year }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                
+                <!-- Start Date -->
+                <div class="md:col-span-1">
+                    <label class="block text-white text-sm mb-2">Start Date</label>
+                    <input type="date" id="startDate" class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                </div>
+                
+                <!-- End Date -->
+                <div class="md:col-span-1">
+                    <label class="block text-white text-sm mb-2">End Date</label>
+                    <input type="date" id="endDate" class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                </div>
+                
+                <!-- Year Filter -->
+                <div class="md:col-span-1">
+                    <label class="block text-white text-sm mb-2">Filter by Year</label>
+                    <select id="yearFilter" 
+                            class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                        <option value="">All Years</option>
+                    </select>
                 </div>
                 
                 <!-- Export Button -->
-                <div class="flex justify-end mt-4">
-                    <button onclick="exportTableToCSV('wood_records.csv')" 
-                            class="export-button">
-                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                <div class="md:col-span-1 flex items-end">
+                    <button onclick="exportTableToCSV('lumber_records.csv')" 
+                            class="w-full px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 flex items-center justify-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                         </svg>
-                        <span>Export</span>
+                        Export
                     </button>
                 </div>
             </div>
-
-            <!-- Alerts Section -->
-            <div class="p-4">
-                {% if expired_records %}
-                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-2">
-                        Alert: {{ expired_records|length }} record{{ expired_records|length|pluralize }} expired
-                    </div>
-                {% endif %}
-                
-                {% if expiring_records %}
-                    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
-                        Warning: {{ expiring_records|length }} permit{{ expiring_records|length|pluralize }} expiring soon
-                    </div>
-                {% endif %}
-            </div>
+        </div>
+    </div>
 
             <!-- Add space between filter section and table -->
             <div class="py-6"></div>
@@ -242,38 +239,77 @@
             </div>
             
             <!-- Wood Records Table -->
+            <!-- Records Section - Full Width with Scroll -->
+    <div class="w-full py-4">
+        <div class="bg-white shadow-2xl">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200" id="woodRecordsTable">
-                    <thead class="bg-gray-50">
+                <div class="inline-block min-w-full">
+                    <div class="overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50 sticky top-0 z-10">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                                 Name
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                WPP Number
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                                 Type
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Business Address
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Integrated
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Date Issued
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                WPP Number
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Expiry Date
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Business
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Plant
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                                 DRC (cu.m)
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                                 ALR (m³)
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Longitude
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Latitude
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Supplier Info
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Local Volume
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Imported Volume
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Area
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Date Issued
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Date Released
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Expiry Date
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Approved By
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Status
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                Attachment
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
                                 Actions
                             </th>
                         </tr>
@@ -282,73 +318,81 @@
                         {% if wood_records %}
                             {% for record in wood_records %}
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                        {% if record.is_expired %}
-                                            bg-red-100 text-red-800
-                                        {% elif record.is_expiring_soon %}
-                                            bg-yellow-100 text-yellow-800
-                                        {% else %}
-                                            bg-green-100 text-green-800
-                                        {% endif %}">
-                                        {% if record.is_expired %}
-                                            Expired
-                                        {% elif record.is_expiring_soon %}
-                                            Expiring Soon
-                                        {% else %}
-                                            Active
-                                        {% endif %}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
                                     {{ record.name }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {{ record.get_type_display }}
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {{ record.integrated }}
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
                                     {{ record.wpp_number }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ record.type }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
                                     {{ record.business }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ record.date_issued|date:"M d, Y" }}
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {{ record.plant }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ record.expiry_date|date:"M d, Y" }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
                                     {{ record.drc }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
                                     {{ record.alr }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex space-x-2">
-                                        <a href="{% url 'wood_detail' record.id %}" class="text-blue-600 hover:text-blue-900" title="View">
-                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                        </a>
-                                        <a href="{% url 'update_wood' record.id %}" class="text-yellow-600 hover:text-yellow-900" title="Edit">
-                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                        </a>
-                                        <a href="{% url 'delete_wood' record.id %}" class="text-red-600 hover:text-red-900" title="Delete">
-                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </a>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {{ record.longitude }}
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {{ record.latitude }}
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {{ record.supplier_info }}
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {{ record.local_volume }}
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {{ record.imported_volume }}
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {{ record.area }}
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {{ record.date_issued|date:"M d, Y" }}
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {{ record.date_released|date:"M d, Y" }}
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {{ record.expiry_date|date:"M d, Y" }}
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {{ record.approved_by }}
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {{ record.get_wood_status_display }}
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    {% if record.attachment %}
+                                        <a href="{{ record.attachment.url }}" class="text-blue-600 hover:underline" target="_blank">View File</a>
+                                    {% else %}
+                                        No file
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                    <div class="flex space-x-4">
+                                        <a href="{% url 'wood_detail' record.id %}" class="text-blue-600 hover:text-blue-900 font-medium">View</a>
+                                        <a href="{% url 'update_wood' record.id %}" class="text-yellow-600 hover:text-yellow-900 font-medium">Edit</a>
                                     </div>
                                 </td>
                             </tr>
                             {% endfor %}
                         {% else %}
                             <tr>
-                                <td colspan="10" class="px-6 py-4 text-center text-gray-500">
+                                <td colspan="22" class="px-6 py-3 text-center text-xs text-gray-900">
                                     No wood records found
                                 </td>
                             </tr>
