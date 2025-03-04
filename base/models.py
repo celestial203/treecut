@@ -68,50 +68,22 @@ class Lumber(models.Model):
             raise ValidationError({'no': 'Number can only contain letters, numbers, and hyphens.'})
 
     def save(self, *args, **kwargs):
-        # If this is a new record or expiry_date hasn't been set
-        if not self.pk or not self.expiry_date:
-            # Set expiry date to 3 months from issue date
-            self.expiry_date = self.date_issued + timedelta(days=90)
+        # Remove the automatic 3-month expiry date setting
         super().save(*args, **kwargs)
-
-    @property
-    def days_remaining(self):
-        if self.date_issued:
-            expiry_date = self.date_issued + timedelta(days=90)  # 3 months
-            remaining = (expiry_date - timezone.now().date()).days
-            return max(remaining, 0)  # Don't show negative days
-        return 0
-
-    @property
-    def is_expiring_soon(self):
-        remaining = self.days_remaining
-        return 0 < remaining <= 15  # Warning when 15 days or less remaining
-
-    @property
-    def is_expired(self):
-        return self.days_remaining <= 0
-
-    @property
-    def status(self):
-        if self.is_expired:
-            return 'Expired'
-        elif self.is_expiring_soon:
-            return 'Expiring Soon'
-        return 'Active'
 
     @property
     def expiry_warning(self):
         """
-        Returns True if the permit is expiring within 30 days or has already expired
+        Returns True if the permit is expiring within 3 months
         """
         if not self.expiry_date:
             return False
             
         today = timezone.now().date()
-        thirty_days_from_now = today + timedelta(days=30)
+        three_months_from_now = today + timedelta(days=90)
         
-        # Return True if expiry date is within the next 30 days or has passed
-        return self.expiry_date <= thirty_days_from_now
+        # Return True if expiry date is within the next 3 months
+        return today <= self.expiry_date <= three_months_from_now
 
     @property
     def location(self):
@@ -344,15 +316,26 @@ class Chainsaw(models.Model):
         return f"{self.name} - {self.serial_number}"
 
     def save(self, *args, **kwargs):
-        # Calculate expiry date (2 years from date issued)
+        # Calculate expiry date (2 years from date issued, excluding weekends)
         if self.date_issued:
-            self.expiry_date = self.date_issued + timedelta(days=730)  # 2 years (365*2)
+            # Start with the initial date
+            current_date = self.date_issued
+            days_to_add = 2 * 365  # 2 years worth of days
+            days_added = 0
+            
+            while days_added < days_to_add:
+                current_date += timedelta(days=1)
+                # Skip weekends (5 = Saturday, 6 = Sunday)
+                if current_date.weekday() not in [5, 6]:
+                    days_added += 1
+            
+            self.expiry_date = current_date
             
             # Update registration status based on expiry date
             today = timezone.now().date()
             if today > self.expiry_date:
                 self.registration_status = 'EXPIRED'
-            elif (self.expiry_date - today).days <= 90:  # If within 90 days of expiry
+            elif (self.expiry_date - today).days <= 90:  # If within 90 days (3 months) of expiry
                 self.registration_status = 'FOR RENEWAL'
             
         super().save(*args, **kwargs)

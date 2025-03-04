@@ -29,27 +29,42 @@
         
         /* Status-based row styling */
         tr.active-record {
-            background-color: transparent; /* Changed from green to transparent */
-        }
-        
-        tr.active-record:hover {
-            background-color: rgba(209, 250, 229, 0.8); /* Darker green on hover */
+            background-color: transparent !important; /* Remove default background */
         }
         
         tr.expired-record {
-            background-color: rgba(254, 202, 202, 0.4); /* Light red background */
-        }
-        
-        tr.expired-record:hover {
-            background-color: rgba(254, 202, 202, 0.8); /* Darker red on hover */
+            background-color: transparent !important; /* Remove default background */
         }
         
         tr.expiring-soon-record {
-            background-color: rgba(254, 215, 170, 0.4); /* Light orange background */
+            background-color: transparent !important; /* Remove default background */
+        }
+        
+        /* Hover effects only */
+        tr.active-record:hover {
+            background-color: rgba(34, 197, 94, 0.1) !important; /* Light green */
+            border-left: 4px solid #22c55e;
+        }
+        
+        tr.expired-record:hover {
+            background-color: rgba(239, 68, 68, 0.1) !important; /* Light red */
+            border-left: 4px solid #ef4444;
         }
         
         tr.expiring-soon-record:hover {
-            background-color: rgba(254, 215, 170, 0.8); /* Darker orange on hover */
+            background-color: rgba(234, 179, 8, 0.1) !important; /* Light orange */
+            border-left: 4px solid #eab308;
+        }
+        
+        /* Transition effects */
+        tr {
+            transition: all 0.2s ease;
+            background-color: transparent;
+        }
+        
+        /* Remove any default background colors */
+        tr:nth-child(even), tr:nth-child(odd) {
+            background-color: transparent !important;
         }
     </style>
 </head>
@@ -268,6 +283,10 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div id="noResultsMessage" class="hidden bg-white rounded-lg shadow-lg my-4">
+        <!-- Message will be inserted here by JavaScript -->
     </div>
 </div>
 
@@ -871,6 +890,128 @@
             }
         });
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get all necessary elements
+        const searchInput = document.getElementById('recordSearch');
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const yearFilter = document.getElementById('yearFilter');
+        const tableRows = document.querySelectorAll('table tbody tr');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        const tableBody = document.querySelector('table tbody');
+
+        // Function to check if a date is within 3 months
+        function isWithinThreeMonths(expiryDate) {
+            const today = new Date();
+            const threeMonthsFromNow = new Date();
+            threeMonthsFromNow.setMonth(today.getMonth() + 3);
+            expiryDate = new Date(expiryDate);
+            return expiryDate > today && expiryDate <= threeMonthsFromNow;
+        }
+
+        // Function to check if a date is expired
+        function isExpired(expiryDate) {
+            return new Date(expiryDate) < new Date();
+        }
+
+        // Function to filter records
+        function filterRecords() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+            const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+            const selectedYear = yearFilter.value;
+            let hasResults = false;
+
+            tableRows.forEach(row => {
+                if (row.querySelector('td[colspan]')) return; // Skip "No records" row
+
+                const cells = row.getElementsByTagName('td');
+                let rowText = '';
+                let dateCell = cells[7]; // Date issued cell
+                let expiryDateCell = cells[8]; // Expiry date cell
+                
+                // Get text content for search
+                for (let cell of cells) {
+                    rowText += cell.textContent.toLowerCase() + ' ';
+                }
+
+                // Parse dates
+                const dateIssued = dateCell ? new Date(dateCell.textContent.split('/').reverse().join('-')) : null;
+                const expiryDate = expiryDateCell ? new Date(expiryDateCell.textContent.split('/').reverse().join('-')) : null;
+
+                // Check all filter conditions
+                let showRow = true;
+
+                // Search term filter
+                if (searchTerm && !rowText.includes(searchTerm)) {
+                    showRow = false;
+                }
+
+                // Date range filter
+                if (startDate && endDate) {
+                    if (!dateIssued || dateIssued < startDate || dateIssued > endDate) {
+                        showRow = false;
+                    }
+                }
+
+                // Year filter
+                if (selectedYear && dateIssued && dateIssued.getFullYear().toString() !== selectedYear) {
+                    showRow = false;
+                }
+
+                // Update row visibility and status classes
+                if (showRow) {
+                    row.style.display = '';
+                    hasResults = true;
+                    
+                    // Update status classes
+                    row.classList.remove('active-record', 'expired-record', 'expiring-soon-record');
+                    if (expiryDate) {
+                        if (isExpired(expiryDate)) {
+                            row.classList.add('expired-record');
+                        } else if (isWithinThreeMonths(expiryDate)) {
+                            row.classList.add('expiring-soon-record');
+                        } else {
+                            row.classList.add('active-record');
+                        }
+                    }
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Show/hide no results message
+            if (!hasResults) {
+                tableBody.style.display = 'none';
+                if (noResultsMessage) {
+                    noResultsMessage.style.display = 'block';
+                    noResultsMessage.innerHTML = `
+                        <div class="flex items-center justify-center p-8">
+                            <div class="text-center">
+                                <div class="text-gray-500 text-lg mb-2">No records found</div>
+                                <div class="text-gray-400">Try adjusting your search criteria</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else {
+                tableBody.style.display = '';
+                if (noResultsMessage) {
+                    noResultsMessage.style.display = 'none';
+                }
+            }
+        }
+
+        // Add event listeners
+        if (searchInput) searchInput.addEventListener('input', filterRecords);
+        if (startDateInput) startDateInput.addEventListener('change', filterRecords);
+        if (endDateInput) endDateInput.addEventListener('change', filterRecords);
+        if (yearFilter) yearFilter.addEventListener('change', filterRecords);
+
+        // Initialize the filter
+        filterRecords();
+    });
 </script>
 
 </body>

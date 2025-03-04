@@ -880,88 +880,43 @@
                 });
             }
 
-            // Date functionality - auto-set expiry date 3 months from issue date
-            const dateIssued = document.querySelector('[name="date_issued"]');
-            const expiryDate = document.querySelector('[name="expiry_date"]');
-            
+            // Update the date handling JavaScript
             if (dateIssued && expiryDate) {
                 dateIssued.addEventListener('change', function() {
                     if (this.value) {
-                        // Calculate expiry date (3 months from issue date)
                         const issued = new Date(this.value);
-                        const expiry = new Date(issued);
-                        expiry.setMonth(expiry.getMonth() + 3);
                         
-                        // Format the date as YYYY-MM-DD for the input
-                        const year = expiry.getFullYear();
-                        const month = String(expiry.getMonth() + 1).padStart(2, '0');
-                        const day = String(expiry.getDate()).padStart(2, '0');
-                        expiryDate.value = `${year}-${month}-${day}`;
-                        
-                        // If the expiry date input is still in text mode, change it to date
-                        expiryDate.type = 'date';
-                        
-                        // Show notification about expiry date
-                        const expiryFormatted = expiry.toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        });
-                        
-                        Swal.fire({
-                            title: 'Expiry Date Set',
-                            html: `The permit will expire on <strong>${expiryFormatted}</strong> (3 months from issue date).<br><br>You can adjust this date if needed.`,
-                            icon: 'info',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#3085d6'
-                        });
+                        // Just validate that expiry date is after issue date if it exists
+                        if (expiryDate.value) {
+                            const expiry = new Date(expiryDate.value);
+                            if (expiry < issued) {
+                                Swal.fire({
+                                    title: 'Invalid Date',
+                                    text: 'Expiry date cannot be earlier than issue date',
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    expiryDate.value = '';
+                                });
+                            }
+                        }
                     }
                 });
-                
-                // Validate expiry date on change
+
                 expiryDate.addEventListener('change', function() {
-                    if (dateIssued.value && this.value) {
+                    if (this.value && dateIssued.value) {
                         const issued = new Date(dateIssued.value);
                         const expiry = new Date(this.value);
                         
-                        // Check if expiry is before issue date
+                        // Only validate that expiry date is after issue date
                         if (expiry < issued) {
                             Swal.fire({
                                 title: 'Invalid Date',
                                 text: 'Expiry date cannot be earlier than date issued',
                                 icon: 'error',
-                                confirmButtonText: 'OK',
-                                confirmButtonColor: '#3085d6'
-                            });
-                            
-                            // Reset to 3 months from issue date
-                            const newExpiry = new Date(issued);
-                            newExpiry.setMonth(newExpiry.getMonth() + 3);
-                            const year = newExpiry.getFullYear();
-                            const month = String(newExpiry.getMonth() + 1).padStart(2, '0');
-                            const day = String(newExpiry.getDate()).padStart(2, '0');
-                            this.value = `${year}-${month}-${day}`;
-                        }
-                        
-                        // Check if expiry is approaching (within 30 days)
-                        const today = new Date();
-                        const daysUntilExpiry = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
-                        
-                        if (daysUntilExpiry <= 30 && daysUntilExpiry > 0) {
-                            Swal.fire({
-                                title: 'Expiry Warning',
-                                html: `This permit will expire in <strong>${daysUntilExpiry} day${daysUntilExpiry !== 1 ? 's' : ''}</strong>.<br>Please ensure timely renewal.`,
-                                icon: 'warning',
-                                confirmButtonText: 'OK',
-                                confirmButtonColor: '#3085d6'
-                            });
-                        } else if (daysUntilExpiry <= 0) {
-                            Swal.fire({
-                                title: 'Expired Permit',
-                                text: 'This permit has already expired or will expire today. Please renew immediately.',
-                                icon: 'error',
-                                confirmButtonText: 'OK',
-                                confirmButtonColor: '#3085d6'
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                this.value = '';
                             });
                         }
                     }
