@@ -8368,3 +8368,20 @@ WARNING 2025-03-03 11:14:58,083 log Bad Request: /wood/1/update/
 WARNING 2025-03-03 11:14:58,085 basehttp "POST /wood/1/update/ HTTP/1.1" 400 179
 WARNING 2025-03-03 11:15:09,327 log Bad Request: /wood/1/update/
 WARNING 2025-03-03 11:15:09,329 basehttp "POST /wood/1/update/ HTTP/1.1" 400 113
+WARNING 2025-03-03 14:22:30,151 log Not Found: /favicon.ico
+WARNING 2025-03-03 14:22:30,157 basehttp "GET /favicon.ico HTTP/1.1" 404 8231
+WARNING 2025-03-04 08:01:11,653 log Not Found: /favicon.ico
+WARNING 2025-03-04 08:01:11,655 basehttp "GET /favicon.ico HTTP/1.1" 404 8231
+ERROR 2025-03-04 08:11:04,224 log Internal Server Error: /edit-wood/2/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 204, in _get_response
+    self.check_response(response, callback)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 332, in check_response
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: The view base.views.edit_wood didn't return an HttpResponse object. It returned None instead.
+ERROR 2025-03-04 08:11:04,231 basehttp "GET /edit-wood/2/ HTTP/1.1" 500 67019

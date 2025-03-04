@@ -11,209 +11,119 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
         <style>
-            /* Enhanced styling */
             body {
-                background: linear-gradient(to bottom right, #e2f3e5, #c6f6d5);
-                font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+                background-color: #f0fdf4;
+                font-family: 'Inter', sans-serif;
             }
-    
-            .table-container {
-                background: white;
-                border-radius: 12px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            
+            .gradient-bg {
+                background: linear-gradient(90deg, #22c55e 0%, #0ea5e9 100%);
+                border-radius: 0.75rem;
+                padding: 1.5rem;
             }
-    
-            /* Table styling to match your example */
-            table {
-                border-collapse: collapse;
-                width: 100%;
-            }
-    
-            /* Header styling */
-            thead th {
-                background-color: #f3f4f6;
-                color: #1f2937;
-                font-weight: 600;
-                text-transform: uppercase;
-                padding: 0.75rem 1rem;
-                text-align: left;
-                font-size: 0.75rem;
-                letter-spacing: 0.05em;
-            }
-    
-            /* Row styling */
-            tbody tr {
-                border-bottom: 1px solid #e5e7eb;
-            }
-    
-            /* Cell styling */
-            tbody td {
-                padding: 0.75rem 1rem;
-                font-size: 0.875rem;
-                color: #1f2937;
-            }
-    
-            /* Alternating row colors exactly like your example */
-            tbody tr:nth-child(3n+1) {
-                background-color: #ecfdf5; /* Light green */
-            }
-    
-            tbody tr:nth-child(3n+2) {
-                background-color: #fff7ed; /* Light orange/peach */
-            }
-    
-            tbody tr:nth-child(3n+3) {
-                background-color: #fef2f2; /* Light red/pink */
-            }
-    
-            /* Hover effect */
-            tbody tr:hover {
-                background-color: rgba(243, 244, 246, 0.8) !important; /* Light gray on hover */
-                transition: background-color 0.2s ease;
-            }
-    
-            /* First column (NO.) styling */
-            tbody td:first-child {
-                font-weight: 600;
-            }
-    
-            /* Status badges */
-            .status-badge {
-                padding: 0.25rem 0.75rem;
-                border-radius: 9999px;
+            
+            .filter-button {
+                padding: 0.5rem 1.5rem;
+                border-radius: 2rem;
                 font-weight: 500;
-                font-size: 0.75rem;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
+                transition: all 0.2s;
             }
-    
-            .status-active {
-                background-color: #dcfce7; /* Light green for active status */
-                color: #166534; /* Dark green text */
+            
+            .filter-button.active {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             }
-    
-            .status-expired {
-                background-color: #fee2e2; /* Light red for expired status */
-                color: #991b1b; /* Dark red text */
-            }
-    
-            .status-pending {
-                background-color: #fef3c7; /* Light yellow for pending status */
-                color: #92400e; /* Dark yellow text */
-            }
-    
-            /* Action buttons */
-            .action-button {
-                background-color: #f0fdf4; /* Light green for buttons */
-                color: #2f855a; /* Dark green text */
-                padding: 0.5rem 1rem;
-                border-radius: 6px;
-                transition: all 0.2s ease;
-                display: inline-flex;
-                align-items: center;
-                gap: 0.5rem;
-                font-weight: 500;
-            }
-    
-            .action-button:hover {
-                background-color: #68d391; /* Darker green on hover */
+            
+            .filter-button:hover {
                 transform: translateY(-1px);
             }
-    
-            /* Search bar enhancement */
-            .search-container {
-                position: relative;
-                max-width: 500px;
-            }
-    
-            .search-input {
-                width: 100%;
-                padding: 0.75rem 1rem 0.75rem 2.5rem;
-                border-radius: 8px;
-                border: 2px solid #e5e7eb;
+            
+            .white-button {
                 background-color: white;
-                transition: all 0.2s ease;
-            }
-    
-            .search-input:focus {
-                border-color: #2563eb;
-                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-            }
-    
-            .search-icon {
-                position: absolute;
-                left: 0.75rem;
-                top: 50%;
-                transform: translateY(-50%);
-                color: #6b7280;
+                color: #3b82f6;
             }
             
-            /* Add these new styles for row coloring */
-            .row-expired {
-                background-color: #ffebee !important;
-            }
-            .row-expired:hover {
-                background-color: #ffcdd2 !important;
+            .green-button {
+                background-color: #22c55e;
+                color: white;
             }
             
-            .row-active {
-                background-color: #e8f5e9 !important; /* Lighter green to match your sample */
-            }
-            .row-active:hover {
-                background-color: #c8e6c9 !important;
+            .red-button {
+                background-color: #ef4444;
+                color: white;
             }
             
-            .row-expiring {
-                background-color: #fff0d9 !important;
-            }
-            .row-expiring:hover {
-                background-color: #ffe0b2 !important;
+            .yellow-button {
+                background-color: #eab308;
+                color: white;
             }
             
-            /* Status-specific styling */
-            .bg-green-50 {
-                background-color: rgba(240, 253, 244, 0.6); /* Lighter green */
+            .search-input {
+                background-color: rgba(255, 255, 255, 0.2);
+                border: none;
+                color: white;
+                padding: 0.75rem 1rem;
+                border-radius: 0.5rem;
             }
             
-            .bg-red-50 {
-                background-color: rgba(254, 242, 242, 0.6); /* Lighter red */
+            .search-input::placeholder {
+                color: rgba(255, 255, 255, 0.7);
             }
             
-            .bg-orange-50 {
-                background-color: rgba(255, 247, 237, 0.6); /* Lighter orange */
+            .date-input {
+                background-color: rgba(255, 255, 255, 0.2);
+                border: none;
+                color: white;
+                padding: 0.75rem 1rem;
+                border-radius: 0.5rem;
+                appearance: none;
             }
             
-            /* Special styling for date columns */
-            /* Date Issued column (assuming it's column 16) */
-            td:nth-child(16) {
-                position: relative;
-                transition: all 0.2s ease;
+            .export-button {
+                background-color: #15803d;
+                color: white;
+                padding: 0.75rem 1.5rem;
+                border-radius: 0.5rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                transition: all 0.2s;
             }
             
-            /* Expiry Date column (assuming it's column 17) */
-            td:nth-child(17) {
-                position: relative;
-                transition: all 0.2s ease;
+            .export-button:hover {
+                background-color: #166534;
             }
             
-            /* Hover effect for date columns */
-            tr:hover td:nth-child(16),
-            tr:hover td:nth-child(17) {
-                background-color: rgba(243, 244, 246, 0.8); /* Light gray background */
-                color: #1F2937; /* Darker text for better contrast */
-                font-weight: 500; /* Slightly bolder */
+            /* Style for date input calendar icon */
+            input[type="date"]::-webkit-calendar-picker-indicator {
+                filter: invert(1);
             }
             
-            /* Special styling for expiry dates that are coming up soon */
-            td:nth-child(17).expiring-soon {
-                color: #F59E0B; /* Amber/orange color */
-                font-weight: 500;
+            /* Style for select dropdown arrow */
+            select {
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+                background-position: right 0.5rem center;
+                background-repeat: no-repeat;
+                background-size: 1.5em 1.5em;
             }
-            
-            /* Special styling for expired dates */
-            td:nth-child(17).expired {
-                color: #EF4444; /* Red color */
-                font-weight: 500;
+
+            /* Hover effects for different record statuses */
+            .active-record:hover {
+                background-color: #d1fae5; /* Light green */
+            }
+
+            .expiring-soon-record:hover {
+                background-color: #fef3c7; /* Light orange */
+            }
+
+            .expired-record:hover {
+                background-color: #fee2e2; /* Light red */
+            }
+
+            /* Active filter button styling */
+            .filter-button-active {
+                background-color: transparent !important;
+                border: 2px solid white !important;
+                color: white !important;
             }
         </style>
     </head>
@@ -632,22 +542,12 @@
             // Remove highlight from all buttons
             [allRecordsBtn, activeRecordsBtn, expiredRecordsBtn, expiringSoonRecordsBtn].forEach(btn => {
                 if (btn) {
-                    if (btn === allRecordsBtn) {
-                        btn.classList.remove('bg-white', 'text-blue-600');
-                        btn.classList.add('bg-transparent', 'text-white', 'border-2', 'border-white');
-                    } else {
-                        btn.classList.remove('border-2', 'border-white', 'bg-transparent');
-                    }
+                    btn.classList.remove('filter-button-active');
                 }
             });
-            
+
             // Add highlight to active button
-            if (activeButton === allRecordsBtn) {
-                activeButton.classList.remove('bg-transparent', 'text-white');
-                activeButton.classList.add('bg-white', 'text-blue-600');
-            } else {
-                activeButton.classList.add('border-2', 'border-white');
-            }
+            activeButton.classList.add('filter-button-active');
         }
         
         // All Records button
@@ -679,6 +579,8 @@
                 
                 const rows = tableBody.querySelectorAll('tr:not(#noRecordsRow)');
                 const today = new Date();
+                const threeMonthsLater = new Date();
+                threeMonthsLater.setMonth(today.getMonth() + 3);
                 let visibleRowCount = 0;
                 
                 rows.forEach(row => {
@@ -697,8 +599,8 @@
                             // Parse the expiry date (format: "Jan 15, 2023")
                             const expiryDate = new Date(expiryDateText);
                             
-                            // Check if the date is valid and in the future (active)
-                            if (!isNaN(expiryDate.getTime()) && expiryDate >= today) {
+                            // Check if the date is valid and more than 3 months in the future (active)
+                            if (!isNaN(expiryDate.getTime()) && expiryDate > threeMonthsLater) {
                                 row.style.display = '';
                                 visibleRowCount++;
                                 console.log('Showing active row with expiry date:', expiryDateText);
@@ -1121,7 +1023,7 @@
         });
         
         // Apply status classes after search
-        const searchInput = document.getElementById('searchInput');
+        const searchInput = document.getElementById('recordSearch');
         if (searchInput) {
             searchInput.addEventListener('input', function() {
                 setTimeout(applyStatusClasses, 10);

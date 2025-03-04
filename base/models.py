@@ -499,9 +499,23 @@ class Wood(models.Model):
         if self.drc:
             self.alr = round(float(self.drc) * 290 * 0.80, 2)
         
-        # Set expiry date to 5 years from date issued if not provided
+        # Set expiry date to 5 years from date issued, excluding weekends
         if self.date_issued and not self.expiry_date:
-            self.expiry_date = self.date_issued + timedelta(days=365*5)
+            # Start with the initial date
+            current_date = self.date_issued
+            years_to_add = 5
+            days_added = 0
+            
+            # Add 5 years worth of business days
+            target_days = years_to_add * 365
+            
+            while days_added < target_days:
+                current_date += timedelta(days=1)
+                # Skip weekends (5 = Saturday, 6 = Sunday)
+                if current_date.weekday() not in [5, 6]:
+                    days_added += 1
+            
+            self.expiry_date = current_date
             
         super().save(*args, **kwargs)
 
@@ -538,9 +552,24 @@ class Wood(models.Model):
 
     @property
     def is_expiring_soon(self):
-        """Check if the record is expiring within 30 days"""
-        remaining = self.days_remaining
-        return 0 < remaining <= 30
+        """Check if the record is expiring within 3 months"""
+        if self.expiry_date:
+            today = timezone.now().date()
+            three_months_from_now = today + timedelta(days=90)  # 90 days = 3 months
+            return today <= self.expiry_date <= three_months_from_now
+        return False
+
+    @property
+    def expiry_warning(self):
+        """Returns True if the permit is expiring within 3 months"""
+        if not self.expiry_date:
+            return False
+        
+        today = timezone.now().date()
+        three_months_from_now = today + timedelta(days=90)  # 90 days = 3 months
+        
+        # Return True if expiry date is within the next 3 months
+        return today <= self.expiry_date <= three_months_from_now
 
     def __str__(self):
         return f"{self.name} - {self.wpp_number}"

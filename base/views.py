@@ -182,18 +182,25 @@ def cutting(request):
 @login_required
 def wood(request):
     if request.method == 'POST':
-        # Print request data for debugging
-        print(f"POST data: {request.POST}")
-        print(f"FILES data: {request.FILES}")
+        # Print all POST data for debugging
+        for key, value in request.POST.items():
+            print(f"POST data: {key} = {value}")
         
-        # Create form with data
         form = WoodForm(request.POST, request.FILES)
         
-        # Check form validity
         if form.is_valid():
-            try:
-                # Create but don't save the record yet
+            try:  # Make sure there's a try block before the except
+                # Print form data
+                print("Form is valid")
+                for field in form:
+                    print(f"Field {field.name}: {field.value()}")
+                
                 wood_record = form.save(commit=False)
+                
+                # Explicitly set supplier_info from POST data
+                supplier_info = request.POST.get('supplier_info', '')
+                print(f"Setting supplier_info to: {supplier_info}")
+                wood_record.supplier_info = supplier_info
                 
                 # Calculate ALR based on DRC
                 if wood_record.drc:
@@ -203,15 +210,12 @@ def wood(request):
                 if wood_record.date_issued and not wood_record.expiry_date:
                     wood_record.expiry_date = wood_record.date_issued + timedelta(days=365*5)
                 
-                # Print record before saving
-                print(f"About to save record: {wood_record.__dict__}")
-                
                 # Save the record to the database
                 wood_record.save()
                 
-                # Verify the record was saved
-                saved_record = Wood.objects.filter(id=wood_record.id).first()
-                print(f"Record saved with ID: {wood_record.id}, Retrieved: {saved_record is not None}")
+                # Verify after save
+                saved_record = Wood.objects.get(id=wood_record.id)
+                print(f"After save, supplier_info = {saved_record.supplier_info}")
                 
                 # Handle AJAX request
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -241,18 +245,18 @@ def wood(request):
                 # Handle regular form submission
                 messages.error(request, f'Error saving record: {str(e)}')
         else:
-            # Print form errors for debugging
-            print(f"Form validation errors: {form.errors}")
+            # Form is invalid
+            print("Form is invalid")
+            print(f"Form errors: {form.errors}")
             
-            # Handle AJAX request
+            # Handle AJAX request for invalid form
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': False,
-                    'message': 'Please correct the errors below.',
-                    'errors': form.errors.as_json()
-                }, status=400)
+                    'message': 'Form validation failed',
+                    'errors': form.errors
+                })
             
-            # Handle regular form submission
             messages.error(request, 'Please correct the errors below.')
     else:
         # GET request - display empty form
@@ -505,20 +509,68 @@ def your_save_view(request):
 
 @login_required
 def edit_wood(request, pk):
-    """
-    Display form to edit an existing wood processing plant record.
-    """
     wood = get_object_or_404(Wood, pk=pk)
     
-    # Get the valid choices for the type field from the model
-    type_choices = [
-        ('Resawmill-new', 'Resawmill-new'),
-        ('Resawmill-renew', 'Resawmill-renew')
-    ]  # Use the exact values from your model
+    if request.method == 'POST':
+        # Debug: Print all POST data
+        print("POST data in edit_wood:")
+        for key, value in request.POST.items():
+            print(f"{key}: {value}")
+            
+        form = WoodForm(request.POST, request.FILES, instance=wood)
+        if form.is_valid():
+            wood_record = form.save(commit=False)
+            
+            # Debug: Print supplier_info before save
+            print(f"supplier_info before save: {wood_record.supplier_info}")
+            
+            # Explicitly set supplier_info from POST data
+            supplier_info = request.POST.get('supplier_info', '')
+            print(f"Setting supplier_info to: {supplier_info}")
+            wood_record.supplier_info = supplier_info
+            
+            # Calculate ALR based on DRC
+            if wood_record.drc:
+                wood_record.alr = round(float(wood_record.drc) * 290 * 0.80, 2)
+            
+            wood_record.save()
+            
+            # Debug: Verify after save
+            saved_record = Wood.objects.get(id=wood_record.id)
+            print(f"After save, supplier_info = {saved_record.supplier_info}")
+            
+            # Handle AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Wood record updated successfully!',
+                    'redirect': reverse('wood_records')
+                })
+            
+            # Handle regular form submission
+            messages.success(request, 'Wood record updated successfully!')
+            return redirect('wood_records')
+        else:
+            # Debug: Print form errors
+            print(f"Form errors: {form.errors}")
+            
+            # Handle form validation errors
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Form validation failed',
+                    'errors': form.errors
+                })
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = WoodForm(instance=wood)
+    
+    # Get choices for type field
+    type_choices = Wood.TYPE_CHOICES if hasattr(Wood, 'TYPE_CHOICES') else []
     
     context = {
+        'form': form,
         'wood': wood,
-        'title': 'Edit Wood Processing Plant',
         'type_choices': type_choices,
     }
     
@@ -597,7 +649,16 @@ def update_wood(request, pk):
         else:
             form = WoodForm(request.POST, request.FILES, instance=wood)
             if form.is_valid():
-                form.save()
+                wood = form.save(commit=False)
+                
+                # Combine supplier name and address into supplier_info
+                supplier_name = request.POST.get('supplier_name', '')
+                supplier_address = request.POST.get('supplier_address', '')
+                
+                if supplier_name or supplier_address:
+                    wood.supplier_info = f"{supplier_name}{', ' + supplier_address if supplier_address else ''}"
+                
+                wood.save()
                 messages.success(request, 'Wood processing plant record updated successfully')
                 return redirect('wood_records')
             else:

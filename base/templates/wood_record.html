@@ -349,7 +349,11 @@
                                     {{ record.latitude }}
                                 </td>
                                 <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.supplier_info }}
+                                    {% if record.supplier_info and record.supplier_info != "None" and record.supplier_info != "" %}
+                                        {{ record.supplier_info }}
+                                    {% else %}
+                                        <span class="text-gray-500">No supplier info</span>
+                                    {% endif %}
                                 </td>
                                 <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
                                     {{ record.local_volume }}
@@ -561,6 +565,123 @@
                 if (startDateFilter) startDateFilter.addEventListener('change', applyFilters);
                 if (endDateFilter) endDateFilter.addEventListener('change', applyFilters);
                 if (yearFilter) yearFilter.addEventListener('change', applyFilters);
+            }
+            
+            // Add color coding for rows based on expiry date
+            const tableRows = document.querySelectorAll('tbody tr');
+            const today = new Date();
+            
+            tableRows.forEach(row => {
+                const expiryDateCell = row.querySelector('td:nth-child(17)'); // Adjust if column position changes
+                
+                if (expiryDateCell && expiryDateCell.textContent.trim() !== '') {
+                    const expiryDate = new Date(expiryDateCell.textContent.trim());
+                    
+                    // Calculate difference in months
+                    const monthsDiff = (expiryDate - today) / (1000 * 60 * 60 * 24 * 30);
+                    
+                    if (expiryDate < today) {
+                        // Expired - red background
+                        row.classList.remove('hover:bg-gray-50');
+                        row.classList.add('hover:bg-red-100', 'expired-record');
+                    } else if (monthsDiff <= 3) {
+                        // Expiring soon (within 3 months) - orange background
+                        row.classList.remove('hover:bg-gray-50');
+                        row.classList.add('hover:bg-orange-100', 'expiring-soon-record');
+                    } else {
+                        // Active - green background
+                        row.classList.remove('hover:bg-gray-50');
+                        row.classList.add('hover:bg-green-100', 'active-record');
+                    }
+                }
+            });
+            
+            // Filter buttons functionality
+            const allRecordsBtn = document.getElementById('allRecordsBtn');
+            const activeRecordsBtn = document.getElementById('activeRecordsBtn');
+            const expiredRecordsBtn = document.getElementById('expiredRecordsBtn');
+            const expiringSoonRecordsBtn = document.getElementById('expiringSoonRecordsBtn');
+            
+            if (allRecordsBtn && activeRecordsBtn && expiredRecordsBtn && expiringSoonRecordsBtn) {
+                // Show all records
+                allRecordsBtn.addEventListener('click', function() {
+                    tableRows.forEach(row => {
+                        row.style.display = '';
+                    });
+                    
+                    // Update active button styling
+                    allRecordsBtn.classList.add('bg-transparent', 'border-2', 'border-white');
+                    activeRecordsBtn.classList.remove('bg-transparent', 'border-2', 'border-white');
+                    expiredRecordsBtn.classList.remove('bg-transparent', 'border-2', 'border-white');
+                    expiringSoonRecordsBtn.classList.remove('bg-transparent', 'border-2', 'border-white');
+                    
+                    activeRecordsBtn.classList.add('bg-green-500');
+                    expiredRecordsBtn.classList.add('bg-red-500');
+                    expiringSoonRecordsBtn.classList.add('bg-yellow-500');
+                });
+                
+                // Show only active records
+                activeRecordsBtn.addEventListener('click', function() {
+                    tableRows.forEach(row => {
+                        if (row.classList.contains('active-record')) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                    
+                    // Update active button styling
+                    activeRecordsBtn.classList.add('bg-transparent', 'border-2', 'border-white');
+                    allRecordsBtn.classList.remove('bg-transparent', 'border-2', 'border-white');
+                    expiredRecordsBtn.classList.remove('bg-transparent', 'border-2', 'border-white');
+                    expiringSoonRecordsBtn.classList.remove('bg-transparent', 'border-2', 'border-white');
+                    
+                    allRecordsBtn.classList.add('bg-transparent');
+                    expiredRecordsBtn.classList.add('bg-red-500');
+                    expiringSoonRecordsBtn.classList.add('bg-yellow-500');
+                });
+                
+                // Show only expired records
+                expiredRecordsBtn.addEventListener('click', function() {
+                    tableRows.forEach(row => {
+                        if (row.classList.contains('expired-record')) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                    
+                    // Update active button styling
+                    expiredRecordsBtn.classList.add('bg-transparent', 'border-2', 'border-white');
+                    allRecordsBtn.classList.remove('bg-transparent', 'border-2', 'border-white');
+                    activeRecordsBtn.classList.remove('bg-transparent', 'border-2', 'border-white');
+                    expiringSoonRecordsBtn.classList.remove('bg-transparent', 'border-2', 'border-white');
+                    
+                    allRecordsBtn.classList.add('bg-transparent');
+                    activeRecordsBtn.classList.add('bg-green-500');
+                    expiringSoonRecordsBtn.classList.add('bg-yellow-500');
+                });
+                
+                // Show only expiring soon records
+                expiringSoonRecordsBtn.addEventListener('click', function() {
+                    tableRows.forEach(row => {
+                        if (row.classList.contains('expiring-soon-record')) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                    
+                    // Update active button styling
+                    expiringSoonRecordsBtn.classList.add('bg-transparent', 'border-2', 'border-white');
+                    allRecordsBtn.classList.remove('bg-transparent', 'border-2', 'border-white');
+                    activeRecordsBtn.classList.remove('bg-transparent', 'border-2', 'border-white');
+                    expiredRecordsBtn.classList.remove('bg-transparent', 'border-2', 'border-white');
+                    
+                    allRecordsBtn.classList.add('bg-transparent');
+                    activeRecordsBtn.classList.add('bg-green-500');
+                    expiredRecordsBtn.classList.add('bg-red-500');
+                });
             }
         });
         

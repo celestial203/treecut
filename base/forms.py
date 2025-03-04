@@ -157,11 +157,12 @@ class WoodForm(forms.ModelForm):
     class Meta:
         model = Wood
         fields = [
-            'name', 'type', 'wpp_number', 'integrated', 'business', 'plant',
-            'drc', 'alr', 'latitude', 'longitude', 'supplier_info',
+            'name', 'type', 'wpp_number', 'integrated', 
+            'business', 'plant', 'drc', 'alr',
+            'longitude', 'latitude', 'supplier_info',
             'local_volume', 'imported_volume', 'area',
-            'date_issued', 'date_released', 'expiry_date',
-            'approved_by', 'wood_status', 'attachment'
+            'approved_by', 'date_issued', 'date_released',
+            'expiry_date', 'wood_status', 'attachment'
         ]
         widgets = {
             'date_issued': forms.DateInput(attrs={'type': 'date'}),
