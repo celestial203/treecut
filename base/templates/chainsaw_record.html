@@ -125,6 +125,29 @@
                 border: 2px solid white !important;
                 color: white !important;
             }
+
+            /* Add context menu styles */
+            .context-menu {
+                position: fixed;
+                background: white;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                padding: 8px 0;
+                z-index: 1000;
+            }
+
+            .context-menu-item {
+                padding: 8px 16px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .context-menu-item:hover {
+                background-color: #f3f4f6;
+            }
         </style>
     </head>
 <body>
@@ -289,7 +312,7 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 {% if chainsaw_records %}
                     {% for record in chainsaw_records %}
-                    <tr>
+                    <tr class="hover:bg-gray-50" data-record-id="{{ record.id }}">
                         <td class="px-6 py-3 text-xs font-bold text-gray-900 whitespace-nowrap">{{ record.no }}</td>
                         <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.year }}</td>
                         <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.region }}</td>
@@ -1206,6 +1229,63 @@
             });
             console.log('Export button event listener added');
         }
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add context menu element to the body
+        const contextMenu = document.createElement('div');
+        contextMenu.className = 'context-menu hidden';
+        contextMenu.innerHTML = `
+            <div class="context-menu-item" id="view-option">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                View
+            </div>
+            <div class="context-menu-item" id="edit-option">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Edit
+            </div>
+        `;
+        document.body.appendChild(contextMenu);
+
+        // Handle double click on table rows
+        const tableRows = document.querySelectorAll('tbody tr');
+        tableRows.forEach(row => {
+            row.addEventListener('dblclick', function(e) {
+                if (row.querySelector('td[colspan]')) return;
+
+                e.preventDefault();
+                
+                const recordId = this.dataset.recordId || 
+                               this.querySelector('a[href*="/view/"]')?.href?.match(/\d+/)?.[0] ||
+                               this.querySelector('a[href*="/edit/"]')?.href?.match(/\d+/)?.[0];
+                
+                if (!recordId) return;
+
+                contextMenu.style.left = `${e.pageX}px`;
+                contextMenu.style.top = `${e.pageY}px`;
+                contextMenu.classList.remove('hidden');
+
+                const viewOption = document.getElementById('view-option');
+                const editOption = document.getElementById('edit-option');
+
+                viewOption.onclick = () => window.location.href = `/chainsaw/${recordId}/view/`;
+                editOption.onclick = () => window.location.href = `/edit-chainsaw/${recordId}/`;
+            });
+        });
+
+        // Hide context menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!contextMenu.contains(e.target)) {
+                contextMenu.classList.add('hidden');
+            }
+        });
     });
 </script>
 </body>

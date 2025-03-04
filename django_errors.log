@@ -8466,3 +8466,56 @@ Traceback (most recent call last):
     raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
 django.template.exceptions.TemplateSyntaxError: Invalid filter: 'split_species_data'
 ERROR 2025-03-04 13:26:33,705 basehttp "GET /cutting/16/edit/ HTTP/1.1" 500 242751
+ERROR 2025-03-04 15:53:36,532 log Internal Server Error: /lumber/records/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 1039, in lumber_records
+    return render(request, 'lumber_records.html', context)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'edit_lumber' not found. 'edit_lumber' is not a valid view function or pattern name.
+ERROR 2025-03-04 15:53:36,539 basehttp "GET /lumber/records/ HTTP/1.1" 500 126138
+WARNING 2025-03-04 15:54:12,898 log Not Found: /chainsaw/127/view/
+WARNING 2025-03-04 15:54:12,900 basehttp "GET /chainsaw/127/view/ HTTP/1.1" 404 6000
+WARNING 2025-03-04 15:57:43,906 log Not Found: /lumber/127/details/
+WARNING 2025-03-04 15:57:43,911 basehttp "GET /lumber/127/details/ HTTP/1.1" 404 8088
+WARNING 2025-03-04 15:57:50,063 log Not Found: /lumber/127/details/
+WARNING 2025-03-04 15:57:50,065 basehttp "GET /lumber/127/details/ HTTP/1.1" 404 8088
+WARNING 2025-03-04 15:57:56,673 log Not Found: /cutting/127/view/
+WARNING 2025-03-04 15:57:56,675 basehttp "GET /cutting/127/view/ HTTP/1.1" 404 3421
+WARNING 2025-03-04 15:57:59,651 log Not Found: /cutting/127/view/
+WARNING 2025-03-04 15:57:59,654 basehttp "GET /cutting/127/view/ HTTP/1.1" 404 3421
+WARNING 2025-03-04 16:00:16,464 log Not Found: /cutting/127/view/
+WARNING 2025-03-04 16:00:16,465 basehttp "GET /cutting/127/view/ HTTP/1.1" 404 3421
+WARNING 2025-03-04 16:00:19,806 log Not Found: /cutting/127/view/
+WARNING 2025-03-04 16:00:19,807 basehttp "GET /cutting/127/view/ HTTP/1.1" 404 3421
