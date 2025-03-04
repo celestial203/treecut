@@ -119,17 +119,19 @@ class UserProfile(models.Model):
 def permit_file_path(instance, filename):
     return f'permit_files/{timezone.now().year}/{timezone.now().month}/{filename}'
 
-def calculate_expiry_date(from_date):
-    # Start with the initial date
-    current_date = from_date
-    days_to_add = 50
-    days_added = 0
+def calculate_expiry_date(date_issued):
+    """Calculate expiry date as 50 business days from date issued"""
+    if not date_issued:
+        return None
+        
+    current_date = date_issued
+    business_days = 0
     
-    while days_added < days_to_add:
+    while business_days < 50:
         current_date += timedelta(days=1)
         # Skip weekends (5 = Saturday, 6 = Sunday)
         if current_date.weekday() not in [5, 6]:
-            days_added += 1
+            business_days += 1
     
     return current_date
 
@@ -144,6 +146,8 @@ class Cutting(models.Model):
     SITUATION_CHOICES = [
         ('Good', 'Good'),
         ('Pending', 'Pending'),
+        ('Active', 'Active'),
+        ('Expired', 'Expired'),
     ]
     
     permit_type = models.CharField(max_length=5, choices=PERMIT_CHOICES, default='TCP')
@@ -157,7 +161,7 @@ class Cutting(models.Model):
     lot_no = models.CharField(max_length=100, verbose_name="Lot No.", null=True, blank=True)
     area = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Area (ha.)", null=True, blank=True)
     no_of_trees = models.IntegerField(verbose_name="Number of Trees", null=True, blank=True)
-    species = models.CharField(max_length=100, verbose_name="Species", null=True, blank=True)
+    species = models.TextField(help_text="For PLTP, separate multiple species with commas")
     permit_file = models.FileField(
         upload_to='permits/',
         null=True,
@@ -221,37 +225,54 @@ class Cutting(models.Model):
         return f"{self.permit_type}-{self.permit_number}"
 
     def save(self, *args, **kwargs):
-        # Calculate expiry date (1 year from date issued)
         if self.date_issued:
-            # Using timedelta for 1 year (365 days)
-            self.expiry_date = self.date_issued + timedelta(days=365)
+            # Always calculate expiry date as 50 business days
+            self.expiry_date = calculate_expiry_date(self.date_issued)
             
-            # Calculate net volume if gross volume exists
-            if self.gross_volume:
-                self.net_volume = round(float(self.gross_volume) * 0.70, 2)
-                
-        # Handle initial save
-        if not self.pk:  # New record
-            self.situation = 'Pending'
-        else:
-            # Check for existing volume records
-            has_records = CuttingRecord.objects.filter(parent_tcp=self).exists()
-            self.situation = 'Good' if has_records else 'Pending'
+        # Calculate net volume if gross volume exists
+        if self.gross_volume:
+            self.net_volume = round(float(self.gross_volume) * 0.70, 2)
         
-        # Call the original save method
+        # Handle status based on permit type
+        today = timezone.now().date()
+        
+        if self.permit_type == 'STCP':
+            # For STCP: Status depends on volume records
+            if not self.pk:  # New record
+                self.situation = 'Pending'
+            else:
+                has_records = CuttingRecord.objects.filter(parent_tcp=self).exists()
+                self.situation = 'Good' if has_records else 'Pending'
+        else:
+            # For TCP, PLTP, SPLTP: Status depends on dates
+            if self.expiry_date:
+                if today > self.expiry_date:
+                    self.situation = 'Expired'
+                else:
+                    self.situation = 'Active'
+        
         super().save(*args, **kwargs)
 
     def update_situation(self):
-        # Get current volume records count
-        has_records = CuttingRecord.objects.filter(parent_tcp=self).exists()
+        """Update the situation status based on permit type and conditions"""
+        today = timezone.now().date()
         
-        # Update situation based on volume records
-        new_situation = 'Good' if has_records else 'Pending'
-        
-        # Only update if situation has changed
-        if self.situation != new_situation:
-            self.situation = new_situation
-            self.save(update_fields=['situation'])
+        if self.permit_type == 'STCP':
+            # Only update STCP permits based on volume records
+            has_records = CuttingRecord.objects.filter(parent_tcp=self).exists()
+            new_situation = 'Good' if has_records else 'Pending'
+            
+            if self.situation != new_situation:
+                self.situation = new_situation
+                self.save(update_fields=['situation'])
+        else:
+            # For other permit types, update based on expiry date
+            if self.expiry_date:
+                new_situation = 'Expired' if today > self.expiry_date else 'Active'
+                
+                if self.situation != new_situation:
+                    self.situation = new_situation
+                    self.save(update_fields=['situation'])
 
 def chainsaw_file_path(instance, filename):
     # Generate file path: chainsaw_files/YYYY/MM/filename

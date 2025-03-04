@@ -145,9 +145,7 @@
                                        id="expiry_date"
                                        name="expiry_date"
                                        value="{{ cutting.expiry_date|date:'Y-m-d' }}"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                       readonly
-                                       style="background-color: #f3f4f6;">
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="text-sm text-gray-600">Situation</label>
@@ -225,7 +223,7 @@
                         <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Tree Information</h3>
                         <div class="space-y-4">
                             <div>
-                                <label class="text-sm text-gray-600">Species</label>
+                                <label class="text-sm text-gray-600 required">Species</label>
                                 {{ form.species|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
                             </div>
                             <div>
@@ -319,6 +317,50 @@
     <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const permitTypeSelect = document.getElementById('{{ form.permit_type.id_for_label }}');
+            const dateIssued = document.getElementById('date_issued');
+            const expiryDate = document.getElementById('expiry_date');
+
+            // Keep date validation but remove automatic calculation
+            if (dateIssued && expiryDate) {
+                dateIssued.addEventListener('change', function() {
+                    if (expiryDate.value) {
+                        const issued = new Date(this.value);
+                        const expiry = new Date(expiryDate.value);
+                        
+                        if (expiry < issued) {
+                            Swal.fire({
+                                title: 'Invalid Date',
+                                text: 'Expiry date cannot be earlier than issue date',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                expiryDate.value = '';
+                            });
+                        }
+                    }
+                });
+
+                expiryDate.addEventListener('change', function() {
+                    if (this.value && dateIssued.value) {
+                        const issued = new Date(dateIssued.value);
+                        const expiry = new Date(this.value);
+                        
+                        if (expiry < issued) {
+                            Swal.fire({
+                                title: 'Invalid Date',
+                                text: 'Expiry date cannot be earlier than date issued',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                this.value = '';
+                            });
+                        }
+                    }
+                });
+            }
+
             // Toggle user menu
             const userMenuButton = document.getElementById('user-menu-button');
             const userMenu = document.getElementById('user-menu');
@@ -363,168 +405,207 @@
                 grossVolumeInput.addEventListener('input', calculateNetVolume);
             }
 
-            // Date calculation
-            const dateIssuedInput = document.getElementById('date_issued');
-            const expiryDateInput = document.getElementById('expiry_date');
-            const permitTypeSelect = document.getElementById('id_permit_type');
-
-            function addBusinessDays(startDate, days) {
-                let currentDate = new Date(startDate);
-                let addedDays = 0;
-                
-                while (addedDays < days) {
-                    currentDate.setDate(currentDate.getDate() + 1);
-                    if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
-                        addedDays++;
-                    }
-                }
-                
-                return currentDate;
-            }
-
-            function calculateExpiryDate() {
-                if (!dateIssuedInput.value) return;
-
-                const permitType = permitTypeSelect.value;
-                const issueDate = new Date(dateIssuedInput.value);
-                let days = 0;
-
-                switch (permitType) {
-                    case 'TCP': days = 50; break;
-                    case 'STCP': days = 60; break;
-                    case 'PLTP': days = 90; break;
-                    case 'SPLTP': days = 120; break;
-                }
-
-                const expiryDate = addBusinessDays(issueDate, days);
-                expiryDateInput.value = expiryDate.toISOString().split('T')[0];
-            }
-
-            // Set initial dates if they exist
-            if (dateIssuedInput && "{{ cutting.date_issued|date:'Y-m-d' }}") {
-                dateIssuedInput.value = "{{ cutting.date_issued|date:'Y-m-d' }}";
-            }
-            
-            if (expiryDateInput && "{{ cutting.expiry_date|date:'Y-m-d' }}") {
-                expiryDateInput.value = "{{ cutting.expiry_date|date:'Y-m-d' }}";
-            }
-
-            // Add event listeners
-            if (dateIssuedInput) {
-                dateIssuedInput.addEventListener('change', calculateExpiryDate);
-            }
-            
-            if (permitTypeSelect) {
-                permitTypeSelect.addEventListener('change', calculateExpiryDate);
-            }
-
-            // Calculate initial expiry date if needed
-            if (!expiryDateInput.value) {
-                calculateExpiryDate();
-            }
-
             // Form validation and submission with SweetAlert
             if (editForm) {
                 editForm.addEventListener('submit', function(e) {
                     e.preventDefault();
                     
+                    let hasError = false;
+                    let errorMessages = [];
+
                     // Validate required fields
-                    const requiredFields = [
-                        { id: 'date_issued', name: 'Date Issued' },
-                        { id: 'id_permit_number', name: 'Permit Number' },
-                        { id: 'id_permittee', name: 'Permittee Name' },
-                        { id: 'id_location', name: 'Location' }
-                    ];
-                    
-                    let missingFields = [];
-                    
-                    requiredFields.forEach(field => {
-                        const element = document.getElementById(field.id);
-                        if (element && !element.value.trim()) {
-                            missingFields.push(field.name);
+                    const requiredFields = {
+                        'permit_type': 'Permit Type',
+                        'permit_number': 'Permit Number',
+                        'permittee': 'Permittee',
+                        'date_issued': 'Date Issued',
+                        'gross_volume': 'Gross Volume'
+                    };
+
+                    Object.entries(requiredFields).forEach(([field, label]) => {
+                        const input = document.querySelector(`[name="${field}"]`);
+                        if (!input.value.trim()) {
+                            hasError = true;
+                            errorMessages.push(`${label} is required`);
                         }
                     });
-                    
-                    if (missingFields.length > 0) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Required Fields Missing',
-                            html: `Please fill in the following required fields:<br><br>${missingFields.join('<br>')}`,
-                            confirmButtonColor: '#3B82F6'
-                        });
-                        return;
-                    }
-                    
-                    // Confirm before saving
-                    Swal.fire({
-                        title: 'Save Changes?',
-                        text: 'Are you sure you want to save these changes?',
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#10B981',
-                        cancelButtonColor: '#EF4444',
-                        confirmButtonText: 'Yes, save changes',
-                        cancelButtonText: 'Cancel'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Show loading state
-                            Swal.fire({
-                                title: 'Saving changes...',
-                                allowOutsideClick: false,
-                                didOpen: () => {
-                                    Swal.showLoading();
-                                }
-                            });
-                            
-                            // Submit the form via AJAX
-                            const formData = new FormData(this);
-                            
-                            fetch(this.action, {
-                                method: 'POST',
-                                body: formData,
-                                headers: {
-                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                                }
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Success!',
-                                        text: 'Changes have been saved successfully.',
-                                        confirmButtonColor: '#3B82F6'
-                                    }).then(() => {
-                                        window.location.href = "{% url 'view_cutting' cutting.id %}";
-                                    });
-                                } else {
-                                    let errorMessage = data.error || 'An error occurred while saving changes.';
-                                    if (data.errors) {
-                                        errorMessage = Object.entries(data.errors)
-                                            .map(([field, error]) => `${field}: ${error}`)
-                                            .join('<br>');
-                                    }
-                                    
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error!',
-                                        html: errorMessage,
-                                        confirmButtonColor: '#3B82F6'
-                                    });
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error!',
-                                    text: 'An unexpected error occurred. Please try again.',
-                                    confirmButtonColor: '#3B82F6'
-                                });
-                            });
+
+                    // Validate species based on permit type
+                    const permitType = document.querySelector('[name="permit_type"]').value;
+                    if (permitType === 'PLTP') {
+                        const speciesSelects = document.querySelectorAll('select[name="species[]"]');
+                        const quantities = document.querySelectorAll('input[name="species_quantity[]"]');
+                        
+                        if (speciesSelects.length === 0) {
+                            hasError = true;
+                            errorMessages.push('At least one species must be added');
                         }
+
+                        speciesSelects.forEach((select, index) => {
+                            if (!select.value) {
+                                hasError = true;
+                                errorMessages.push(`Species ${index + 1} must be selected`);
+                            }
+                            
+                            const quantity = quantities[index];
+                            if (!quantity.value || parseInt(quantity.value) < 1) {
+                                hasError = true;
+                                errorMessages.push(`Quantity for species ${index + 1} must be at least 1`);
+                            }
+                        });
+                    } else {
+                        const species = document.querySelector('select[name="species"]');
+                        if (!species.value) {
+                            hasError = true;
+                            errorMessages.push('Species is required');
+                        }
+                    }
+
+                    if (hasError) {
+                        Swal.fire({
+                            title: 'Validation Error',
+                            html: errorMessages.join('<br>'),
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                    } else {
+                        this.submit();
+                    }
+                });
+            }
+
+            const permitTypeSelect = document.getElementById('permit_type');
+            const speciesContainer = document.getElementById('species-container');
+
+            if (permitTypeSelect) {
+                permitTypeSelect.addEventListener('change', function() {
+                    const selectedType = this.value;
+                    if (selectedType === 'PLTP') {
+                        speciesContainer.innerHTML = `
+                            <div id="species-container" class="space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-full">
+                                        <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                            <option value="">Select Species</option>
+                                            <option value="Molave">Molave</option>
+                                            <option value="Germelina">Germelina</option>
+                                            <option value="Mahogany">Mahogany</option>
+                                            <option value="Narra">Narra</option>
+                                        </select>
+                                    </div>
+                                    <div class="w-32">
+                                        <input type="number" 
+                                               name="species_quantity[]" 
+                                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                               placeholder="No. of Trees"
+                                               min="1"
+                                               required
+                                               oninput="calculateTotalTrees()">
+                                    </div>
+                                    <button type="button" class="add-species-btn px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>`;
+                        initializeSpeciesHandlers();
+                        numberOfTreesInput.readOnly = true;
+                        numberOfTreesInput.style.backgroundColor = '#f3f4f6';
+                    } else {
+                        // Single species dropdown for other permit types
+                        speciesContainer.innerHTML = `
+                            <select name="species" 
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    required>
+                                <option value="">Select Species</option>
+                                <option value="Molave">Molave</option>
+                                <option value="Germelina">Germelina</option>
+                                <option value="Mahogany">Mahogany</option>
+                                <option value="Narra">Narra</option>
+                            </select>`;
+                        numberOfTreesInput.readOnly = false;
+                        numberOfTreesInput.style.backgroundColor = '';
+                    }
+                });
+            }
+
+            function initializeSpeciesHandlers() {
+                // Add event listeners for quantity inputs to calculate total in real-time
+                document.querySelectorAll('input[name="species_quantity[]"]').forEach(input => {
+                    input.addEventListener('input', calculateTotalTrees);
+                });
+
+                document.querySelectorAll('.add-species-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const newSpeciesRow = `
+                            <div class="flex items-center gap-2">
+                                <div class="w-full">
+                                    <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                        <option value="">Select Species</option>
+                                        <option value="Molave">Molave</option>
+                                        <option value="Germelina">Germelina</option>
+                                        <option value="Mahogany">Mahogany</option>
+                                        <option value="Narra">Narra</option>
+                                    </select>
+                                </div>
+                                <div class="w-32">
+                                    <input type="number" 
+                                           name="species_quantity[]" 
+                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                           placeholder="No. of Trees"
+                                           min="1"
+                                           required
+                                           oninput="calculateTotalTrees()">
+                                </div>
+                                <button type="button" class="remove-species-btn px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>`;
+                        document.getElementById('species-container').insertAdjacentHTML('beforeend', newSpeciesRow);
+                        
+                        // Add event listener to new remove button
+                        const newRemoveBtn = document.getElementById('species-container').lastElementChild.querySelector('.remove-species-btn');
+                        newRemoveBtn.addEventListener('click', function() {
+                            if (document.querySelectorAll('#species-container .flex').length > 1) {
+                                this.closest('.flex').remove();
+                                calculateTotalTrees();
+                            } else {
+                                Swal.fire({
+                                    title: 'Warning',
+                                    text: 'At least one species must remain',
+                                    icon: 'warning',
+                                    confirmButtonText: 'OK'
+                                });
+                            }
+                        });
                     });
                 });
+            }
+
+            // Function to calculate total trees in real-time
+            function calculateTotalTrees() {
+                const quantityInputs = document.querySelectorAll('input[name="species_quantity[]"]');
+                let total = 0;
+                quantityInputs.forEach(input => {
+                    const value = parseInt(input.value) || 0;
+                    total += value;
+                });
+                document.querySelector('input[name="no_of_trees"]').value = total;
+            }
+
+            // Function to calculate net volume (70% of gross volume)
+            function calculateNetVolume() {
+                const grossVolume = parseFloat(document.querySelector('input[name="gross_volume"]').value) || 0;
+                const netVolume = (grossVolume * 0.70).toFixed(2);
+                document.getElementById('net_volume').value = netVolume;
+            }
+
+            // Initialize species handlers if PLTP is selected on page load
+            if (permitTypeSelect && permitTypeSelect.value === 'PLTP') {
+                initializeSpeciesHandlers();
             }
         });
     </script>

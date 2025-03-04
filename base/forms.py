@@ -85,13 +85,18 @@ class CuttingForm(forms.ModelForm):
     class Meta:
         model = Cutting
         fields = '__all__'
-        exclude = ['expiry_date']  # Since it's calculated automatically
         widgets = {
             'date_issued': forms.DateInput(
                 attrs={
                     'type': 'date',
                     'class': 'form-control',
                     'required': True
+                }
+            ),
+            'expiry_date': forms.DateInput(
+                attrs={
+                    'type': 'date',
+                    'class': 'form-control'
                 }
             ),
         }

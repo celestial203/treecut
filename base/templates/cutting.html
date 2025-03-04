@@ -510,20 +510,25 @@
                         {% endif %}
                     </div>
 
-                    <div class="form-group transition-all duration-200 hover:shadow-sm">
-                        <label for="{{ form.no_of_trees.id_for_label }}" class="text-gray-700">Number of Trees</label>
-                        {{ form.no_of_trees|add_class:"form-input" }}
-                        {% if form.no_of_trees.errors %}
-                            <div class="text-red-600 text-sm mt-1">{{ form.no_of_trees.errors.0 }}</div>
-                        {% endif %}
-                    </div>
+                    <!-- Replace your existing species and number of trees fields with this -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Number of Trees field -->
+                        <div>
+                            <label class="text-sm text-gray-600 required">Number of Trees</label>
+                            <input type="number" 
+                                   name="no_of_trees" 
+                                   id="no_of_trees" 
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                   readonly>
+                        </div>
 
-                    <div class="form-group transition-all duration-200 hover:shadow-sm">
-                        <label for="{{ form.species.id_for_label }}" class="text-gray-700">Species</label>
-                        {{ form.species|add_class:"form-input" }}
-                        {% if form.species.errors %}
-                            <div class="text-red-600 text-sm mt-1">{{ form.species.errors.0 }}</div>
-                        {% endif %}
+                        <!-- Species field -->
+                        <div>
+                            <label class="text-sm text-gray-600 required">Species</label>
+                            <div id="species-container">
+                                <!-- This will be populated by JavaScript -->
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Volume Information -->
@@ -575,8 +580,7 @@
                         <input type="date" 
                                id="expiry_date"
                                name="expiry_date"
-                               class="form-input bg-gray-100"
-                               readonly
+                               class="form-input"
                         >
                     </div>
 
@@ -615,7 +619,7 @@
                                   hover:bg-green-500 hover:text-green-800 transition-all duration-200 shadow-sm">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                             </svg>
                             View Records
                         </a>
@@ -636,141 +640,347 @@
     <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const grossVolumeInput = document.getElementById('{{ form.gross_volume.id_for_label }}');
-            const netVolumeDisplay = document.getElementById('net_volume');
-            const dateIssuedInput = document.getElementById('{{ form.date_issued.id_for_label }}');
-            const expiryDateInput = document.getElementById('expiry_date');
+            const form = document.querySelector('form');
             const permitTypeSelect = document.getElementById('{{ form.permit_type.id_for_label }}');
+            const speciesContainer = document.getElementById('species-container');
+            const numberOfTreesInput = document.querySelector('input[name="no_of_trees"]');
+            const grossVolumeInput = document.querySelector('input[name="gross_volume"]');
+            const netVolumeInput = document.getElementById('net_volume');
+            const dateIssued = document.getElementById('date_issued');
+            const expiryDate = document.getElementById('expiry_date');
 
-            // Calculate net volume in real-time
-            if (grossVolumeInput) {
-                grossVolumeInput.addEventListener('input', calculateNetVolume);
-                grossVolumeInput.addEventListener('change', calculateNetVolume);
-                grossVolumeInput.addEventListener('keyup', calculateNetVolume);
+            function setupPLTPFields() {
+                speciesContainer.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-full">
+                                <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                    <option value="">Select Species</option>
+                                    <option value="Molave">Molave</option>
+                                    <option value="Germelina">Germelina</option>
+                                    <option value="Mahogany">Mahogany</option>
+                                    <option value="Narra">Narra</option>
+                                </select>
+                            </div>
+                            <div class="w-32">
+                                <input type="number" 
+                                       name="species_quantity[]" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                       placeholder="Quantity"
+                                       min="1"
+                                       required
+                                       oninput="calculateTotalTrees()">
+                            </div>
+                            <button type="button" class="add-species-btn px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>`;
+
+                numberOfTreesInput.readOnly = true;
+                numberOfTreesInput.style.backgroundColor = '#f3f4f6';
+                numberOfTreesInput.value = '0';
+                
+                initializeSpeciesHandlers();
+            }
+
+            function setupNormalFields() {
+                speciesContainer.innerHTML = `
+                    <select name="species" 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            required>
+                        <option value="">Select Species</option>
+                        <option value="Molave">Molave</option>
+                        <option value="Germelina">Germelina</option>
+                        <option value="Mahogany">Mahogany</option>
+                        <option value="Narra">Narra</option>
+                    </select>`;
+
+                numberOfTreesInput.readOnly = false;
+                numberOfTreesInput.style.backgroundColor = '';
+                numberOfTreesInput.value = '';
+            }
+
+            function initializeSpeciesHandlers() {
+                const addButton = document.querySelector('.add-species-btn');
+                if (addButton) {
+                    addButton.addEventListener('click', function() {
+                        const newRow = `
+                            <div class="flex items-center gap-2 mt-2">
+                                <div class="w-full">
+                                    <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                        <option value="">Select Species</option>
+                                        <option value="Molave">Molave</option>
+                                        <option value="Germelina">Germelina</option>
+                                        <option value="Mahogany">Mahogany</option>
+                                        <option value="Narra">Narra</option>
+                                    </select>
+                                </div>
+                                <div class="w-32">
+                                    <input type="number" 
+                                           name="species_quantity[]" 
+                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                           placeholder="Quantity"
+                                           min="1"
+                                           required
+                                           oninput="calculateTotalTrees()">
+                                </div>
+                                <button type="button" class="remove-species-btn px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>`;
+                        
+                        const container = speciesContainer.querySelector('.space-y-2');
+                        container.insertAdjacentHTML('beforeend', newRow);
+
+                        const newRemoveBtn = container.lastElementChild.querySelector('.remove-species-btn');
+                        newRemoveBtn.addEventListener('click', function() {
+                            if (container.children.length > 1) {
+                                this.closest('.flex').remove();
+                                calculateTotalTrees();
+                            } else {
+                                Swal.fire({
+                                    title: 'Warning',
+                                    text: 'At least one species must remain',
+                                    icon: 'warning',
+                                    confirmButtonText: 'OK'
+                                });
+                            }
+                        });
+                    });
+                }
+            }
+
+            window.calculateTotalTrees = function() {
+                const quantities = document.querySelectorAll('input[name="species_quantity[]"]');
+                let total = 0;
+                quantities.forEach(input => {
+                    const value = parseInt(input.value) || 0;
+                    total += value;
+                });
+                numberOfTreesInput.value = total;
+            }
+
+            if (permitTypeSelect) {
+                permitTypeSelect.addEventListener('change', function() {
+                    if (this.value === 'PLTP') {
+                        setupPLTPFields();
+                    } else {
+                        setupNormalFields();
+                    }
+                });
+
+                if (permitTypeSelect.value === 'PLTP') {
+                    setupPLTPFields();
+                } else {
+                    setupNormalFields();
+                }
             }
 
             function calculateNetVolume() {
-                const grossValue = parseFloat(grossVolumeInput.value) || 0;
-                const netValue = (grossValue * 0.70).toFixed(2);
-                netVolumeDisplay.value = netValue;
+                const grossVolume = parseFloat(grossVolumeInput.value) || 0;
+                const netVolume = (grossVolume * 0.70).toFixed(2);
+                netVolumeInput.value = netVolume;
             }
 
-            // Get number of working days based on permit type
-            function getWorkingDays(permitType) {
-                const permitDays = {
-                    'TCP': 50,
-                    'STCP': 50,
-                    'PLTP': 50,
-                    'SPLTP': 50
-                };
-                return permitDays[permitType] || 0;
+            window.calculateNetVolume = calculateNetVolume;
+
+            if (grossVolumeInput) {
+                grossVolumeInput.addEventListener('input', calculateNetVolume);
             }
 
-            // Function to add working days to a date
-            function addWorkingDays(startDate, days) {
-                let currentDate = new Date(startDate);
-                let remainingDays = days;
+            function getBusinessDays(startDate, endDate) {
+                let count = 0;
+                const curDate = new Date(startDate);
+                const end = new Date(endDate);
                 
-                while (remainingDays > 0) {
-                    currentDate.setDate(currentDate.getDate() + 1);
-                    
-                    // Skip weekends (0 = Sunday, 6 = Saturday)
-                    if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
-                        remainingDays--;
-                    }
+                while (curDate <= end) {
+                    const dayOfWeek = curDate.getDay();
+                    if (dayOfWeek !== 0 && dayOfWeek !== 6) count++;
+                    curDate.setDate(curDate.getDate() + 1);
                 }
-                
-                return currentDate;
+                return count;
             }
 
-            // Calculate expiry date based on permit type (excluding weekends)
-            function calculateExpiryDate() {
-                const dateIssued = new Date(dateIssuedInput.value);
-                const permitType = permitTypeSelect.value;
-                
-                if (!isNaN(dateIssued.getTime()) && permitType) {
-                    const workingDays = getWorkingDays(permitType);
-                    const expiryDate = addWorkingDays(dateIssued, workingDays);
-                    
-                    // Format date as YYYY-MM-DD
-                    const formattedDate = expiryDate.toISOString().split('T')[0];
-                    expiryDateInput.value = formattedDate;
-                }
-            }
-
-            // Set default date and calculate expiry date
-            if (dateIssuedInput) {
-                // Set today as default if no date is set
-                if (!dateIssuedInput.value) {
-                    const today = new Date().toISOString().split('T')[0];
-                    dateIssuedInput.value = today;
-                }
-                
-                // Calculate initial expiry date
-                calculateExpiryDate();
-
-                // Update expiry date when date issued changes
-                dateIssuedInput.addEventListener('change', calculateExpiryDate);
-                
-                // Update expiry date when permit type changes
-                if (permitTypeSelect) {
-                    permitTypeSelect.addEventListener('change', calculateExpiryDate);
-                }
-            }
-
-            // Initial calculation if gross volume has a value
-            calculateNetVolume();
-
-            // Add new validation for permit number
-            const permitNumberInput = document.getElementById('{{ form.permit_number.id_for_label }}');
-            
-            async function checkPermitExists() {
-                const permitNumber = permitNumberInput.value;
-                const permitType = permitTypeSelect.value;
-                
-                if (!permitNumber || !permitType) return;
-
-                try {
-                    const response = await fetch(`/check-permit-exists/?permit_number=${permitNumber}&permit_type=${permitType}`);
-                    const data = await response.json();
-                    
-                    // Remove any existing error message
-                    const existingError = permitNumberInput.parentElement.querySelector('.permit-error');
-                    if (existingError) {
-                        existingError.remove();
-                    }
-                    
-                    if (data.exists) {
-                        // Add error message
-                        const errorDiv = document.createElement('div');
-                        errorDiv.className = 'permit-error text-red-600 text-sm mt-1';
-                        errorDiv.textContent = `This ${permitType} permit number already exists`;
-                        permitNumberInput.parentElement.appendChild(errorDiv);
+            if (dateIssued && expiryDate) {
+                dateIssued.addEventListener('change', function() {
+                    if (expiryDate.value) {
+                        const issued = new Date(this.value);
+                        const expiry = new Date(expiryDate.value);
                         
-                        // Disable submit button
-                        document.querySelector('button[type="submit"]').disabled = true;
-                    } else {
-                        // Enable submit button
-                        document.querySelector('button[type="submit"]').disabled = false;
+                        if (expiry < issued) {
+                            Swal.fire({
+                                title: 'Invalid Date',
+                                text: 'Expiry date cannot be earlier than issue date',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                expiryDate.value = '';
+                            });
+                        }
                     }
-                } catch (error) {
-                    console.error('Error checking permit:', error);
+                });
+
+                expiryDate.addEventListener('change', function() {
+                    if (this.value && dateIssued.value) {
+                        const issued = new Date(dateIssued.value);
+                        const expiry = new Date(this.value);
+                        
+                        if (expiry < issued) {
+                            Swal.fire({
+                                title: 'Invalid Date',
+                                text: 'Expiry date cannot be earlier than date issued',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                this.value = '';
+                            });
+                            return;
+                        }
+
+                        const businessDays = getBusinessDays(issued, expiry);
+                        if (businessDays > 50) {
+                            Swal.fire({
+                                title: 'Invalid Duration',
+                                text: 'The expiry date exceeds 50 business days (excluding weekends)',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                this.value = '';
+                            });
+                        }
+                    }
+                });
+            }
+
+            form.addEventListener('submit', function(e) {
+                const permitType = document.querySelector('[name="permit_type"]').value;
+                let hasError = false;
+                let errorMessages = [];
+
+                const requiredFields = {
+                    'permit_type': 'Permit Type',
+                    'permit_number': 'Permit Number',
+                    'permittee': 'Permittee',
+                    'location': 'Location',
+                    'latitude': 'Latitude',
+                    'longitude': 'Longitude',
+                    'tct_oct_no': 'TCT/OCT No.',
+                    'tax_dec_no': 'Tax Declaration No.',
+                    'lot_no': 'Lot No.',
+                    'area': 'Area',
+                    'no_of_trees': 'Number of Trees',
+                    'total_volume_granted': 'Total Volume Granted',
+                    'gross_volume': 'Gross Volume',
+                    'date_issued': 'Date Issued',
+                    'expiry_date': 'Expiry Date',
+                    'rep_by': 'Representative'
+                };
+
+                if (permitType === 'PLTP') {
+                    const speciesSelects = document.querySelectorAll('select[name="species[]"]');
+                    const speciesQuantities = document.querySelectorAll('input[name="species_quantity[]"]');
+                    
+                    if (speciesSelects.length === 0) {
+                        hasError = true;
+                        errorMessages.push('At least one species must be added for PLTP');
+                    }
+
+                    speciesSelects.forEach((select, index) => {
+                        if (!select.value) {
+                            hasError = true;
+                            errorMessages.push(`Species ${index + 1} must be selected`);
+                            select.classList.add('border-red-500');
+                        }
+
+                        const quantity = speciesQuantities[index];
+                        if (!quantity.value || parseInt(quantity.value) < 1) {
+                            hasError = true;
+                            errorMessages.push(`Quantity for species ${index + 1} must be at least 1`);
+                            quantity.classList.add('border-red-500');
+                        }
+                    });
+
+                    const selectedSpecies = Array.from(speciesSelects).map(select => select.value);
+                    const uniqueSpecies = new Set(selectedSpecies);
+                    if (selectedSpecies.length !== uniqueSpecies.size) {
+                        hasError = true;
+                        errorMessages.push('Duplicate species are not allowed');
+                    }
+                } else {
+                    const singleSpecies = document.querySelector('select[name="species"]');
+                    if (singleSpecies && !singleSpecies.value) {
+                        hasError = true;
+                        errorMessages.push('Species is required');
+                        singleSpecies.classList.add('border-red-500');
+                    }
+                }
+
+                const numericFields = {
+                    'latitude': [-90, 90],
+                    'longitude': [-180, 180],
+                    'area': [0, Infinity],
+                    'no_of_trees': [1, Infinity],
+                    'total_volume_granted': [0, Infinity],
+                    'gross_volume': [0, Infinity]
+                };
+
+                Object.entries(numericFields).forEach(([fieldName, [min, max]]) => {
+                    const field = document.querySelector(`[name="${fieldName}"]`);
+                    if (field && field.value.trim()) {
+                        const value = parseFloat(field.value);
+                        if (isNaN(value) || value < min || value > max) {
+                            hasError = true;
+                            errorMessages.push(`${requiredFields[fieldName]} must be a valid number ${min === -Infinity ? '' : `greater than ${min}`}${max === Infinity ? '' : ` and less than ${max}`}`);
+                            field.classList.add('border-red-500');
+                        }
+                    }
+                });
+
+                if (hasError) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Validation Error',
+                        html: errorMessages.join('<br>'),
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+
+            if (grossVolumeInput) {
+                grossVolumeInput.addEventListener('input', function() {
+                    const grossVolume = parseFloat(this.value) || 0;
+                    const netVolume = (grossVolume * 0.70).toFixed(2);
+                    netVolumeInput.value = netVolume;
+                });
+            }
+
+            if (dateIssued) {
+                dateIssued.addEventListener('change', function() {
+                    const startDate = new Date(this.value);
+                    let businessDays = 50;
+                    let currentDate = new Date(startDate);
+                    
+                    while (businessDays > 0) {
+                        currentDate.setDate(currentDate.getDate() + 1);
+                        if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+                            businessDays--;
+                        }
+                    }
+                    
+                    const expiryDateStr = currentDate.toISOString().split('T')[0];
+                    expiryDate.value = expiryDateStr;
+                });
+
+                if (dateIssued.value) {
+                    dateIssued.dispatchEvent(new Event('change'));
                 }
             }
-
-            // Add event listeners for validation
-            if (permitNumberInput && permitTypeSelect) {
-                permitNumberInput.addEventListener('blur', checkPermitExists);
-                permitTypeSelect.addEventListener('change', checkPermitExists);
-            }
-
-            // User Menu Toggle
-            const userMenuButton = document.getElementById('user-menu-button');
-            const userMenu = document.getElementById('user-menu');
-
-            userMenuButton.addEventListener('click', function() {
-                userMenu.classList.toggle('hidden'); // Toggle visibility
-            });
         });
     </script>
 </body>

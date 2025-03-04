@@ -8385,3 +8385,23 @@ Traceback (most recent call last):
     )
 ValueError: The view base.views.edit_wood didn't return an HttpResponse object. It returned None instead.
 ERROR 2025-03-04 08:11:04,231 basehttp "GET /edit-wood/2/ HTTP/1.1" 500 67019
+ERROR 2025-03-04 10:51:13,592 log Internal Server Error: /cutting/10/edit/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+TypeError: edit_cutting() got an unexpected keyword argument 'cutting_id'
+ERROR 2025-03-04 10:51:13,600 basehttp "GET /cutting/10/edit/ HTTP/1.1" 500 67657
+ERROR 2025-03-04 11:34:52,987 log Internal Server Error: /cutting/14/edit/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+TypeError: edit_cutting() got an unexpected keyword argument 'cutting_id'
+ERROR 2025-03-04 11:34:52,990 basehttp "GET /cutting/14/edit/ HTTP/1.1" 500 67657
