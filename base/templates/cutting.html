@@ -10,6 +10,7 @@
     <title>CENRO Argao - Cutting Records</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
             background-color: #f0fdf4; /* Light green background */
@@ -561,17 +562,16 @@
 
                     <!-- Date Issued Field -->
                     <div class="form-group mb-4">
-                        <label for="{{ form.date_issued.id_for_label }}" class="block text-sm font-medium text-gray-700">Date Issued</label>
+                        <label for="date_issued" class="block text-sm font-medium text-gray-700">Date Issued</label>
                         <input type="date" 
                                name="date_issued"
-                               id="{{ form.date_issued.id_for_label }}"
+                               id="date_issued"
                                class="form-input datepicker"
                                required
+                               oninput="updateExpiryDate(this.value)"
+                               onchange="updateExpiryDate(this.value)"
                                value="{% if form.date_issued.value %}{{ form.date_issued.value|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}"
                         >
-                        {% if form.date_issued.errors %}
-                            <div class="text-red-600 text-sm mt-1">{{ form.date_issued.errors.0 }}</div>
-                        {% endif %}
                     </div>
 
                     <!-- Expiry Date Field -->
@@ -581,6 +581,8 @@
                                id="expiry_date"
                                name="expiry_date"
                                class="form-input"
+                               readonly
+                               style="background-color: #f3f4f6;"
                         >
                     </div>
 
@@ -649,6 +651,78 @@
             const dateIssued = document.getElementById('date_issued');
             const expiryDate = document.getElementById('expiry_date');
 
+            // Update the form submission handler
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault(); // Prevent default submission
+                    
+                    const permitType = permitTypeSelect.value;
+                    let isValid = true;
+                    let speciesData = '';
+
+                    if (permitType === 'PLTP') {
+                        // Handle PLTP species validation
+                        const species = document.querySelectorAll('select[name="species[]"]');
+                        const quantities = document.querySelectorAll('input[name="species_quantity[]"]');
+                        let speciesArray = [];
+
+                        species.forEach((select, index) => {
+                            if (select.value && quantities[index].value) {
+                                speciesArray.push(`${select.value} (${quantities[index].value})`);
+                            } else {
+                                isValid = false;
+                            }
+                        });
+
+                        if (speciesArray.length === 0) {
+                            isValid = false;
+                        } else {
+                            // Combine species data for submission
+                            speciesData = speciesArray.join(', ');
+                        }
+
+                        // Create hidden input for combined species data
+                        if (isValid) {
+                            const hiddenSpecies = document.createElement('input');
+                            hiddenSpecies.type = 'hidden';
+                            hiddenSpecies.name = 'species';
+                            hiddenSpecies.value = speciesData;
+                            form.appendChild(hiddenSpecies);
+                        }
+                    } else {
+                        // Handle single species validation
+                        const singleSpecies = document.querySelector('select[name="species"]');
+                        if (!singleSpecies || !singleSpecies.value) {
+                            isValid = false;
+                        }
+                    }
+
+                    if (!isValid) {
+                        alert('Please fill in all required species information');
+                        return false;
+                    }
+
+                    // If validation passes, submit the form
+                    form.submit();
+                });
+            }
+
+            // Add permit type change handler
+            if (permitTypeSelect) {
+                permitTypeSelect.addEventListener('change', function() {
+                    if (this.value === 'PLTP') {
+                        setupPLTPFields();
+                    } else {
+                        setupNormalFields();
+                    }
+                });
+
+                // Initialize on page load
+                if (permitTypeSelect.value === 'PLTP') {
+                    setupPLTPFields();
+                }
+            }
+
             function setupPLTPFields() {
                 speciesContainer.innerHTML = `
                     <div class="space-y-2">
@@ -679,10 +753,12 @@
                         </div>
                     </div>`;
 
-                numberOfTreesInput.readOnly = true;
-                numberOfTreesInput.style.backgroundColor = '#f3f4f6';
-                numberOfTreesInput.value = '0';
-                
+                // Make number of trees read-only
+                if (numberOfTreesInput) {
+                    numberOfTreesInput.readOnly = true;
+                    numberOfTreesInput.style.backgroundColor = '#f3f4f6';
+                }
+
                 initializeSpeciesHandlers();
             }
 
@@ -698,9 +774,11 @@
                         <option value="Narra">Narra</option>
                     </select>`;
 
-                numberOfTreesInput.readOnly = false;
-                numberOfTreesInput.style.backgroundColor = '';
-                numberOfTreesInput.value = '';
+                if (numberOfTreesInput) {
+                    numberOfTreesInput.readOnly = false;
+                    numberOfTreesInput.style.backgroundColor = '';
+                    numberOfTreesInput.value = '';
+                }
             }
 
             function initializeSpeciesHandlers() {
@@ -727,57 +805,37 @@
                                            required
                                            oninput="calculateTotalTrees()">
                                 </div>
-                                <button type="button" class="remove-species-btn px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600">
+                                <button type="button" class="remove-species-btn px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600" onclick="removeSpeciesRow(this)">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                     </svg>
                                 </button>
                             </div>`;
                         
-                        const container = speciesContainer.querySelector('.space-y-2');
-                        container.insertAdjacentHTML('beforeend', newRow);
-
-                        const newRemoveBtn = container.lastElementChild.querySelector('.remove-species-btn');
-                        newRemoveBtn.addEventListener('click', function() {
-                            if (container.children.length > 1) {
-                                this.closest('.flex').remove();
-                                calculateTotalTrees();
-                            } else {
-                                Swal.fire({
-                                    title: 'Warning',
-                                    text: 'At least one species must remain',
-                                    icon: 'warning',
-                                    confirmButtonText: 'OK'
-                                });
-                            }
-                        });
+                        speciesContainer.querySelector('.space-y-2').insertAdjacentHTML('beforeend', newRow);
                     });
                 }
             }
 
+            // Global functions for accessibility
             window.calculateTotalTrees = function() {
                 const quantities = document.querySelectorAll('input[name="species_quantity[]"]');
                 let total = 0;
                 quantities.forEach(input => {
-                    const value = parseInt(input.value) || 0;
-                    total += value;
+                    total += parseInt(input.value) || 0;
                 });
-                numberOfTreesInput.value = total;
+                if (numberOfTreesInput) {
+                    numberOfTreesInput.value = total;
+                }
             }
 
-            if (permitTypeSelect) {
-                permitTypeSelect.addEventListener('change', function() {
-                    if (this.value === 'PLTP') {
-                        setupPLTPFields();
-                    } else {
-                        setupNormalFields();
-                    }
-                });
-
-                if (permitTypeSelect.value === 'PLTP') {
-                    setupPLTPFields();
+            window.removeSpeciesRow = function(button) {
+                const container = speciesContainer.querySelector('.space-y-2');
+                if (container.children.length > 1) {
+                    button.closest('.flex').remove();
+                    calculateTotalTrees();
                 } else {
-                    setupNormalFields();
+                    alert('At least one species must remain');
                 }
             }
 
@@ -813,14 +871,8 @@
                         const expiry = new Date(expiryDate.value);
                         
                         if (expiry < issued) {
-                            Swal.fire({
-                                title: 'Invalid Date',
-                                text: 'Expiry date cannot be earlier than issue date',
-                                icon: 'error',
-                                confirmButtonText: 'OK'
-                            }).then(() => {
-                                expiryDate.value = '';
-                            });
+                            alert('Expiry date cannot be earlier than issue date');
+                            expiryDate.value = '';
                         }
                     }
                 });
@@ -831,27 +883,15 @@
                         const expiry = new Date(this.value);
                         
                         if (expiry < issued) {
-                            Swal.fire({
-                                title: 'Invalid Date',
-                                text: 'Expiry date cannot be earlier than date issued',
-                                icon: 'error',
-                                confirmButtonText: 'OK'
-                            }).then(() => {
-                                this.value = '';
-                            });
+                            alert('Expiry date cannot be earlier than date issued');
+                            this.value = '';
                             return;
                         }
 
                         const businessDays = getBusinessDays(issued, expiry);
                         if (businessDays > 50) {
-                            Swal.fire({
-                                title: 'Invalid Duration',
-                                text: 'The expiry date exceeds 50 business days (excluding weekends)',
-                                icon: 'error',
-                                confirmButtonText: 'OK'
-                            }).then(() => {
-                                this.value = '';
-                            });
+                            alert('The expiry date exceeds 50 business days (excluding weekends)');
+                            this.value = '';
                         }
                     }
                 });
@@ -943,12 +983,7 @@
 
                 if (hasError) {
                     e.preventDefault();
-                    Swal.fire({
-                        title: 'Validation Error',
-                        html: errorMessages.join('<br>'),
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                    });
+                    alert(errorMessages.join('\n'));
                 }
             });
 
@@ -960,27 +995,58 @@
                 });
             }
 
-            if (dateIssued) {
-                dateIssued.addEventListener('change', function() {
-                    const startDate = new Date(this.value);
+            function updateExpiryDate(startDateStr) {
+                if (!startDateStr) return;
+                
+                try {
+                    const startDate = new Date(startDateStr);
                     let businessDays = 50;
                     let currentDate = new Date(startDate);
                     
                     while (businessDays > 0) {
                         currentDate.setDate(currentDate.getDate() + 1);
-                        if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+                        const dayOfWeek = currentDate.getDay();
+                        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
                             businessDays--;
                         }
                     }
                     
-                    const expiryDateStr = currentDate.toISOString().split('T')[0];
-                    expiryDate.value = expiryDateStr;
-                });
-
-                if (dateIssued.value) {
-                    dateIssued.dispatchEvent(new Event('change'));
+                    const year = currentDate.getFullYear();
+                    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(currentDate.getDate()).padStart(2, '0');
+                    const expiryDateStr = `${year}-${month}-${day}`;
+                    
+                    document.getElementById('expiry_date').value = expiryDateStr;
+                } catch (error) {
+                    console.error('Error updating expiry date:', error);
                 }
             }
+
+            // Initialize on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                const dateIssued = document.getElementById('date_issued');
+                if (dateIssued && dateIssued.value) {
+                    updateExpiryDate(dateIssued.value);
+                }
+                
+                // Add event listeners for real-time updates
+                dateIssued.addEventListener('change', function() {
+                    updateExpiryDate(this.value);
+                });
+                
+                dateIssued.addEventListener('input', function() {
+                    updateExpiryDate(this.value);
+                });
+                
+                // Also update when the value is set programmatically
+                const originalSetAttribute = dateIssued.setAttribute;
+                dateIssued.setAttribute = function(name, value) {
+                    originalSetAttribute.call(this, name, value);
+                    if (name === 'value') {
+                        updateExpiryDate(value);
+                    }
+                };
+            });
         });
     </script>
 </body>

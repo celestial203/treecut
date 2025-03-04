@@ -15,6 +15,7 @@ from django.http import JsonResponse
 from django.urls import reverse
 from decimal import Decimal
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django import template
 
 # Login view
 def login_view(request):
@@ -1136,3 +1137,25 @@ def renew_chainsaw(request, pk):
     }
     
     return render(request, 'chainsaw.html', context)
+
+register = template.Library()
+
+@register.filter
+def split_species_data(species_string):
+    if not species_string:
+        return [{'name': '', 'quantity': ''}]
+    
+    species_list = []
+    items = species_string.split(',')
+    
+    for item in items:
+        item = item.strip()
+        if '(' in item and ')' in item:
+            name = item[:item.rfind('(')].strip()
+            quantity = item[item.rfind('(')+1:item.rfind(')')].strip()
+            species_list.append({
+                'name': name,
+                'quantity': quantity
+            })
+    
+    return species_list if species_list else [{'name': '', 'quantity': ''}]

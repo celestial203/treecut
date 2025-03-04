@@ -31,3 +31,23 @@ def sum_volume(records):
     Returns the sum of volumes from volume records
     """
     return sum(record.volume for record in records)
+
+@register.filter
+def split_species_data(species_string):
+    if not species_string:
+        return [{'name': '', 'quantity': ''}]
+    
+    species_list = []
+    items = species_string.split(',')
+    
+    for item in items:
+        item = item.strip()
+        if '(' in item and ')' in item:
+            name = item[:item.rfind('(')].strip()
+            quantity = item[item.rfind('(')+1:item.rfind(')')].strip()
+            species_list.append({
+                'name': name,
+                'quantity': quantity
+            })
+    
+    return species_list if species_list else [{'name': '', 'quantity': ''}]
