@@ -136,14 +136,9 @@
                                        name="date_issued"
                                        id="date_issued"
                                        class="form-input datepicker"
-                                       required
-                                       oninput="updateExpiryDate(this.value)"
-                                       onchange="updateExpiryDate(this.value)"
-                                       value="{{ form.date_issued.value|date:'Y-m-d' }}"
+                                       value="{{ cutting.date_issued|date:'Y-m-d' }}"
+                                       readonly
                                 >
-                                {% if form.date_issued.errors %}
-                                    <div class="text-red-600 text-sm mt-1">{{ form.date_issued.errors.0 }}</div>
-                                {% endif %}
                             </div>
                             <div class="form-group mb-4">
                                 <label for="expiry_date" class="block text-sm font-medium text-gray-700">Expiry Date</label>
@@ -151,8 +146,8 @@
                                        id="expiry_date"
                                        name="expiry_date"
                                        class="form-input"
+                                       value="{{ cutting.expiry_date|date:'Y-m-d' }}"
                                        readonly
-                                       style="background-color: #f3f4f6;"
                                 >
                             </div>
                             <div>
@@ -233,50 +228,46 @@
                             <div>
                                 <label class="text-sm text-gray-600 required">Species</label>
                                 <div id="species-container">
-                                    {% if cutting.permit_type == 'PLTP' %}
-                                        <div class="space-y-2">
-                                            {% with species_list=cutting.species|split_species_data %}
-                                                {% for species in species_list %}
-                                                    <div class="flex items-center gap-2 mt-2">
-                                                        <div class="w-full">
-                                                            <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
-                                                                <option value="">Select Species</option>
-                                                                <option value="Molave" {% if species.name == 'Molave' %}selected{% endif %}>Molave</option>
-                                                                <option value="Germelina" {% if species.name == 'Germelina' %}selected{% endif %}>Germelina</option>
-                                                                <option value="Mahogany" {% if species.name == 'Mahogany' %}selected{% endif %}>Mahogany</option>
-                                                                <option value="Narra" {% if species.name == 'Narra' %}selected{% endif %}>Narra</option>
-                                                            </select>
-                                                        </div>
-                                                        <div class="w-32">
-                                                            <input type="number" 
-                                                                   name="species_quantity[]" 
-                                                                   value="{{ species.quantity }}"
-                                                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                                                                   placeholder="Quantity"
-                                                                   min="1"
-                                                                   required
-                                                                   oninput="calculateTotalTrees()">
-                                                        </div>
-                                                        {% if forloop.first %}
-                                                            <button type="button" class="add-species-btn px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">
-                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                                                </svg>
-                                                            </button>
-                                                        {% else %}
-                                                            <button type="button" class="remove-species-btn px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600" onclick="removeSpeciesRow(this)">
-                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                                </svg>
-                                                            </button>
-                                                        {% endif %}
+                                    <div class="space-y-2">
+                                        {% with species_list=cutting.species|split_species_data %}
+                                            {% for species in species_list %}
+                                                <div class="flex items-center gap-2 mt-2">
+                                                    <div class="w-full">
+                                                        <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                                            <option value="">Select Species</option>
+                                                            <option value="Molave" {% if species.name == 'Molave' %}selected{% endif %}>Molave</option>
+                                                            <option value="Germelina" {% if species.name == 'Germelina' %}selected{% endif %}>Germelina</option>
+                                                            <option value="Mahogany" {% if species.name == 'Mahogany' %}selected{% endif %}>Mahogany</option>
+                                                            <option value="Narra" {% if species.name == 'Narra' %}selected{% endif %}>Narra</option>
+                                                        </select>
                                                     </div>
-                                                {% endfor %}
-                                            {% endwith %}
-                                        </div>
-                                    {% else %}
-                                        {{ form.species|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
-                                    {% endif %}
+                                                    <div class="w-32">
+                                                        <input type="number" 
+                                                               name="species_quantity[]" 
+                                                               value="{{ species.quantity }}"
+                                                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                                               placeholder="Quantity"
+                                                               min="1"
+                                                               required
+                                                               oninput="calculateTotalTrees()">
+                                                    </div>
+                                                    {% if forloop.first %}
+                                                        <button type="button" class="add-species-btn px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                            </svg>
+                                                        </button>
+                                                    {% else %}
+                                                        <button type="button" class="remove-species-btn px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600" onclick="removeSpeciesRow(this)">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                            </svg>
+                                                        </button>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        {% endwith %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -289,28 +280,31 @@
                             <div>
                                 <label class="text-sm text-gray-600">Total Volume Granted</label>
                                 <input type="number" 
-                                       name="{{ form.total_volume_granted.name }}"
+                                       name="total_volume_granted"
+                                       id="total_volume_granted"
                                        value="{{ cutting.total_volume_granted }}"
+                                       step="0.01"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="text-sm text-gray-600">Gross Volume</label>
                                 <input type="number" 
+                                       name="gross_volume"
                                        id="gross_volume"
-                                       name="{{ form.gross_volume.name }}"
                                        value="{{ cutting.gross_volume }}"
                                        step="0.01"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                       readonly
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50">
                             </div>
                             <div>
                                 <label class="text-sm text-gray-600">Net Volume</label>
                                 <input type="number" 
+                                       name="net_volume"
                                        id="net_volume"
-                                       name="{{ form.net_volume.name }}"
                                        value="{{ cutting.net_volume }}"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                       step="0.01"
                                        readonly
-                                       style="background-color: #f3f4f6;">
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50">
                             </div>
                         </div>
                     </div>
@@ -340,7 +334,12 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="text-sm text-gray-600">Number of Trees</label>
-                                <input type="number" name="no_of_trees" id="no_of_trees" readonly>
+                                <input type="number" 
+                                       name="no_of_trees" 
+                                       id="no_of_trees" 
+                                       value="{{ cutting.no_of_trees }}"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50"
+                                       readonly>
                             </div>
                         </div>
                     </div>
@@ -380,9 +379,8 @@
             const form = document.querySelector('form');
             const speciesContainer = document.getElementById('species-container');
             const numberOfTreesInput = document.querySelector('input[name="no_of_trees"]');
-            const permitType = document.querySelector('select[name="permit_type"]').value;
-
-            // Global functions need to be defined first
+            
+            // Define all global functions first
             window.calculateTotalTrees = function() {
                 const quantities = document.querySelectorAll('input[name="species_quantity[]"]');
                 let total = 0;
@@ -433,85 +431,77 @@
                     </div>`;
                 
                 speciesContainer.querySelector('.space-y-2').insertAdjacentHTML('beforeend', newRow);
+                calculateTotalTrees();
             };
 
-            function setupPLTPFields() {
-                let speciesHtml = `
-                    <div class="space-y-2">
-                        <div class="flex items-center gap-2">
-                            <div class="w-full">
-                                <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
-                                    <option value="">Select Species</option>
-                                    <option value="Molave">Molave</option>
-                                    <option value="Germelina">Germelina</option>
-                                    <option value="Mahogany">Mahogany</option>
-                                    <option value="Narra">Narra</option>
-                                </select>
-                            </div>
-                            <div class="w-32">
-                                <input type="number" 
-                                       name="species_quantity[]" 
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                                       placeholder="Quantity"
-                                       min="1"
-                                       required
-                                       oninput="calculateTotalTrees()">
-                            </div>
-                            <button type="button" onclick="addSpeciesRow()" class="add-species-btn px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>`;
+            // Volume calculation function
+            function calculateVolumes() {
+                const totalVolumeInput = document.querySelector('input[name="total_volume_granted"]');
+                const grossVolumeInput = document.querySelector('input[name="gross_volume"]');
+                const netVolumeInput = document.querySelector('input[name="net_volume"]');
                 
-                speciesContainer.innerHTML = speciesHtml;
-
-                // Make number of trees read-only
-                if (numberOfTreesInput) {
-                    numberOfTreesInput.readOnly = true;
-                    numberOfTreesInput.style.backgroundColor = '#f3f4f6';
-                    numberOfTreesInput.value = '0';
+                if (totalVolumeInput && grossVolumeInput && netVolumeInput) {
+                    const totalVolume = parseFloat(totalVolumeInput.value) || 0;
+                    
+                    // Calculate gross volume (Total Volume + 30% of Total Volume)
+                    const grossVolume = totalVolume + (totalVolume * 0.30);
+                    
+                    // Calculate net volume (70% of Total Volume)
+                    const netVolume = totalVolume * 0.70;
+                    
+                    // Update values with 2 decimal places
+                    grossVolumeInput.value = grossVolume.toFixed(2);
+                    netVolumeInput.value = netVolume.toFixed(2);
                 }
             }
 
-            // Initialize PLTP fields if needed
-            if (permitType === 'PLTP') {
-                setupPLTPFields();
+            // Setup volume calculation listeners
+            const totalVolumeInput = document.querySelector('input[name="total_volume_granted"]');
+            if (totalVolumeInput) {
+                totalVolumeInput.addEventListener('input', calculateVolumes);
+                totalVolumeInput.addEventListener('change', calculateVolumes);
+                calculateVolumes(); // Initial calculation
+            }
+
+            // Setup species fields
+            if (speciesContainer) {
+                const addButton = speciesContainer.querySelector('.add-species-btn');
+                if (addButton) {
+                    addButton.onclick = addSpeciesRow;
+                }
+                calculateTotalTrees(); // Initial calculation
             }
 
             // Form submission handler
             if (form) {
                 form.addEventListener('submit', function(e) {
-                    if (permitType === 'PLTP') {
-                        e.preventDefault();
-                        
-                        const species = document.querySelectorAll('select[name="species[]"]');
-                        const quantities = document.querySelectorAll('input[name="species_quantity[]"]');
-                        let speciesData = [];
-                        let isValid = true;
+                    e.preventDefault();
+                    
+                    const species = document.querySelectorAll('select[name="species[]"]');
+                    const quantities = document.querySelectorAll('input[name="species_quantity[]"]');
+                    let speciesData = [];
+                    let isValid = true;
 
-                        species.forEach((select, index) => {
-                            if (select.value && quantities[index].value) {
-                                speciesData.push(`${select.value} (${quantities[index].value})`);
-                            } else {
-                                isValid = false;
-                            }
-                        });
-
-                        if (!isValid) {
-                            alert('Please fill in all species and quantities');
-                            return false;
+                    species.forEach((select, index) => {
+                        if (select.value && quantities[index].value) {
+                            speciesData.push(`${select.value} (${quantities[index].value})`);
+                        } else {
+                            isValid = false;
                         }
+                    });
 
-                        const hiddenInput = document.createElement('input');
-                        hiddenInput.type = 'hidden';
-                        hiddenInput.name = 'species';
-                        hiddenInput.value = speciesData.join(', ');
-                        form.appendChild(hiddenInput);
-
-                        form.submit();
+                    if (!isValid) {
+                        alert('Please fill in all species and quantities');
+                        return false;
                     }
+
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'species';
+                    hiddenInput.value = speciesData.join(', ');
+                    form.appendChild(hiddenInput);
+
+                    form.submit();
                 });
             }
 
@@ -585,143 +575,40 @@
                 });
             }
 
-            // Volume calculation
-            const grossVolumeInput = document.getElementById('gross_volume');
-            const netVolumeInput = document.getElementById('net_volume');
-            const editForm = document.getElementById('editForm');
+            // Add date handling for edit form
+            const dateIssuedInput = document.getElementById('date_issued');
+            const expiryDateInput = document.getElementById('expiry_date');
 
-            function calculateNetVolume() {
-                const grossValue = parseFloat(grossVolumeInput.value) || 0;
-                const netVolume = (grossValue * 0.70).toFixed(2);
-                netVolumeInput.value = netVolume;
-            }
+            if (dateIssuedInput && expiryDateInput) {
+                // Get the existing dates from the record
+                const existingDateIssued = dateIssuedInput.value;
+                const existingExpiryDate = "{{ cutting.expiry_date|date:'Y-m-d' }}";
 
-            if (grossVolumeInput && netVolumeInput) {
-                calculateNetVolume();
-                grossVolumeInput.addEventListener('input', calculateNetVolume);
-            }
-
-            // Form validation and submission with SweetAlert
-            if (editForm) {
-                editForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    let hasError = false;
-                    let errorMessages = [];
-
-                    // Validate required fields
-                    const requiredFields = {
-                        'permit_type': 'Permit Type',
-                        'permit_number': 'Permit Number',
-                        'permittee': 'Permittee',
-                        'date_issued': 'Date Issued',
-                        'gross_volume': 'Gross Volume'
-                    };
-
-                    Object.entries(requiredFields).forEach(([field, label]) => {
-                        const input = document.querySelector(`[name="${field}"]`);
-                        if (!input.value.trim()) {
-                            hasError = true;
-                            errorMessages.push(`${label} is required`);
-                        }
-                    });
-
-                    // Validate species based on permit type
-                    const permitType = document.querySelector('[name="permit_type"]').value;
-                    if (permitType === 'PLTP') {
-                        const speciesSelects = document.querySelectorAll('select[name="species[]"]');
-                        const quantities = document.querySelectorAll('input[name="species_quantity[]"]');
-                        
-                        if (speciesSelects.length === 0) {
-                            hasError = true;
-                            errorMessages.push('At least one species must be added');
-                        }
-
-                        speciesSelects.forEach((select, index) => {
-                            if (!select.value) {
-                                hasError = true;
-                                errorMessages.push(`Species ${index + 1} must be selected`);
-                            }
-                            
-                            const quantity = quantities[index];
-                            if (!quantity.value || parseInt(quantity.value) < 1) {
-                                hasError = true;
-                                errorMessages.push(`Quantity for species ${index + 1} must be at least 1`);
-                            }
-                        });
-                    } else {
-                        const species = document.querySelector('select[name="species"]');
-                        if (!species.value) {
-                            hasError = true;
-                            errorMessages.push('Species is required');
-                        }
-                    }
-
-                    if (hasError) {
-                        Swal.fire({
-                            title: 'Validation Error',
-                            html: errorMessages.join('<br>'),
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                    } else {
-                        this.submit();
-                    }
-                });
-            }
-
-            function updateExpiryDate(startDateStr) {
-                if (!startDateStr) return;
-                
-                try {
-                    const startDate = new Date(startDateStr);
-                    let businessDays = 50;
-                    let currentDate = new Date(startDate);
-                    
-                    while (businessDays > 0) {
-                        currentDate.setDate(currentDate.getDate() + 1);
-                        const dayOfWeek = currentDate.getDay();
-                        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-                            businessDays--;
-                        }
-                    }
-                    
-                    const year = currentDate.getFullYear();
-                    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-                    const day = String(currentDate.getDate()).padStart(2, '0');
-                    const expiryDateStr = `${year}-${month}-${day}`;
-                    
-                    document.getElementById('expiry_date').value = expiryDateStr;
-                } catch (error) {
-                    console.error('Error updating expiry date:', error);
+                // Set the values from the record
+                if (existingDateIssued) {
+                    dateIssuedInput.value = existingDateIssued;
                 }
-            }
-
-            // Initialize on page load
-            document.addEventListener('DOMContentLoaded', function() {
-                const dateIssued = document.getElementById('date_issued');
-                if (dateIssued && dateIssued.value) {
-                    updateExpiryDate(dateIssued.value);
+                if (existingExpiryDate) {
+                    expiryDateInput.value = existingExpiryDate;
                 }
-                
-                // Add event listeners for real-time updates
-                dateIssued.addEventListener('change', function() {
-                    updateExpiryDate(this.value);
-                });
-                
-                dateIssued.addEventListener('input', function() {
-                    updateExpiryDate(this.value);
-                });
-                
-                // Also update when the value is set programmatically
-                const originalSetAttribute = dateIssued.setAttribute;
-                dateIssued.setAttribute = function(name, value) {
-                    originalSetAttribute.call(this, name, value);
-                    if (name === 'value') {
-                        updateExpiryDate(value);
+
+                // Add validation for date changes
+                dateIssuedInput.addEventListener('change', function() {
+                    if (existingDateIssued && this.value !== existingDateIssued) {
+                        // Reset to original date
+                        this.value = existingDateIssued;
+                        alert('Date Issued cannot be modified in edit mode.');
                     }
-                };
-            });
+                });
+
+                expiryDateInput.addEventListener('change', function() {
+                    if (existingExpiryDate && this.value !== existingExpiryDate) {
+                        // Reset to original date
+                        this.value = existingExpiryDate;
+                        alert('Expiry Date cannot be modified in edit mode.');
+                    }
+                });
+            }
         });
     </script>
 </body>

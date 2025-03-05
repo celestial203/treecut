@@ -153,41 +153,33 @@ def cutting(request):
         if form.is_valid():
             cutting = form.save(commit=False)
             
-            # Handle species based on permit type
-            if cutting.permit_type == 'PLTP':
-                species_list = request.POST.getlist('species[]')
-                quantities = request.POST.getlist('species_quantity[]')
-                
-                # Validate species and quantities
-                if not species_list or not quantities:
-                    messages.error(request, 'At least one species with quantity is required for PLTP')
-                    return render(request, 'cutting.html', {'form': form})
-                
-                # Combine species with their quantities
-                species_with_qty = []
-                total_trees = 0
-                for species, qty in zip(species_list, quantities):
-                    if species and qty:
-                        try:
-                            qty_int = int(qty)
-                            if qty_int <= 0:
-                                messages.error(request, 'Quantity must be greater than 0')
-                                return render(request, 'cutting.html', {'form': form})
-                            total_trees += qty_int
-                            species_with_qty.append(f"{species} ({qty})")
-                        except ValueError:
-                            messages.error(request, 'Invalid quantity value')
+            # Handle species and quantities for all permit types
+            species_list = request.POST.getlist('species[]')
+            quantities = request.POST.getlist('species_quantity[]')
+            
+            # Validate species and quantities
+            if not species_list or not quantities:
+                messages.error(request, 'At least one species with quantity is required')
+                return render(request, 'cutting.html', {'form': form})
+            
+            # Combine species with their quantities
+            species_with_qty = []
+            total_trees = 0
+            for species, qty in zip(species_list, quantities):
+                if species and qty:
+                    try:
+                        qty_int = int(qty)
+                        if qty_int <= 0:
+                            messages.error(request, 'Quantity must be greater than 0')
                             return render(request, 'cutting.html', {'form': form})
-                
-                cutting.species = ', '.join(species_with_qty)
-                cutting.no_of_trees = total_trees
-            else:
-                # For other permit types, handle single species selection
-                species = request.POST.get('species')
-                if not species:
-                    messages.error(request, 'Species is required')
-                    return render(request, 'cutting.html', {'form': form})
-                cutting.species = species
+                        total_trees += qty_int
+                        species_with_qty.append(f"{species} ({qty})")
+                    except ValueError:
+                        messages.error(request, 'Invalid quantity value')
+                        return render(request, 'cutting.html', {'form': form})
+            
+            cutting.species = ', '.join(species_with_qty)
+            cutting.no_of_trees = total_trees
             
             # Handle volume calculations
             gross_volume = request.POST.get('gross_volume')
@@ -420,41 +412,33 @@ def edit_cutting(request, pk):
         if form.is_valid():
             cutting = form.save(commit=False)
             
-            # Handle species based on permit type
-            if cutting.permit_type == 'PLTP':
-                species_list = request.POST.getlist('species[]')
-                quantities = request.POST.getlist('species_quantity[]')
-                
-                # Validate species and quantities
-                if not species_list or not quantities:
-                    messages.error(request, 'At least one species with quantity is required for PLTP')
-                    return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting})
-                
-                # Combine species with their quantities
-                species_with_qty = []
-                total_trees = 0
-                for species, qty in zip(species_list, quantities):
-                    if species and qty:
-                        try:
-                            qty_int = int(qty)
-                            if qty_int <= 0:
-                                messages.error(request, 'Quantity must be greater than 0')
-                                return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting})
-                            total_trees += qty_int
-                            species_with_qty.append(f"{species} ({qty})")
-                        except ValueError:
-                            messages.error(request, 'Invalid quantity value')
+            # Handle species and quantities for all permit types (removed PLTP check)
+            species_list = request.POST.getlist('species[]')
+            quantities = request.POST.getlist('species_quantity[]')
+            
+            # Validate species and quantities
+            if not species_list or not quantities:
+                messages.error(request, 'At least one species with quantity is required')
+                return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting})
+            
+            # Combine species with their quantities
+            species_with_qty = []
+            total_trees = 0
+            for species, qty in zip(species_list, quantities):
+                if species and qty:
+                    try:
+                        qty_int = int(qty)
+                        if qty_int <= 0:
+                            messages.error(request, 'Quantity must be greater than 0')
                             return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting})
-                
-                cutting.species = ', '.join(species_with_qty)
-                cutting.no_of_trees = total_trees
-            else:
-                # For other permit types, handle single species selection
-                species = request.POST.get('species')
-                if not species:
-                    messages.error(request, 'Species is required')
-                    return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting})
-                cutting.species = species
+                        total_trees += qty_int
+                        species_with_qty.append(f"{species} ({qty})")
+                    except ValueError:
+                        messages.error(request, 'Invalid quantity value')
+                        return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting})
+            
+            cutting.species = ', '.join(species_with_qty)
+            cutting.no_of_trees = total_trees
             
             # Handle volume calculations
             gross_volume = request.POST.get('gross_volume')
@@ -1159,3 +1143,23 @@ def split_species_data(species_string):
             })
     
     return species_list if species_list else [{'name': '', 'quantity': ''}]
+
+@login_required
+def calculate_volumes(request):
+    if request.method == 'GET':
+        try:
+            total_volume = float(request.GET.get('total_volume', 0))
+            gross_volume = total_volume  # Gross volume equals total volume
+            net_volume = total_volume * 0.70  # Net volume is 70% of total volume
+            
+            return JsonResponse({
+                'success': True,
+                'gross_volume': '{:.2f}'.format(gross_volume),
+                'net_volume': '{:.2f}'.format(net_volume)
+            })
+        except (ValueError, TypeError) as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=400)
+    return JsonResponse({'success': False}, status=405)

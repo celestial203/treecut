@@ -931,6 +931,38 @@
                 alert('Only numbers are allowed');
             }
         });
+
+        // Add this function to calculate volumes
+        function calculateVolumes() {
+            const totalVolumeInput = document.querySelector('[name="total_volume_granted"]');
+            const grossVolumeInput = document.querySelector('[name="gross_volume"]');
+            const netVolumeInput = document.querySelector('[name="net_volume"]');
+            
+            if (totalVolumeInput && grossVolumeInput && netVolumeInput) {
+                // Get the total volume granted
+                const totalVolume = parseFloat(totalVolumeInput.value) || 0;
+                
+                // Calculate gross volume (Volume + 30%)
+                const additionalVolume = totalVolume * 0.30;
+                const grossVolume = totalVolume + additionalVolume;
+                
+                // Calculate net volume (70% of total volume granted)
+                const netVolume = totalVolume * 0.70;
+                
+                // Set the calculated values
+                grossVolumeInput.value = grossVolume.toFixed(2);
+                netVolumeInput.value = netVolume.toFixed(2);
+            }
+        }
+
+        // Add event listener to total volume granted input
+        const totalVolumeInput = document.querySelector('[name="total_volume_granted"]');
+        if (totalVolumeInput) {
+            totalVolumeInput.addEventListener('input', calculateVolumes);
+        }
+
+        // Initial calculation when page loads
+        document.addEventListener('DOMContentLoaded', calculateVolumes);
     </script>
 </body>
 </html>

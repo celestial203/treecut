@@ -102,6 +102,45 @@
             mobileMenuButton.addEventListener('click', function() {
                 mobileMenu.classList.toggle('hidden');
             });
+
+            const dateIssued = document.getElementById('date_issued');
+            if (dateIssued) {
+                dateIssued.addEventListener('change', function() {
+                    updateExpiryDate(this.value);
+                });
+            }
+
+            function updateExpiryDate(startDateStr) {
+                if (!startDateStr) return;
+                
+                try {
+                    const startDate = new Date(startDateStr);
+                    let businessDays = 50;  // Set to 50 business days
+                    let currentDate = new Date(startDate);
+                    
+                    while (businessDays > 0) {
+                        currentDate.setDate(currentDate.getDate() + 1);
+                        const dayOfWeek = currentDate.getDay();
+                        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip weekends (0 = Sunday, 6 = Saturday)
+                            businessDays--;
+                        }
+                    }
+                    
+                    const year = currentDate.getFullYear();
+                    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(currentDate.getDate()).padStart(2, '0');
+                    const expiryDateStr = `${year}-${month}-${day}`;
+                    
+                    document.getElementById('expiry_date').value = expiryDateStr;
+                } catch (error) {
+                    console.error('Error updating expiry date:', error);
+                }
+            }
+
+            // Initialize expiry date if date_issued has a value
+            if (dateIssued && dateIssued.value) {
+                updateExpiryDate(dateIssued.value);
+            }
         });
     </script>
 
@@ -168,8 +207,8 @@
             <h2 class="text-xl font-semibold text-blue-900 mb-4">Volume Information</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="card bg-white p-4">
-                    <p class="text-sm font-medium text-gray-500">Total Volume Granted</p>
-                    <p class="mt-1 text-2xl font-bold text-blue-600">{{ cutting.total_volume_granted }} cu.m</p>
+                    <p class="text-sm font-medium text-gray-500">Gross Volume</p>
+                    <p class="mt-1 text-2xl font-bold text-blue-600">{{ cutting.gross_volume }} cu.m</p>
                 </div>
                 <div class="card bg-white p-4">
                     <p class="text-sm font-medium text-gray-500">Remaining Balance</p>
@@ -177,7 +216,7 @@
                         {% if volume_records.last.remaining_balance <= 0.0 %}
                             CONSUME
                         {% else %}
-                            {{ volume_records.last.remaining_balance|default:cutting.total_volume_granted }} cu.m
+                            {{ volume_records.last.remaining_balance|default:cutting.gross_volume }} cu.m
                         {% endif %}
                     </p>
                 </div>
@@ -350,10 +389,10 @@
             const volume = parseFloat(document.getElementById('inputVolume').value) || 0;
             const species = document.querySelector('select[name="species"]').value;
             const isSL = species.endsWith('SL');
-            const remainingBalance = {{ volume_records.last.remaining_balance|default:cutting.total_volume_granted }};
+            const remainingBalance = {{ volume_records.last.remaining_balance|default:cutting.gross_volume }};
             
             if (isSL) {
-                // SL Species calculation
+                // SL Species calculation (40% additional)
                 const additionalVolume = volume * 0.40;
                 const totalVolume = volume + additionalVolume;
                 const newBalance = remainingBalance - totalVolume;
@@ -391,26 +430,25 @@
                 `;
                 document.getElementById('calculationDetails').innerHTML = details;
             } else {
-                // Normal species calculation
-                const additionalVolume = volume * 0.30;
-                const totalVolume = volume + additionalVolume;
+                // Normal species calculation (no additional percentage)
+                const newBalance = remainingBalance - volume;
                 
                 // Store calculated volume in hidden field
-                document.getElementById('calculatedVolumeForDB').value = totalVolume;
+                document.getElementById('calculatedVolumeForDB').value = volume;
 
                 const details = `
                     <div class="text-sm space-y-1">
                         <div class="flex justify-between text-gray-600">
-                            <span>Original Volume:</span>
-                            <span>${volume.toFixed(2)} cu.m</span>
+                            <span>Current Balance:</span>
+                            <span>${remainingBalance.toFixed(2)} cu.m</span>
                         </div>
-                        <div class="flex justify-between text-green-600">
-                            <span>Additional 30%:</span>
-                            <span>+${additionalVolume.toFixed(2)} cu.m</span>
+                        <div class="flex justify-between text-red-600">
+                            <span>Volume to Deduct:</span>
+                            <span>-${volume.toFixed(2)} cu.m</span>
                         </div>
-                        <div class="flex justify-between font-semibold text-blue-600 border-t pt-1">
-                            <span>Total Volume:</span>
-                            <span>${totalVolume.toFixed(2)} cu.m</span>
+                        <div class="flex justify-between font-semibold ${newBalance < 0 ? 'text-red-600' : 'text-blue-600'} border-t pt-1">
+                            <span>New Remaining Balance:</span>
+                            <span>${newBalance.toFixed(2)} cu.m</span>
                         </div>
                     </div>
                 `;
