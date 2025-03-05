@@ -1047,6 +1047,38 @@
                     }
                 };
             });
+
+            // Toggle User Menu
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            if (userMenuButton && userMenu) {
+                userMenuButton.addEventListener('click', function() {
+                    userMenu.classList.toggle('hidden');
+                });
+            }
+
+            // Toggle Mobile Menu
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    const isHidden = mobileMenu.style.display === 'none';
+                    mobileMenu.style.display = isHidden ? 'block' : 'none';
+                });
+            }
+
+            // Close menus when clicking outside
+            document.addEventListener('click', function(event) {
+                // Close user menu when clicking outside
+                if (userMenu && !userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                    userMenu.classList.add('hidden');
+                }
+
+                // Close mobile menu when clicking outside
+                if (mobileMenu && !mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                    mobileMenu.style.display = 'none';
+                }
+            });
         });
     </script>
 </body>

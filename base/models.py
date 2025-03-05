@@ -584,6 +584,21 @@ class Wood(models.Model):
         verbose_name_plural = "Wood Processing Plants"
 
 class CuttingRecord(models.Model):
+    SPECIES_CHOICES = [
+        ('Molave', 'Molave'),
+        ('Molave SL', 'Molave SL'),
+        ('Molave Fuel Wood', 'Molave Fuel Wood'),
+        ('Germelina', 'Germelina'),
+        ('Germelina SL', 'Germelina SL'),
+        ('Germelina Fuel Wood', 'Germelina Fuel Wood'),
+        ('Mahogany', 'Mahogany'),
+        ('Mahogany SL', 'Mahogany SL'),
+        ('Mahogany Fuel Wood', 'Mahogany Fuel Wood'),
+        ('Narra', 'Narra'),
+        ('Narra SL', 'Narra SL'),
+        ('Narra Fuel Wood', 'Narra Fuel Wood'),
+    ]
+    
     VOLUME_TYPE_CHOICES = [
         ('Initial', 'Initial'),
         ('Additional', 'Additional'),
@@ -600,7 +615,7 @@ class CuttingRecord(models.Model):
         choices=VOLUME_TYPE_CHOICES,
         default='Initial'
     )
-    species = models.CharField(max_length=100)
+    species = models.CharField(max_length=100, choices=SPECIES_CHOICES, default='Molave')
     volume = models.DecimalField(max_digits=10, decimal_places=2)
     calculated_volume = models.DecimalField(
         max_digits=10, 
@@ -633,28 +648,22 @@ class CuttingRecord(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk:  # If this is a new record
-            # Get the latest record for this TCP
             latest_record = CuttingRecord.objects.filter(
                 parent_tcp=self.parent_tcp
             ).order_by('-date_added').first()
 
-            # Ensure volume is Decimal with 2 decimal places
-            if not isinstance(self.volume, Decimal):
-                self.volume = Decimal(str(self.volume)).quantize(Decimal('0.01'))
-
+            # Ensure volume is Decimal
+            self.volume = Decimal(str(self.volume)).quantize(Decimal('0.01'))
+            
             if latest_record:
                 # For subsequent entries
-                if not isinstance(latest_record.remaining_balance, Decimal):
-                    latest_balance = Decimal(str(latest_record.remaining_balance))
-                else:
-                    latest_balance = latest_record.remaining_balance
-                self.remaining_balance = (latest_balance - self.volume).quantize(Decimal('0.01'))
-                self.calculated_volume = latest_balance.quantize(Decimal('0.01'))
+                latest_balance = Decimal(str(latest_record.remaining_balance))
+                # Subtract the calculated volume (which includes any percentage additions)
+                self.remaining_balance = (latest_balance - self.calculated_volume).quantize(Decimal('0.01'))
             else:
                 # For first entry
-                volume_with_30_percent = (self.volume * Decimal('1.30')).quantize(Decimal('0.01'))
-                self.calculated_volume = Decimal(str(self.parent_tcp.total_volume_granted)).quantize(Decimal('0.01'))
-                self.remaining_balance = volume_with_30_percent
+                total_granted = Decimal(str(self.parent_tcp.total_volume_granted))
+                self.remaining_balance = (total_granted - self.calculated_volume).quantize(Decimal('0.01'))
 
         self.full_clean()
         super().save(*args, **kwargs)

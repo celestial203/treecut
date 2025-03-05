@@ -8519,3 +8519,5 @@ WARNING 2025-03-04 16:00:16,464 log Not Found: /cutting/127/view/
 WARNING 2025-03-04 16:00:16,465 basehttp "GET /cutting/127/view/ HTTP/1.1" 404 3421
 WARNING 2025-03-04 16:00:19,806 log Not Found: /cutting/127/view/
 WARNING 2025-03-04 16:00:19,807 basehttp "GET /cutting/127/view/ HTTP/1.1" 404 3421
+WARNING 2025-03-05 08:11:14,479 log Not Found: /favicon.ico
+WARNING 2025-03-05 08:11:14,480 basehttp "GET /favicon.ico HTTP/1.1" 404 8223

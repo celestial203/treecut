@@ -208,7 +208,7 @@ class WoodForm(forms.ModelForm):
 class CuttingRecordForm(forms.ModelForm):
     class Meta:
         model = CuttingRecord
-        fields = ['species', 'number_of_trees', 'volume', 'remarks']
+        fields = ['species', 'number_of_trees', 'volume', 'calculated_volume', 'remarks']
         widgets = {
             'volume': forms.NumberInput(attrs={
                 'class': 'form-input',
@@ -241,11 +241,21 @@ class CuttingRecordForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         volume = cleaned_data.get('volume')
+        species = cleaned_data.get('species')
+        calculated_volume = cleaned_data.get('calculated_volume')
         
-        if volume:
-            # Calculate the volume with 30% addition
-            calculated_volume = volume + (volume * Decimal('0.30'))
-            cleaned_data['calculated_volume'] = calculated_volume
+        if volume and species:
+            if species.endswith('Fuel Wood'):
+                # For Fuel Wood, use the volume directly as deduction
+                cleaned_data['calculated_volume'] = volume
+            elif species.endswith('SL'):
+                # For SL species, add 40%
+                calculated_volume = volume + (volume * Decimal('0.40'))
+                cleaned_data['calculated_volume'] = calculated_volume
+            else:
+                # For regular species, add 30%
+                calculated_volume = volume + (volume * Decimal('0.30'))
+                cleaned_data['calculated_volume'] = calculated_volume
             
         return cleaned_data
 

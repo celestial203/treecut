@@ -121,11 +121,11 @@
         .context-menu {
             position: fixed;
             background: white;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 8px 0;
             z-index: 1000;
+            min-width: 150px;
         }
 
         .context-menu-item {
@@ -223,6 +223,38 @@
         const userMenu = document.getElementById('user-menu');
         userMenu.classList.toggle('hidden');
     }
+
+    function toggleMobileMenu() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Add event listeners when the document loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        if (mobileMenuButton) {
+            mobileMenuButton.addEventListener('click', toggleMobileMenu);
+        }
+
+        // Close menus when clicking outside
+        document.addEventListener('click', function(e) {
+            const userMenu = document.getElementById('user-menu');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const userMenuButton = document.getElementById('user-menu-button');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+
+            // Close user menu if clicking outside
+            if (userMenu && !userMenu.contains(e.target) && !userMenuButton.contains(e.target)) {
+                userMenu.classList.add('hidden');
+            }
+
+            // Close mobile menu if clicking outside
+            if (mobileMenu && !mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+                mobileMenu.style.display = 'none';
+            }
+        });
+    });
 </script>
 
     <!-- Search Section -->
@@ -765,6 +797,12 @@
                     </svg>
                     Edit
                 </div>
+                <div class="context-menu-item" id="volume-option">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Add Volume
+                </div>
             `;
             document.body.appendChild(contextMenu);
 
@@ -777,30 +815,52 @@
 
                     e.preventDefault();
                     
-                    // Get record ID from the row's data attribute or from existing links
                     const recordId = this.dataset.recordId || 
                                    this.querySelector('a[href*="/view/"]')?.href?.match(/\d+/)?.[0] ||
                                    this.querySelector('a[href*="/edit/"]')?.href?.match(/\d+/)?.[0];
                     
                     if (!recordId) return;
 
-                    // Position the menu at click location
-                    contextMenu.style.left = `${e.pageX}px`;
-                    contextMenu.style.top = `${e.pageY}px`;
+                    const contextMenu = document.querySelector('.context-menu');
                     contextMenu.classList.remove('hidden');
+                    
+                    // Position menu at click coordinates
+                    const x = e.clientX;
+                    const y = e.clientY;
+                    
+                    // Position menu
+                    contextMenu.style.left = `${x}px`;
+                    contextMenu.style.top = `${y}px`;
 
                     // Handle menu item clicks
                     const viewOption = document.getElementById('view-option');
                     const editOption = document.getElementById('edit-option');
+                    const volumeOption = document.getElementById('volume-option');
 
                     viewOption.onclick = () => window.location.href = `/cutting/${recordId}/view/`;
                     editOption.onclick = () => window.location.href = `/cutting/${recordId}/edit/`;
+                    volumeOption.onclick = () => window.location.href = `/cutting/${recordId}/record/add/`;
                 });
             });
 
             // Hide context menu when clicking outside
             document.addEventListener('click', function(e) {
-                if (!contextMenu.contains(e.target)) {
+                const contextMenu = document.querySelector('.context-menu');
+                if (!contextMenu.contains(e.target) && !e.target.closest('tr')) {
+                    contextMenu.classList.add('hidden');
+                }
+            });
+
+            // Hide context menu when scrolling
+            document.addEventListener('scroll', function() {
+                const contextMenu = document.querySelector('.context-menu');
+                contextMenu.classList.add('hidden');
+            });
+
+            // Hide context menu when pressing Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const contextMenu = document.querySelector('.context-menu');
                     contextMenu.classList.add('hidden');
                 }
             });
