@@ -141,6 +141,90 @@
             if (dateIssued && dateIssued.value) {
                 updateExpiryDate(dateIssued.value);
             }
+
+            // Add event listener for species selection
+            document.querySelector('select[name="species"]').addEventListener('change', function() {
+                const volume = document.getElementById('inputVolume').value;
+                if (volume) {
+                    updateCalculations();
+                }
+            });
+
+            // Add event listener for volume input
+            document.getElementById('inputVolume').addEventListener('input', updateCalculations);
+
+            function updateCalculations() {
+                const volume = parseFloat(document.getElementById('inputVolume').value) || 0;
+                const species = document.querySelector('select[name="species"]').value;
+                // Use 0 as fallback if cutting.gross_volume is None
+                const remainingBalance = {{ cutting.gross_volume|default:0 }};
+                
+                let calculatedVolume;
+                let details;
+
+                if (species === 'Sawn Lumber') {
+                    // Calculate 40% additional for Sawn Lumber
+                    const additionalVolume = volume * 0.40;
+                    calculatedVolume = volume + additionalVolume;
+                    const newBalance = remainingBalance - calculatedVolume;
+
+                    details = `
+                        <div class="text-sm space-y-1">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Original Volume:</span>
+                                <span>${volume.toFixed(2)} cu.m</span>
+                            </div>
+                            <div class="flex justify-between text-green-600">
+                                <span>Additional 40%:</span>
+                                <span>+${additionalVolume.toFixed(2)} cu.m</span>
+                            </div>
+                            <div class="flex justify-between text-blue-600">
+                                <span>Total Volume:</span>
+                                <span>${calculatedVolume.toFixed(2)} cu.m</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 border-t pt-1">
+                                <span>Current Balance:</span>
+                                <span>${remainingBalance.toFixed(2)} cu.m</span>
+                            </div>
+                            <div class="flex justify-between text-red-600">
+                                <span>Volume to Deduct:</span>
+                                <span>-${calculatedVolume.toFixed(2)} cu.m</span>
+                            </div>
+                            <div class="flex justify-between font-semibold ${newBalance < 0 ? 'text-red-600' : 'text-blue-600'} border-t pt-1">
+                                <span>New Remaining Balance:</span>
+                                <span>${newBalance.toFixed(2)} cu.m</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // For all other species, use original volume
+                    calculatedVolume = volume;
+                    const newBalance = remainingBalance - calculatedVolume;
+
+                    details = `
+                        <div class="text-sm space-y-1">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Current Balance:</span>
+                                <span>${remainingBalance.toFixed(2)} cu.m</span>
+                            </div>
+                            <div class="flex justify-between text-red-600">
+                                <span>Volume to Deduct:</span>
+                                <span>-${calculatedVolume.toFixed(2)} cu.m</span>
+                            </div>
+                            <div class="flex justify-between font-semibold ${newBalance < 0 ? 'text-red-600' : 'text-blue-600'} border-t pt-1">
+                                <span>New Remaining Balance:</span>
+                                <span>${newBalance.toFixed(2)} cu.m</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Store calculated volume in hidden field for form submission
+                document.getElementById('calculatedVolumeForDB').value = calculatedVolume;
+                
+                // Update the calculation details display
+                document.getElementById('calculationDetails').innerHTML = details;
+            }
         });
     </script>
 
@@ -212,11 +296,11 @@
                 </div>
                 <div class="card bg-white p-4">
                     <p class="text-sm font-medium text-gray-500">Remaining Balance</p>
-                    <p class="mt-1 text-2xl font-bold {% if volume_records.last.remaining_balance <= 0.0 %}text-red-600{% else %}text-blue-600{% endif %}">
-                        {% if volume_records.last.remaining_balance <= 0.0 %}
-                            CONSUME
+                    <p class="mt-1 text-2xl font-bold {% if latest_record.remaining_balance <= 0.0 %}text-red-600{% else %}text-blue-600{% endif %}">
+                        {% if volume_records %}
+                            {{ volume_records.first.remaining_balance }} cu.m
                         {% else %}
-                            {{ volume_records.last.remaining_balance|default:cutting.gross_volume }} cu.m
+                            {{ cutting.gross_volume }} cu.m
                         {% endif %}
                     </p>
                 </div>
@@ -228,37 +312,55 @@
             <form method="POST" enctype="multipart/form-data" id="addRecordForm" class="space-y-6">
                 {% csrf_token %}
                 
+                {% if form.errors %}
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Please correct the following errors:</h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                <ul class="list-disc pl-5 space-y-1">
+                                    {% for field, errors in form.errors.items %}
+                                        {% for error in errors %}
+                                            <li>{{ field|title }}: {{ error }}</li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <div class="space-y-4">
                     <!-- Species Selection -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Species*</label>
-                        <select name="species" class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                        <label for="species" class="block text-sm font-medium text-gray-700">Species*</label>
+                        <select name="species" id="species" class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                             <option value="">Select Species</option>
+                            <option value="Sawn Lumber">Sawn Lumber</option>
+                            <option value="Fuel Wood">Fuel Wood</option>
+                            <option value="Minepoles">Minepoles</option>
                             <option value="Molave">Molave</option>
-                            <option value="Molave SL">Molave SL</option>
-                            <option value="Molave Fuel Wood">Molave Fuel Wood</option>
-                            <option value="Germelina">Germelina</option>
-                            <option value="Germelina SL">Germelina SL</option>
-                            <option value="Germelina Fuel Wood">Germelina Fuel Wood</option>
+                            <option value="Yemane">Yemane</option>
                             <option value="Mahogany">Mahogany</option>
-                            <option value="Mahogany SL">Mahogany SL</option>
-                            <option value="Mahogany Fuel Wood">Mahogany Fuel Wood</option>
                             <option value="Narra">Narra</option>
-                            <option value="Narra SL">Narra SL</option>
-                            <option value="Narra Fuel Wood">Narra Fuel Wood</option>
                         </select>
                     </div>
 
                     <!-- Normal/SL Species Fields -->
                     <div id="normalFields">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Volume (cu.m)*</label>
+                            <label for="inputVolume" class="block text-sm font-medium text-gray-700">Volume (cu.m)*</label>
                             <input type="number" 
                                    step="0.01" 
                                    name="volume" 
                                    id="inputVolume" 
                                    class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                                   oninput="updateNormalCalculations()"
                                    required>
                         </div>
                     </div>
@@ -266,13 +368,12 @@
                     <!-- Fuel Wood Fields -->
                     <div id="fuelWoodFields" class="hidden">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Deduction (cu.m)</label>
+                            <label for="inputDeduction" class="block text-sm font-medium text-gray-700">Deduction (cu.m)</label>
                             <input type="number" 
                                    step="0.01" 
                                    name="deduction" 
                                    id="inputDeduction" 
-                                   class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                   oninput="updateFuelWoodCalculations()">
+                                   class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         </div>
                     </div>
                 </div>
@@ -283,28 +384,37 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Number of Trees*</label>
-                        <input type="number" min="1" name="number_of_trees" class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                        <label for="number_of_trees" class="block text-sm font-medium text-gray-700">Number of Trees*</label>
+                        <input type="number" 
+                               min="1" 
+                               name="number_of_trees" 
+                               id="number_of_trees" 
+                               class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                               required>
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Remarks</label>
-                    <textarea name="remarks" rows="3" class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    <label for="remarks" class="block text-sm font-medium text-gray-700">Remarks</label>
+                    <textarea name="remarks" 
+                              id="remarks" 
+                              rows="3" 
+                              class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
                 </div>
 
-                <!-- New File Attachment Field -->
+                <!-- File Attachment Field -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Attach File</label>
+                    <label for="attachment" class="block text-sm font-medium text-gray-700">Attach File</label>
                     <input type="file" 
                            name="attachment" 
+                           id="attachment"
                            class="mt-1 block w-full text-sm text-gray-500
                                   file:mr-4 file:py-2 file:px-4
                                   file:rounded-md file:border-0
                                   file:text-sm file:font-semibold
                                   file:bg-blue-50 file:text-blue-700
                                   hover:file:bg-blue-100">
-                    <p class="mt-1 text-sm text-gray-500">Upload relevant documents (PDF, DOC, DOCX, JPG, PNG)</p>
+                    <p class="mt-1 text-sm text-gray-500"></p>
                 </div>
 
                 <!-- Hidden field to store calculated volume -->
@@ -324,15 +434,11 @@
         <!-- Volume Breakdown Table -->
         <div class="card overflow-hidden">
             <div class="gradient-header p-4 flex justify-between items-center">
-                <h2 class="text-xl font-bold text-black-600">VOLUME BREAKDOWN <span class="text-gray-200">{{ cutting.tcp_no }}</span></h2>
-                <div class="text-right">
-                    <p class="text-sm text-black-600">Total Volume Granted: 
-                        <span class="font-semibold">{{ cutting.total_volume_granted }} cu.m.</span>
-                    </p>
-                </div>
+                <h2 class="text-xl font-bold text-black-600">VOLUME BREAKDOWN</h2>
             </div>
+            
             <div class="overflow-x-auto">
-                <table class="modern-table min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
@@ -343,64 +449,39 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining Balance</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remarks</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attachment</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         {% for record in volume_records %}
-                        <tr class="{% if record.id == new_record_id %}bg-blue-50 animate-highlight{% else %}hover:bg-gray-50{% endif %} {% if forloop.last %}bg-gray-50{% endif %}">
+                        <tr id="record-row-{{ record.id }}" class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.date_added|date:"M d, Y" }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.species }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.number_of_trees }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.volume|floatformat:2 }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.calculated_volume|floatformat:2 }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center space-x-2">
-                                    {% if record.remaining_balance|default:0 <= 1 %}
-                                        <span class="text-sm text-red-600 font-semibold">
-                                            {{ record.remaining_balance|floatformat:2 }}
-                                        </span>
-                                    {% else %}
-                                        <span class="text-sm text-gray-900">
-                                            {{ record.remaining_balance|floatformat:2 }}
-                                        </span>
-                                    {% endif %}
-                                </div>
-                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.remaining_balance|floatformat:2 }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ record.remarks|default:"-" }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">
                                 {% if record.attachment %}
-                                    <a href="{{ record.attachment.url }}" class="text-blue-600 hover:text-blue-800" target="_blank">
-                                        <svg class="w-5 h-5 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                        </svg>
-                                        View
-                                    </a>
+                                    <a href="{{ record.attachment.url }}" class="text-blue-600 hover:text-blue-800" target="_blank">View</a>
                                 {% else %}
                                     -
                                 {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <button onclick="editRecord({{ record.id }})" class="text-blue-600 hover:text-blue-800">
+                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                    Edit
+                                </button>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-
-            {% if volume_records.last.remaining_balance <= 0.0 %}
-            <div class="mt-4 bg-red-50 border-l-4 border-red-400 p-4">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm text-red-700">
-                            This Permit has been fully consumed. No more volume can be added.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
         </div>
     </div>
 
@@ -416,7 +497,7 @@
             const volume = parseFloat(document.getElementById('inputVolume').value) || 0;
             const species = document.querySelector('select[name="species"]').value;
             const isSL = species.endsWith('SL');
-            const remainingBalance = {{ volume_records.last.remaining_balance|default:cutting.gross_volume }};
+            const remainingBalance = {{ cutting.gross_volume }};  // Initial gross volume
             
             if (isSL) {
                 // SL Species calculation (40% additional)
@@ -537,6 +618,98 @@
                 updateNormalCalculations();
             }
         });
+
+        function editRecord(recordId) {
+            // Get the row element
+            const row = document.getElementById(`record-row-${recordId}`);
+            const cells = row.getElementsByTagName('td');
+            
+            // Create edit form
+            const form = document.createElement('form');
+            form.className = 'space-y-4 p-4 bg-gray-50';
+            form.innerHTML = `
+                <input type="hidden" name="record_id" value="${recordId}">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Species</label>
+                        <select name="species" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="Sawn Lumber" ${cells[1].textContent === 'Sawn Lumber' ? 'selected' : ''}>Sawn Lumber</option>
+                            <option value="Fuel Wood" ${cells[1].textContent === 'Fuel Wood' ? 'selected' : ''}>Fuel Wood</option>
+                            <option value="Minepoles" ${cells[1].textContent === 'Minepoles' ? 'selected' : ''}>Minepoles</option>
+                            <option value="Molave" ${cells[1].textContent === 'Molave' ? 'selected' : ''}>Molave</option>
+                            <option value="Yemane" ${cells[1].textContent === 'Yemane' ? 'selected' : ''}>Yemane</option>
+                            <option value="Mahogany" ${cells[1].textContent === 'Mahogany' ? 'selected' : ''}>Mahogany</option>
+                            <option value="Narra" ${cells[1].textContent === 'Narra' ? 'selected' : ''}>Narra</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Number of Trees</label>
+                        <input type="number" name="number_of_trees" value="${cells[2].textContent}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Volume</label>
+                        <input type="number" step="0.01" name="volume" value="${cells[3].textContent}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Remarks</label>
+                        <input type="text" name="remarks" value="${cells[6].textContent === '-' ? '' : cells[6].textContent}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-4">
+                    <button type="button" onclick="cancelEdit(${recordId})" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="button" onclick="saveEdit(${recordId})" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">
+                        Save
+                    </button>
+                </div>
+            `;
+            
+            // Replace row content with form
+            const container = document.createElement('td');
+            container.colSpan = 9;
+            container.appendChild(form);
+            
+            // Store original content
+            const originalContent = row.innerHTML;
+            row.innerHTML = '';
+            row.appendChild(container);
+            
+            // Store original content for cancel operation
+            row.dataset.originalContent = originalContent;
+        }
+
+        function cancelEdit(recordId) {
+            const row = document.getElementById(`record-row-${recordId}`);
+            row.innerHTML = row.dataset.originalContent;
+        }
+
+        function saveEdit(recordId) {
+            const form = document.querySelector(`#record-row-${recordId} form`);
+            const formData = new FormData(form);
+            
+            fetch(`/edit-volume-record/${recordId}/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Refresh the page to show updated data
+                    location.reload();
+                } else {
+                    alert('Error updating record: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating record');
+            });
+        }
     </script>
 </body>
 </html>
+

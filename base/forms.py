@@ -1,7 +1,7 @@
 # forms.py
 from django import forms
 from django.contrib.auth import authenticate, get_user_model
-from .models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord
+from .models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord, VolumeRecord
 import re
 from .models import CuttingRecord
 from django.utils import timezone
@@ -261,12 +261,23 @@ class CuttingRecordForm(forms.ModelForm):
 
 class VolumeRecordForm(forms.ModelForm):
     class Meta:
-        model = CuttingRecord
-        fields = ['date', 'volume_type', 'volume', 'remarks']
+        model = VolumeRecord
+        fields = [
+            'species',
+            'volume',
+            'number_of_trees',
+            'remarks',
+            'attachment'
+        ]
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
-            'volume_type': forms.Select(attrs={'class': 'form-select'}),
             'remarks': forms.Textarea(attrs={'rows': 3}),
+            'number_of_trees': forms.NumberInput(attrs={'class': 'form-input'}),
+            'species': forms.Select(attrs={'class': 'form-select'}),
+            'attachment': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*,.pdf,.doc,.docx'
+            })
         }
 
     def clean_volume(self):

@@ -16,6 +16,7 @@ from django.urls import reverse
 from decimal import Decimal
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django import template
+from django.views.decorators.http import require_POST
 
 # Login view
 def login_view(request):
@@ -54,15 +55,17 @@ def dashboard(request):
     expired_cutting_count = Cutting.objects.filter(
         expiry_date__lt=current_date
     ).count()
+    
     # Calculate active cutting permits (not expired)
     active_cutting_count = Cutting.objects.filter(
-        expiry_date__gte=current_date
+        Q(permit_type__in=['TCP', 'PLTP', 'SPLTP'], expiry_date__gte=current_date) |
+        Q(permit_type='STCP', situation='Good')
     ).count()
     
-    # Calculate pending cutting permits (no volume records yet)
-    # A permit is pending when it has no cutting records
+    # Calculate pending cutting permits (only for STCP with no volume records)
     pending_cutting_count = Cutting.objects.filter(
-        cutting_records__isnull=True
+        permit_type='STCP',
+        situation='Pending'
     ).count()
 
     # Lumber Records counts
@@ -474,50 +477,51 @@ def view_cutting(request, cutting_id):
 
 @login_required
 def add_cutting_record(request, cutting_id):
-    cutting = get_object_or_404(Cutting, id=cutting_id)
+    cutting = get_object_or_404(Cutting, pk=cutting_id)
     
     if request.method == 'POST':
-        form = CuttingRecordForm(request.POST)
+        form = VolumeRecordForm(request.POST, request.FILES)
         if form.is_valid():
             record = form.save(commit=False)
-            record.parent_tcp = cutting
+            record.cutting = cutting
             
-            # Get the volume and calculate additional 30% if this is the first record
-            volume = float(form.cleaned_data['volume'])
+            # Calculate volumes based on species
+            volume = form.cleaned_data['volume']
+            species = form.cleaned_data['species']
             
-            # Check if this is the first record
-            if not CuttingRecord.objects.filter(parent_tcp=cutting).exists():
-                calculated_volume = volume + (volume * 0.30)
+            if species == 'Sawn Lumber':
+                calculated_volume = volume * Decimal('1.40')
             else:
                 calculated_volume = volume
-
-            # Get the latest remaining balance or use total_volume_granted if no records exist
-            latest_record = CuttingRecord.objects.filter(parent_tcp=cutting).order_by('-date_added').first()
-            current_balance = latest_record.remaining_balance if latest_record else cutting.total_volume_granted
-
-            # Ensure current_balance is not None before comparison
-            if current_balance is not None:
-                # Calculate new remaining balance
-                new_balance = float(current_balance) - calculated_volume
-                record.remaining_balance = new_balance
-            else:
-                # If current_balance is None, use total_volume_granted as starting point
-                record.remaining_balance = float(cutting.total_volume_granted) - calculated_volume
-
+                
             record.calculated_volume = calculated_volume
-            record.save()
             
+            # Get the latest record to use its remaining balance
+            latest_record = VolumeRecord.objects.filter(cutting=cutting).order_by('-date_added').first()
+            
+            if latest_record:
+                # Calculate new remaining balance from the latest record's balance
+                record.remaining_balance = latest_record.remaining_balance - calculated_volume
+            else:
+                # If no previous record, use cutting's gross volume
+                record.remaining_balance = cutting.gross_volume - calculated_volume
+            
+            record.save()
             messages.success(request, 'Volume record added successfully.')
-            return redirect('view_cutting', cutting_id=cutting.id)
+            return redirect('cutting')
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
-        form = CuttingRecordForm()
-
+        form = VolumeRecordForm()
+    
     context = {
-        'cutting': cutting,
         'form': form,
-        'volume_records': CuttingRecord.objects.filter(parent_tcp=cutting).order_by('date_added')
+        'cutting': cutting,
+        'volume_records': VolumeRecord.objects.filter(cutting=cutting).order_by('-date_added')
     }
     return render(request, 'add_cutting_record.html', context)
+
+
 
 ###FOR CHAINSAW####
 @login_required(login_url='login')
@@ -875,14 +879,12 @@ def check_permit_exists(request):
 
 @login_required
 def volumes(request):
-    # Get all volume records with their related cutting information
     volume_records = VolumeRecord.objects.select_related('cutting').all().order_by(
         'cutting__permit_type', 
         'cutting__permit_number', 
         '-date'
     )
     
-    # Group records by permit
     grouped_records = {}
     
     for record in volume_records:
@@ -893,13 +895,12 @@ def volumes(request):
                 'permit_type': record.cutting.permit_type,
                 'permit_number': record.cutting.permit_number,
                 'permittee': record.cutting.permittee,
-                'total_volume_granted': record.cutting.total_volume_granted,
+                'gross_volume': record.cutting.gross_volume,  # Changed from total_volume_granted
                 'total_volume_used': 0,
-                'remaining_balance': record.cutting.total_volume_granted,
+                'remaining_balance': record.cutting.gross_volume,  # Changed from total_volume_granted
                 'records': []
             }
         
-        # Add the record to the list
         grouped_records[permit_key]['records'].append({
             'date': record.date,
             'volume_type': record.volume_type,
@@ -907,19 +908,15 @@ def volumes(request):
             'remarks': record.remarks
         })
         
-        # Update totals
         grouped_records[permit_key]['total_volume_used'] += record.volume
         grouped_records[permit_key]['remaining_balance'] = (
-            grouped_records[permit_key]['total_volume_granted'] - 
+            grouped_records[permit_key]['gross_volume'] -  # Changed from total_volume_granted
             grouped_records[permit_key]['total_volume_used']
         )
 
-    # Fetch cutting records to match with volume records
-    cutting_records = CuttingRecord.objects.all()
-
     context = {
         'grouped_records': grouped_records,
-        'cutting_records': cutting_records,
+        'cutting_records': CuttingRecord.objects.all(),
     }
     
     return render(request, 'cutting_volrecords.html', context)
@@ -932,7 +929,7 @@ def get_permit_status(cutting, remaining_balance, today):
         return "EXPIRED"
     elif remaining_balance <= 0:
         return "CONSUMED"
-    elif remaining_balance == cutting.total_volume_granted:
+    elif remaining_balance == cutting.gross_volume:
         return "PENDING"
     else:
         return "ACTIVE"
@@ -943,13 +940,11 @@ def volume_records_list(request):
     cuttings = Cutting.objects.all()
     grouped_records = {}
     
-    # Get search parameter and validate
     search_permit = request.GET.get('permit', '').strip()
     search_performed = 'permit' in request.GET
     no_results = False
     
     for cutting in cuttings:
-        # Skip this cutting if it doesn't match the search query
         permit_key = f"{cutting.permit_type}-{cutting.permit_number}"
         if search_permit and search_permit.lower() not in permit_key.lower():
             continue
@@ -957,7 +952,7 @@ def volume_records_list(request):
         records = CuttingRecord.objects.filter(parent_tcp=cutting).order_by('-date_added')
         total_volume_used = sum(record.calculated_volume for record in records) if records else 0
         latest_record = records.first()
-        remaining_balance = latest_record.remaining_balance if latest_record else cutting.total_volume_granted
+        remaining_balance = latest_record.remaining_balance if latest_record else cutting.gross_volume  # Changed from total_volume_granted
         
         status = get_permit_status(cutting, remaining_balance, today)
         
@@ -969,7 +964,6 @@ def volume_records_list(request):
             'status': status
         }
     
-    # Check if search was performed but no results found
     if search_performed and search_permit and not grouped_records:
         no_results = True
     
@@ -1163,3 +1157,43 @@ def calculate_volumes(request):
                 'error': str(e)
             }, status=400)
     return JsonResponse({'success': False}, status=405)
+
+@require_POST
+@login_required
+def edit_volume_record(request, record_id):
+    try:
+        record = VolumeRecord.objects.get(id=record_id)
+        
+        # Update record fields
+        record.species = request.POST.get('species')
+        record.number_of_trees = request.POST.get('number_of_trees')
+        record.volume = Decimal(request.POST.get('volume'))
+        record.remarks = request.POST.get('remarks')
+        
+        # Recalculate volumes
+        if record.species == 'Sawn Lumber':
+            record.calculated_volume = record.volume * Decimal('1.40')
+        else:
+            record.calculated_volume = record.volume
+            
+        # Update remaining balance for this and all subsequent records
+        records_to_update = VolumeRecord.objects.filter(
+            cutting=record.cutting,
+            date_added__gte=record.date_added
+        ).order_by('date_added')
+        
+        previous_balance = VolumeRecord.objects.filter(
+            cutting=record.cutting,
+            date_added__lt=record.date_added
+        ).order_by('-date_added').first()
+        
+        current_balance = previous_balance.remaining_balance if previous_balance else record.cutting.gross_volume
+        
+        for rec in records_to_update:
+            current_balance = current_balance - rec.calculated_volume
+            rec.remaining_balance = current_balance
+            rec.save()
+        
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

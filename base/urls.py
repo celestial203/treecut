@@ -42,6 +42,7 @@ urlpatterns = [
     path('lumber/records/', views.lumber_records, name='lumber_records'),
     path('lumber/<int:pk>/details/', views.view_lumber_details, name='view_lumber_details'),
     path('calculate-volumes/', views.calculate_volumes, name='calculate_volumes'),
+    path('edit-volume-record/<int:record_id>/', views.edit_volume_record, name='edit_volume_record'),
 ]
 
 if settings.DEBUG:

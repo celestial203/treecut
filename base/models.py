@@ -586,17 +586,12 @@ class Wood(models.Model):
 class CuttingRecord(models.Model):
     SPECIES_CHOICES = [
         ('Molave', 'Molave'),
-        ('Molave SL', 'Molave SL'),
-        ('Molave Fuel Wood', 'Molave Fuel Wood'),
-        ('Germelina', 'Germelina'),
-        ('Germelina SL', 'Germelina SL'),
-        ('Germelina Fuel Wood', 'Germelina Fuel Wood'),
+        ('Sawn Lumber', 'Sawn Lumber'),
+        ('Fuel Wood', 'Fuel Wood'),
+        ('Yemane', 'Yemane'),
         ('Mahogany', 'Mahogany'),
-        ('Mahogany SL', 'Mahogany SL'),
-        ('Mahogany Fuel Wood', 'Mahogany Fuel Wood'),
         ('Narra', 'Narra'),
-        ('Narra SL', 'Narra SL'),
-        ('Narra Fuel Wood', 'Narra Fuel Wood'),
+        ('Minepoles', 'Minepoles'),
     ]
     
     VOLUME_TYPE_CHOICES = [
@@ -641,10 +636,24 @@ class CuttingRecord(models.Model):
         return f"{self.parent_tcp.permit_number} - {self.species} - {self.volume}cu.m"
 
     def clean(self):
-        if self.volume <= 0:
-            raise ValidationError({'volume': 'Volume must be greater than 0.'})
-        if self.number_of_trees <= 0:
-            raise ValidationError({'number_of_trees': 'Number of trees must be greater than 0.'})
+        if self.volume is None:
+            raise ValidationError({'volume': 'Volume is required.'})
+        if self.number_of_trees is None:
+            raise ValidationError({'number_of_trees': 'Number of trees is required.'})
+        
+        try:
+            volume = Decimal(str(self.volume))
+            if volume <= 0:
+                raise ValidationError({'volume': 'Volume must be greater than 0.'})
+        except (TypeError, ValueError, InvalidOperation):
+            raise ValidationError({'volume': 'Invalid volume value.'})
+        
+        try:
+            trees = int(self.number_of_trees)
+            if trees <= 0:
+                raise ValidationError({'number_of_trees': 'Number of trees must be greater than 0.'})
+        except (TypeError, ValueError):
+            raise ValidationError({'number_of_trees': 'Invalid number of trees.'})
 
     def save(self, *args, **kwargs):
         if not self.pk:  # If this is a new record
@@ -655,15 +664,21 @@ class CuttingRecord(models.Model):
             # Ensure volume is Decimal
             self.volume = Decimal(str(self.volume)).quantize(Decimal('0.01'))
             
+            # Calculate the calculated_volume (40% addition for Sawn Lumber)
+            if self.species == 'Sawn Lumber':
+                self.calculated_volume = (self.volume * Decimal('1.40')).quantize(Decimal('0.01'))
+            else:
+                self.calculated_volume = self.volume
+            
             if latest_record:
                 # For subsequent entries
                 latest_balance = Decimal(str(latest_record.remaining_balance))
-                # Subtract the calculated volume (which includes any percentage additions)
+                # Subtract the calculated volume
                 self.remaining_balance = (latest_balance - self.calculated_volume).quantize(Decimal('0.01'))
             else:
-                # For first entry
-                total_granted = Decimal(str(self.parent_tcp.total_volume_granted))
-                self.remaining_balance = (total_granted - self.calculated_volume).quantize(Decimal('0.01'))
+                # For first entry, use gross_volume instead of total_volume_granted
+                gross_volume = Decimal(str(self.parent_tcp.gross_volume))
+                self.remaining_balance = (gross_volume - self.calculated_volume).quantize(Decimal('0.01'))
 
         self.full_clean()
         super().save(*args, **kwargs)
@@ -690,25 +705,20 @@ class CuttingPermit(models.Model):
     # ... rest of the model ...
 
 class VolumeRecord(models.Model):
-    VOLUME_TYPE_CHOICES = [
-        ('Initial', 'Initial'),
-        ('Additional', 'Additional'),
-    ]
-    
-    cutting = models.ForeignKey(Cutting, on_delete=models.CASCADE, related_name='volume_records')
-    date = models.DateField()
-    volume_type = models.CharField(max_length=20, choices=VOLUME_TYPE_CHOICES)
+    cutting = models.ForeignKey('Cutting', on_delete=models.CASCADE, related_name='volume_records')
+    date = models.DateField(default=timezone.now)
+    species = models.CharField(max_length=100)
+    number_of_trees = models.IntegerField()
     volume = models.DecimalField(max_digits=10, decimal_places=2)
     calculated_volume = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     remaining_balance = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    number_of_trees = models.IntegerField()
     remarks = models.TextField(blank=True, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
     attachment = models.FileField(upload_to='volume_records/', null=True, blank=True)
 
     class Meta:
-        ordering = ['-date_added']
         db_table = 'base_volumerecord'
+        ordering = ['-date_added']
 
     def __str__(self):
-        return f"{self.volume_type} - {self.volume} cu.m ({self.date})"
+        return f"{self.cutting} - {self.volume} cu.m ({self.date})"

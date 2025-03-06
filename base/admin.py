@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.http import HttpResponseRedirect
 from django.urls import path
-from .models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord
+from .models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord, VolumeRecord
 
 # Custom admin login view
 def custom_admin_login(request):
@@ -106,3 +106,5 @@ class CuttingRecordAdmin(admin.ModelAdmin):
     list_filter = ['species', 'date_added']
     search_fields = ['parent_tcp__permit_number', 'species']
     readonly_fields = ['calculated_volume', 'remaining_balance', 'date_added']
+
+admin.site.register(VolumeRecord)
