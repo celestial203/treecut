@@ -8669,3 +8669,5 @@ django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 534: '
 ERROR 2025-03-05 21:12:36,663 basehttp "GET /cutting/ HTTP/1.1" 500 217864
 WARNING 2025-03-05 22:13:12,473 log Not Found: /favicon.ico
 WARNING 2025-03-05 22:13:12,475 basehttp "GET /favicon.ico HTTP/1.1" 404 8223
+WARNING 2025-03-06 08:04:15,559 log Not Found: /favicon.ico
+WARNING 2025-03-06 08:04:15,561 basehttp "GET /favicon.ico HTTP/1.1" 404 8410

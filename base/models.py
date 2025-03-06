@@ -695,18 +695,20 @@ class VolumeRecord(models.Model):
         ('Additional', 'Additional'),
     ]
     
-    cutting = models.ForeignKey(
-        Cutting, 
-        on_delete=models.CASCADE, 
-        related_name='volume_records'
-    )
+    cutting = models.ForeignKey(Cutting, on_delete=models.CASCADE, related_name='volume_records')
     date = models.DateField()
     volume_type = models.CharField(max_length=20, choices=VOLUME_TYPE_CHOICES)
     volume = models.DecimalField(max_digits=10, decimal_places=2)
+    calculated_volume = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    remaining_balance = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    number_of_trees = models.IntegerField()
     remarks = models.TextField(blank=True, null=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    attachment = models.FileField(upload_to='volume_records/', null=True, blank=True)
 
     class Meta:
-        ordering = ['-date']
+        ordering = ['-date_added']
+        db_table = 'base_volumerecord'
 
     def __str__(self):
         return f"{self.volume_type} - {self.volume} cu.m ({self.date})"
