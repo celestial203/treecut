@@ -16,6 +16,7 @@
             background: linear-gradient(to bottom right, #e2f3e5, #c6f6d5);
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="font-inter text-gray-900">
     <!-- Navigation Bar -->
@@ -156,9 +157,13 @@
             function updateCalculations() {
                 const volume = parseFloat(document.getElementById('inputVolume').value) || 0;
                 const species = document.querySelector('select[name="species"]').value;
-                // Use 0 as fallback if cutting.gross_volume is None
-                const remainingBalance = {{ cutting.gross_volume|default:0 }};
-                
+                // Initialize remaining balance to gross volume when no records exist
+                const currentBalance = {% if volume_records %}
+                    parseFloat({{ volume_records.first.remaining_balance|default:0 }})
+                {% else %}
+                    parseFloat({{ cutting.gross_volume|default:0 }})
+                {% endif %} || 0;
+
                 let calculatedVolume;
                 let details;
 
@@ -166,7 +171,7 @@
                     // Calculate 40% additional for Sawn Lumber
                     const additionalVolume = volume * 0.40;
                     calculatedVolume = volume + additionalVolume;
-                    const newBalance = remainingBalance - calculatedVolume;
+                    const newBalance = currentBalance - calculatedVolume;
 
                     details = `
                         <div class="text-sm space-y-1">
@@ -184,7 +189,7 @@
                             </div>
                             <div class="flex justify-between text-gray-600 border-t pt-1">
                                 <span>Current Balance:</span>
-                                <span>${remainingBalance.toFixed(2)} cu.m</span>
+                                <span>${currentBalance.toFixed(2)} cu.m</span>
                             </div>
                             <div class="flex justify-between text-red-600">
                                 <span>Volume to Deduct:</span>
@@ -199,13 +204,13 @@
                 } else {
                     // For all other species, use original volume
                     calculatedVolume = volume;
-                    const newBalance = remainingBalance - calculatedVolume;
+                    const newBalance = currentBalance - calculatedVolume;
 
                     details = `
                         <div class="text-sm space-y-1">
                             <div class="flex justify-between text-gray-600">
                                 <span>Current Balance:</span>
-                                <span>${remainingBalance.toFixed(2)} cu.m</span>
+                                <span>${currentBalance.toFixed(2)} cu.m</span>
                             </div>
                             <div class="flex justify-between text-red-600">
                                 <span>Volume to Deduct:</span>
@@ -220,10 +225,31 @@
                 }
 
                 // Store calculated volume in hidden field for form submission
-                document.getElementById('calculatedVolumeForDB').value = calculatedVolume;
+                document.getElementById('calculatedVolumeForDB').value = calculatedVolume || 0;
                 
                 // Update the calculation details display
                 document.getElementById('calculationDetails').innerHTML = details;
+
+                // Add validation check
+                const addVolumeButton = document.querySelector('button[type="submit"]');
+                if (currentBalance <= 0) {
+                    addVolumeButton.disabled = true;
+                    addVolumeButton.classList.remove('bg-green-600', 'hover:bg-blue-700');
+                    addVolumeButton.classList.add('bg-red-600', 'cursor-not-allowed');
+                    addVolumeButton.innerHTML = 'CONSUMED - Cannot Add Volume';
+                    
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Permit Consumed',
+                        text: 'This permit has been fully consumed. No more volume can be added.',
+                        confirmButtonColor: '#3085d6'
+                    });
+                } else {
+                    addVolumeButton.disabled = false;
+                    addVolumeButton.classList.remove('bg-red-600', 'cursor-not-allowed');
+                    addVolumeButton.classList.add('bg-green-600', 'hover:bg-blue-700');
+                    addVolumeButton.innerHTML = 'Add Volume';
+                }
             }
         });
     </script>
@@ -349,6 +375,7 @@
                             <option value="Yemane">Yemane</option>
                             <option value="Mahogany">Mahogany</option>
                             <option value="Narra">Narra</option>
+                            <option value="Narra">Teabolts</option>
                         </select>
                     </div>
 
@@ -360,8 +387,8 @@
                                    step="0.01" 
                                    name="volume" 
                                    id="inputVolume" 
-                                   class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                                   required>
+                                   class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                   >
                         </div>
                     </div>
 
@@ -497,18 +524,23 @@
             const volume = parseFloat(document.getElementById('inputVolume').value) || 0;
             const species = document.querySelector('select[name="species"]').value;
             const isSL = species.endsWith('SL');
-            const remainingBalance = {{ cutting.gross_volume }};  // Initial gross volume
-            
+            // Safely get the current balance with a fallback to 0
+            const currentBalance = {% if volume_records %}
+                parseFloat({{ volume_records.first.remaining_balance|default:0 }})
+            {% else %}
+                parseFloat({{ cutting.gross_volume|default:0 }})
+            {% endif %} || 0;
+
+            let calculatedVolume;
+            let details;
+
             if (isSL) {
-                // SL Species calculation (40% additional)
+                // Calculate 40% additional for Sawn Lumber
                 const additionalVolume = volume * 0.40;
-                const totalVolume = volume + additionalVolume;
-                const newBalance = remainingBalance - totalVolume;
+                calculatedVolume = volume + additionalVolume;
+                const newBalance = currentBalance - calculatedVolume;
 
-                // Store calculated volume in hidden field
-                document.getElementById('calculatedVolumeForDB').value = totalVolume;
-
-                const details = `
+                details = `
                     <div class="text-sm space-y-1">
                         <div class="flex justify-between text-gray-600">
                             <span>Original Volume:</span>
@@ -520,15 +552,15 @@
                         </div>
                         <div class="flex justify-between text-blue-600">
                             <span>Total Volume:</span>
-                            <span>${totalVolume.toFixed(2)} cu.m</span>
+                            <span>${calculatedVolume.toFixed(2)} cu.m</span>
                         </div>
                         <div class="flex justify-between text-gray-600 border-t pt-1">
                             <span>Current Balance:</span>
-                            <span>${remainingBalance.toFixed(2)} cu.m</span>
+                            <span>${currentBalance.toFixed(2)} cu.m</span>
                         </div>
                         <div class="flex justify-between text-red-600">
                             <span>Volume to Deduct:</span>
-                            <span>-${totalVolume.toFixed(2)} cu.m</span>
+                            <span>-${calculatedVolume.toFixed(2)} cu.m</span>
                         </div>
                         <div class="flex justify-between font-semibold ${newBalance < 0 ? 'text-red-600' : 'text-blue-600'} border-t pt-1">
                             <span>New Remaining Balance:</span>
@@ -536,23 +568,20 @@
                         </div>
                     </div>
                 `;
-                document.getElementById('calculationDetails').innerHTML = details;
             } else {
-                // Normal species calculation (no additional percentage)
-                const newBalance = remainingBalance - volume;
-                
-                // Store calculated volume in hidden field
-                document.getElementById('calculatedVolumeForDB').value = volume;
+                // For all other species, use original volume
+                calculatedVolume = volume;
+                const newBalance = currentBalance - calculatedVolume;
 
-                const details = `
+                details = `
                     <div class="text-sm space-y-1">
                         <div class="flex justify-between text-gray-600">
                             <span>Current Balance:</span>
-                            <span>${remainingBalance.toFixed(2)} cu.m</span>
+                            <span>${currentBalance.toFixed(2)} cu.m</span>
                         </div>
                         <div class="flex justify-between text-red-600">
                             <span>Volume to Deduct:</span>
-                            <span>-${volume.toFixed(2)} cu.m</span>
+                            <span>-${calculatedVolume.toFixed(2)} cu.m</span>
                         </div>
                         <div class="flex justify-between font-semibold ${newBalance < 0 ? 'text-red-600' : 'text-blue-600'} border-t pt-1">
                             <span>New Remaining Balance:</span>
@@ -560,30 +589,62 @@
                         </div>
                     </div>
                 `;
-                document.getElementById('calculationDetails').innerHTML = details;
+            }
+
+            // Store calculated volume in hidden field for form submission
+            document.getElementById('calculatedVolumeForDB').value = calculatedVolume || 0;
+            
+            // Update the calculation details display
+            document.getElementById('calculationDetails').innerHTML = details;
+
+            // Add validation check
+            const addVolumeButton = document.querySelector('button[type="submit"]');
+            if (currentBalance <= 0) {
+                addVolumeButton.disabled = true;
+                addVolumeButton.classList.remove('bg-green-600', 'hover:bg-blue-700');
+                addVolumeButton.classList.add('bg-red-600', 'cursor-not-allowed');
+                addVolumeButton.innerHTML = 'CONSUMED - Cannot Add Volume';
+                
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Permit Consumed',
+                    text: 'This permit has been fully consumed. No more volume can be added.',
+                    confirmButtonColor: '#3085d6'
+                });
+            } else {
+                addVolumeButton.disabled = false;
+                addVolumeButton.classList.remove('bg-red-600', 'cursor-not-allowed');
+                addVolumeButton.classList.add('bg-green-600', 'hover:bg-blue-700');
+                addVolumeButton.innerHTML = 'Add Volume';
             }
         }
 
         function updateFuelWoodCalculations() {
             const deduction = parseFloat(document.getElementById('inputDeduction').value) || 0;
             
+            // Get the remaining balance from the latest record, if no records exist use gross volume
+            const currentBalance = {% if volume_records %}
+                parseFloat({{ volume_records.first.remaining_balance|default:0 }})
+            {% else %}
+                parseFloat({{ cutting.gross_volume|default:0 }})
+            {% endif %} || 0;
+            
             // For Fuel Wood, the deduction is the calculated volume
             document.getElementById('calculatedVolumeForDB').value = deduction;
             
-            const remainingBalance = {{ volume_records.last.remaining_balance|default:cutting.total_volume_granted }};
-            const newBalance = remainingBalance - deduction;
+            const newBalance = currentBalance - deduction;
             
             const details = `
                 <div class="text-sm space-y-1">
                     <div class="flex justify-between text-gray-600">
                         <span>Current Balance:</span>
-                        <span>${remainingBalance.toFixed(2)} cu.m</span>
+                        <span>${currentBalance.toFixed(2)} cu.m</span>
                     </div>
                     <div class="flex justify-between text-red-600">
                         <span>Deduction:</span>
                         <span>-${deduction.toFixed(2)} cu.m</span>
                     </div>
-                    <div class="flex justify-between font-semibold text-blue-600 border-t pt-1">
+                    <div class="flex justify-between font-semibold ${newBalance < 0 ? 'text-red-600' : 'text-blue-600'} border-t pt-1">
                         <span>New Remaining Balance:</span>
                         <span>${newBalance.toFixed(2)} cu.m</span>
                     </div>
@@ -591,7 +652,31 @@
             `;
             
             document.getElementById('calculationDetails').innerHTML = details;
+
+            // Add validation check - only check if current balance is 0
+            const addVolumeButton = document.querySelector('button[type="submit"]');
+            if (currentBalance === 0) {
+                addVolumeButton.disabled = true;
+                addVolumeButton.classList.remove('bg-green-600', 'hover:bg-blue-700');
+                addVolumeButton.classList.add('bg-red-600', 'cursor-not-allowed');
+                addVolumeButton.innerHTML = 'CONSUMED - Cannot Add Volume';
+                
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Permit Consumed',
+                    text: 'This permit has been fully consumed. No more volume can be added.',
+                    confirmButtonColor: '#3085d6'
+                });
+            } else {
+                addVolumeButton.disabled = false;
+                addVolumeButton.classList.remove('bg-red-600', 'cursor-not-allowed');
+                addVolumeButton.classList.add('bg-green-600', 'hover:bg-blue-700');
+                addVolumeButton.innerHTML = 'Add Volume';
+            }
         }
+
+        // Add input event listener for real-time updates
+        document.getElementById('inputDeduction').addEventListener('input', updateFuelWoodCalculations);
 
         // Species change event listener
         document.querySelector('select[name="species"]').addEventListener('change', function() {
@@ -616,6 +701,28 @@
                 updateFuelWoodCalculations();
             } else {
                 updateNormalCalculations();
+            }
+
+            // Add initial validation check when page loads
+            const currentBalance = {% if volume_records %}
+                parseFloat({{ volume_records.first.remaining_balance|default:0 }})
+            {% else %}
+                parseFloat({{ cutting.gross_volume|default:0 }})
+            {% endif %} || 0;
+            const addVolumeButton = document.querySelector('button[type="submit"]');
+            
+            if (currentBalance === 0) {
+                addVolumeButton.disabled = true;
+                addVolumeButton.classList.remove('bg-green-600', 'hover:bg-blue-700');
+                addVolumeButton.classList.add('bg-red-600', 'cursor-not-allowed');
+                addVolumeButton.innerHTML = 'CONSUMED - Cannot Add Volume';
+                
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Permit Consumed',
+                    text: 'This permit has been fully consumed. No more volume can be added.',
+                    confirmButtonColor: '#3085d6'
+                });
             }
         });
 
@@ -709,6 +816,80 @@
                 alert('Error updating record');
             });
         }
+
+        // Add form validation
+        document.getElementById('addRecordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const species = document.querySelector('select[name="species"]').value;
+            const numberOfTrees = document.getElementById('number_of_trees').value;
+            
+            // Get volume based on species type
+            let volume;
+            if (species === 'Fuel Wood') {
+                volume = document.getElementById('inputDeduction').value;
+                // For Fuel Wood, use the deduction value directly
+                formData.set('volume', volume);
+                formData.set('calculated_volume', volume);
+            } else {
+                volume = document.getElementById('inputVolume').value;
+                formData.set('volume', volume);
+                formData.set('calculated_volume', volume);
+            }
+            
+            // Ensure all required fields are set
+            formData.set('species', species);
+            formData.set('number_of_trees', numberOfTrees);
+
+            // Debug logging
+            console.log('Submitting form with:', {
+                species: species,
+                volume: volume,
+                numberOfTrees: numberOfTrees,
+                formData: Object.fromEntries(formData)
+            });
+
+            // Submit form using fetch API
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Volume record added successfully',
+                        confirmButtonColor: '#3085d6'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'An error occurred while adding the record.',
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while adding the record.',
+                    confirmButtonColor: '#3085d6'
+                });
+            });
+        });
     </script>
 </body>
 </html>

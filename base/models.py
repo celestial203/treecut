@@ -592,6 +592,7 @@ class CuttingRecord(models.Model):
         ('Mahogany', 'Mahogany'),
         ('Narra', 'Narra'),
         ('Minepoles', 'Minepoles'),
+        ('Teabolts', 'Teabolts'),
     ]
     
     VOLUME_TYPE_CHOICES = [

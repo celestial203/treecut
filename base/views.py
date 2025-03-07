@@ -128,19 +128,13 @@ def dashboard(request):
         expiry_date__lte=three_months_from_now  # But will expire within 3 months
     ).count()
 
-    # Calculate total trees and species
-    cutting_records = Cutting.objects.all()
-    total_trees = sum(record.no_of_trees for record in cutting_records)
-    
-    # Calculate unique species
-    unique_species = set()
-    for record in cutting_records:
-        if record.species:
-            species_items = record.species.split(',')
-            for item in species_items:
-                if '(' in item and ')' in item:
-                    species_name = item[:item.rfind('(')].strip()
-                    unique_species.add(species_name)
+    # Update the total trees calculation to use VolumeRecord
+    total_trees = VolumeRecord.objects.aggregate(
+        total=Sum('number_of_trees')
+    )['total'] or 0
+
+    # Calculate unique species count from VolumeRecord
+    unique_species = VolumeRecord.objects.values('species').distinct().count()
 
     context = {
         'cutting_count': cutting_count,
@@ -160,7 +154,7 @@ def dashboard(request):
         'active_chainsaw_count': active_chainsaw_count,
         'expiring_soon_chainsaw_count': expiring_soon_chainsaw_count,
         'total_trees': total_trees,
-        'total_species': len(unique_species),
+        'total_species': unique_species,
     }
 
     return render(request, 'dashboard.html', context)
@@ -477,15 +471,16 @@ def edit_cutting(request, pk):
     
     return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting})
 
-def view_cutting(request, cutting_id):
-    cutting = get_object_or_404(Cutting, id=cutting_id)
-    # Get all volume records for this cutting
-    volume_records = cutting.cutting_records.all().order_by('-date_added')
+@login_required
+def view_cutting(request, permit_number):
+    cutting = get_object_or_404(Cutting, permit_number=permit_number)
+    # Get all volume records for this cutting - using VolumeRecord model instead of cutting_records
+    volume_records = VolumeRecord.objects.filter(cutting=cutting).order_by('-date')
     
     today = date.today()
     context = {
         'cutting': cutting,
-        'volume_records': volume_records,  # Add this to the context
+        'volume_records': volume_records,
         'page_title': 'View Cutting Record',
         'today': today
     }
@@ -494,46 +489,107 @@ def view_cutting(request, cutting_id):
 @login_required
 def add_cutting_record(request, cutting_id):
     cutting = get_object_or_404(Cutting, pk=cutting_id)
+    volume_records = VolumeRecord.objects.filter(cutting=cutting).order_by('-date_added')
     
+    # Get current remaining balance
+    latest_record = volume_records.first()
+    current_balance = latest_record.remaining_balance if latest_record else cutting.gross_volume
+
     if request.method == 'POST':
-        form = VolumeRecordForm(request.POST, request.FILES)
-        if form.is_valid():
-            record = form.save(commit=False)
-            record.cutting = cutting
+        try:
+            # Check if permit is already consumed
+            if current_balance <= 0:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Permit is already consumed. No more volume can be added.'
+                })
+
+            # Add debug logging
+            print("POST data received:", request.POST)
+            print("Files received:", request.FILES)
             
-            # Calculate volumes based on species
-            volume = form.cleaned_data['volume']
-            species = form.cleaned_data['species']
+            species = request.POST.get('species')
+            volume = request.POST.get('volume')
+            number_of_trees = request.POST.get('number_of_trees')
+            remarks = request.POST.get('remarks', '')
+            calculated_volume = request.POST.get('calculated_volume') or volume
             
-            if species == 'Sawn Lumber':
-                calculated_volume = volume * Decimal('1.40')
-            else:
-                calculated_volume = volume
+            # Validate required fields
+            if not all([species, volume, number_of_trees]):
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Please fill in all required fields'
+                })
+            
+            # Convert string values to Decimal for consistent decimal arithmetic
+            from decimal import Decimal
+            try:
+                volume_decimal = Decimal(str(volume))
+                calc_volume_decimal = Decimal(str(calculated_volume))
+                trees_int = int(number_of_trees)
                 
-            record.calculated_volume = calculated_volume
+                # For Sawn Lumber, add 40% to the volume
+                if species == 'Sawn Lumber':
+                    calc_volume_decimal = volume_decimal + (volume_decimal * Decimal('0.40'))
+                # For Fuelwood and Teabolts, use volume directly without modification
+                elif species in ['Fuel Wood', 'Teabolts']:
+                    calc_volume_decimal = volume_decimal
+                
+                # Ensure current_balance is Decimal
+                current_balance = Decimal(str(current_balance))
+                
+                # Calculate new remaining balance using Decimal and round to 2 decimal places
+                new_remaining_balance = (current_balance - calc_volume_decimal).quantize(Decimal('0.01'))
+                
+                # Create new volume record
+                new_record = VolumeRecord.objects.create(
+                    cutting=cutting,
+                    species=species,
+                    volume=volume_decimal,
+                    calculated_volume=calc_volume_decimal,
+                    number_of_trees=trees_int,
+                    remarks=remarks,
+                    remaining_balance=new_remaining_balance
+                )
+                
+                if 'attachment' in request.FILES:
+                    new_record.attachment = request.FILES['attachment']
+                    new_record.save()
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Volume record added successfully',
+                    'new_record': {
+                        'id': new_record.id,
+                        'date_added': new_record.date_added.strftime('%b %d, %Y'),
+                        'species': new_record.species,
+                        'number_of_trees': new_record.number_of_trees,
+                        'volume': str(new_record.volume),
+                        'calculated_volume': str(new_record.calculated_volume),
+                        'remaining_balance': str(new_record.remaining_balance),
+                        'remarks': new_record.remarks or '-',
+                        'attachment': new_record.attachment.url if new_record.attachment else None
+                    }
+                })
+                
+            except (ValueError, TypeError) as e:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Invalid number format: {str(e)}'
+                })
             
-            # Get the latest record to use its remaining balance
-            latest_record = VolumeRecord.objects.filter(cutting=cutting).order_by('-date_added').first()
-            
-            if latest_record:
-                # Calculate new remaining balance from the latest record's balance
-                record.remaining_balance = latest_record.remaining_balance - calculated_volume
-            else:
-                # If no previous record, use cutting's gross volume
-                record.remaining_balance = cutting.gross_volume - calculated_volume
-            
-            record.save()
-            messages.success(request, 'Volume record added successfully.')
-            return redirect('cutting')
-        else:
-            messages.error(request, 'Please correct the errors below.')
-    else:
-        form = VolumeRecordForm()
+        except Exception as e:
+            print("Error adding record:", str(e))
+            return JsonResponse({
+                'success': False,
+                'message': f'Error adding record: {str(e)}'
+            })
     
     context = {
-        'form': form,
         'cutting': cutting,
-        'volume_records': VolumeRecord.objects.filter(cutting=cutting).order_by('-date_added')
+        'volume_records': volume_records,
+        'latest_record': latest_record,
+        'current_balance': current_balance
     }
     return render(request, 'add_cutting_record.html', context)
 
@@ -1252,6 +1308,60 @@ def trees(request):
         'cutting_records': cutting_records,
         'total_trees': total_trees,
         'total_species': len(unique_species),
+    }
+    
+    return render(request, 'trees.html', context)
+
+@login_required
+def trees_view(request):
+    # Get all cutting permits with their volume records
+    cutting_records = CuttingPermit.objects.prefetch_related('volume_records').all()
+    
+    # Calculate totals from VolumeRecord model
+    volume_records = VolumeRecord.objects.select_related('cutting')
+    
+    # Calculate total trees
+    total_trees = volume_records.aggregate(
+        total=Sum('number_of_trees')
+    )['total'] or 0
+    
+    # Get unique species count
+    total_species = volume_records.values('species').distinct().count()
+    
+    # Calculate total volume
+    total_volume = volume_records.aggregate(
+        total=Sum('calculated_volume')
+    )['total'] or 0
+    
+    # Format total volume to 2 decimal places
+    if total_volume:
+        total_volume = Decimal(str(total_volume)).quantize(Decimal('0.01'))
+    
+    # Group records by permit
+    permit_records = {}
+    for record in volume_records:
+        permit_key = record.cutting
+        if permit_key not in permit_records:
+            permit_records[permit_key] = {
+                'permit_type': record.cutting.permit_type,
+                'permit_number': record.cutting.permit_number,
+                'species': [],
+                'total_trees': 0,
+                'total_volume': Decimal('0.00')
+            }
+        
+        permit_records[permit_key]['species'].append({
+            'name': record.species,
+            'trees': record.number_of_trees
+        })
+        permit_records[permit_key]['total_trees'] += record.number_of_trees
+        permit_records[permit_key]['total_volume'] += Decimal(str(record.calculated_volume))
+    
+    context = {
+        'permit_records': permit_records.items(),
+        'total_trees': total_trees,
+        'total_species': total_species,
+        'total_volume': total_volume,
     }
     
     return render(request, 'trees.html', context)

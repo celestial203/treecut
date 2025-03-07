@@ -43,7 +43,8 @@ urlpatterns = [
     path('lumber/<int:pk>/details/', views.view_lumber_details, name='view_lumber_details'),
     path('calculate-volumes/', views.calculate_volumes, name='calculate_volumes'),
     path('edit-volume-record/<int:record_id>/', views.edit_volume_record, name='edit_volume_record'),
-    path('trees/', views.trees, name='trees'),
+    path('trees/', views.trees_view, name='trees'),
+    path('cutting/<str:permit_number>/view/', views.view_cutting, name='view_cutting'),
 ]
 
 if settings.DEBUG:
