@@ -128,6 +128,20 @@ def dashboard(request):
         expiry_date__lte=three_months_from_now  # But will expire within 3 months
     ).count()
 
+    # Calculate total trees and species
+    cutting_records = Cutting.objects.all()
+    total_trees = sum(record.no_of_trees for record in cutting_records)
+    
+    # Calculate unique species
+    unique_species = set()
+    for record in cutting_records:
+        if record.species:
+            species_items = record.species.split(',')
+            for item in species_items:
+                if '(' in item and ')' in item:
+                    species_name = item[:item.rfind('(')].strip()
+                    unique_species.add(species_name)
+
     context = {
         'cutting_count': cutting_count,
         'expired_cutting_count': expired_cutting_count,
@@ -145,6 +159,8 @@ def dashboard(request):
         'total_volume': total_volume,  # Add the total volume to the context
         'active_chainsaw_count': active_chainsaw_count,
         'expiring_soon_chainsaw_count': expiring_soon_chainsaw_count,
+        'total_trees': total_trees,
+        'total_species': len(unique_species),
     }
 
     return render(request, 'dashboard.html', context)
@@ -1197,3 +1213,45 @@ def edit_volume_record(request, record_id):
         return JsonResponse({'success': True})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+def trees(request):
+    # Get all cutting records
+    cutting_records = Cutting.objects.all()
+    
+    # Calculate totals
+    total_trees = sum(record.no_of_trees for record in cutting_records)
+    
+    # Calculate unique species
+    unique_species = set()
+    for record in cutting_records:
+        # Split the species string and extract species names
+        if record.species:
+            species_items = record.species.split(',')
+            for item in species_items:
+                if '(' in item and ')' in item:
+                    species_name = item[:item.rfind('(')].strip()
+                    unique_species.add(species_name)
+    
+    # Process species data for each record
+    for record in cutting_records:
+        record.species_list = []
+        if record.species:
+            species_items = record.species.split(',')
+            for item in species_items:
+                item = item.strip()
+                if '(' in item and ')' in item:
+                    name = item[:item.rfind('(')].strip()
+                    quantity = item[item.rfind('(')+1:item.rfind(')')].strip()
+                    record.species_list.append({
+                        'name': name,
+                        'quantity': quantity
+                    })
+    
+    context = {
+        'cutting_records': cutting_records,
+        'total_trees': total_trees,
+        'total_species': len(unique_species),
+    }
+    
+    return render(request, 'trees.html', context)

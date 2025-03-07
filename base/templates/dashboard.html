@@ -129,6 +129,14 @@
                         <div class="mt-2 text-sm text-gray-500"><strong>Total: {{ total_volume }} cu.m</strong></div>
                     </div>
                 </a>
+
+                <a href="{% url 'trees' %}" class="block">
+                    <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
+                        <div class="text-4xl font-bold text-orange-600">{{ total_trees }}</div>
+                        <div class="text-orange-900">Total Trees</div>
+                        <div class="mt-2 text-sm text-gray-500"><strong>Species: {{ total_species }}</strong></div>
+                    </div>
+                </a>
             </div>
         </div>
                 
@@ -167,7 +175,7 @@
                 <a href="{% url 'lumber_records' %}?status=expiring_soon" class="block">
                     <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
                         <div class="text-4xl font-bold text-yellow-600">{{ expiring_soon_lumber_count }}</div>
-                        <div class="text-yellow-900">Lumber Records Near Expiration</div>
+                        <div class="text-yellow-900">Lumber Records to be Expire</div>
                     </div>
                 </a>
 
@@ -213,7 +221,7 @@
             <a href="{% url 'chainsaw_record' %}?status=expiring_soon" class="block">
                 <div class="bg-white rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-blue-50">
                     <div class="text-4xl font-bold text-yellow-600">{{ expiring_soon_chainsaw_count }}</div>
-                    <div class="text-yellow-900">Chainsaw Records Near Expiration</div>
+                    <div class="text-yellow-900">Chainsaw Records to be Expire</div>
                 </div>
             </a>
 
