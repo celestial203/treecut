@@ -1314,26 +1314,31 @@ def trees(request):
 
 @login_required
 def trees_view(request):
-    # Get all cutting permits with their volume records
-    cutting_records = CuttingPermit.objects.prefetch_related('volume_records').all()
+    # Get search query
+    search_query = request.GET.get('search', '').strip()
     
-    # Calculate totals from VolumeRecord model
+    # Start with all records
     volume_records = VolumeRecord.objects.select_related('cutting')
     
-    # Calculate total trees
+    # Apply search if provided
+    if search_query:
+        volume_records = volume_records.filter(
+            Q(cutting__permit_number__icontains=search_query) |
+            Q(cutting__permit_type__icontains=search_query) |
+            Q(species__icontains=search_query)
+        )
+    
+    # Calculate totals from filtered records
     total_trees = volume_records.aggregate(
         total=Sum('number_of_trees')
     )['total'] or 0
     
-    # Get unique species count
     total_species = volume_records.values('species').distinct().count()
     
-    # Calculate total volume
     total_volume = volume_records.aggregate(
         total=Sum('calculated_volume')
     )['total'] or 0
     
-    # Format total volume to 2 decimal places
     if total_volume:
         total_volume = Decimal(str(total_volume)).quantize(Decimal('0.01'))
     
@@ -1362,6 +1367,7 @@ def trees_view(request):
         'total_trees': total_trees,
         'total_species': total_species,
         'total_volume': total_volume,
+        'search_query': search_query,  # Add search query to context
     }
     
     return render(request, 'trees.html', context)
