@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
-            background-color: #f0fdf4; /* Light green background */
+            background-color: #ffffff; /* White background */
         }
         .modal-open {
             overflow: hidden;
@@ -309,7 +309,7 @@
         }
     </style>
 </head>
-<body class="bg-green-100 text-gray-900">
+<body class="bg-white text-gray-900">
     <!-- Header with Logo -->
     <nav class="bg-transparent shadow-lg border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -333,13 +333,14 @@
                             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
                                
                                 <!-- Quick Actions -->
+                                <a href="{% url 'homepage' %}" class="block px-4 py-2 text-sm text-blue-700 hover:bg-gray-100">HOME</a>
                                 <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
                                 <div class="grid grid-cols-1 gap-2">
-                                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
-                                    <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
-                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
-                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
-                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                    <a href="{% url 'treecut-dash' %}" class="block px-4 py-2 text-sm text-green-900 hover:bg-gray-100">DASHBOARD</a>
+                                    <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CUTTING</a>
+                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-900 hover:bg-gray-100">LUMBER</a>
+                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-900 hover:bg-gray-100">CHAINSAW</a>
+                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-900 hover:bg-gray-100">WPP</a>
                                 </div>
                                 <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
                                     <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -380,12 +381,40 @@
         </div>
     </nav>
 
-    <div class="mt-8"></div> <!-- Added space after the nav -->
+    <div class="mt-4"></div>
+
+    <!-- Quick Access Boxes -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Box 1 - Lumber -->
+            <a href="{% url 'lumber' %}" class="block p-4 bg-white rounded-lg shadow-lg border border-green-500 hover:shadow-xl transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700 mb-1">Lumber Dealer</h3>
+                <p class="text-sm text-gray-600">Add Lumber Dealers</p>
+            </a>
+
+            <!-- Box 2 - Chainsaw -->
+            <a href="{% url 'chainsaw' %}" class="block p-4 bg-white rounded-lg shadow-lg border border-green-500 hover:shadow-xl transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700 mb-1">Chainsaw</h3>
+                <p class="text-sm text-gray-600">Add Chainsaw Permits</p>
+            </a>
+
+            <!-- Box 3 - WPP -->
+            <a href="{% url 'wood' %}" class="block p-4 bg-white rounded-lg shadow-lg border border-green-500 hover:shadow-xl transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700 mb-1">Wood Processing Plant</h3>
+                <p class="text-sm text-gray-600">Add WPP</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Horizontal Line -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <hr class="border-t-2 border-green-500 my-4">
+    </div>
 
     <!-- Add New Record Form -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h2 class="text-2xl font-bold mb-6 text-gray-800">Add New Tree Cutting Permit</h2>
+        <div class="bg-white rounded-lg shadow-lg p-6 border-2 border-green-500">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 tracking-wider uppercase">ADD NEW TREE CUTTING PERMIT</h2>
             <form method="post" enctype="multipart/form-data" class="space-y-6">
                 {% csrf_token %}
                 
@@ -642,8 +671,8 @@
                     </button>
                     <div class="flex items-center space-x-3">
                         <a href="{% url 'cutting_records' %}" 
-                           class="inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-green-200 rounded-lg 
-                                  hover:bg-green-500 hover:text-green-800 transition-all duration-200 shadow-sm">
+                           class="inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-transparent border-2 border-green-500 rounded-lg 
+                                  hover:bg-green-500 hover:text-white transition-all duration-200 shadow-sm">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                       d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>

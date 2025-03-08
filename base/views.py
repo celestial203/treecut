@@ -13,7 +13,6 @@ from django.db.models import Sum, Q
 from decimal import Decimal
 from django.http import JsonResponse
 from django.urls import reverse
-from decimal import Decimal
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django import template
 from django.views.decorators.http import require_POST
@@ -30,8 +29,7 @@ def login_view(request):
         
         if user is not None:
             login(request, user)
-            messages.success(request, f'Welcome back, {username}!')
-            return redirect('dashboard')
+            return redirect('homepage')
         else:
             messages.error(request, 'Invalid username or password.')
     
@@ -134,7 +132,7 @@ def dashboard(request):
     )['total'] or 0
 
     # Calculate unique species count from VolumeRecord
-    unique_species = VolumeRecord.objects.values('species').distinct().count()
+    total_species = VolumeRecord.objects.values('species').distinct().count()
 
     context = {
         'cutting_count': cutting_count,
@@ -154,7 +152,7 @@ def dashboard(request):
         'active_chainsaw_count': active_chainsaw_count,
         'expiring_soon_chainsaw_count': expiring_soon_chainsaw_count,
         'total_trees': total_trees,
-        'total_species': unique_species,
+        'total_species': total_species,
     }
 
     return render(request, 'dashboard.html', context)
@@ -472,17 +470,15 @@ def edit_cutting(request, pk):
     return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting})
 
 @login_required
-def view_cutting(request, permit_number):
-    cutting = get_object_or_404(Cutting, permit_number=permit_number)
-    # Get all volume records for this cutting - using VolumeRecord model instead of cutting_records
-    volume_records = VolumeRecord.objects.filter(cutting=cutting).order_by('-date')
+def view_cutting(request, cutting_id):
+    cutting = get_object_or_404(Cutting, id=cutting_id)
+    volume_records = VolumeRecord.objects.filter(cutting=cutting)
+    today = timezone.now().date()
     
-    today = date.today()
     context = {
         'cutting': cutting,
         'volume_records': volume_records,
-        'page_title': 'View Cutting Record',
-        'today': today
+        'today': today,
     }
     return render(request, 'view_cutting.html', context)
 
@@ -919,18 +915,26 @@ def cutting_records(request):
     status = request.GET.get('status')
     today = date.today()
     
+    # Base queryset
+    cuttings = Cutting.objects.all()
+    
+    # Apply filters based on status
     if status == 'expired':
-        # Filter only expired permits
-        cuttings = Cutting.objects.filter(expiry_date__lt=today).order_by('-created_at')
+        cuttings = cuttings.filter(expiry_date__lt=today)
     elif status == 'active':
-        # Filter only active permits
-        cuttings = Cutting.objects.filter(expiry_date__gte=today).order_by('-created_at')
+        cuttings = cuttings.filter(
+            Q(permit_type__in=['TCP', 'PLTP', 'SPLTP'], expiry_date__gte=today) |
+            Q(permit_type='STCP', volume_records__isnull=False)
+        ).distinct()
     elif status == 'pending':
-        # Filter only pending permits (no cutting records)
-        cuttings = Cutting.objects.filter(cutting_records__isnull=True).order_by('-created_at')
-    else:
-        # Show all permits if no status filter
-        cuttings = Cutting.objects.all().order_by('-created_at')
+        # Show STCP permits that have no volume records
+        cuttings = cuttings.filter(
+            permit_type='STCP',
+            volume_records__isnull=True
+        )
+    
+    # Order the results
+    cuttings = cuttings.order_by('-created_at')
     
     context = {
         'cuttings': cuttings,
@@ -1319,6 +1323,7 @@ def trees_view(request):
     
     # Start with all records
     volume_records = VolumeRecord.objects.select_related('cutting')
+    cutting_records = Cutting.objects.all()
     
     # Apply search if provided
     if search_query:
@@ -1327,14 +1332,44 @@ def trees_view(request):
             Q(cutting__permit_type__icontains=search_query) |
             Q(species__icontains=search_query)
         )
+        cutting_records = cutting_records.filter(
+            Q(permit_number__icontains=search_query) |
+            Q(permit_type__icontains=search_query) |
+            Q(species__icontains=search_query)
+        )
     
-    # Calculate totals from filtered records
-    total_trees = volume_records.aggregate(
+    # Calculate total trees from volume records
+    volume_trees = volume_records.aggregate(
         total=Sum('number_of_trees')
     )['total'] or 0
     
-    total_species = volume_records.values('species').distinct().count()
+    # Calculate total trees from initial permits (where no volume records exist)
+    permit_trees = cutting_records.aggregate(
+        total=Sum('no_of_trees')
+    )['total'] or 0
     
+    # Total trees is the sum of both
+    total_trees = volume_trees + permit_trees
+    
+    # Calculate unique species from both sources
+    species_set = set()
+    
+    # Get species from volume records
+    for species in volume_records.values_list('species', flat=True).distinct():
+        if species:
+            species_set.add(species.strip())
+    
+    # Get species from cutting permits
+    for cutting in cutting_records:
+        if cutting.species:
+            species_entries = cutting.species.split(',')
+            for entry in species_entries:
+                species_name = entry.strip().split('(')[0].strip()
+                species_set.add(species_name)
+    
+    total_species = len(species_set)
+    
+    # Calculate total volume from volume records
     total_volume = volume_records.aggregate(
         total=Sum('calculated_volume')
     )['total'] or 0
@@ -1344,6 +1379,8 @@ def trees_view(request):
     
     # Group records by permit
     permit_records = {}
+    
+    # Add volume records
     for record in volume_records:
         permit_key = record.cutting
         if permit_key not in permit_records:
@@ -1362,12 +1399,185 @@ def trees_view(request):
         permit_records[permit_key]['total_trees'] += record.number_of_trees
         permit_records[permit_key]['total_volume'] += Decimal(str(record.calculated_volume))
     
+    # Add permits without volume records
+    for cutting in cutting_records:
+        if cutting not in permit_records:
+            species_list = []
+            if cutting.species:
+                species_entries = cutting.species.split(',')
+                for item in species_entries:
+                    if '(' in item and ')' in item:
+                        name = item[:item.rfind('(')].strip()
+                        qty = item[item.rfind('(')+1:item.rfind(')')].strip()
+                        species_list.append({
+                            'name': name,
+                            'trees': qty
+                        })
+            
+            permit_records[cutting] = {
+                'permit_type': cutting.permit_type,
+                'permit_number': cutting.permit_number,
+                'species': species_list,
+                'total_trees': cutting.no_of_trees,
+                'total_volume': Decimal('0.00')  # No volume yet
+            }
+    
     context = {
         'permit_records': permit_records.items(),
         'total_trees': total_trees,
         'total_species': total_species,
         'total_volume': total_volume,
-        'search_query': search_query,  # Add search query to context
+        'search_query': search_query,
     }
     
     return render(request, 'trees.html', context)
+
+def homepage(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    return render(request, 'homepage.html')
+
+def treecut_dash(request):
+    current_date = timezone.now().date()
+
+    # Basic counts
+    cutting_count = Cutting.objects.count()
+    
+    # Expired permits
+    expired_cutting_count = Cutting.objects.filter(
+        expiry_date__lt=current_date
+    ).count()
+    
+    # Active cutting permits (not expired)
+    active_cutting_count = Cutting.objects.filter(
+        Q(permit_type__in=['TCP', 'PLTP', 'SPLTP'], expiry_date__gte=current_date) |
+        Q(permit_type='STCP', volume_records__isnull=False)  # Has volume records
+    ).distinct().count()
+    
+    # Calculate pending cutting permits (STCP with no volume records)
+    pending_cutting_count = Cutting.objects.filter(
+        permit_type='STCP',
+        volume_records__isnull=True  # No volume records yet
+    ).count()
+
+    # Lumber Records counts
+    lumber_count = Lumber.objects.count()
+    
+    # For expired lumber records, we need to check if current date is past the expiry date
+    expired_lumber_count = Lumber.objects.filter(
+        expiry_date__lt=current_date
+    ).count()
+    
+    # For active lumber records, the current date should be before or equal to expiry date
+    active_lumber_count = Lumber.objects.filter(
+        expiry_date__gte=current_date
+    ).count()
+    
+    # For expiring soon lumber records, use records that expire within the next 30 days
+    # but are not yet expired
+    thirty_days_from_now = current_date + timedelta(days=30)
+    expiring_soon_lumber_count = Lumber.objects.filter(
+        expiry_date__gte=current_date,
+        expiry_date__lte=thirty_days_from_now
+    ).count()
+
+    # Chainsaw counts
+    chainsaw_count = Chainsaw.objects.count()
+    expired_chainsaw_count = Chainsaw.objects.filter(
+        expiry_date__lt=current_date
+    ).count()
+
+    # Wood counts
+    wood_count = Wood.objects.count()
+    expired_wood_count = Wood.objects.filter(
+        expiry_date__lt=current_date
+    ).count()
+
+    # Add Volume Records count
+    volume_count = CuttingRecord.objects.count()
+    
+    # Calculate total volume from all cutting records
+    total_volume = CuttingRecord.objects.aggregate(
+        total=Sum('calculated_volume')
+    )['total'] or 0
+    
+    # Convert to Decimal for consistent display
+    if not isinstance(total_volume, Decimal):
+        total_volume = Decimal(str(total_volume))
+    
+    # Format to 2 decimal places
+    total_volume = total_volume.quantize(Decimal('0.01'))
+
+    # Calculate active chainsaw records (not expired)
+    active_chainsaw_count = Chainsaw.objects.filter(
+        expiry_date__gte=current_date
+    ).count()
+
+    # For chainsaws expiring soon (within 3 months but not expired)
+    three_months_from_now = current_date + timedelta(days=90)  # 90 days = ~3 months
+    expiring_soon_chainsaw_count = Chainsaw.objects.filter(
+        expiry_date__gt=current_date,  # Not expired yet
+        expiry_date__lte=three_months_from_now  # But will expire within 3 months
+    ).count()
+
+    # Update the total trees calculation to use VolumeRecord
+    total_trees = VolumeRecord.objects.aggregate(
+        total=Sum('number_of_trees')
+    )['total'] or 0
+
+    # Calculate unique species count from VolumeRecord
+    total_species = VolumeRecord.objects.values('species').distinct().count()
+
+    # Calculate total trees from volume records
+    volume_trees = VolumeRecord.objects.aggregate(
+        total=Sum('number_of_trees')
+    )['total'] or 0
+
+    # Calculate total trees from initial permits (where no volume records exist)
+    permit_trees = Cutting.objects.aggregate(
+        total=Sum('no_of_trees')
+    )['total'] or 0
+
+    # Total trees is the sum of both
+    total_trees = volume_trees + permit_trees
+
+    # Calculate unique species from both sources
+    species_set = set()
+    
+    # Get species from volume records
+    for species in VolumeRecord.objects.values_list('species', flat=True).distinct():
+        if species:
+            species_set.add(species.strip())
+    
+    # Get species from cutting permits
+    for cutting in Cutting.objects.all():
+        if cutting.species:
+            species_entries = cutting.species.split(',')
+            for entry in species_entries:
+                species_name = entry.strip().split('(')[0].strip()
+                species_set.add(species_name)
+    
+    total_species = len(species_set)
+
+    context = {
+        'cutting_count': cutting_count,
+        'expired_cutting_count': expired_cutting_count,
+        'active_cutting_count': active_cutting_count,
+        'pending_cutting_count': pending_cutting_count,
+        'lumber_count': lumber_count,
+        'expired_lumber_count': expired_lumber_count,
+        'active_lumber_count': active_lumber_count,
+        'expiring_soon_lumber_count': expiring_soon_lumber_count,
+        'chainsaw_count': chainsaw_count,
+        'expired_chainsaw_count': expired_chainsaw_count,
+        'wood_count': wood_count,
+        'expired_wood_count': expired_wood_count,
+        'volume_count': volume_count,
+        'total_volume': total_volume,  # Add the total volume to the context
+        'active_chainsaw_count': active_chainsaw_count,
+        'expiring_soon_chainsaw_count': expiring_soon_chainsaw_count,
+        'total_trees': total_trees,
+        'total_species': total_species,
+    }
+
+    return render(request, 'treecut-dash.html', context)

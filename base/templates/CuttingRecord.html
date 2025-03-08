@@ -13,7 +13,7 @@
     <style>
         /* Enhanced styling */
         body {
-            background-color: #f0fdf4; /* Light green background */
+            background-color: #ffff; /* Light green background */
         }
 
         .table-container {
@@ -42,8 +42,16 @@
         }
 
         tbody tr:hover {
-            background-color: rgba(0, 0, 0, 0.02);
+            background-color: rgba(34, 197, 94, 0.1); /* Light green with transparency */
             transition: all 0.2s ease;
+        }
+
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover td {
+            background-color: rgba(34, 197, 94, 0.1); /* Light green with transparency */
         }
 
         /* Status badges */
@@ -174,7 +182,7 @@
                             <!-- Quick Actions -->
                             <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
                             <div class="grid grid-cols-1 gap-2">
-                                <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
+                                <a href="{% url 'treecut-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
                                 <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
                                 <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
                                 <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
@@ -257,81 +265,135 @@
     });
 </script>
 
+    <!-- Quick Access Boxes -->
+    <div class="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <!-- Lumber Records Box -->
+            <a href="{% url 'lumber_records' %}" class="block p-4 bg-white border-2 border-green-500 rounded-lg shadow hover:shadow-lg transition-shadow duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-900">Lumber Records</h3>
+                        <p class="text-xs text-gray-600">View lumber records</p>
+                    </div>
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                </div>
+            </a>
+
+            <!-- Chainsaw Records Box -->
+            <a href="{% url 'chainsaw_record' %}" class="block p-4 bg-white border-2 border-green-500 rounded-lg shadow hover:shadow-lg transition-shadow duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-900">Chainsaw Records</h3>
+                        <p class="text-xs text-gray-600">View chainsaw records</p>
+                    </div>
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                    </svg>
+                </div>
+            </a>
+
+            <!-- WPP Records Box -->
+            <a href="{% url 'wood_records' %}" class="block p-4 bg-white border-2 border-green-500 rounded-lg shadow hover:shadow-lg transition-shadow duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-900">WPP Records</h3>
+                        <p class="text-xs text-gray-600">View WPP records</p>
+                    </div>
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                    </svg>
+                </div>
+            </a>
+        </div>
+        
+        <!-- Green Divider Line -->
+        <div class="border-b-2 border-green-500 my-6"></div>
+    </div>
+
     <!-- Search Section -->
     <div class="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        <div class="bg-gradient-to-r from-green-700 to-blue-100 p-8 rounded-xl shadow-lg">
+        <div class="bg-transparent border-2 border-green-500 p-8 rounded-xl shadow-lg">
             <!-- Filter Buttons Row 1 - Status Filters -->
             <div class="flex gap-4 mb-6">
                 <button id="allRecordsBtn" 
-                        class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                        class="px-4 py-2 bg-transparent border-2 border-green-500 text-black rounded-lg transition-all duration-200 text-sm font-medium hover:bg-blue-100 active:bg-blue-200">
                     All Records
                 </button>
                 <button id="activeRecordsBtn" 
-                        class="px-4 py-2 bg-green-500/80 hover:bg-green-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                        class="px-4 py-2 bg-transparent border-2 border-green-500 text-black rounded-lg transition-all duration-200 text-sm font-medium hover:bg-blue-100 active:bg-blue-200">
                     Active 
                 </button>
-                 <button id="pendingRecordsBtn" 
-                        class="px-4 py-2 bg-yellow-500/80 hover:bg-yellow-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                <button id="pendingRecordsBtn" 
+                        class="px-4 py-2 bg-transparent border-2 border-green-500 text-black rounded-lg transition-all duration-200 text-sm font-medium hover:bg-blue-100 active:bg-blue-200">
                     Pending
                 </button>
                 <button id="expiredRecordsBtn" 
-                        class="px-4 py-2 bg-red-500/80 hover:bg-red-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                        class="px-4 py-2 bg-transparent border-2 border-green-500 text-black rounded-lg transition-all duration-200 text-sm font-medium hover:bg-blue-100 active:bg-blue-200">
                     Expired 
                 </button>
                 <button id="allPermitsBtn" 
-                        class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                        class="px-4 py-2 bg-transparent border-2 border-green-500 text-black rounded-lg transition-all duration-200 text-sm font-medium hover:bg-blue-100 active:bg-blue-200">
                     All Permits
                 </button>
                 <button id="stcpBtn" 
-                        class="px-4 py-2 bg-blue-500/80 hover:bg-blue-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                        class="px-4 py-2 bg-transparent border-2 border-green-500 text-black rounded-lg transition-all duration-200 text-sm font-medium hover:bg-blue-100 active:bg-blue-200">
                     STCP
                 </button>
                 <button id="tcpBtn" 
-                        class="px-4 py-2 bg-indigo-500/80 hover:bg-indigo-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                        class="px-4 py-2 bg-transparent border-2 border-green-500 text-black rounded-lg transition-all duration-200 text-sm font-medium hover:bg-blue-100 active:bg-blue-200">
                     TCP
                 </button>
                 <button id="pltpBtn" 
-                        class="px-4 py-2 bg-purple-500/80 hover:bg-purple-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                        class="px-4 py-2 bg-transparent border-2 border-green-500 text-black rounded-lg transition-all duration-200 text-sm font-medium hover:bg-blue-100 active:bg-blue-200">
                     PLTP
                 </button>
                 <button id="spltpBtn" 
-                        class="px-4 py-2 bg-pink-500/80 hover:bg-pink-500 text-white rounded-lg transition-all duration-200 text-sm font-medium">
+                        class="px-4 py-2 bg-transparent border-2 border-green-500 text-black rounded-lg transition-all duration-200 text-sm font-medium hover:bg-blue-100 active:bg-blue-200">
                     SPLTP
                 </button>
+                <a href="{% url 'trees' %}" 
+                   class="px-4 py-2 bg-transparent border-2 border-green-500 text-black rounded-lg transition-all duration-200 text-sm font-medium hover:bg-blue-100 active:bg-blue-200 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3c-1.1 0-2 .9-2 2v2L7 5v4.5L5 8v5l-2-2v6h18v-6l-2 2V8l-2 1.5V5l-3 2V5c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                    Total Trees
+                </a>
             </div>
 
             <!-- Existing Search Fields -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 <!-- Permit Search -->
                 <div class="search-container">
-                    <label class="block text-white text-sm mb-2">Search Record</label>
+                    <label class="block text-black text-sm mb-2">Search Record</label>
                     <input type="text" 
                            id="permitSearch" 
                            placeholder="" 
-                           class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                           class="w-full px-4 py-2 rounded-lg bg-transparent border-2 border-green-500 text-black placeholder-black/50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent hover:bg-blue-50">
                 </div>
 
                 <!-- Start Date -->
                 <div class="search-container">
-                    <label class="block text-white text-sm mb-2">Start Date</label>
+                    <label class="block text-black text-sm mb-2">Start Date</label>
                     <input type="date" 
                            id="startDate" 
-                           class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                           class="w-full px-4 py-2 rounded-lg bg-transparent border-2 border-green-500 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent hover:bg-blue-50">
                 </div>
 
                 <!-- End Date -->
                 <div class="search-container">
-                    <label class="block text-white text-sm mb-2">End Date</label>
+                    <label class="block text-black text-sm mb-2">End Date</label>
                     <input type="date" 
                            id="endDate" 
-                           class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                           class="w-full px-4 py-2 rounded-lg bg-transparent border-2 border-green-500 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent hover:bg-blue-50">
                 </div>
 
                 <!-- Year Filter -->
                 <div class="search-container">
-                    <label class="block text-white text-sm mb-2">Filter by Year</label>
+                    <label class="block text-black text-sm mb-2">Filter by Year</label>
                     <select id="yearFilter" 
-                            class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                            class="w-full px-4 py-2 rounded-lg bg-transparent border-2 border-green-500 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent hover:bg-blue-50">
                         <option value="">All Years</option>
                     </select>
                 </div>
@@ -339,7 +401,7 @@
                 <!-- Export and Volumes Buttons Column -->
                 <div class="flex items-end gap-2">
                     <button onclick="exportTableToCSV('cutting_records.csv')"
-                            class="w-1/2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
+                            class="w-1/2 px-4 py-2 bg-transparent border-2 border-green-500 text-black rounded-lg transition-all duration-200 flex items-center justify-center gap-2 hover:bg-blue-100 active:bg-blue-200">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                         </svg>

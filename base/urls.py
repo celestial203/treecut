@@ -12,6 +12,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.login_view, name='login'),  # Root URL redirects to login
     path('login/', views.login_view, name='login'),  # Keep this for explicit login URL
+    path('homepage/', views.homepage, name='homepage'),
     path('logout/', views.logout_view, name='logout'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('cutting/', views.cutting, name='cutting'),
@@ -44,7 +45,7 @@ urlpatterns = [
     path('calculate-volumes/', views.calculate_volumes, name='calculate_volumes'),
     path('edit-volume-record/<int:record_id>/', views.edit_volume_record, name='edit_volume_record'),
     path('trees/', views.trees_view, name='trees'),
-    path('cutting/<str:permit_number>/view/', views.view_cutting, name='view_cutting'),
+    path('treecut-dash/', views.treecut_dash, name='treecut-dash'),
 ]
 
 if settings.DEBUG:
