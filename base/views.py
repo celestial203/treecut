@@ -1581,3 +1581,6 @@ def treecut_dash(request):
     }
 
     return render(request, 'treecut-dash.html', context)
+
+def developers(request):
+    return render(request, 'developers.html')

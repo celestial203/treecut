@@ -46,6 +46,7 @@ urlpatterns = [
     path('edit-volume-record/<int:record_id>/', views.edit_volume_record, name='edit_volume_record'),
     path('trees/', views.trees_view, name='trees'),
     path('treecut-dash/', views.treecut_dash, name='treecut-dash'),
+    path('developers/', views.developers, name='developers'),
 ]
 
 if settings.DEBUG:
