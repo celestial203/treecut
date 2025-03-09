@@ -48,6 +48,7 @@ class LoginForm(AuthenticationForm):
 class LumberForm(forms.ModelForm):
     class Meta:
         model = Lumber
+        exclude = ['created_by']
         fields = [
             'no',
             'trade_name',
@@ -66,19 +67,59 @@ class LumberForm(forms.ModelForm):
             'file'
         ]
         widgets = {
-            'date_issued': forms.DateInput(attrs={'type': 'date'}),
-            'expiry_date': forms.DateInput(attrs={'type': 'date'})
+            'no': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'trade_name': forms.TextInput(attrs={'required': True, 'class': 'form-input'}),
+            'manager_owner': forms.TextInput(attrs={'required': True, 'class': 'form-input'}),
+            'contact_number': forms.TextInput(attrs={'required': True, 'pattern': '^09\d{9}$', 'class': 'form-input'}),
+            'gender': forms.Select(attrs={'required': True, 'class': 'form-input'}),
+            'brgy': forms.TextInput(attrs={'required': True, 'class': 'form-input'}),
+            'municipality': forms.TextInput(attrs={'required': True, 'class': 'form-input'}),
+            'province': forms.TextInput(attrs={'required': True, 'class': 'form-input'}),
+            'source_supplier': forms.TextInput(attrs={'required': True, 'class': 'form-input'}),
+            'permit_no': forms.TextInput(attrs={'required': True, 'class': 'form-input'}),
+            'date_issued': forms.DateInput(attrs={'type': 'date', 'required': True, 'class': 'form-input'}),
+            'expiry_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-input'}),
+            'volume_cubic_meter': forms.NumberInput(attrs={'step': '0.01', 'min': '0.01', 'required': True, 'class': 'form-input'}),
+            'species': forms.TextInput(attrs={'required': True, 'class': 'form-input'}),
+            'file': forms.FileInput(attrs={'class': 'form-input', 'accept': '.pdf,.doc,.docx,.jpg,.jpeg,.png'})
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def clean(self):
         cleaned_data = super().clean()
         date_issued = cleaned_data.get('date_issued')
         expiry_date = cleaned_data.get('expiry_date')
-        
+
+        # Validate date_issued is not in the future
+        if date_issued and date_issued > timezone.now().date():
+            self.add_error('date_issued', 'Date issued cannot be in the future')
+
+        # Validate expiry_date is after date_issued if provided
         if date_issued and expiry_date and expiry_date < date_issued:
-            raise forms.ValidationError("Expiry date cannot be earlier than date issued.")
-        
+            self.add_error('expiry_date', 'Expiry date must be after date issued')
+
         return cleaned_data
+
+    def clean_volume_cubic_meter(self):
+        volume = self.cleaned_data.get('volume_cubic_meter')
+        if volume is not None:
+            if volume <= 0:
+                raise forms.ValidationError("Volume must be greater than 0")
+        return volume
+
+    def clean_contact_number(self):
+        contact_number = self.cleaned_data.get('contact_number')
+        if not contact_number:
+            raise forms.ValidationError("Contact number is required")
+        if not contact_number.startswith('09'):
+            raise forms.ValidationError("Contact number must start with '09'")
+        if len(contact_number) != 11:
+            raise forms.ValidationError("Contact number must be 11 digits long")
+        if not contact_number.isdigit():
+            raise forms.ValidationError("Contact number must contain only digits")
+        return contact_number
 
 # CuttingForm
 class CuttingForm(forms.ModelForm):

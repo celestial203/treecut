@@ -302,55 +302,27 @@ def wood(request):
 #FOR LUMBERRRR #####
 @login_required
 def lumber(request):
-    current_date = timezone.now().date()
-    
     if request.method == 'POST':
         form = LumberForm(request.POST, request.FILES)
         if form.is_valid():
-            lumber_record = form.save(commit=False)
-            lumber_record.created_by = request.user
-            
-            # Debug file upload
-            if 'file' in request.FILES:
-                print(f"File received: {request.FILES['file'].name}")
-                print(f"File size: {request.FILES['file'].size} bytes")
-                lumber_record.file = request.FILES['file']
-            else:
-                print("No file was uploaded")
-            
-            lumber_record.save()
+            lumber = form.save()
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'message': 'Lumber record added successfully!'})
             messages.success(request, 'Lumber record added successfully!')
-            return redirect('lumber')
+            return redirect('lumber_records')
         else:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'errors': form.errors
+                }, status=400)
             messages.error(request, 'Error adding lumber record. Please check the form.')
-            print(f"Form errors: {form.errors}")
     else:
         form = LumberForm()
-    
-    # Get all lumber records
-    lumber_records = Lumber.objects.all()
-    
-    # Check for any expiring records to show notification
-    any_expiring_records = any(record.expiry_warning for record in lumber_records)
-    
-    # Count expired records
-    expired_count = Lumber.objects.filter(expiry_date__lt=current_date).count()
-    
-    # Count records expiring in next 30 days but not expired yet
-    thirty_days_from_now = current_date + timedelta(days=30)
-    expiring_soon_count = Lumber.objects.filter(
-        expiry_date__gte=current_date,
-        expiry_date__lte=thirty_days_from_now
-    ).count()
 
     context = {
         'form': form,
-        'lumber_records': lumber_records,
-        'any_expiring_records': any_expiring_records,
-        'expired_count': expired_count,
-        'expiring_soon_count': expiring_soon_count,
+        'next_number': Lumber.objects.count() + 1  # For auto-incrementing number
     }
-    
     return render(request, 'lumber.html', context)
 
 @login_required
@@ -1630,3 +1602,70 @@ def get_last_chainsaw_number(request):
         return JsonResponse({'last_number': last_number})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def lumber_dash(request):
+    current_date = timezone.now().date()
+    
+    # Get basic counts
+    lumber_count = Lumber.objects.count()
+    
+    # For expired lumber records
+    expired_lumber_count = Lumber.objects.filter(
+        expiry_date__lt=current_date
+    ).count()
+    
+    # For active lumber records
+    active_lumber_count = Lumber.objects.filter(
+        expiry_date__gte=current_date
+    ).count()
+    
+    # For lumber records expiring soon (within 30 days but not expired)
+    thirty_days_from_now = current_date + timedelta(days=30)
+    expiring_soon_lumber_count = Lumber.objects.filter(
+        expiry_date__gte=current_date,
+        expiry_date__lte=thirty_days_from_now
+    ).count()
+
+    context = {
+        'lumber_count': lumber_count,
+        'expired_lumber_count': expired_lumber_count,
+        'active_lumber_count': active_lumber_count,
+        'expiring_soon_lumber_count': expiring_soon_lumber_count,
+    }
+    
+    return render(request, 'lumber-dash.html', context)
+
+@login_required
+def lumber_form(request):
+    latest_record = Lumber.objects.order_by('-no').first()
+    next_number = 1 if not latest_record else latest_record.no + 1
+    
+    if request.method == 'POST':
+        form = LumberForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                lumber = form.save(commit=False)
+                lumber.created_by = request.user
+                lumber.no = next_number
+                lumber.save()
+                form.save_m2m()
+                messages.success(request, 'Lumber record created successfully!')
+                return redirect('lumber_records')
+            except Exception as e:
+                print(f"Error saving lumber: {str(e)}")
+                messages.error(request, f'Error saving record: {str(e)}')
+        else:
+            print(f"Form errors: {form.errors}")
+            for field, errors in form.errors.items():
+                messages.error(request, f"{field}: {', '.join(errors)}")
+    else:
+        form = LumberForm(initial={'no': next_number})
+
+    context = {
+        'form': form,
+        'next_number': next_number,
+        'lumber_records': Lumber.objects.filter(expiry_warning=True),
+        'any_expiring_records': Lumber.objects.filter(expiry_warning=True).exists(),
+    }
+    return render(request, 'lumber.html', context)

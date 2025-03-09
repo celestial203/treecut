@@ -13,81 +13,107 @@ from django.contrib.auth.models import User
 # The import statement for VolumeRecord should be placed at the top of the file with other import statements.
 
 class Lumber(models.Model):
-    no = models.CharField(max_length=50)
-    trade_name = models.CharField(max_length=200)
-    manager_owner = models.CharField(max_length=200)
-    contact_number = models.CharField(max_length=20, blank=True, null=True)
-    gender = models.CharField(max_length=10, blank=True, default="")
-    brgy = models.CharField(max_length=100, blank=True, default="")
-    municipality = models.CharField(max_length=100, blank=True, default="")
-    province = models.CharField(max_length=100, blank=True, default="")
-    source_supplier = models.CharField(max_length=200, blank=True, default="")
+    STATUS_CHOICES = [
+        ('Active', 'Active'),
+        ('Expired', 'Expired'),
+        ('Pending', 'Pending'),
+    ]
+
+    # Basic Information
+    no = models.IntegerField(null=True, blank=True)
+    trade_name = models.CharField(max_length=100)
+    manager_owner = models.CharField(max_length=100)
+    contact_number = models.CharField(max_length=11, null=True, blank=True)
+    gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female')])
+    
+    # Location
+    brgy = models.CharField(max_length=100)
+    municipality = models.CharField(max_length=100)
+    province = models.CharField(max_length=100)
+    
+    # Permit Details
+    source_supplier = models.CharField(max_length=100)
     permit_no = models.CharField(max_length=100)
     date_issued = models.DateField()
-    expiry_date = models.DateField()
-    volume_cubic_meter = models.DecimalField(max_digits=10, decimal_places=2)
+    expiry_date = models.DateField(null=True, blank=True)
+    
+    # Volume Information
+    volume_cubic_meter = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.01'))])
     species = models.CharField(max_length=100)
+    
+    # File Attachment
+    file = models.FileField(upload_to='lumber_files/', null=True, blank=True)
+    
+    # Status and Tracking
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    file = models.FileField(upload_to='lumber_files/', null=True, blank=True)
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,  # Changed from CASCADE to SET_NULL
+        null=True,
+        blank=True,  # Added blank=True
+        related_name='lumber_records'
+    )
+
+    class Meta:
+        ordering = ['-date_issued']
 
     def __str__(self):
         return f"{self.trade_name} - {self.permit_no}"
 
     def clean(self):
-        # Date validations
-        if self.date_issued:
-            # Check if expiry date is not more than 5 years from date issued
-            max_expiry = self.date_issued + timezone.timedelta(days=5*365)
-            if self.expiry_date > max_expiry:
-                raise ValidationError({'expiry_date': 'Expiry date cannot be more than 5 years from date issued.'})
-
-        if not self.date_issued:
-            raise ValidationError({'date_issued': 'Date issued is required.'})
-
-        if not self.expiry_date:
-            raise ValidationError({'expiry_date': 'Expiry date is required.'})
-
-        # Permit number validation
-        if self.permit_no:
-            permit_pattern = re.compile(r'^[A-Za-z0-9-]+$')
-            if not permit_pattern.match(self.permit_no):
-                raise ValidationError({'permit_no': 'Permit number can only contain letters, numbers, and hyphens.'})
-
-        # Trade name validation
-        if self.trade_name:
-            if len(self.trade_name.strip()) < 3:
-                raise ValidationError({'trade_name': 'Trade name must be at least 3 characters long.'})
-
-        # No. validation (assuming it's a required field)
-        if not self.no:
-            raise ValidationError({'no': 'Number is required.'})
-        no_pattern = re.compile(r'^[A-Za-z0-9-]+$')
-        if not no_pattern.match(self.no):
-            raise ValidationError({'no': 'Number can only contain letters, numbers, and hyphens.'})
+        # Validate dates
+        if self.date_issued and self.date_issued > timezone.now().date():
+            raise ValidationError({'date_issued': 'Date issued cannot be in the future'})
+            
+        if self.date_issued and self.expiry_date and self.expiry_date < self.date_issued:
+            raise ValidationError({'expiry_date': 'Expiry date must be after date issued'})
+            
+        # Validate contact number
+        if self.contact_number:
+            if not self.contact_number.startswith('09'):
+                raise ValidationError({'contact_number': 'Contact number must start with 09'})
+            if len(self.contact_number) != 11:
+                raise ValidationError({'contact_number': 'Contact number must be 11 digits'})
+            if not self.contact_number.isdigit():
+                raise ValidationError({'contact_number': 'Contact number must contain only digits'})
+                
+        # Validate volume
+        if self.volume_cubic_meter and self.volume_cubic_meter <= 0:
+            raise ValidationError({'volume_cubic_meter': 'Volume must be greater than 0'})
 
     def save(self, *args, **kwargs):
-        # Remove the automatic 3-month expiry date setting
+        # Auto-generate number if not set
+        if not self.no:
+            last_record = Lumber.objects.order_by('-no').first()
+            self.no = 1 if not last_record else last_record.no + 1
+            
+        # Update status based on expiry date
+        if self.expiry_date:
+            today = timezone.now().date()
+            if today > self.expiry_date:
+                self.status = 'Expired'
+            else:
+                self.status = 'Active'
+                
+        self.full_clean()
         super().save(*args, **kwargs)
 
     @property
     def expiry_warning(self):
-        """
-        Returns True if the permit is expiring within 3 months
-        """
+        """Returns True if the permit is expiring within 3 months"""
         if not self.expiry_date:
             return False
             
         today = timezone.now().date()
         three_months_from_now = today + timedelta(days=90)
         
-        # Return True if expiry date is within the next 3 months
         return today <= self.expiry_date <= three_months_from_now
 
     @property
     def location(self):
-        """Returns a formatted location string combining brgy, municipality, and province"""
+        """Returns a formatted location string"""
         location_parts = []
         if self.brgy:
             location_parts.append(self.brgy)
@@ -96,17 +122,15 @@ class Lumber(models.Model):
         if self.province:
             location_parts.append(self.province)
         
-        if location_parts:
-            return ", ".join(location_parts)
-        return "No location specified"
+        return ", ".join(location_parts) if location_parts else "No location specified"
 
     @property
     def is_complete(self):
-        """Check if the record has all required information"""
+        """Check if all required information is present"""
         required_fields = [
             self.no, self.trade_name, self.manager_owner, 
-            self.permit_no, self.date_issued, self.expiry_date,
-            self.volume_cubic_meter, self.species
+            self.permit_no, self.date_issued, self.volume_cubic_meter, 
+            self.species
         ]
         return all(required_fields)
 

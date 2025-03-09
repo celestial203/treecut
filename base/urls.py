@@ -46,6 +46,7 @@ urlpatterns = [
     path('edit-volume-record/<int:record_id>/', views.edit_volume_record, name='edit_volume_record'),
     path('trees/', views.trees_view, name='trees'),
     path('treecut-dash/', views.treecut_dash, name='treecut-dash'),
+    path('lumber-dash/', views.lumber_dash, name='lumber-dash'),
     path('developers/', views.developers, name='developers'),
     path('chainsaw-dash/', views.chainsaw_dash, name='chainsaw-dash'),
     path('get-last-chainsaw-number/', views.get_last_chainsaw_number, name='get_last_chainsaw_number'),

@@ -27,10 +27,10 @@ def custom_admin_login(request):
 @admin.register(Lumber)
 class LumberAdmin(admin.ModelAdmin):
     list_display = ('no', 'trade_name', 'manager_owner', 'permit_no', 'date_issued', 'expiry_date', 'volume_cubic_meter')
-    list_filter = ('species', 'date_issued', 'created_at')
+    list_filter = ('species', 'date_issued')
     search_fields = ('no', 'trade_name', 'manager_owner', 'permit_no')
     date_hierarchy = 'date_issued'
-    readonly_fields = ('created_at', 'updated_at')
+    readonly_fields = ()
 
     def save_model(self, request, obj, form, change):
         if not change:  # If this is a new record

@@ -11,14 +11,6 @@
     <style>
         body {
             background: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            margin: 0;
-        }
-
-        footer {
-            margin-top: auto;
         }
     </style>
 </head>
@@ -49,14 +41,14 @@
                                 <a href="{% url 'homepage' %}" class="block px-4 py-2 text-sm text-blue-700 hover:bg-gray-100">HOME</a>
                                 <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
                                 <div class="grid grid-cols-1 gap-2">
-                                    <a href="{% url 'chainsaw-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">DASHBOARD</a>
+                                    <a href="{% url 'lumber-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">DASHBOARD</a>
                                     <div class="relative group">
-                                        <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CHAINSAW</a>
+                                        <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">LUMBER</a>
                                         <div class="absolute left-0 mt-0 w-48 bg-white rounded-md shadow-lg z-30 hidden group-hover:block">
-                                            <a href="{% url 'chainsaw_record' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">View Records</a>
+                                            <a href="{% url 'lumber_records' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">View Records</a>
                                         </div>
                                     </div>
-                                    <a href="{% url 'lumber-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">LUMBER </a>
+                                    <a href="{% url 'chainsaw-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CHAINSAW </a>
                                     <a href="{% url 'treecut-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CUTTING</a>
                                     <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
 
@@ -92,77 +84,80 @@
         </div>
     </nav>
 
-    <!-- Chainsaws -->
-    <h1 class="text-5xl font-extrabold text-green-800 text-center font-serif mb-8 mt-10">CHAINSAW DASHBOARD </h1>
-    <!-- Stats Overview for chainsaw records -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
-            <a href="{% url 'chainsaw' %}" class="block">
-                <div class="bg-transparent rounded-lg border-2 border-green-600 p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-green-50">
-                    <div class="text-4xl font-bold text-black-600">+</div>
-                    <div class="text-green-900">Register Chainsaw</div>
-                    <div class="mt-2 text-sm text-gray-500">Click to add new chainsaw</div>
-                </div>
-            </a>
+    <div class="min-h-screen flex flex-col">
+        <!-- Lumber Dealers -->
+        <h1 class="text-5xl font-extrabold text-green-800 text-center font-serif mb-8 mt-10">LUMBER DASHBOARD</h1>
+        <!-- Stats Overview for lumber dealers-->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+                <a href="{% url 'lumber' %}" class="block">
+                    <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300">
+                        <div class="text-4xl font-bold text-black-700">+</div>
+                        <div class="text-green-900">Add Lumber Dealers</div>
+                        <div class="mt-2 text-sm text-gray-500">Click to add new dealer</div>
+                    </div>
+                </a>
 
-            <a href="{% url 'chainsaw_record' %}?status=expired" class="block">
-                <div class="bg-transparent rounded-lg border-2 border-green-600 p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-green-50">
-                    <div class="text-4xl font-bold text-black-600">{{ expired_chainsaw_count }}</div>
-                    <div class="text-green-900">Expired Records</div>
-                    <div class="mt-2 text-sm text-gray-500">Out of {{ chainsaw_count }} total records</div>
-                </div>
-            </a>
+                <a href="{% url 'lumber_records' %}?status=expired" class="block">
+                    <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300">
+                        <div class="text-4xl font-bold text-black-700">{{ expired_lumber_count }}</div>
+                        <div class="text-green-900">Expired Lumber Records</div>
+                        <div class="mt-2 text-sm text-gray-500">Out of {{ lumber_count }} total records</div>
+                    </div>
+                </a>
 
-            <a href="{% url 'chainsaw_record' %}?status=active" class="block">
-                <div class="bg-transparent rounded-lg border-2 border-green-600 p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-green-50">
-                    <div class="text-4xl font-bold text-black-600">{{ active_chainsaw_count }}</div>
-                    <div class="text-green-900">Active Records</div>
-                    <div class="mt-2 text-sm text-gray-500">Out of {{ chainsaw_count }} total records</div>
-                </div>
-            </a>
+                <a href="{% url 'lumber_records' %}?status=active" class="block">
+                    <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300">
+                        <div class="text-4xl font-bold text-black-700">{{ active_lumber_count }}</div>
+                        <div class="text-green-900">Active Lumber Records</div>
+                        <div class="mt-2 text-sm text-gray-500">Out of {{ lumber_count }} total records</div>
+                    </div>
+                </a>
 
-            <a href="{% url 'chainsaw_record' %}?status=expiring_soon" class="block">
-                <div class="bg-transparent rounded-lg border-2 border-green-600 p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-green-50">
-                    <div class="text-4xl font-bold text-black-600">{{ expiring_soon_chainsaw_count }}</div>
-                    <div class="text-green-900">Records to be Expire</div>
-                </div>
-            </a>
+                <a href="{% url 'lumber_records' %}?status=expiring_soon" class="block">
+                    <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300">
+                        <div class="text-4xl font-bold text-black-700">{{ expiring_soon_lumber_count }}</div>
+                        <div class="text-green-900">Records to be Expire</div>
+                    </div>
+                </a>
 
-            <a href="{% url 'chainsaw_record' %}" class="block">
-                <div class="bg-transparent rounded-lg border-2 border-green-600 p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-green-50">
-                    <div class="text-4xl font-bold text-black-600">{{ chainsaw_count }}</div>
-                    <div class="text-green-900">Total Chainsaw Records</div>
-                    <div class="mt-2 text-sm text-gray-500">View all records</div>
-                </div>
-            </a>
+                <a href="{% url 'lumber_records' %}" class="block">
+                    <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300">
+                        <div class="text-4xl font-bold text-black-700">{{ lumber_count }}</div>
+                        <div class="text-green-900">Total Lumber Records</div>
+                        <div class="mt-2 text-sm text-gray-500">View all records</div>
+                    </div>
+                </a>
+            </div>
         </div>
-    </div>
 
+    
     <!-- Last Content Section -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 mb-10">
         <!-- Your content here -->
     </div>
 
     <!-- Footer -->
-    <footer class="bg-blue-900 text-white py-8">
+    <footer class="bg-blue-900 text-white mt-auto py-8">
         <div class="max-w-7xl mx-auto text-center">
             <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
             <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
         </div>
     </footer>
+    
+</div>
+<script>
+    // Toggle user menu
+    document.getElementById('user-menu-button').addEventListener('click', function() {
+        const menu = document.getElementById('user-menu');
+        menu.classList.toggle('hidden');
+    });
 
-    <script>
-        // Toggle user menu
-        document.getElementById('user-menu-button').addEventListener('click', function() {
-            const menu = document.getElementById('user-menu');
-            menu.classList.toggle('hidden');
-        });
-
-        // Toggle mobile menu
-        document.getElementById('mobile-menu-button').addEventListener('click', function() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'block' : 'none';
-        });
-    </script>
+    // Toggle mobile menu
+    document.getElementById('mobile-menu-button').addEventListener('click', function() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'block' : 'none';
+    });
+</script>
 </body>
 </html>
