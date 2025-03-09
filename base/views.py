@@ -463,7 +463,7 @@ def edit_cutting(request, pk):
             
             cutting.save()
             messages.success(request, f'Successfully updated cutting record for {cutting.permit_type}-{cutting.permit_number}')
-            return redirect('cutting')
+            return redirect('cutting_records')
     else:
         form = CuttingForm(instance=cutting)
     
@@ -617,7 +617,7 @@ def edit_chainsaw(request, pk):
                 
             chainsaw.save()
             messages.success(request, 'Chainsaw registration successfully updated!')
-            return redirect('chainsaw')
+            return redirect('chainsaw_record')
         else:
             messages.error(request, 'Error updating chainsaw registration. Please check the form.')
     else:
@@ -902,7 +902,7 @@ def edit_cutting_record(request, record_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Record updated successfully!')
-            return redirect('add_cutting_record', cutting_id=record.parent_tcp.id)
+            return redirect('cutting_records')
     else:
         form = CuttingRecordForm(instance=record)
     
@@ -1584,3 +1584,49 @@ def treecut_dash(request):
 
 def developers(request):
     return render(request, 'developers.html')
+
+def chainsaw_dash(request):
+    current_date = timezone.now().date()
+    
+    # Chainsaw counts
+    chainsaw_count = Chainsaw.objects.count()
+    
+    # For expired chainsaw records
+    expired_chainsaw_count = Chainsaw.objects.filter(
+        expiry_date__lt=current_date
+    ).count()
+    
+    # Calculate active chainsaw records (not expired)
+    active_chainsaw_count = Chainsaw.objects.filter(
+        expiry_date__gte=current_date
+    ).count()
+    
+    # For chainsaws expiring soon (within 3 months but not expired)
+    three_months_from_now = current_date + timedelta(days=90)  # 90 days = ~3 months
+    expiring_soon_chainsaw_count = Chainsaw.objects.filter(
+        expiry_date__gt=current_date,  # Not expired yet
+        expiry_date__lte=three_months_from_now  # But will expire within 3 months
+    ).count()
+
+    context = {
+        'chainsaw_count': chainsaw_count,
+        'expired_chainsaw_count': expired_chainsaw_count,
+        'active_chainsaw_count': active_chainsaw_count,
+        'expiring_soon_chainsaw_count': expiring_soon_chainsaw_count,
+    }
+    
+    return render(request, 'chainsaw-dash.html', context)
+
+def get_last_chainsaw_number(request):
+    try:
+        # Get the last chainsaw record
+        last_chainsaw = Chainsaw.objects.order_by('-no').first()
+        if last_chainsaw:
+            # Extract the numeric part and convert to integer
+            last_number = int(last_chainsaw.no)
+        else:
+            last_number = 0
+        
+        return JsonResponse({'last_number': last_number})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

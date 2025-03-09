@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #f0fdf4; /* Light green background */
+            background-color: #ffffff; /* Changed from #f0fdf4 to white */
         }
         .modal-open {
             overflow: hidden;
@@ -332,13 +332,20 @@
                             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
                                
                                 <!-- Quick Actions -->
+                                <a href="{% url 'homepage' %}" class="block px-4 py-2 text-sm text-blue-700 hover:bg-gray-100">HOME</a>
                                 <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
                                 <div class="grid grid-cols-1 gap-2">
-                                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
-                                    <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
-                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
-                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
+                                    <a href="{% url 'chainsaw-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">DASHBOARD</a>
+                                    <div class="relative group">
+                                        <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CHAINSAW</a>
+                                        <div class="absolute left-0 mt-0 w-48 bg-white rounded-md shadow-lg z-30 hidden group-hover:block">
+                                            <a href="{% url 'chainsaw_record' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">View Records</a>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">LUMBER </a>
+                                    <a href="{% url 'treecut-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CUTTING</a>
                                     <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+
                                 </div>
                                 <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
                                     <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -354,23 +361,15 @@
                 <div class="md:hidden">
                     <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M3 8h18M3 12h18M3 16h18M3 20h18"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6l8 8 8-8"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18"></path>
                         </svg>
+                    </button>
                     </button>
                 </div>
             </div>
         </div>
-        <!-- Error Check -->
-        {% if form.errors %}
-        <div class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg shadow-sm">
-            <strong>Please fix the following errors:</strong>
-            <ul>
-                {% for field, errors in form.errors.items %}
-                    <li>{{ field }}: {{ errors|join:", " }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
         <!-- Mobile Menu -->
         <div class="md:hidden" id="mobile-menu" style="display: none;">
             <div class="px-2 pt-2 pb-3 space-y-1">
@@ -390,8 +389,36 @@
         </div>
     {% endif %}
 
+    <!-- Add Category Boxes -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <!-- Lumber Dealer Box -->
+            <a href="{% url 'lumber' %}" class="bg-white p-2 rounded-lg border-2 border-green-600 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700">Lumber Dealer</h3>
+                <p class="text-xs text-gray-600">Add Lumber Dealers</p>
+            </a>
+            <!-- Cutting Box -->
+            <a href="{% url 'cutting' %}" class="bg-white p-2 rounded-lg border-2 border-green-600 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700">Cutting Permits</h3>
+                <p class="text-xs text-gray-600">Add Tree Cutting Permits</p>
+            </a>
+
+            <!-- Wood Processing Plant Box -->
+            <a href="{% url 'wood' %}" class="bg-white p-2 rounded-lg border-2 border-green-600 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700">Wood Processing Plant</h3>
+                <p class="text-xs text-gray-600">Add WPP</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-4">
+        <hr class="border-t-2 border-green-600">
+    </div>
+
     <!-- Form Section -->
-    <div class="max-w-5xl mx-auto bg-white p-8 mt-8 shadow-xl rounded-lg">
+    <div class="max-w-5xl mx-auto bg-white p-8 mt-8 shadow-xl rounded-lg border-2 border-green-600">
         <h2 class="text-2xl font-bold mb-6">Add New Chainsaw Record</h2>
         <form method="POST" id="chainsawForm" class="space-y-6" enctype="multipart/form-data">
             {% csrf_token %}
@@ -400,7 +427,7 @@
             <div class="grid grid-cols-3 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">No.</label>
-                    <input type="text" name="{{ form.no.name }}" class="form-input" placeholder="" required>
+                    <input type="text" name="{{ form.no.name }}" id="autoIncrementNo" class="form-input" readonly required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Year</label>
@@ -563,9 +590,12 @@
                     </svg>
                     Submit
                 </button>
-                <a href="{% url 'chainsaw_record' %}" class="bg-green-100 text-green-700 px-6 py-2 rounded-lg hover:bg-green-200 flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                <a href="{% url 'chainsaw_record' %}" 
+                   class="inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-transparent border-2 border-green-500 rounded-lg 
+                          hover:bg-green-500 hover:text-white transition-all duration-200 shadow-sm">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                     </svg>
                     View Records
                 </a>
@@ -574,14 +604,15 @@
     </div>
 
     <!-- Add space before footer -->
-   
-  <!-- Footer -->
-  <footer class="bg-blue-900 text-white mt-auto py-6">
-    <div class="max-w-7xl mx-auto text-center">
-        <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
-        <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
-    </div>
-</footer>
+    <div class="h-8"></div>  <!-- This adds 32px of space (reduced from 96px) -->
+
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white mt-auto py-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+        </div>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -728,6 +759,20 @@
                     });
                 }
             }
+
+            // Fetch the last number and increment it
+            fetch('{% url "get_last_chainsaw_number" %}')
+                .then(response => response.json())
+                .then(data => {
+                    const lastNumber = parseInt(data.last_number) || 0;
+                    const nextNumber = lastNumber + 1;
+                    document.getElementById('autoIncrementNo').value = String(nextNumber).padStart(3, '0');
+                })
+                .catch(error => {
+                    console.error('Error fetching last number:', error);
+                    // Fallback to 001 if there's an error
+                    document.getElementById('autoIncrementNo').value = '001';
+                });
         });
         
         // Clear form function

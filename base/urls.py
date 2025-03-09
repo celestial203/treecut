@@ -47,6 +47,8 @@ urlpatterns = [
     path('trees/', views.trees_view, name='trees'),
     path('treecut-dash/', views.treecut_dash, name='treecut-dash'),
     path('developers/', views.developers, name='developers'),
+    path('chainsaw-dash/', views.chainsaw_dash, name='chainsaw-dash'),
+    path('get-last-chainsaw-number/', views.get_last_chainsaw_number, name='get_last_chainsaw_number'),
 ]
 
 if settings.DEBUG:

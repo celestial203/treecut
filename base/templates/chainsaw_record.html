@@ -11,145 +11,204 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
         <style>
+            /* Enhanced styling */
             body {
-                background-color: #f0fdf4;
-                font-family: 'Inter', sans-serif;
+                background-color: #ffff; /* Light green background */
             }
-            
-            .gradient-bg {
-                background: linear-gradient(90deg, #22c55e 0%, #0ea5e9 100%);
-                border-radius: 0.75rem;
-                padding: 1.5rem;
+    
+            .table-container {
+                background: white;
+                margin-top: 1rem;
+                margin-bottom: 1rem;
+                width: 100%;
+                border: none;
+                box-shadow: none;
             }
-            
-            .filter-button {
-                padding: 0.5rem 1.5rem;
-                border-radius: 2rem;
+    
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+    
+            thead th {
+                background: #f8f9fa;
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                padding: 12px 16px;
+                text-align: left;
+                font-size: 0.875rem;
+                color: #374151;
+                font-weight: 600;
+                border-bottom: 1px solid #e5e7eb;
+                white-space: nowrap;
+            }
+    
+            tbody tr {
+                border-bottom: 1px solid #e5e7eb;
+                transition: background-color 0.2s ease; /* Add smooth transition */
+            }
+    
+            tbody tr:nth-child(even) {
+                background-color: #f9fafb;
+            }
+    
+            tbody tr:hover {
+                background-color: #dcfce7 !important; /* Light green hover color */
+                cursor: pointer; /* Add pointer cursor on hover */
+            }
+    
+            td {
+                padding: 12px 16px;
+                font-size: 0.875rem;
+                color: #111827;
+                white-space: nowrap;
+            }
+    
+            /* Style the View links */
+            td a {
+                color: #2563eb;
+                text-decoration: none;
+            }
+    
+            td a:hover {
+                text-decoration: underline;
+            }
+    
+            /* Update scrollbar styling */
+            .overflow-y-auto {
+                scrollbar-width: thin;
+                scrollbar-color: #cbd5e1 transparent;
+            }
+    
+            .overflow-y-auto::-webkit-scrollbar {
+                height: 8px; /* Horizontal scrollbar height */
+                width: 8px;  /* Vertical scrollbar width */
+            }
+    
+            .overflow-y-auto::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+    
+            .overflow-y-auto::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 4px;
+            }
+    
+            .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+    
+            /* Ensure the table container allows horizontal scrolling */
+            .table-container {
+                overflow-x: auto;
+                max-width: 100%;
+            }
+    
+            /* Status badges */
+            .status-badge {
+                padding: 0.25rem 0.75rem;
+                border-radius: 9999px;
                 font-weight: 500;
-                transition: all 0.2s;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
             }
-            
-            .filter-button.active {
-                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    
+            .status-active {
+                background-color: #dcfce7; /* Light green for active status */
+                color: #166534; /* Dark green text */
             }
-            
-            .filter-button:hover {
-                transform: translateY(-1px);
+    
+            .status-expired {
+                background-color: #fee2e2; /* Light red for expired status */
+                color: #991b1b; /* Dark red text */
             }
-            
-            .white-button {
-                background-color: white;
-                color: #3b82f6;
+    
+            .status-pending {
+                background-color: #fef3c7; /* Light yellow for pending status */
+                color: #92400e; /* Dark yellow text */
             }
-            
-            .green-button {
-                background-color: #22c55e;
-                color: white;
-            }
-            
-            .red-button {
-                background-color: #ef4444;
-                color: white;
-            }
-            
-            .yellow-button {
-                background-color: #eab308;
-                color: white;
-            }
-            
-            .search-input {
-                background-color: rgba(255, 255, 255, 0.2);
-                border: none;
-                color: white;
-                padding: 0.75rem 1rem;
-                border-radius: 0.5rem;
-            }
-            
-            .search-input::placeholder {
-                color: rgba(255, 255, 255, 0.7);
-            }
-            
-            .date-input {
-                background-color: rgba(255, 255, 255, 0.2);
-                border: none;
-                color: white;
-                padding: 0.75rem 1rem;
-                border-radius: 0.5rem;
-                appearance: none;
-            }
-            
-            .export-button {
-                background-color: #15803d;
-                color: white;
-                padding: 0.75rem 1.5rem;
-                border-radius: 0.5rem;
-                display: flex;
+    
+            /* Action buttons */
+            .action-button {
+                background-color: #f0fdf4; /* Light green for buttons */
+                color: #2f855a; /* Dark green text */
+                padding: 0.5rem 1rem;
+                border-radius: 6px;
+                transition: all 0.2s ease;
+                display: inline-flex;
                 align-items: center;
                 gap: 0.5rem;
-                transition: all 0.2s;
+                font-weight: 500;
             }
-            
-            .export-button:hover {
-                background-color: #166534;
+    
+            .action-button:hover {
+                background-color: #68d391; /* Darker green on hover */
+                transform: translateY(-1px);
             }
-            
-            /* Style for date input calendar icon */
-            input[type="date"]::-webkit-calendar-picker-indicator {
-                filter: invert(1);
+    
+            /* Search bar enhancement */
+            .search-container {
+                position: relative;
+                max-width: 500px;
             }
-            
-            /* Style for select dropdown arrow */
-            select {
-                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-                background-position: right 0.5rem center;
-                background-repeat: no-repeat;
-                background-size: 1.5em 1.5em;
+    
+            .search-input {
+                width: 100%;
+                padding: 0.75rem 1rem 0.75rem 2.5rem;
+                border-radius: 8px;
+                border: 2px solid #e5e7eb;
+                background-color: white;
+                transition: all 0.2s ease;
             }
-
-            /* Hover effects for different record statuses */
-            .active-record:hover {
-                background-color: #d1fae5; /* Light green */
+    
+            .search-input:focus {
+                border-color: #2563eb;
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
             }
-
-            .expiring-soon-record:hover {
-                background-color: #fef3c7; /* Light orange */
+    
+            .search-icon {
+                position: absolute;
+                left: 0.75rem;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #6b7280;
             }
-
-            .expired-record:hover {
-                background-color: #fee2e2; /* Light red */
-            }
-
-            /* Active filter button styling */
-            .filter-button-active {
-                background-color: transparent !important;
-                border: 2px solid white !important;
-                color: white !important;
-            }
-
+    
             /* Add context menu styles */
             .context-menu {
                 position: fixed;
                 background: white;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
                 padding: 8px 0;
                 z-index: 1000;
+                min-width: 150px;
             }
-
+    
             .context-menu-item {
                 padding: 8px 16px;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 gap: 8px;
+                font-size: 14px;
+                color: #374151;
             }
-
+    
             .context-menu-item:hover {
                 background-color: #f3f4f6;
             }
+    
+            .context-menu-item svg {
+                width: 16px;
+                height: 16px;
+                color: #6B7280;
+            }
         </style>
     </head>
+    
 <body>
 <!-- Navigation Bar -->
 <nav class="bg-transparent shadow-lg border-b border-gray-200">
@@ -174,13 +233,20 @@
                         <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
                            
                             <!-- Quick Actions -->
+                            <a href="{% url 'homepage' %}" class="block px-4 py-2 text-sm text-blue-700 hover:bg-gray-100">HOME</a>
                             <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
                             <div class="grid grid-cols-1 gap-2">
-                                <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
-                                <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
-                                <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
-                                <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
+                                <a href="{% url 'chainsaw-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">DASHBOARD</a>
+                                <div class="relative group">
+                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CHAINSAW</a>
+                                    <div class="absolute left-0 mt-0 w-48 bg-white rounded-md shadow-lg z-30 hidden group-hover:block">
+                                        <a href="{% url 'chainsaw_record' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">View Records</a>
+                                    </div>
+                                </div>
+                                <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">LUMBER </a>
+                                <a href="{% url 'treecut-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CUTTING</a>
                                 <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+
                             </div>
                             <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
                                 <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -196,8 +262,11 @@
             <div class="md:hidden">
                 <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M3 8h18M3 12h18M3 16h18M3 20h18"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6l8 8 8-8"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18"></path>
                     </svg>
+                </button>
                 </button>
             </div>
         </div>
@@ -210,56 +279,105 @@
     </div>
 </nav>
 
+
+  <!-- Quick Access Boxes -->
+  <div class="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <!-- Lumber Records Box -->
+        <a href="{% url 'lumber_records' %}" class="block p-4 bg-white border-2 border-green-500 rounded-lg shadow hover:shadow-lg transition-shadow duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900">Lumber Records</h3>
+                    <p class="text-xs text-gray-600">View lumber records</p>
+                </div>
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+            </div>
+        </a>
+
+        <!-- Chainsaw Records Box -->
+        <a href="{% url 'cutting_records' %}" class="block p-4 bg-white border-2 border-green-500 rounded-lg shadow hover:shadow-lg transition-shadow duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900">Cutting Records</h3>
+                    <p class="text-xs text-gray-600">View cutting records</p>
+                </div>
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                </svg>
+            </div>
+        </a>
+
+        <!-- WPP Records Box -->
+        <a href="{% url 'wood_records' %}" class="block p-4 bg-white border-2 border-green-500 rounded-lg shadow hover:shadow-lg transition-shadow duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-semibold text-gray-900">WPP Records</h3>
+                    <p class="text-xs text-gray-600">View WPP records</p>
+                </div>
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+            </div>
+        </a>
+    </div>
+    
+    <!-- Green Divider Line -->
+    <div class="border-b-2 border-green-500 my-6"></div>
+</div>
+
 <!-- Search Section -->
 <div class="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-    <div class="bg-gradient-to-r from-green-600 to-blue-400 p-6 rounded-xl shadow-lg">
+    <div class="bg-transparent p-6 rounded-xl shadow-lg border-2 border-green-500">
         <!-- Filter Buttons Row -->
         <div class="flex gap-4 mb-6 flex-wrap">
             <button id="allRecordsBtn" 
-                    class="px-6 py-2 bg-transparent text-white rounded-full transition-all duration-200 text-sm font-medium border-2 border-white">
+                    class="px-6 py-2 bg-white text-black rounded-lg border-2 border-green-500 hover:bg-green-50 transition-all duration-200 text-sm font-medium">
                 All Records
             </button>
             <button id="activeRecordsBtn" 
-                    class="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
+                    class="px-6 py-2 bg-white text-black rounded-lg border-2 border-green-500 hover:bg-green-50 transition-all duration-200 text-sm font-medium">
                 Active
             </button>
             <button id="expiringSoonRecordsBtn" 
-                    class="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
+                    class="px-6 py-2 bg-white text-black rounded-lg border-2 border-green-500 hover:bg-green-50 transition-all duration-200 text-sm font-medium">
                 To expire
             </button>
             <button id="expiredRecordsBtn" 
-                    class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
+                    class="px-6 py-2 bg-white text-black rounded-lg border-2 border-green-500 hover:bg-green-50 transition-all duration-200 text-sm font-medium">
                 Expired
             </button>
-            
         </div>
         
         <!-- Search and filters row -->
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
             <!-- Search Record -->
             <div class="md:col-span-1">
-                <label class="block text-white text-sm mb-2">Search Record</label>
+                <label class="block text-black text-sm mb-2">Search Record</label>
                 <input type="text" id="recordSearch" placeholder="Search record..." 
-                       class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                       class="w-full px-4 py-2 rounded-lg bg-transparent border-2 border-green-500 text-black focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent hover:bg-green-50 transition-all duration-200">
             </div>
             
             <!-- Start Date -->
             <div class="md:col-span-1">
-                <label class="block text-white text-sm mb-2">Start Date</label>
-                <input type="date" id="startDate" class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                <label class="block text-black text-sm mb-2">Start Date</label>
+                <input type="date" id="startDate" 
+                       class="w-full px-4 py-2 rounded-lg bg-transparent border-2 border-green-500 text-black focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent hover:bg-green-50 transition-all duration-200">
             </div>
             
             <!-- End Date -->
             <div class="md:col-span-1">
-                <label class="block text-white text-sm mb-2">End Date</label>
-                <input type="date" id="endDate" class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                <label class="block text-black text-sm mb-2">End Date</label>
+                <input type="date" id="endDate" 
+                       class="w-full px-4 py-2 rounded-lg bg-transparent border-2 border-green-500 text-black focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent hover:bg-green-50 transition-all duration-200">
             </div>
             
             <!-- Year Filter -->
             <div class="md:col-span-1">
-                <label class="block text-white text-sm mb-2">Filter by Year</label>
+                <label class="block text-black text-sm mb-2">Filter by Year</label>
                 <select id="yearFilter" 
-                        class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-black-500 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                        class="w-full px-4 py-2 rounded-lg bg-transparent border-2 border-green-500 text-black focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent hover:bg-green-50 transition-all duration-200">
                     <option value="">All Years</option>
                 </select>
             </div>
@@ -267,7 +385,7 @@
             <!-- Export Button -->
             <div class="md:col-span-1 flex items-end">
                 <button onclick="exportTableToCSV('chainsaw_records.csv')" 
-                        class="w-full px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 flex items-center justify-center">
+                        class="w-full px-4 py-2 bg-white text-black rounded-lg border-2 border-green-500 hover:bg-green-50 transition-all duration-200 flex items-center justify-center">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                     </svg>
@@ -279,97 +397,99 @@
 </div>
 
 <!-- Records Section - Full Width with Scroll -->
-<div class="w-full py-4">
+<div class="w-full px-4 overflow-x-auto">
     <div class="table-container overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead>
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Reg. No.</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Year</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Region</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">PENRO</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">CENRO</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Owner</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Municipality</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Purpose</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Date Acquired</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Cert. Reg. No.</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">CTPO No.</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Brand</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Model</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Serial No.</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Color</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Date Issued</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Expiry Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Reg. Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Date Renewal</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Horse Power</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Guidebar Length</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">DENR Sticker</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">File</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% if chainsaw_records %}
-                    {% for record in chainsaw_records %}
-                    <tr class="hover:bg-gray-50" data-record-id="{{ record.id }}">
-                        <td class="px-6 py-3 text-xs font-bold text-gray-900 whitespace-nowrap">{{ record.no }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.year }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.region }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.penro }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.cenro }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.name }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.municipality }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.purpose }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.date_acquired|date:"M d, Y" }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.cert_reg_number }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.ctpo_number }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.brand }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.model }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.serial_number }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.color }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.date_issued|date:"M d, Y" }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.expiry_date|date:"M d, Y" }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.registration_status }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                            {% if record.date_renewal %}
-                                {{ record.date_renewal|date:"M d, Y" }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-3 text-xs  text-gray-900 whitespace-nowrap">{{ record.horse_power }}</td>
-                        <td class="px-6 py-3 text-xs  text-gray-900 whitespace-nowrap">{{ record.guidebar_length }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.denr_sticker }}</td>
-                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                            {% if record.file %}
-                                <a href="{{ record.file.url }}" class="text-blue-600 hover:text-blue-900" target="_blank">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
-                                </svg>
-                                View
-                            </a>
-                            {% else %}
-                                <span class="text-gray-400">No file</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-6 py-3 text-xs font-bold text-gray-900 whitespace-nowrap">
-                            <div class="flex space-x-2">
-                                <a href="{% url 'view_chainsaw' record.id %}" class="text-blue-600 hover:text-blue-900">View</a>
-                                <a href="{% url 'edit_chainsaw' record.id %}" class="text-orange-600 hover:text-orange-900">Edit</a>
-                                {% if record.is_expired %}
+        <div class="max-h-[calc(100vh-400px)] overflow-y-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Reg. No.</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Year</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Region</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">PENRO</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">CENRO</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Owner</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Municipality</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Purpose</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Date Acquired</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Cert. Reg. No.</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">CTPO No.</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Brand</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Model</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Serial No.</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Color</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Date Issued</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Expiry Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Reg. Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Date Renewal</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Horse Power</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Guidebar Length</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">DENR Sticker</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">File</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% if chainsaw_records %}
+                        {% for record in chainsaw_records %}
+                        <tr class="hover:bg-gray-50" data-record-id="{{ record.id }}">
+                            <td class="px-6 py-3 text-xs font-bold text-gray-900 whitespace-nowrap">{{ record.no }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.year }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.region }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.penro }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.cenro }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.name }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.municipality }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.purpose }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.date_acquired|date:"M d, Y" }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.cert_reg_number }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.ctpo_number }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.brand }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.model }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.serial_number }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.color }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.date_issued|date:"M d, Y" }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.expiry_date|date:"M d, Y" }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.registration_status }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                {% if record.date_renewal %}
+                                    {{ record.date_renewal|date:"M d, Y" }}
+                                {% else %}
+                                    -
                                 {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr id="noRecordsRow">
-                        <td colspan="24" class="px-6 py-4 text-center text-gray-500">No records found matching your criteria.</td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
+                            </td>
+                            <td class="px-6 py-3 text-xs  text-gray-900 whitespace-nowrap">{{ record.horse_power }}</td>
+                            <td class="px-6 py-3 text-xs  text-gray-900 whitespace-nowrap">{{ record.guidebar_length }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.denr_sticker }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                {% if record.file %}
+                                    <a href="{{ record.file.url }}" class="text-blue-600 hover:text-blue-900" target="_blank">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                                    </svg>
+                                    View
+                                </a>
+                                {% else %}
+                                    <span class="text-gray-400">No file</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-3 text-xs font-bold text-gray-900 whitespace-nowrap">
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'view_chainsaw' record.id %}" class="text-blue-600 hover:text-blue-900">View</a>
+                                    <a href="{% url 'edit_chainsaw' record.id %}" class="text-orange-600 hover:text-orange-900">Edit</a>
+                                    {% if record.is_expired %}
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr id="noRecordsRow">
+                            <td colspan="24" class="px-6 py-4 text-center text-gray-500">No records found matching your criteria.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

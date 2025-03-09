@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #f0fdf4; /* Light green background */
+            background-color: white; /* Changed from light green to white */
         }
         
         .detail-card {
@@ -20,6 +20,7 @@
             border-radius: 0.5rem;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
+            border: 2px solid #16a34a; /* Added green border */
         }
         
         .detail-label {
@@ -160,19 +161,19 @@
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold text-gray-900">Chainsaw Registration Details</h1>
             <div class="flex space-x-4">
-                <a href="{% url 'edit_chainsaw' chainsaw.id %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+                <a href="{% url 'edit_chainsaw' chainsaw.id %}" class="bg-transparent text-green-700 px-4 py-2 rounded-lg hover:bg-green-700 hover:text-white border-2 border-green-700 flex items-center transition duration-300">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
                     Edit
                 </a>
-                <button onclick="window.print()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center">
+                <button onclick="window.print()" class="bg-transparent text-green-700 px-4 py-2 rounded-lg hover:bg-green-700 hover:text-white border-2 border-green-700 flex items-center transition duration-300">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                     </svg>
                     Print
                 </button>
-                <a href="{% url 'chainsaw_record' %}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 flex items-center">
+                <a href="{% url 'chainsaw_record' %}" class="bg-transparent text-green-700 px-4 py-2 rounded-lg hover:bg-green-700 hover:text-white border-2 border-green-700 flex items-center transition duration-300">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
