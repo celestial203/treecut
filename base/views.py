@@ -786,13 +786,25 @@ def wood_records(request):
     # Apply filters based on status
     if status == 'expired':
         wood_records = Wood.objects.filter(expiry_date__lt=current_date).order_by('-date_issued')
-    elif status == 'active':
-        wood_records = Wood.objects.filter(expiry_date__gte=current_date).order_by('-date_issued')
+    elif status == 'active_new':
+        wood_records = Wood.objects.filter(
+            expiry_date__gte=current_date,
+            permit_status='New'
+        ).order_by('-date_issued')
+    elif status == 'active_renewed':
+        wood_records = Wood.objects.filter(
+            expiry_date__gte=current_date,
+            permit_status='Renewed'
+        ).order_by('-date_issued')
     elif status == 'expiring_soon':
         wood_records = Wood.objects.filter(
             expiry_date__gte=current_date,
             expiry_date__lte=thirty_days_from_now
         ).order_by('-date_issued')
+    elif status == 'suspended':
+        wood_records = Wood.objects.filter(permit_status='Suspended').order_by('-date_issued')
+    elif status == 'cancelled':
+        wood_records = Wood.objects.filter(permit_status='Cancelled').order_by('-date_issued')
     else:
         # Default: show all records
         wood_records = Wood.objects.all().order_by('-date_issued')
@@ -810,19 +822,31 @@ def wood_records(request):
         # If page is out of range, deliver last page of results
         wood_records = paginator.page(paginator.num_pages)
     
-    # Count expired and expiring soon records for the filter buttons
+    # Count records by status for the filter buttons
     expired_count = Wood.objects.filter(expiry_date__lt=current_date).count()
-    active_count = Wood.objects.filter(expiry_date__gte=current_date).count()
+    active_new_count = Wood.objects.filter(
+        expiry_date__gte=current_date,
+        permit_status='New'
+    ).count()
+    active_renewed_count = Wood.objects.filter(
+        expiry_date__gte=current_date,
+        permit_status='Renewed'
+    ).count()
     expiring_soon_count = Wood.objects.filter(
         expiry_date__gte=current_date,
         expiry_date__lte=thirty_days_from_now
     ).count()
+    suspended_count = Wood.objects.filter(permit_status='Suspended').count()
+    cancelled_count = Wood.objects.filter(permit_status='Cancelled').count()
     
     context = {
         'wood_records': wood_records,
         'expired_count': expired_count,
-        'active_count': active_count,
+        'active_new_count': active_new_count,
+        'active_renewed_count': active_renewed_count,
         'expiring_soon_count': expiring_soon_count,
+        'suspended_count': suspended_count,
+        'cancelled_count': cancelled_count,
         'current_status': status,  # Pass the current status to highlight the active filter
     }
     
@@ -1683,6 +1707,60 @@ def wood_dashboard(request):
         'active_wood_count': active_wood_count,
         'expired_wood_count': expired_wood_count,
         'expiring_soon_wood_count': expiring_soon_wood_count,
+    }
+    
+    return render(request, 'wood-dash.html', context)
+
+@login_required
+def wood_dash(request):
+    # Get current date for filtering
+    current_date = timezone.now().date()
+    thirty_days_from_now = current_date + timedelta(days=30)
+    
+    # Calculate all the counts needed for the dashboard
+    wood_count = Wood.objects.count()
+    
+    # Expiring soon count
+    expiring_soon_wood_count = Wood.objects.filter(
+        expiry_date__gte=current_date,
+        expiry_date__lte=thirty_days_from_now
+    ).count()
+    
+    # Active (New) count
+    active_new_count = Wood.objects.filter(
+        expiry_date__gte=current_date,
+        permit_status='New'
+    ).count()
+    
+    # Active (Renewed) count
+    active_renewed_count = Wood.objects.filter(
+        expiry_date__gte=current_date,
+        permit_status='Renewed'
+    ).count()
+    
+    # Expired count
+    expired_wood_count = Wood.objects.filter(
+        expiry_date__lt=current_date
+    ).count()
+    
+    # Suspended count
+    suspended_count = Wood.objects.filter(
+        permit_status='Suspended'
+    ).count()
+    
+    # Cancelled count
+    cancelled_count = Wood.objects.filter(
+        permit_status='Cancelled'
+    ).count()
+    
+    context = {
+        'wood_count': wood_count,
+        'expiring_soon_wood_count': expiring_soon_wood_count,
+        'active_new_count': active_new_count,
+        'active_renewed_count': active_renewed_count,
+        'expired_wood_count': expired_wood_count,
+        'suspended_count': suspended_count,
+        'cancelled_count': cancelled_count,
     }
     
     return render(request, 'wood-dash.html', context)

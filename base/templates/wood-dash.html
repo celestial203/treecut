@@ -85,47 +85,72 @@
     </nav>
 
     <!-- Content Section -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-16">
-        <h1 class="text-5xl font-extrabold text-green-800 text-center font-serif mb-12"> WOOD PROCESSING PLANT DASHBOARD</h1>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-8">
+        <h1 class="text-4xl font-extrabold text-green-800 text-center font-serif mb-8">WOOD PROCESSING PLANT DASHBOARD</h1>
         
         <!-- Stats Overview for Wood Processing Plant -->
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mt-12 max-w-6xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 max-w-7xl mx-auto">
             <a href="{% url 'wood' %}" class="block">
-                <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300 h-full flex flex-col justify-center items-center text-center">
+                <div class="bg-transparent border border-green-600 rounded-lg p-4 h-40 flex flex-col justify-center items-center text-center">
                     <div class="text-4xl font-bold text-black-700">+</div>
-                    <div class="text-green-900 mt-2">Register WPP</div>
-                    <div class="mt-2 text-sm text-gray-500">Click to add new WPP</div>
-                </div>
-            </a>
-
-            <a href="{% url 'wood_records' %}?status=expired" class="block">
-                <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300 h-full flex flex-col justify-center items-center text-center">
-                    <div class="text-4xl font-bold text-black-700">{{ expired_wood_count }}</div>
-                    <div class="text-green-900 mt-2">Expired Records</div>
-                    <div class="mt-2 text-sm text-gray-500">Out of {{ wood_count }} total records</div>
-                </div>
-            </a>
-
-            <a href="{% url 'wood_records' %}?status=active" class="block">
-                <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300 h-full flex flex-col justify-center items-center text-center">
-                    <div class="text-4xl font-bold text-black-700">{{ active_wood_count }}</div>
-                    <div class="text-green-900 mt-2">Active Records</div>
-                    <div class="mt-2 text-sm text-gray-500">Out of {{ wood_count }} total records</div>
-                </div>
-            </a>
-
-            <a href="{% url 'wood_records' %}?status=expiring_soon" class="block">
-                <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300 h-full flex flex-col justify-center items-center text-center">
-                    <div class="text-4xl font-bold text-black-700">{{ expiring_soon_wood_count }}</div>
-                    <div class="text-green-900 mt-2">Records to be Expire</div>
+                    <div class="text-green-900 text-base mt-2">Register WPP</div>
+                    <div class="text-sm text-gray-500 mt-1">Click to add new WPP</div>
                 </div>
             </a>
 
             <a href="{% url 'wood_records' %}" class="block">
-                <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300 h-full flex flex-col justify-center items-center text-center">
+                <div class="bg-transparent border border-green-600 rounded-lg p-4 h-40 flex flex-col justify-center items-center text-center">
                     <div class="text-4xl font-bold text-black-700">{{ wood_count }}</div>
-                    <div class="text-green-900 mt-2">Total WPP Records</div>
-                    <div class="mt-2 text-sm text-gray-500">View all records</div>
+                    <div class="text-green-900 text-base mt-2">Total WPP Records</div>
+                    <div class="text-sm text-gray-500 mt-1">View all records</div>
+                </div>
+            </a>
+            
+            <a href="{% url 'wood_records' %}?status=expiring_soon" class="block">
+                <div class="bg-transparent border border-green-600 rounded-lg p-4 h-40 flex flex-col justify-center items-center text-center">
+                    <div class="text-4xl font-bold text-black-700">{{ expiring_soon_wood_count }}</div>
+                    <div class="text-green-900 text-base mt-2">Expiring Soon</div>
+                    <div class="text-sm text-gray-500 mt-1">Records about to expire</div>
+                </div>
+            </a>
+            
+            <a href="{% url 'wood_records' %}?status=active_new" class="block">
+                <div class="bg-transparent border border-green-600 rounded-lg p-4 h-40 flex flex-col justify-center items-center text-center">
+                    <div class="text-4xl font-bold text-black-700">{{ active_new_count }}</div>
+                    <div class="text-green-900 text-base mt-2">Active (New)</div>
+                    <div class="text-sm text-gray-500 mt-1">Newly registered WPPs</div>
+                </div>
+            </a>
+            
+            <a href="{% url 'wood_records' %}?status=active_renewed" class="block">
+                <div class="bg-transparent border border-green-600 rounded-lg p-4 h-40 flex flex-col justify-center items-center text-center">
+                    <div class="text-4xl font-bold text-black-700">{{ active_renewed_count }}</div>
+                    <div class="text-green-900 text-base mt-2">Active (Renewed)</div>
+                    <div class="text-sm text-gray-500 mt-1">Renewed WPP permits</div>
+                </div>
+            </a>
+            
+            <a href="{% url 'wood_records' %}?status=expired" class="block">
+                <div class="bg-transparent border border-green-600 rounded-lg p-4 h-40 flex flex-col justify-center items-center text-center">
+                    <div class="text-4xl font-bold text-black-700">{{ expired_wood_count }}</div>
+                    <div class="text-green-900 text-base mt-2">Expired</div>
+                    <div class="text-sm text-gray-500 mt-1">Expired WPP permits</div>
+                </div>
+            </a>
+            
+            <a href="{% url 'wood_records' %}?status=suspended" class="block">
+                <div class="bg-transparent border border-green-600 rounded-lg p-4 h-40 flex flex-col justify-center items-center text-center">
+                    <div class="text-4xl font-bold text-black-700">{{ suspended_count }}</div>
+                    <div class="text-green-900 text-base mt-2">Suspended</div>
+                    <div class="text-sm text-gray-500 mt-1">Suspended WPP permits</div>
+                </div>
+            </a>
+            
+            <a href="{% url 'wood_records' %}?status=cancelled" class="block">
+                <div class="bg-transparent border border-green-600 rounded-lg p-4 h-40 flex flex-col justify-center items-center text-center">
+                    <div class="text-4xl font-bold text-black-700">{{ cancelled_count }}</div>
+                    <div class="text-green-900 text-base mt-2">Cancelled</div>
+                    <div class="text-sm text-gray-500 mt-1">Cancelled WPP permits</div>
                 </div>
             </a>
         </div>

@@ -95,7 +95,7 @@ DATABASES = {
 
 # Authentication URLs
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'dashboard'
+LOGIN_REDIRECT_URL = 'homepage'
 LOGOUT_REDIRECT_URL = 'login'
 
 # Logging configuration (log errors)
