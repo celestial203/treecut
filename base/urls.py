@@ -50,6 +50,7 @@ urlpatterns = [
     path('developers/', views.developers, name='developers'),
     path('chainsaw-dash/', views.chainsaw_dash, name='chainsaw-dash'),
     path('get-last-chainsaw-number/', views.get_last_chainsaw_number, name='get_last_chainsaw_number'),
+    path('wood-dash/', views.wood_dashboard, name='wood-dash'),
 ]
 
 if settings.DEBUG:

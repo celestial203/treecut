@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #f0fdf4; /* Light green background */
+            background: white;
         }
         .modal-open {
             overflow: hidden;
@@ -77,7 +77,7 @@
         .form-input {
             @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
                    focus:border-blue-500 focus:ring-blue-500 
-                   bg-gray-50 text-gray-900; /* Updated to match theme */
+                   bg-gray-50 text-gray-900;
             padding: 0.5rem;
             transition: all 0.2s;
         }
@@ -128,13 +128,13 @@
         }
 
         input, select, textarea {
-            background-color: #f8fafc; /* Light gray background */
+            background-color: #f8fafc;
             border: 1px solid #e2e8f0;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
             padding: 0.5rem;
             border-radius: 0.375rem;
             width: 100%;
-            color: #4B5563; /* Dark gray text */
+            color: #4B5563;
         }
         input::placeholder, select::placeholder, textarea::placeholder {
             color: #6B7280;
@@ -321,12 +321,57 @@
         .valid-input {
             @apply border-green-500 !important;
         }
+
+        /* Update container styling */
+        .max-w-5xl {
+            border: 2px solid #059669; /* Green border */
+            border-radius: 0.5rem; /* Rounded corners */
+        }
+
+        /* Box hover effects */
+        .border-2.border-green-500 {
+            background-color: white;
+            transition: all 0.3s ease;
+            min-height: 120px; /* Ensure consistent height */
+        }
+
+        .border-2.border-green-500:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #f0fdf4;
+        }
     </style>
     <!-- Add SweetAlert2 CSS and JS -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="bg-green-100 text-gray-900">
+<body class="font-inter text-gray-900 bg-white">
+    {% if messages %}
+    <div id="messages-container" class="fixed top-4 right-4 z-50">
+        {% for message in messages %}
+            <div class="bg-{% if message.tags == 'success' %}green-500{% elif message.tags == 'error' %}red-500{% else %}blue-500{% endif %} text-white px-4 py-3 rounded shadow-lg mb-3 flex items-center justify-between" role="alert">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        {% if message.tags == 'success' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        {% elif message.tags == 'error' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        {% else %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        {% endif %}
+                    </svg>
+                    <span>{{ message }}</span>
+                </div>
+                <button type="button" class="ml-4 text-white hover:text-gray-100 focus:outline-none" onclick="this.parentElement.remove()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- Header with Logo -->
     <nav class="bg-transparent shadow-lg border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -348,14 +393,22 @@
                         </button>
                         <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
                             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                               
                                 <!-- Quick Actions -->
+                                <a href="{% url 'homepage' %}" class="block px-4 py-2 text-sm text-blue-700 hover:bg-gray-100">HOME</a>
                                 <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
                                 <div class="grid grid-cols-1 gap-2">
-                                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
-                                    <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
-                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
-                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
-                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                    <a href="{% url 'wood-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">DASHBOARD</a>
+                                    <div class="relative group">
+                                        <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                        <div class="absolute left-0 mt-0 w-48 bg-white rounded-md shadow-lg z-30 hidden group-hover:block">
+                                            <a href="{% url 'wood_records' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">View Records</a>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'chainsaw-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CHAINSAW </a>
+                                    <a href="{% url 'treecut-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CUTTING</a>
+                                    <a href="{% url 'lumber-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">LUMBER</a>
+
                                 </div>
                                 <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
                                     <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -371,8 +424,11 @@
                 <div class="md:hidden">
                     <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M3 8h18M3 12h18M3 16h18M3 20h18"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6l8 8 8-8"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18"></path>
                         </svg>
+                    </button>
                     </button>
                 </div>
             </div>
@@ -385,29 +441,60 @@
         </div>
     </nav>
 
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-8">
-            <h2 class="text-2xl font-bold mb-6">Add New Wood Record</h2>
+    <!-- Box section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Lumber Dealer Box -->
+            <a href="{% url 'lumber' %}" class="bg-white p-2 rounded-lg border-2 border-green-600 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700">Lumber Dealer</h3>
+                <p class="text-xs text-gray-600">Add Lumber Dealers</p>
+            </a>
 
-            <form method="post" action="{% url 'wood' %}" enctype="multipart/form-data" class="space-y-6">
+            <!-- Cutting Permits Box -->
+            <a href="{% url 'cutting' %}" class="bg-white p-2 rounded-lg border-2 border-green-600 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700">Cutting Permits</h3>
+                <p class="text-xs text-gray-600">Add Tree Cutting Permits</p>
+            </a>
+
+            <!-- WPP Box -->
+            <a href="{% url 'chainsaw' %}" class="bg-white p-2 rounded-lg border-2 border-green-600 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700">Chainsaw</h3>
+                <p class="text-xs text-gray-600">Add Chainsaw</p>
+            </a>
+        </div>
+        <!-- Green Line -->
+        <hr class="border-t-2 border-green-600 mt-2">
+    </div>
+
+    <!-- Main form container -->
+    <div class="container mx-auto px-4 py-8 mb-20">
+        <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-bold mb-6">Add New WPP Record</h2>
+
+            <form method="post" action="{% url 'wood' %}" enctype="multipart/form-data" class="space-y-6" id="wppForm" novalidate>
                 {% csrf_token %}
                 
-                <!-- Add this for debugging -->
-                <div id="form-errors" class="text-red-500 mb-4 hidden"></div>
+                <!-- Make the form errors visible for debugging -->
+                <div id="form-errors" class="text-red-500 mb-4"></div>
 
                 <!-- First Row: Name and Type -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Name</label>
+                        <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
                         <input type="text" 
+                               id="name"
                                name="name" 
                                class="form-input mt-1 w-full" 
-                               placeholder=""
+                               autocomplete="organization"
                                required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Type</label>
-                        <select name="type" class="form-input mt-1 w-full" required>
+                        <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
+                        <select id="type" 
+                                name="type" 
+                                class="form-input mt-1 w-full" 
+                                autocomplete="off"
+                                required>
                             <option value="Resawmill-new">Resawmill-new</option>
                             <option value="Resawmill-renew">Resawmill-renew</option>
                         </select>
@@ -417,17 +504,20 @@
                 <!-- Second Row: WPP Number and Integrated -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">WPP Number</label>
+                        <label for="wpp_number" class="block text-sm font-medium text-gray-700">WPP Number</label>
                         <input type="text" 
+                               id="wpp_number"
                                name="wpp_number" 
                                class="form-input mt-1 w-full" 
-                               placeholder=""
+                               autocomplete="off"
                                required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Integrated</label>
-                        <select name="integrated" 
-                                class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                        <label for="integrated" class="block text-sm font-medium text-gray-700">Integrated</label>
+                        <select id="integrated"
+                                name="integrated" 
+                                class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
+                                autocomplete="off">
                             <option value="Applicable">Applicable</option>
                             <option value="Not Applicable">Not Applicable</option>
                         </select>
@@ -442,34 +532,46 @@
                 <!-- Third Row: Business and Plant -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Business</label>
-                        <input type="text" name="business" class="form-input mt-1 w-full" required>
+                        <label for="business" class="block text-sm font-medium text-gray-700">Business</label>
+                        <input type="text" 
+                               id="business"
+                               name="business" 
+                               class="form-input mt-1 w-full" 
+                               autocomplete="organization"
+                               required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Plant</label>
-                        <input type="text" name="plant" class="form-input mt-1 w-full" required>
+                        <label for="plant" class="block text-sm font-medium text-gray-700">Plant</label>
+                        <input type="text" 
+                               id="plant"
+                               name="plant" 
+                               class="form-input mt-1 w-full" 
+                               autocomplete="street-address"
+                               required>
                     </div>
                 </div>
 
                 <!-- Fourth Row: DRC and ALR -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">DRC (cu.m)</label>
+                        <label for="drc" class="block text-sm font-medium text-gray-700">DRC (cu.m)</label>
                         <input type="number" 
+                               id="drc"
                                step="0.01" 
                                name="drc" 
                                class="form-input mt-1 w-full" 
-                               placeholder=""
+                               autocomplete="off"
                                oninput="calculateALR()"
                                required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">ALR (m³)</label>
+                        <label for="alr" class="block text-sm font-medium text-gray-700">ALR (m³)</label>
                         <input type="number" 
+                               id="alr"
                                step="0.01" 
                                name="alr" 
                                class="form-input mt-1 w-full" 
-                               placeholder=""
+                               autocomplete="off"
                                readonly>
                     </div>
                 </div>
@@ -479,17 +581,21 @@
                     <h3 class="text-lg font-bold text-gray-900 mb-2">Coordinates</h3>
                     <div class="grid grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Longitude</label>
+                            <label for="longitude" class="block text-sm font-medium text-gray-700">Longitude</label>
                             <input type="text" 
+                                   id="longitude"
                                    name="longitude" 
                                    class="form-input mt-1 w-full" 
+                                   autocomplete="off"
                                    required>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Latitude</label>
+                            <label for="latitude" class="block text-sm font-medium text-gray-700">Latitude</label>
                             <input type="text" 
+                                   id="latitude"
                                    name="latitude" 
                                    class="form-input mt-1 w-full" 
+                                   autocomplete="off"
                                    required>
                         </div>
                     </div>
@@ -502,11 +608,13 @@
 
                 <!-- Supplier Info -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Supplier Info</label>
+                    <label for="supplier_info" class="block text-sm font-medium text-gray-700">Supplier Info</label>
                     <input type="text" 
+                           id="supplier_info"
                            name="supplier_info" 
                            placeholder="Enter supplier name and address"
-                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-400focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                           autocomplete="off"
+                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
 
                 <!-- Volume Contracted Section -->
@@ -514,12 +622,21 @@
                     <h3 class="text-lg font-bold text-gray-900 mb-2">Volume Contracted</h3>
                     <div class="grid grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Local</label>
-                            <input type="text" name="local_volume" class="form-input mt-1 w-full">
+                            <label for="local_volume" class="block text-sm font-medium text-gray-700">Local</label>
+                            <input type="text" 
+                                   id="local_volume"
+                                   name="local_volume" 
+                                   class="form-input mt-1 w-full"
+                                   autocomplete="off">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Imported</label>
-                            <input type="number" step="0.01" name="imported_volume" class="form-input mt-1 w-full">
+                            <label for="imported_volume" class="block text-sm font-medium text-gray-700">Imported</label>
+                            <input type="number" 
+                                   id="imported_volume"
+                                   step="0.01" 
+                                   name="imported_volume" 
+                                   class="form-input mt-1 w-full"
+                                   autocomplete="off">
                         </div>
                     </div>
                 </div>
@@ -527,35 +644,62 @@
                 <!-- Additional Fields -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Area (ha)</label>
-                        <input type="number" step="0.01" name="area" class="form-input mt-1 w-full" required>
+                        <label for="area" class="block text-sm font-medium text-gray-700">Area (ha)</label>
+                        <input type="number" 
+                               id="area"
+                               step="0.01" 
+                               name="area" 
+                               class="form-input mt-1 w-full" 
+                               autocomplete="off"
+                               required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Approved by</label>
-                        <input type="text" name="approved_by" class="form-input mt-1 w-full" required>
+                        <label for="approved_by" class="block text-sm font-medium text-gray-700">Approved by</label>
+                        <input type="text" 
+                               id="approved_by"
+                               name="approved_by" 
+                               class="form-input mt-1 w-full" 
+                               autocomplete="off"
+                               required>
                     </div>
                 </div>
 
                 <!-- Dates Section -->
                 <div class="grid grid-cols-3 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Date Issued</label>
-                        <input type="date" name="date_issued" class="form-input mt-1 w-full" required onchange="updateExpiryDate()">
+                        <label for="date_issued" class="block text-sm font-medium text-gray-700">Date Issued</label>
+                        <input type="date" 
+                               id="date_issued"
+                               name="date_issued" 
+                               class="form-input mt-1 w-full" 
+                               required 
+                               onchange="updateExpiryDate()">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Date Released</label>
-                        <input type="date" name="date_released" class="form-input mt-1 w-full" required>
+                        <label for="date_released" class="block text-sm font-medium text-gray-700">Date Released</label>
+                        <input type="date" 
+                               id="date_released"
+                               name="date_released" 
+                               class="form-input mt-1 w-full" 
+                               required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Expiry Date</label>
-                        <input type="date" name="expiry_date" class="form-input mt-1 w-full" readonly>
+                        <label for="expiry_date" class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                        <input type="date" 
+                               id="expiry_date"
+                               name="expiry_date" 
+                               class="form-input mt-1 w-full" 
+                               readonly>
                     </div>
                 </div>
 
                 <!-- Status -->
                 <div class="mt-6">
-                    <label class="block text-sm font-medium text-gray-700">Wood Status</label>
-                    <select name="wood_status" class="form-input mt-1 w-full" required>
+                    <label for="wood_status" class="block text-sm font-medium text-gray-700">Wood Status</label>
+                    <select id="wood_status"
+                            name="wood_status" 
+                            class="form-input mt-1 w-full" 
+                            required>
                         <option value="">Select Status</option>
                         <option value="ACTIVE_NEW">Active (New)</option>
                         <option value="ACTIVE_RENEWED">Active (Renewed)</option>
@@ -567,73 +711,46 @@
 
                 <!-- File Attachment -->
                 <div class="mt-6">
-                    <label class="block text-sm font-medium text-gray-700">Attach File</label>
+                    <label for="attachment" class="block text-sm font-medium text-gray-700">Attach File (Optional)</label>
                     <input type="file" 
+                           id="attachment"
                            name="attachment" 
-                           class="form-input mt-1 w-full" 
-                           required>
+                           class="form-input mt-1 w-full"
+                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                 </div>
 
-                <!-- Submit Buttons -->
-                <div class="flex justify-end space-x-4 mt-6">
-                    <button type="button" 
-                            onclick="clearForm()" 
-                            class="px-6 py-2 bg-transparent hover:bg-red-100 text-red-500 border border-red-500 rounded-md transition duration-200 flex items-center">
-                        <span>Clear Form</span>
+                <!-- Button section -->
+                <div class="flex flex-wrap gap-3 mt-6 justify-end">
+                    <button type="button" onclick="clearForm()" class="px-6 py-2 bg-white text-red-600 border border-red-300 rounded-md hover:bg-red-50 transition-colors duration-200 text-sm font-medium min-w-[120px]">
+                        Clear Form
                     </button>
                     
-                    <button type="submit" 
-                            class="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition duration-200 flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                        </svg>
-                        <span>Submit</span>
+                    <button type="submit" id="submitButton" class="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center text-sm font-medium min-w-[120px]">
+                        <span class="mr-1">+</span> Submit
                     </button>
-                    <a href="{% url 'wood_records' %}" 
-                       class="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition duration-200 flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    
+                    <a href="{% url 'wood_records' %}" class="px-6 py-2 bg-white text-green-600 border border-green-500 rounded-md hover:bg-green-300 transition-colors duration-200 flex items-center justify-center text-sm font-medium min-w-[120px]">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        <span>View Records</span>
+                        View Records
                     </a>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- Footer -->
+    <footer class="bg-blue-800 text-white w-full py-8">
+        <div class="text-center">
+            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+        </div>
+    </footer>
+    
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // User menu dropdown toggle
-            const userMenuButton = document.getElementById('user-menu-button');
-            const userMenu = document.getElementById('user-menu');
-            const mobileMenuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.getElementById('mobile-menu');
-
-            // Toggle desktop user menu
-            userMenuButton.addEventListener('click', function() {
-                const isExpanded = userMenuButton.getAttribute('aria-expanded') === 'true';
-                userMenuButton.setAttribute('aria-expanded', !isExpanded);
-                userMenu.classList.toggle('hidden');
-            });
-
-            // Toggle mobile menu
-            mobileMenuButton.addEventListener('click', function() {
-                mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'block' : 'none';
-            });
-
-            // Close menus when clicking outside
-            document.addEventListener('click', function(event) {
-                if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
-                    userMenu.classList.add('hidden');
-                    userMenuButton.setAttribute('aria-expanded', 'false');
-                }
-                
-                if (!mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
-                    mobileMenu.style.display = 'none';
-                }
-            });
-        });
-
+        // Define these functions in the global scope
         function calculateALR() {
             const drcInput = document.querySelector('input[name="drc"]');
             const alrInput = document.querySelector('input[name="alr"]');
@@ -648,16 +765,11 @@
             }
         }
 
-        function clearForm() {
-            document.querySelector('form').reset();
-            document.querySelector('input[name="alr"]').value = '';
-        }
-
         function updateExpiryDate() {
             const issuedDate = document.querySelector('input[name="date_issued"]').value;
             if (issuedDate) {
                 const expiryDate = new Date(issuedDate);
-                // Limit to 5 years maximum as per validation error
+                // Add 5 years
                 expiryDate.setFullYear(expiryDate.getFullYear() + 5);
                 // Subtract one day to ensure it's not more than 5 years
                 expiryDate.setDate(expiryDate.getDate() - 1);
@@ -665,219 +777,315 @@
             }
         }
 
-        // Add form validation functions
-        function validateForm() {
-            let isValid = true;
-            
-            // Validate Name (letters, spaces, and hyphens only)
-            const nameInput = document.querySelector('input[name="name"]');
-            if (!/^[A-Za-z\s-]+$/.test(nameInput.value.trim())) {
-                showError(nameInput, 'Name should contain only letters, spaces, and hyphens');
-                isValid = false;
-            } else {
-                showSuccess(nameInput);
-            }
-
-            // Validate WPP Number (alphanumeric)
-            const wppInput = document.querySelector('input[name="wpp_number"]');
-            if (!/^[A-Za-z0-9-]+$/.test(wppInput.value.trim())) {
-                showError(wppInput, 'WPP Number should contain only letters, numbers, and hyphens');
-                isValid = false;
-            } else {
-                showSuccess(wppInput);
-            }
-
-            // Validate Numeric Fields (excluding local_volume)
-            const numericInputs = ['drc', 'area', 'imported_volume'];
-            numericInputs.forEach(fieldName => {
-                const input = document.querySelector(`input[name="${fieldName}"]`);
-                if (input && input.value) {
-                    const value = parseFloat(input.value);
-                    if (isNaN(value) || value < 0) {
-                        showError(input, 'Please enter a valid positive number');
-                        isValid = false;
-                    } else {
-                        showSuccess(input);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for success parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('success') && urlParams.get('success') === 'true') {
+                // Use setTimeout to ensure SweetAlert is fully loaded
+                setTimeout(function() {
+                    // Show success notification using standard alert if SweetAlert fails
+                    try {
+                        Swal.fire({
+                            title: 'Record Added Successfully!',
+                            text: 'The WPP record has been successfully saved to the database.',
+                            icon: 'success',
+                            confirmButtonText: 'Continue',
+                            confirmButtonColor: '#059669',
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
+                    } catch (e) {
+                        console.error("SweetAlert error:", e);
+                        // Fallback to custom notification
+                        showNotification('WPP record has been successfully added.', 'success');
                     }
+                }, 100);
+                
+                // Remove the success parameter from URL without refreshing
+                const newUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            }
+            
+            // Disable HTML5 validation
+            const wppFormElement = document.getElementById('wppForm');
+            if (wppFormElement) {
+                // Add novalidate attribute to form
+                wppFormElement.setAttribute('novalidate', '');
+                
+                // Remove required attributes from all inputs
+                const requiredInputs = wppFormElement.querySelectorAll('[required]');
+                requiredInputs.forEach(input => {
+                    input.removeAttribute('required');
+                });
+            }
+            
+            // User menu dropdown toggle
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            // Toggle desktop user menu
+            if (userMenuButton && userMenu) {
+                userMenuButton.addEventListener('click', function() {
+                    const isExpanded = userMenuButton.getAttribute('aria-expanded') === 'true';
+                    userMenuButton.setAttribute('aria-expanded', !isExpanded);
+                    userMenu.classList.toggle('hidden');
+                });
+            }
+
+            // Toggle mobile menu
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'block' : 'none';
+                });
+            }
+
+            // Close menus when clicking outside
+            document.addEventListener('click', function(event) {
+                if (userMenuButton && userMenu && !userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                    userMenu.classList.add('hidden');
+                    userMenuButton.setAttribute('aria-expanded', 'false');
+                }
+                
+                if (mobileMenuButton && mobileMenu && !mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                    mobileMenu.style.display = 'none';
                 }
             });
 
-            // Validate Dates
-            const dateIssued = new Date(document.querySelector('input[name="date_issued"]').value);
-            const dateReleased = new Date(document.querySelector('input[name="date_released"]').value);
-            
-            if (dateReleased < dateIssued) {
-                showError(document.querySelector('input[name="date_released"]'), 
-                         'Release date cannot be earlier than issue date');
-                isValid = false;
-            } else {
-                showSuccess(document.querySelector('input[name="date_released"]'));
+            // Add event listener for DRC input
+            const drcInput = document.querySelector('input[name="drc"]');
+            if (drcInput) {
+                drcInput.addEventListener('input', calculateALR);
             }
 
-            return isValid;
-        }
-
-        function showError(input, message) {
-            input.classList.add('invalid-input');
-            input.classList.remove('valid-input');
-            
-            // Create or update error message
-            let errorDiv = input.parentElement.querySelector('.error-message');
-            if (!errorDiv) {
-                errorDiv = document.createElement('div');
-                errorDiv.className = 'error-message';
-                input.parentElement.appendChild(errorDiv);
+            // Add event listener for date issued
+            const dateIssuedInput = document.querySelector('input[name="date_issued"]');
+            if (dateIssuedInput) {
+                dateIssuedInput.addEventListener('change', updateExpiryDate);
             }
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-        }
 
-        function showSuccess(input) {
-            input.classList.remove('invalid-input');
-            input.classList.add('valid-input');
-            
-            const errorDiv = input.parentElement.querySelector('.error-message');
-            if (errorDiv) {
-                errorDiv.style.display = 'none';
-            }
-        }
-
-        // Add form submission handler with SweetAlert
-        document.querySelector('form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            if (!validateForm()) {
-                console.error('Form validation failed');
-                Swal.fire({
-                    title: 'Validation Error',
-                    text: 'Please correct the errors in the form before submitting.',
-                    icon: 'error',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#EF4444',
-                });
-                return;
-            }
-            
-            try {
-                const formData = new FormData(this);
-                
-                // Add CSRF token if not already in the form
-                if (!formData.has('csrfmiddlewaretoken')) {
-                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                    formData.append('csrfmiddlewaretoken', csrfToken);
-                }
-                
-                // Log form data for debugging
-                for (let pair of formData.entries()) {
-                    console.log(pair[0] + ': ' + pair[1]);
-                }
-                
-                console.log('Submitting form data...');
-                
-                const response = await fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                    }
-                });
-                
-                console.log('Response status:', response.status);
-                
-                // Try to get response text first for debugging
-                const responseText = await response.text();
-                console.log('Response text:', responseText);
-                
-                // Then parse as JSON if possible
-                let result;
-                try {
-                    result = JSON.parse(responseText);
-                    console.log('Response data:', result);
-                } catch (error) {
-                    console.error('Error parsing JSON response:', error);
-                    document.getElementById('form-errors').textContent = 'Server response: ' + responseText;
-                    document.getElementById('form-errors').classList.remove('hidden');
-                    throw new Error('Invalid server response');
-                }
-
-                if (response.ok && result.success) {
-                    console.log('Form submission successful');
+            // Form submission handler - IMPROVED VERSION
+            const wppForm = document.getElementById('wppForm');
+            if (wppForm) {
+                wppForm.addEventListener('submit', function(event) {
+                    // Don't prevent default immediately - we'll decide later
                     
-                    // Show success message
-                    Swal.fire({
-                        title: 'Success!',
-                        text: result.message || 'Wood record has been successfully added',
-                        icon: 'success',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#10B981',
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Redirect to records page
-                            window.location.href = "{% url 'wood_records' %}";
+                    // Clear previous error messages
+                    const formErrorsDiv = document.getElementById('form-errors');
+                    if (formErrorsDiv) {
+                        formErrorsDiv.innerHTML = '';
+                    }
+                    
+                    // Remove all existing error messages
+                    const errorMessages = document.querySelectorAll('.error-message');
+                    errorMessages.forEach(msg => msg.remove());
+                    
+                    // Reset field borders
+                    const formFields = wppForm.querySelectorAll('input, select');
+                    formFields.forEach(field => {
+                        field.classList.remove('border-red-500');
+                    });
+                    
+                    let hasErrors = false;
+                    let errorsList = [];
+                    
+                    // Required fields validation
+                    const requiredFields = [
+                        { name: 'name', label: 'Name' },
+                        { name: 'type', label: 'Type' },
+                        { name: 'wpp_number', label: 'WPP Number' },
+                        { name: 'business', label: 'Business' },
+                        { name: 'plant', label: 'Plant' },
+                        { name: 'drc', label: 'DRC' },
+                        { name: 'area', label: 'Area' },
+                        { name: 'approved_by', label: 'Approved by' },
+                        { name: 'date_issued', label: 'Date Issued' },
+                        { name: 'date_released', label: 'Date Released' },
+                        { name: 'wood_status', label: 'Wood Status' },
+                        { name: 'longitude', label: 'Longitude' },
+                        { name: 'latitude', label: 'Latitude' }
+                    ];
+                    
+                    requiredFields.forEach(field => {
+                        const inputElement = wppForm.querySelector(`[name="${field.name}"]`);
+                        if (inputElement && !inputElement.value.trim()) {
+                            hasErrors = true;
+                            inputElement.classList.add('border-red-500');
+                            
+                            // Add to errors list
+                            errorsList.push(`${field.label} is required`);
+                            
+                            // Create and show error message
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'text-red-500 text-sm mt-1 error-message';
+                            errorDiv.textContent = `${field.label} is required`;
+                            inputElement.parentNode.appendChild(errorDiv);
                         }
                     });
-                } else {
-                    console.error('Form submission failed:', result);
                     
-                    // Show error message
-                    Swal.fire({
-                        title: 'Error!',
-                        text: result.message || 'There was a problem adding the record. Please try again.',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#EF4444',
+                    // Validate numeric fields
+                    const numericFields = [
+                        { name: 'drc', label: 'DRC', min: 0 },
+                        { name: 'area', label: 'Area', min: 0 }
+                    ];
+                    
+                    numericFields.forEach(field => {
+                        const inputElement = wppForm.querySelector(`[name="${field.name}"]`);
+                        if (inputElement && inputElement.value.trim()) {
+                            const value = parseFloat(inputElement.value);
+                            if (isNaN(value) || value <= field.min) {
+                                hasErrors = true;
+                                inputElement.classList.add('border-red-500');
+                                
+                                // Add to errors list
+                                errorsList.push(`${field.label} must be greater than ${field.min}`);
+                                
+                                // Create and show error message
+                                const errorDiv = document.createElement('div');
+                                errorDiv.className = 'text-red-500 text-sm mt-1 error-message';
+                                errorDiv.textContent = `${field.label} must be greater than ${field.min}`;
+                                inputElement.parentNode.appendChild(errorDiv);
+                            }
+                        }
                     });
                     
-                    // Display detailed errors if available
-                    if (result.errors) {
-                        document.getElementById('form-errors').textContent = 'Validation errors: ' + JSON.stringify(result.errors);
-                        document.getElementById('form-errors').classList.remove('hidden');
+                    // Validate dates
+                    const dateIssued = document.querySelector('input[name="date_issued"]').value;
+                    const dateReleased = document.querySelector('input[name="date_released"]').value;
+                    
+                    if (dateIssued && dateReleased) {
+                        const issuedDate = new Date(dateIssued);
+                        const releasedDate = new Date(dateReleased);
+                        const today = new Date();
+                        
+                        if (issuedDate > today) {
+                            hasErrors = true;
+                            const dateIssuedField = document.querySelector('input[name="date_issued"]');
+                            dateIssuedField.classList.add('border-red-500');
+                            
+                            // Add to errors list
+                            errorsList.push('Date issued cannot be in the future');
+                            
+                            // Create and show error message
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'text-red-500 text-sm mt-1 error-message';
+                            errorDiv.textContent = 'Date issued cannot be in the future';
+                            dateIssuedField.parentNode.appendChild(errorDiv);
+                        }
+                        
+                        if (releasedDate < issuedDate) {
+                            hasErrors = true;
+                            const dateReleasedField = document.querySelector('input[name="date_released"]');
+                            dateReleasedField.classList.add('border-red-500');
+                            
+                            // Add to errors list
+                            errorsList.push('Date released cannot be before date issued');
+                            
+                            // Create and show error message
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'text-red-500 text-sm mt-1 error-message';
+                            errorDiv.textContent = 'Date released cannot be before date issued';
+                            dateReleasedField.parentNode.appendChild(errorDiv);
+                        }
                     }
-                }
-            } catch (error) {
-                console.error('Error during form submission:', error);
-                
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'There was a problem connecting to the server. Please try again.',
-                    icon: 'error',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#EF4444',
+                    
+                    // Display all errors in the form-errors div
+                    if (formErrorsDiv && errorsList.length > 0) {
+                        formErrorsDiv.innerHTML = '<ul class="list-disc pl-5">' + 
+                            errorsList.map(error => `<li>${error}</li>`).join('') + 
+                            '</ul>';
+                    }
+                    
+                    // If there are errors, prevent form submission
+                    if (hasErrors) {
+                        event.preventDefault();
+                        
+                        // Show error notification
+                        showNotification('Please correct the errors below', 'error');
+                        
+                        // Scroll to the first error
+                        const firstError = document.querySelector('.error-message');
+                        if (firstError) {
+                            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    } else {
+                        // No errors, allow form submission
+                        const submitButton = document.getElementById('submitButton');
+                        if (submitButton) {
+                            submitButton.disabled = true;
+                            submitButton.innerHTML = 'Submitting...';
+                        }
+                        
+                        showNotification('Submitting form...', 'info');
+                        // Form will submit naturally since we didn't prevent default
+                    }
                 });
             }
         });
 
-        // Add confirmation for form clearing
-        function clearForm() {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "This will clear all form fields!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#10B981',
-                cancelButtonColor: '#EF4444',
-                confirmButtonText: 'Yes, clear it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.querySelector('form').reset();
-                    document.querySelector('input[name="alr"]').value = '';
-                    // Reset validation styles
-                    document.querySelectorAll('.invalid-input, .valid-input').forEach(input => {
-                        input.classList.remove('invalid-input', 'valid-input');
-                    });
-                    document.querySelectorAll('.error-message').forEach(msg => {
-                        msg.style.display = 'none';
-                    });
+        // Function to show notification
+        function showNotification(message, type) {
+            const container = document.createElement('div');
+            container.className = `fixed top-4 right-4 z-50 bg-${type === 'success' ? 'green' : type === 'info' ? 'blue' : 'red'}-500 text-white px-4 py-3 rounded shadow-lg flex items-center justify-between`;
+            
+            let icon = '';
+            if (type === 'success') {
+                icon = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            } else if (type === 'error') {
+                icon = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+            } else {
+                icon = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            }
+            
+            container.innerHTML = `
+                <div class="flex items-center">
+                    ${icon}
+                    <span>${message}</span>
+                </div>
+                <button type="button" class="ml-4 text-white hover:text-gray-100 focus:outline-none" onclick="this.parentElement.remove()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            `;
+            
+            document.body.appendChild(container);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (container.parentNode) {
+                    container.remove();
                 }
-            });
+            }, 5000);
         }
 
-        // Add real-time validation for inputs
-        document.querySelectorAll('input, select').forEach(input => {
-            input.addEventListener('blur', function() {
-                validateForm();
+        // Clear form function
+        function clearForm() {
+            document.getElementById('wppForm').reset();
+            const alrInput = document.querySelector('input[name="alr"]');
+            if (alrInput) {
+                alrInput.value = '';
+            }
+            
+            // Clear any error messages
+            const errorMessages = document.querySelectorAll('.error-message');
+            errorMessages.forEach(msg => msg.remove());
+            
+            // Reset field borders
+            const formFields = document.getElementById('wppForm').querySelectorAll('input, select');
+            formFields.forEach(field => {
+                field.classList.remove('border-red-500');
             });
-        });
+            
+            // Clear form errors div
+            const formErrorsDiv = document.getElementById('form-errors');
+            if (formErrorsDiv) {
+                formErrorsDiv.innerHTML = '';
+            }
+            
+            showNotification('Form cleared', 'info');
+        }
     </script>
 </body>
 </html>

@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from base.forms import LoginForm, LumberForm, CuttingForm, ChainsawForm, WoodForm, CuttingRecordForm, VolumeRecordForm
-from base.models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord, CuttingPermit, VolumeRecord
+from base.models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord, CuttingPermit, VolumeRecord, WoodProcessingPlant
 from datetime import datetime, timedelta, date
 from django.utils import timezone
 import os
@@ -1669,3 +1669,20 @@ def lumber_form(request):
         'any_expiring_records': Lumber.objects.filter(expiry_warning=True).exists(),
     }
     return render(request, 'lumber.html', context)
+
+@login_required
+def wood_dashboard(request):
+    # Now you can use WoodProcessingPlant model
+    wood_count = WoodProcessingPlant.objects.count()
+    active_wood_count = WoodProcessingPlant.objects.filter(status='active').count()
+    expired_wood_count = WoodProcessingPlant.objects.filter(status='expired').count()
+    expiring_soon_wood_count = WoodProcessingPlant.objects.filter(status='expiring_soon').count()
+    
+    context = {
+        'wood_count': wood_count,
+        'active_wood_count': active_wood_count,
+        'expired_wood_count': expired_wood_count,
+        'expiring_soon_wood_count': expiring_soon_wood_count,
+    }
+    
+    return render(request, 'wood-dash.html', context)

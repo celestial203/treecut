@@ -211,10 +211,31 @@ class WoodForm(forms.ModelForm):
             'expiry_date', 'wood_status', 'attachment'
         ]
         widgets = {
-            'date_issued': forms.DateInput(attrs={'type': 'date'}),
-            'date_released': forms.DateInput(attrs={'type': 'date'}),
-            'expiry_date': forms.DateInput(attrs={'type': 'date'}),
+            'name': forms.TextInput(attrs={'class': 'form-input', 'required': True}),
+            'type': forms.Select(attrs={'class': 'form-input', 'required': True}),
+            'wpp_number': forms.TextInput(attrs={'class': 'form-input', 'required': True}),
+            'business': forms.TextInput(attrs={'class': 'form-input', 'required': True}),
+            'plant': forms.TextInput(attrs={'class': 'form-input', 'required': True}),
+            'drc': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.01', 'required': True}),
+            'area': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.01', 'required': True}),
+            'approved_by': forms.TextInput(attrs={'class': 'form-input', 'required': True}),
+            'date_issued': forms.DateInput(attrs={'type': 'date', 'class': 'form-input', 'required': True}),
+            'date_released': forms.DateInput(attrs={'type': 'date', 'class': 'form-input', 'required': True}),
+            'expiry_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-input', 'readonly': True}),
+            'wood_status': forms.Select(attrs={'class': 'form-input', 'required': True}),
+            
+            # These fields might be causing issues if they're required in the model but not marked as required here
+            'longitude': forms.NumberInput(attrs={'class': 'form-input', 'step': 'any', 'required': True}),
+            'latitude': forms.NumberInput(attrs={'class': 'form-input', 'step': 'any', 'required': True}),
+            
+            # Optional fields
+            'integrated': forms.TextInput(attrs={'class': 'form-input'}),
+            'supplier_info': forms.TextInput(attrs={'class': 'form-input'}),
+            'local_volume': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.001'}),
+            'imported_volume': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.001'}),
+            'attachment': forms.FileInput(attrs={'class': 'form-input'})
         }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Ensure the type field has both options
@@ -223,27 +244,75 @@ class WoodForm(forms.ModelForm):
             ('Resawmill-new', 'Resawmill-new'),
             ('Resawmill-renew', 'Resawmill-renew')
         ]
+        
+        # Mark required fields - make sure this matches your model requirements
+        required_fields = ['name', 'type', 'wpp_number', 'business', 'plant', 
+                         'drc', 'area', 'approved_by', 'date_issued', 
+                         'date_released', 'wood_status', 'longitude', 'latitude']
+        for field in required_fields:
+            self.fields[field].required = True
+            
     def clean(self):
         cleaned_data = super().clean()
+        
+        # Print all form data for debugging
+        print("Form data submitted:", cleaned_data)
+        
+        # Check for missing required fields
+        required_fields = ['name', 'type', 'wpp_number', 'business', 'plant', 
+                         'drc', 'area', 'approved_by', 'date_issued', 
+                         'date_released', 'wood_status', 'longitude', 'latitude']
+        
+        missing_fields = []
+        for field in required_fields:
+            if not cleaned_data.get(field):
+                missing_fields.append(field)
+                
+        if missing_fields:
+            print(f"Missing required fields: {missing_fields}")
+            
+        # Continue with your existing validation
         date_issued = cleaned_data.get('date_issued')
+        date_released = cleaned_data.get('date_released')
         expiry_date = cleaned_data.get('expiry_date')
+
+        if date_issued:
+            # Validate date_issued is not in the future
+            if date_issued > timezone.now().date():
+                self.add_error('date_issued', 'Date issued cannot be in the future')
+
+            # Set expiry date to 5 years from date issued
+            if not expiry_date:
+                cleaned_data['expiry_date'] = date_issued + timezone.timedelta(days=5*365)
+
+        if date_issued and date_released:
+            if date_released < date_issued:
+                self.add_error('date_released', 'Date released cannot be before date issued')
 
         if date_issued and expiry_date:
             if expiry_date < date_issued:
-                raise forms.ValidationError('Expiry date cannot be before date issued')
+                self.add_error('expiry_date', 'Expiry date cannot be before date issued')
 
             # 5-year validation
             max_date = date_issued + timezone.timedelta(days=5*365)
             if expiry_date > max_date:
-                raise forms.ValidationError('Expiry date cannot be more than 5 years from date issued')
+                self.add_error('expiry_date', 'Expiry date cannot be more than 5 years from date issued')
+
+        # Validate DRC
+        drc = cleaned_data.get('drc')
+        if drc is not None and drc <= 0:
+            self.add_error('drc', 'DRC must be greater than 0')
+
+        # Validate area
+        area = cleaned_data.get('area')
+        if area is not None and area <= 0:
+            self.add_error('area', 'Area must be greater than 0')
 
         return cleaned_data
 
-    def clean_volume_cubic_meter(self):
-        volume = self.cleaned_data.get('volume_cubic_meter')
-        if volume is not None and volume < 0:
-            raise forms.ValidationError("Volume cannot be negative")
-        return volume
+    def clean_date_issued(self):
+        date_issued = self.cleaned_data.get('date_issued')
+        return date_issued
 
 # CuttingRecordForm
 class CuttingRecordForm(forms.ModelForm):

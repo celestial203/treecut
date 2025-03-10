@@ -12753,3 +12753,163 @@ Traceback (most recent call last):
     raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
 django.template.exceptions.TemplateSyntaxError: Invalid filter: 'split'
 ERROR 2025-03-09 23:50:09,024 basehttp "GET /edit_recordlumber/1/ HTTP/1.1" 500 225433
+ERROR 2025-03-10 00:01:07,286 log Internal Server Error: /wood-dash/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 1679, in wood_dashboard
+    wood_records = WoodProcessingPlant.objects.all()
+                   ^^^^^^^^^^^^^^^^^^^
+NameError: name 'WoodProcessingPlant' is not defined
+ERROR 2025-03-10 00:01:07,298 basehttp "GET /wood-dash/ HTTP/1.1" 500 71200
+ERROR 2025-03-10 00:01:38,708 log Internal Server Error: /wood-dash/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 1679, in wood_dashboard
+    wood_records = WoodProcessingPlant.objects.all()
+                   ^^^^^^^^^^^^^^^^^^^
+NameError: name 'WoodProcessingPlant' is not defined
+ERROR 2025-03-10 00:01:38,718 basehttp "GET /wood-dash/ HTTP/1.1" 500 71200
+ERROR 2025-03-10 00:01:49,559 log Internal Server Error: /wood-dash/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 1679, in wood_dashboard
+    wood_records = WoodProcessingPlant.objects.all()
+                   ^^^^^^^^^^^^^^^^^^^
+NameError: name 'WoodProcessingPlant' is not defined
+ERROR 2025-03-10 00:01:49,564 basehttp "GET /wood-dash/ HTTP/1.1" 500 71200
+ERROR 2025-03-10 00:03:26,617 log Internal Server Error: /wood-dash/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.UndefinedTable: relation "base_woodprocessingplant" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "base_woodprocessingplant"
+                                          ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 1676, in wood_dashboard
+    wood_count = WoodProcessingPlant.objects.count()
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 620, in count
+    return self.query.get_count(using=self.db)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\query.py", line 630, in get_count
+    return obj.get_aggregation(using, {"__count": Count("*")})["__count"]
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\query.py", line 616, in get_aggregation
+    result = compiler.execute_sql(SINGLE)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: relation "base_woodprocessingplant" does not exist
+LINE 1: SELECT COUNT(*) AS "__count" FROM "base_woodprocessingplant"
+                                          ^
+
+ERROR 2025-03-10 00:03:26,639 basehttp "GET /wood-dash/ HTTP/1.1" 500 131111
+ERROR 2025-03-10 00:04:43,631 log Internal Server Error: /wood-dash/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 1688, in wood_dashboard
+    return render(request, 'wood-dash.html', context)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'wood_record' not found. 'wood_record' is not a valid view function or pattern name.
+ERROR 2025-03-10 00:04:43,651 basehttp "GET /wood-dash/ HTTP/1.1" 500 128439
+WARNING 2025-03-10 01:04:22,339 log Not Found: /favicon.ico
+WARNING 2025-03-10 01:04:22,346 basehttp "GET /favicon.ico HTTP/1.1" 404 10029
+WARNING 2025-03-10 06:38:10,715 log Not Found: /favicon.ico
+WARNING 2025-03-10 06:38:10,718 basehttp "GET /favicon.ico HTTP/1.1" 404 10029
+WARNING 2025-03-10 09:36:00,763 log Not Found: /chainsaw/127/view/
+WARNING 2025-03-10 09:36:00,783 basehttp "GET /chainsaw/127/view/ HTTP/1.1" 404 6169
+WARNING 2025-03-10 09:36:05,281 log Not Found: /chainsaw/127/view/
+WARNING 2025-03-10 09:36:05,282 basehttp "GET /chainsaw/127/view/ HTTP/1.1" 404 6169
+WARNING 2025-03-10 10:10:41,346 log Not Found: /wood_detail/3
+WARNING 2025-03-10 10:10:41,370 basehttp "GET /wood_detail/3 HTTP/1.1" 404 10035
+WARNING 2025-03-10 10:25:31,131 log Not Found: /wood_detail/1
+WARNING 2025-03-10 10:25:31,146 basehttp "GET /wood_detail/1 HTTP/1.1" 404 10035
+WARNING 2025-03-10 10:25:34,404 log Not Found: /wood_detail/1
+WARNING 2025-03-10 10:25:34,406 basehttp "GET /wood_detail/1 HTTP/1.1" 404 10035
+WARNING 2025-03-10 10:34:45,175 log Not Found: /wood_detail/1
+WARNING 2025-03-10 10:34:45,183 basehttp "GET /wood_detail/1 HTTP/1.1" 404 10035
+WARNING 2025-03-10 10:34:55,044 log Not Found: /wood_detail/1
+WARNING 2025-03-10 10:34:55,046 basehttp "GET /wood_detail/1 HTTP/1.1" 404 10035
+WARNING 2025-03-10 10:38:29,665 log Not Found: /wood_detail/3
+WARNING 2025-03-10 10:38:29,679 basehttp "GET /wood_detail/3 HTTP/1.1" 404 10035
+WARNING 2025-03-10 10:45:32,732 log Not Found: /wood_detail/1
+WARNING 2025-03-10 10:45:32,765 basehttp "GET /wood_detail/1 HTTP/1.1" 404 10035

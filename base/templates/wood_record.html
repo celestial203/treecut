@@ -11,125 +11,275 @@
     <!-- Add SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        /* Enhanced styling */
         body {
-            background-color: #f0fdf4;
-            font-family: 'Inter', sans-serif;
-        }
-        
-        .gradient-bg {
-            background: linear-gradient(90deg, #22c55e 0%, #0ea5e9 100%);
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-        }
-        
-        .filter-button {
-            padding: 0.5rem 1.5rem;
-            border-radius: 2rem;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        
-        .filter-button.active {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        
-        .filter-button:hover {
-            transform: translateY(-1px);
-        }
-        
-        .white-button {
-            background-color: white;
-            color: #3b82f6;
-        }
-        
-        .green-button {
-            background-color: #22c55e;
-            color: white;
-        }
-        
-        .red-button {
-            background-color: #ef4444;
-            color: white;
-        }
-        
-        .yellow-button {
-            background-color: #eab308;
-            color: white;
-        }
-        
-        .search-input {
-            background-color: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-        }
-        
-        .search-input::placeholder {
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        .date-input {
-            background-color: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            appearance: none;
-        }
-        
-        .export-button {
-            background-color: #15803d;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
+            background-color: #f8faf8; /* Light green-tinted background */
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-        }
-        
-        .export-button:hover {
-            background-color: #166534;
-        }
-        
-        /* Style for date input calendar icon */
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-        }
-        
-        /* Style for select dropdown arrow */
-        select {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
+            flex-direction: column;
         }
 
-        /* Row hover effects based on status */
-        tr[data-status="active"]:hover {
-            background-color: rgba(34, 197, 94, 0.1) !important;
-            border-left: 4px solid #22c55e;
+        .table-container {
+            background: white;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            width: 100%;
+            border: none;
+            box-shadow: none;
         }
 
-        tr[data-status="expired"]:hover {
-            background-color: rgba(239, 68, 68, 0.1) !important;
-            border-left: 4px solid #ef4444;
+        table {
+            border-collapse: collapse;
+            width: 100%;
         }
 
-        tr[data-status="expiring soon"]:hover {
-            background-color: rgba(234, 179, 8, 0.1) !important;
-            border-left: 4px solid #eab308;
+        thead th {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.875rem;
+            color: #374151;
+            font-weight: 600;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
         }
 
-        /* Button styles */
-        .filter-button {
+        tbody tr {
+            border-bottom: 1px solid #e5e7eb;
+            transition: background-color 0.2s ease; /* Add smooth transition */
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        tbody tr:hover {
+            background-color: #f0fdf4 !important; /* Light green hover color */
+            cursor: pointer; /* Add pointer cursor on hover */
+        }
+
+        td {
+            padding: 12px 16px;
+            font-size: 0.875rem;
+            color: #111827;
+            white-space: nowrap;
+        }
+
+        /* Style the View links */
+        td a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        td a:hover {
+            text-decoration: underline;
+        }
+
+        /* Update scrollbar styling */
+        .overflow-y-auto {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar {
+            height: 8px; /* Horizontal scrollbar height */
+            width: 8px;  /* Vertical scrollbar width */
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Ensure the table container allows horizontal scrolling */
+        .table-container {
+            overflow-x: auto;
+            max-width: 100%;
+        }
+
+        /* Status badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-active {
+            background-color: #dcfce7; /* Light green for active status */
+            color: #16a34a; /* Green text */
+        }
+
+        .status-expired {
+            background-color: #fee2e2; /* Light red for expired status */
+            color: #991b1b; /* Dark red text */
+        }
+
+        .status-pending {
+            background-color: #fef3c7; /* Light yellow for pending status */
+            color: #92400e; /* Dark yellow text */
+        }
+
+        /* Action buttons */
+        .action-button, 
+        .block.p-4 {
+            background-color: white;
+            color: #16a34a; /* Green text */
+            border: 1px solid #16a34a; /* Green border */
+            padding: 0.5rem 1rem; /* Moderate padding for buttons */
+        }
+
+        .action-button:hover {
+            background-color: #f0fdf4; /* Very light green on hover */
+        }
+
+        /* Search bar enhancement */
+        .search-container {
+            position: relative;
+            max-width: 500px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            background-color: white;
             transition: all 0.2s ease;
         }
 
-        .filter-button.active {
-            background-color: transparent !important;
-            border: 2px solid white;
+        .search-input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+        }
+
+        /* Add context menu styles */
+        .context-menu {
+            position: fixed;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 8px 0;
+            z-index: 1000;
+            min-width: 150px;
+        }
+
+        .context-menu-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .context-menu-item:hover {
+            background-color: #f3f4f6;
+        }
+
+        .context-menu-item svg {
+            width: 16px;
+            height: 16px;
+            color: #6B7280;
+        }
+
+        /* Update navigation and header colors */
+        nav.bg-transparent {
+            background-color: white;
+        }
+
+        .text-green-700 {
+            color: #16a34a; /* Consistent green color */
+        }
+
+        /* Update filter buttons to match the design */
+        .rounded-lg {
+            border-radius: 0.5rem;
+        }
+
+        /* Style the filter section buttons to match the image */
+        #statusFilter, 
+        #startDateFilter, 
+        #endDateFilter, 
+        #yearFilter,
+        #recordSearch,
+        #exportBtn {
+            border: 1px solid #16a34a;
+            border-radius: 0.5rem;
+            background-color: white;
+            padding: 0.5rem 0.75rem; /* Adjusted padding to match image */
+            height: 2.5rem; /* Adjusted height to match image */
+        }
+
+        /* Make the filter container size match the image */
+        .border.border-green-700.rounded-lg.p-6 {
+            padding: 1.25rem; /* Adjusted padding */
+        }
+
+        /* Make the record cards match the image size */
+        .block.p-4.bg-white.border.border-green-700.rounded-lg.shadow {
+            padding: 1rem; /* Adjusted padding */
+            min-height: 5rem; /* Adjusted minimum height */
+        }
+
+        /* Footer color update */
+        footer.bg-blue-900 {
+            background-color: #1e3a8a !important; /* Force blue color */
+            margin-bottom: 0;
+            margin-top: auto;
+        }
+        
+        /* Update hover colors */
+        tbody tr:hover {
+            background-color: #f0fdf4 !important; /* Light green hover color */
+        }
+        
+        /* Update links and interactive elements */
+        a.text-blue-600, 
+        a.text-yellow-600,
+        .text-blue-600 {
+            color: #16a34a; /* Change to green */
+        }
+        
+        a.text-blue-600:hover, 
+        a.text-yellow-600:hover,
+        .text-blue-600:hover {
+            color: #15803d; /* Darker green on hover */
+        }
+        
+        /* Update the border colors for cards and containers */
+        .border-green-700 {
+            border-color: #16a34a;
+        }
+        
+        /* Update the status badges */
+        .status-active {
+            background-color: #dcfce7; /* Light green for active status */
+            color: #16a34a; /* Green text */
         }
     </style>
 </head>
@@ -150,23 +300,30 @@
                         Welcome, {{ request.user.username }}
                     </div>
                     <div class="relative">
-                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" 
-                                id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
                             ▼
                         </button>
                         <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
                             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                               
                                 <!-- Quick Actions -->
+                                <a href="{% url 'homepage' %}" class="block px-4 py-2 text-sm text-blue-700 hover:bg-gray-100">HOME</a>
                                 <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
                                 <div class="grid grid-cols-1 gap-2">
-                                    <a href="{% url 'dashboard' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Dashboard</a>
-                                    <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Cutting Permits</a>
-                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Lumber</a>
-                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">Chainsaw</a>
-                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                    <a href="{% url 'wood-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">DASHBOARD</a>
+                                    <div class="relative group">
+                                        <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                        <div class="absolute left-0 mt-0 w-48 bg-white rounded-md shadow-lg z-30 hidden group-hover:block">
+                                            <a href="{% url 'wood_records' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">View Records</a>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'chainsaw-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CHAINSAW </a>
+                                    <a href="{% url 'treecut-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CUTTING</a>
+                                    <a href="{% url 'lumber-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">LUMBER</a>
+
                                 </div>
                                 <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
-                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
                                     </svg>
                                     Sign Out
@@ -178,8 +335,10 @@
                 <!-- Mobile Menu Button -->
                 <div class="md:hidden">
                     <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M3 8h18M3 12h18M3 16h18M3 20h18"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6l8 8 8-8"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18"></path>
                         </svg>
                     </button>
                 </div>
@@ -193,67 +352,134 @@
         </div>
     </nav>
 
+    <!-- Add this notification container just after the navigation bar -->
+    <div id="expiryNotification" class="hidden max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-md shadow-md">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-yellow-700" id="expiryNotificationText">
+                        You have <span id="expiryCount" class="font-bold">0</span> records expiring within the next 3 months.
+                    </p>
+                    <p class="mt-1 text-xs text-yellow-600">
+                        <button id="viewExpiringBtn" class="font-medium underline hover:text-yellow-800">View expiring records</button>
+                    </p>
+                </div>
+                <div class="ml-auto pl-3">
+                    <div class="-mx-1.5 -my-1.5">
+                        <button id="closeNotificationBtn" class="inline-flex rounded-md p-1.5 text-yellow-500 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-600">
+                            <span class="sr-only">Dismiss</span>
+                            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        <div class="bg-gradient-to-r from-green-600 to-blue-400 p-6 rounded-xl shadow-lg">
-            <!-- Filter Buttons Row -->
-            <div class="flex gap-4 mb-6 flex-wrap">
-                <button id="allRecordsBtn" 
-                        class="px-6 py-2 bg-transparent text-white rounded-full transition-all duration-200 text-sm font-medium border-2 border-white">
-                    All Records
-                </button>
-                <button id="activeRecordsBtn" 
-                        class="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
-                    Active
-                </button>
-                <button id="expiringSoonRecordsBtn" 
-                        class="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
-                    To expire
-                </button>
-                <button id="expiredRecordsBtn" 
-                        class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-full transition-all duration-200 text-sm font-medium">
-                    Expired
-                </button>
-                
+        <!-- Records Cards Section - Smaller size -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <!-- Lumber Records Card -->
+            <a href="{% url 'lumber_records' %}" class="block p-4 bg-white border border-green-700 rounded-lg shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-800">Lumber Records</h3>
+                        <p class="text-xs text-gray-600">View lumber records</p>
+                    </div>
+                    <svg class="w-5 h-5 text-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                </div>
+            </a>
+            
+            <!-- Cutting Records Card -->
+            <a href="{% url 'cutting_records' %}" class="block p-4 bg-white border border-green-700 rounded-lg shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-800">Cutting Records</h3>
+                        <p class="text-xs text-gray-600">View cutting records</p>
+                    </div>
+                    <svg class="w-5 h-5 text-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </div>
+            </a>
+            
+            <!-- WPP Records Card -->
+            <a href="{% url 'chainsaw_record' %}" class="block p-4 bg-white border border-green-700 rounded-lg shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-800">Chainsaw Records</h3>
+                        <p class="text-xs text-gray-600">View chainsaw records</p>
+                    </div>
+                    <svg class="w-5 h-5 text-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.879 3.879L6 12l7.879 8.121M6 12h12"/>
+                    </svg>
+                </div>
+            </a>
+        </div>
+
+        <!-- Horizontal Line -->
+        <hr class="my-8 border-green-700">
+
+        <!-- Filter Section -->
+        <div class="border border-green-700 rounded-lg p-6 mb-8 bg-white shadow">
+            <!-- Status Filter Dropdown -->
+            <div class="mb-8">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Select Status</label>
+                <div class="relative">
+                    <select id="statusFilter" class="w-full md:w-64 px-4 py-2 border border-green-700 rounded-lg focus:ring-green-800 focus:border-green-800 appearance-none bg-white pr-10">
+                        <option value="">All Records</option>
+                        <option value="active (new)">Active (New)</option>
+                        <option value="active (renewed)">Active (Renewed)</option>
+                        <option value="expired">Expired</option>
+                        <option value="suspended">Suspended</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                        </svg>
+                    </div>
+                </div>
             </div>
             
-            <!-- Search and filters row -->
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <!-- Search Record -->
-                <div class="md:col-span-1">
-                    <label class="block text-white text-sm mb-2">Search Record</label>
-                    <input type="text" 
-                           id="recordSearch" 
-                           placeholder="Search record..." 
-                           class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+            <!-- Search and Filter Controls -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search Record</label>
+                    <input type="text" id="recordSearch" placeholder="Search record..." class="w-full px-4 py-2 border border-green-700 rounded-lg focus:ring-green-800 focus:border-green-800">
                 </div>
                 
-                <!-- Start Date -->
-                <div class="md:col-span-1">
-                    <label class="block text-white text-sm mb-2">Start Date</label>
-                    <input type="date" id="startDate" class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                    <input type="date" id="startDateFilter" class="w-full px-4 py-2 border border-green-700 rounded-lg focus:ring-green-800 focus:border-green-800">
                 </div>
                 
-                <!-- End Date -->
-                <div class="md:col-span-1">
-                    <label class="block text-white text-sm mb-2">End Date</label>
-                    <input type="date" id="endDate" class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                    <input type="date" id="endDateFilter" class="w-full px-4 py-2 border border-green-700 rounded-lg focus:ring-green-800 focus:border-green-800">
                 </div>
                 
-                <!-- Year Filter -->
-                <div class="md:col-span-1">
-                    <label class="block text-white text-sm mb-2">Filter by Year</label>
-                    <select id="yearFilter" 
-                            class="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Filter by Year</label>
+                    <select id="yearFilter" class="w-full px-4 py-2 border border-green-700 rounded-lg focus:ring-green-800 focus:border-green-800 appearance-none bg-white">
                         <option value="">All Years</option>
+                        <!-- Years will be populated by JavaScript -->
                     </select>
                 </div>
                 
-                <!-- Export Button -->
-                <div class="md:col-span-1 flex items-end">
-                    <button onclick="exportTableToCSV('lumber_records.csv')" 
-                            class="w-full px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 flex items-center justify-center">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                <div>
+                    <button id="exportBtn" class="w-full px-4 py-2 bg-white border border-green-700 rounded-lg text-gray-700 flex items-center justify-center hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-green-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                         Export
                     </button>
@@ -262,13 +488,8 @@
         </div>
     </div>
 
-            <!-- Add space between filter section and table -->
-            <div class="py-6"></div>
-
-            </div>
-            
-            <!-- Wood Records Table -->
-            <!-- Records Section - Full Width with Scroll -->
+    <!-- Wood Records Table -->
+    <!-- Records Section - Full Width with Scroll -->
     <div class="w-full py-4">
         <div class="bg-white shadow-2xl">
             <div class="overflow-x-auto">
@@ -346,7 +567,7 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         {% if wood_records %}
                             {% for record in wood_records %}
-                            <tr class="hover:bg-gray-50" data-status="{{ record.get_wood_status_display|lower }}">
+                            <tr class="hover:bg-gray-50 cursor-pointer" data-status="{{ record.get_wood_status_display|lower }}" data-record-id="{{ record.id }}">
                                 <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
                                     {{ record.name }}
                                 </td>
@@ -421,7 +642,7 @@
                                             <span class="font-bold">View</span>
                                         </a>
                                         
-                                        <a href="{% url 'edit_wood' record.id %}" class="text-yellow-600 hover:text-yellow-900">
+                                        <a href="{% url 'edit_wood' record.id %}" class="text-orange-500 hover:text-orange-700">
                                             <span class="font-bold">Edit</span>
                                         </a>
                                         
@@ -482,7 +703,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-blue-900 text-white mt-auto py-6">
+    <footer class="bg-blue-900 text-white py-6">
         <div class="max-w-7xl mx-auto text-center">
             <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
             <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
@@ -497,20 +718,14 @@
             const userMenu = document.getElementById('user-menu');
             
             if (userMenuButton && userMenu) {
-                userMenuButton.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    
-                    if (userMenu.style.display === 'none' || userMenu.style.display === '') {
-                        userMenu.style.display = 'block';
-                    } else {
-                        userMenu.style.display = 'none';
-                    }
+                userMenuButton.addEventListener('click', function() {
+                    userMenu.classList.toggle('hidden');
                 });
                 
+                // Close menu when clicking outside
                 document.addEventListener('click', function(event) {
                     if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
-                        userMenu.style.display = 'none';
+                        userMenu.classList.add('hidden');
                     }
                 });
             }
@@ -529,290 +744,441 @@
                 });
             }
             
-            // Get all necessary elements
-            const searchInput = document.getElementById('recordSearch');
-            const startDateInput = document.getElementById('startDate');
-            const endDateInput = document.getElementById('endDate');
+            // Populate year filter dropdown with years from current year to 10 years back
             const yearFilter = document.getElementById('yearFilter');
-            const tableRows = document.querySelectorAll('table tbody tr');
-            const noResultsMessage = document.getElementById('noResultsMessage');
-            const tableBody = document.querySelector('table tbody');
-
-            // Function to format date to YYYY-MM-DD
-            function formatDate(date) {
-                return date.toISOString().split('T')[0];
+            if (yearFilter) {
+                const currentYear = new Date().getFullYear();
+                for (let year = currentYear; year >= currentYear - 10; year--) {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    yearFilter.appendChild(option);
+                }
             }
-
-            // Initialize year filter options
-            function initializeYearFilter() {
-                const years = new Set();
+            
+            // Search and filter functionality
+            const recordSearch = document.getElementById('recordSearch');
+            const statusFilter = document.getElementById('statusFilter');
+            const startDateFilter = document.getElementById('startDateFilter');
+            const endDateFilter = document.getElementById('endDateFilter');
+            const yearFilterSelect = document.getElementById('yearFilter');
+            const tableRows = document.querySelectorAll('tbody tr');
+            const noResultsMessage = document.getElementById('noResultsMessage');
+            const resultsCounter = document.getElementById('resultsCounter');
+            
+            // Check URL parameters for initial filter values
+            function setInitialFilterValues() {
+                const urlParams = new URLSearchParams(window.location.search);
+                
+                // Set status filter from URL if present
+                const statusParam = urlParams.get('status');
+                if (statusParam && statusFilter) {
+                    statusFilter.value = statusParam.toLowerCase();
+                }
+                
+                // Set other filters from URL if present
+                const searchParam = urlParams.get('search');
+                if (searchParam && recordSearch) {
+                    recordSearch.value = searchParam;
+                }
+                
+                const startDateParam = urlParams.get('start_date');
+                if (startDateParam && startDateFilter) {
+                    startDateFilter.value = startDateParam;
+                }
+                
+                const endDateParam = urlParams.get('end_date');
+                if (endDateParam && endDateFilter) {
+                    endDateFilter.value = endDateParam;
+                }
+                
+                const yearParam = urlParams.get('year');
+                if (yearParam && yearFilterSelect) {
+                    yearFilterSelect.value = yearParam;
+                }
+                
+                // Apply filters if any parameters were set
+                if (statusParam || searchParam || startDateParam || endDateParam || yearParam) {
+                    filterTable();
+                }
+            }
+            
+            // Function to update URL with current filter values
+            function updateUrlWithFilters() {
+                const urlParams = new URLSearchParams();
+                
+                if (statusFilter && statusFilter.value) {
+                    urlParams.set('status', statusFilter.value);
+                }
+                
+                if (recordSearch && recordSearch.value) {
+                    urlParams.set('search', recordSearch.value);
+                }
+                
+                if (startDateFilter && startDateFilter.value) {
+                    urlParams.set('start_date', startDateFilter.value);
+                }
+                
+                if (endDateFilter && endDateFilter.value) {
+                    urlParams.set('end_date', endDateFilter.value);
+                }
+                
+                if (yearFilterSelect && yearFilterSelect.value) {
+                    urlParams.set('year', yearFilterSelect.value);
+                }
+                
+                // Update URL without reloading the page
+                const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+                window.history.replaceState({}, '', newUrl);
+            }
+            
+            // Function to filter table rows
+            function filterTable() {
+                const searchTerm = recordSearch.value.toLowerCase();
+                const statusValue = statusFilter.value.toLowerCase();
+                const startDate = startDateFilter.value ? new Date(startDateFilter.value) : null;
+                const endDate = endDateFilter.value ? new Date(endDateFilter.value) : null;
+                const yearValue = yearFilterSelect.value;
+                
+                let visibleCount = 0;
+                let totalCount = 0;
+                
                 tableRows.forEach(row => {
-                    const dateCell = row.querySelector('td:nth-child(15)'); // Adjust index for date column
-                    if (dateCell && dateCell.textContent) {
-                        const year = new Date(dateCell.textContent).getFullYear();
-                        if (!isNaN(year)) years.add(year);
+                    // Skip the "No records found" row
+                    if (row.querySelector('td[colspan]')) {
+                        return;
+                    }
+                    
+                    totalCount++;
+                    
+                    // Get row data
+                    const rowData = row.textContent.toLowerCase();
+                    const rowStatus = row.getAttribute('data-status') ? row.getAttribute('data-status').toLowerCase() : '';
+                    
+                    // Get date from the expiry date column (adjust index as needed)
+                    const dateCell = row.querySelectorAll('td')[16]; // Expiry date is at index 16
+                    const dateText = dateCell ? dateCell.textContent.trim() : '';
+                    const rowDate = dateText ? new Date(dateText) : null;
+                    
+                    // Check if row matches all filters
+                    const matchesSearch = searchTerm === '' || rowData.includes(searchTerm);
+                    const matchesStatus = statusValue === '' || rowStatus === statusValue;
+                    
+                    // Check if date is within range
+                    let matchesDateRange = true;
+                    if (rowDate && startDate && endDate) {
+                        matchesDateRange = rowDate >= startDate && rowDate <= endDate;
+                    } else if (rowDate && startDate) {
+                        matchesDateRange = rowDate >= startDate;
+                    } else if (rowDate && endDate) {
+                        matchesDateRange = rowDate <= endDate;
+                    }
+                    
+                    // Check if matches year filter
+                    let matchesYear = true;
+                    if (yearValue && rowDate) {
+                        matchesYear = rowDate.getFullYear().toString() === yearValue;
+                    }
+                    
+                    // Show/hide row based on all filters
+                    if (matchesSearch && matchesStatus && matchesDateRange && matchesYear) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
                     }
                 });
                 
-                yearFilter.innerHTML = '<option value="">All Years</option>';
-                [...years].sort((a, b) => b - a).forEach(year => {
-                    yearFilter.innerHTML += `<option value="${year}">${year}</option>`;
-                });
-            }
-
-            // Function to filter records based on all criteria
-            function filterRecords() {
-                const searchTerm = searchInput.value.toLowerCase().trim();
-                const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
-                const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
-                const selectedYear = yearFilter.value;
-                let hasResults = false;
-
-                tableRows.forEach(row => {
-                    const cells = row.getElementsByTagName('td');
-                    let rowText = '';
-                    for (let cell of cells) {
-                        rowText += cell.textContent.toLowerCase() + ' ';
-                    }
-
-                    // Get date from the row (adjust column index as needed)
-                    const dateCell = row.querySelector('td:nth-child(15)'); // Adjust index for date column
-                    const rowDate = dateCell ? new Date(dateCell.textContent) : null;
-                    
-                    // Check all filter conditions
-                    let showRow = true;
-
-                    // Search term filter
-                    if (searchTerm && !rowText.includes(searchTerm)) {
-                        showRow = false;
-                    }
-
-                    // Date range filter
-                    if (rowDate && startDate && endDate) {
-                        if (rowDate < startDate || rowDate > endDate) {
-                            showRow = false;
-                        }
-                    }
-
-                    // Year filter
-                    if (selectedYear && rowDate) {
-                        if (rowDate.getFullYear().toString() !== selectedYear) {
-                            showRow = false;
-                        }
-                    }
-
-                    // Show/hide row
-                    row.style.display = showRow ? '' : 'none';
-                    if (showRow) hasResults = true;
-                });
-
+                // Update results counter
+                if (resultsCounter) {
+                    resultsCounter.textContent = `Showing ${visibleCount} of ${totalCount} records`;
+                }
+                
                 // Show/hide no results message
-                if (!hasResults) {
-                    tableBody.style.display = 'none';
-                    if (noResultsMessage) {
-                        noResultsMessage.style.display = 'block';
+                if (noResultsMessage) {
+                    if (visibleCount === 0 && totalCount > 0) {
+                        noResultsMessage.classList.remove('hidden');
                         noResultsMessage.innerHTML = `
-                            <div class="flex items-center justify-center p-8">
-                                <div class="text-center">
-                                    <div class="text-gray-500 text-lg mb-2">No records found</div>
-                                    <div class="text-gray-400">No matches found for the current filters</div>
+                            <div class="p-4 text-center">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <h3 class="mt-2 text-sm font-medium text-gray-900">No results found</h3>
+                                <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filter to find what you're looking for.</p>
+                                <div class="mt-6">
+                                    <button type="button" onclick="clearFilters()" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                        Clear filters
+                                    </button>
                                 </div>
                             </div>
                         `;
-                    }
-                } else {
-                    tableBody.style.display = '';
-                    if (noResultsMessage) {
-                        noResultsMessage.style.display = 'none';
+                    } else {
+                        noResultsMessage.classList.add('hidden');
                     }
                 }
-            }
-
-            // Date range handlers
-            startDateInput.addEventListener('change', function() {
-                if (!endDateInput.value) {
-                    endDateInput.value = this.value;
-                }
-                filterRecords();
-            });
-
-            endDateInput.addEventListener('change', function() {
-                if (!startDateInput.value) {
-                    startDateInput.value = this.value;
-                }
-                filterRecords();
-            });
-
-            // Add event listeners
-            searchInput.addEventListener('input', filterRecords);
-            yearFilter.addEventListener('change', filterRecords);
-
-            // Export function for visible records only
-            window.exportTableToCSV = function(filename) {
-                const visibleRows = Array.from(tableRows).filter(row => row.style.display !== 'none');
-                const headers = Array.from(document.querySelectorAll('table thead th'))
-                    .map(th => th.textContent.trim());
                 
-                let csvContent = headers.join(',') + '\n';
-
-                visibleRows.forEach(row => {
-                    const rowData = Array.from(row.getElementsByTagName('td'))
-                        .map(cell => {
-                            // Clean and format cell data
-                            let data = cell.textContent.replace(/[\n\r]+/g, ' ').trim();
-                            // Escape quotes and wrap in quotes if contains comma
-                            if (data.includes(',') || data.includes('"')) {
-                                data = `"${data.replace(/"/g, '""')}"`;
-                            }
-                            return data;
-                        });
-                    csvContent += rowData.join(',') + '\n';
-                });
-
-                // Create and trigger download
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                if (navigator.msSaveBlob) {
-                    navigator.msSaveBlob(blob, filename);
-                } else {
-                    link.href = URL.createObjectURL(blob);
-                    link.setAttribute('download', filename);
+                // Update URL with current filter values
+                updateUrlWithFilters();
+            }
+            
+            // Add event listeners to search and filter inputs
+            if (recordSearch) recordSearch.addEventListener('input', filterTable);
+            if (statusFilter) statusFilter.addEventListener('change', filterTable);
+            if (startDateFilter) startDateFilter.addEventListener('change', filterTable);
+            if (endDateFilter) endDateFilter.addEventListener('change', filterTable);
+            if (yearFilterSelect) yearFilterSelect.addEventListener('change', filterTable);
+            
+            // Set initial filter values from URL parameters
+            setInitialFilterValues();
+            
+            // Export functionality
+            const exportBtn = document.getElementById('exportBtn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function() {
+                    // Create CSV content
+                    let csvContent = "data:text/csv;charset=utf-8,";
+                    
+                    // Add headers
+                    const headers = [];
+                    document.querySelectorAll('thead th').forEach(th => {
+                        headers.push(th.textContent.trim());
+                    });
+                    csvContent += headers.join(',') + '\n';
+                    
+                    // Add visible rows
+                    tableRows.forEach(row => {
+                        if (row.style.display !== 'none' && !row.querySelector('td[colspan]')) {
+                            const rowData = [];
+                            row.querySelectorAll('td').forEach(td => {
+                                // Clean the cell data for CSV
+                                let cellData = td.textContent.trim().replace(/,/g, ';');
+                                // If it's a link cell, get the text without the "View File" text
+                                if (td.querySelector('a')) {
+                                    cellData = td.querySelector('a').getAttribute('href') || cellData;
+                                }
+                                rowData.push('"' + cellData + '"');
+                            });
+                            csvContent += rowData.join(',') + '\n';
+                        }
+                    });
+                    
+                    // Create download link
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement('a');
+                    link.setAttribute('href', encodedUri);
+                    link.setAttribute('download', 'wood_records_export.csv');
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
+                });
+            }
+            
+            // Check for expiring records
+            function checkExpiringRecords() {
+                const today = new Date();
+                const threeMonthsLater = new Date();
+                threeMonthsLater.setMonth(today.getMonth() + 3);
+                
+                let expiringCount = 0;
+                let expiringRecords = [];
+                
+                tableRows.forEach(row => {
+                    // Skip the "No records found" row
+                    if (row.querySelector('td[colspan]')) {
+                        return;
+                    }
+                    
+                    // Get expiry date from the row
+                    const dateCell = row.querySelectorAll('td')[16]; // Expiry date is at index 16
+                    if (!dateCell) return;
+                    
+                    const dateText = dateCell.textContent.trim();
+                    if (!dateText) return;
+                    
+                    const expiryDate = new Date(dateText);
+                    
+                    // Check if record is expiring within 3 months and is active
+                    const statusCell = row.querySelectorAll('td')[18]; // Status is at index 18
+                    const status = statusCell ? statusCell.textContent.trim().toLowerCase() : '';
+                    
+                    if (expiryDate > today && expiryDate <= threeMonthsLater && 
+                        (status.includes('active') || status.includes('renewed'))) {
+                        expiringCount++;
+                        expiringRecords.push({
+                            id: row.getAttribute('data-record-id'),
+                            name: row.querySelectorAll('td')[0].textContent.trim(),
+                            expiryDate: dateText
+                        });
+                    }
+                });
+                
+                // Show notification if there are expiring records
+                const expiryNotification = document.getElementById('expiryNotification');
+                const expiryCount = document.getElementById('expiryCount');
+                const viewExpiringBtn = document.getElementById('viewExpiringBtn');
+                
+                if (expiryNotification && expiryCount && expiringCount > 0) {
+                    expiryCount.textContent = expiringCount;
+                    expiryNotification.classList.remove('hidden');
+                    
+                    // Store expiring records in session storage
+                    sessionStorage.setItem('expiringRecords', JSON.stringify(expiringRecords));
+                    
+                    // Add click event to view expiring records button
+                    if (viewExpiringBtn) {
+                        viewExpiringBtn.addEventListener('click', function() {
+                            // Filter to show only expiring records
+                            tableRows.forEach(row => {
+                                const rowId = row.getAttribute('data-record-id');
+                                const isExpiring = expiringRecords.some(record => record.id === rowId);
+                                
+                                if (isExpiring) {
+                                    row.style.display = '';
+                                    // Highlight the row
+                                    row.classList.add('bg-yellow-50');
+                                } else {
+                                    row.style.display = 'none';
+                                }
+                            });
+                            
+                            // Update results counter
+                            if (resultsCounter) {
+                                resultsCounter.textContent = `Showing ${expiringCount} expiring records`;
+                            }
+                            
+                            // Hide notification
+                            expiryNotification.classList.add('hidden');
+                            
+                            // Update filters to show they've been modified
+                            if (statusFilter) statusFilter.value = 'active-new';
+                        });
+                    }
+                    
+                    // Add close button functionality
+                    const closeNotificationBtn = document.getElementById('closeNotificationBtn');
+                    if (closeNotificationBtn) {
+                        closeNotificationBtn.addEventListener('click', function() {
+                            expiryNotification.classList.add('hidden');
+                        });
+                    }
+                }
+            }
+            
+            // Run expiry check on page load
+            checkExpiringRecords();
+            
+            // First check if all required elements exist
+            var actionPopup = document.getElementById('actionPopup');
+            var viewRecordBtn = document.getElementById('viewRecordBtn');
+            var editRecordBtn = document.getElementById('editRecordBtn');
+            
+            // If any required element is missing, log error and exit
+            if (!actionPopup || !viewRecordBtn || !editRecordBtn) {
+                console.error('Required popup elements not found:', {
+                    actionPopup: !!actionPopup,
+                    viewRecordBtn: !!viewRecordBtn,
+                    editRecordBtn: !!editRecordBtn
+                });
+                return; // Exit early if elements don't exist
+            }
+            
+            var selectedRecordId = null;
+            
+            // Add double-click event to table rows
+            for (var i = 0; i < tableRows.length; i++) {
+                var row = tableRows[i];
+                // Skip "No records found" row
+                if (row.querySelector('td[colspan]')) {
+                    continue;
+                }
+                
+                // Use function to create closure for event handler
+                (function(currentRow) {
+                    currentRow.ondblclick = function(e) {
+                        // Get the record ID from the data attribute
+                        selectedRecordId = currentRow.getAttribute('data-record-id');
+                        
+                        if (!selectedRecordId) {
+                            console.error('Could not find record ID');
+                            return;
+                        }
+                        
+                        // Position popup
+                        actionPopup.style.display = 'block';
+                        actionPopup.style.position = 'absolute';
+                        actionPopup.style.left = (e.pageX + 5) + 'px';
+                        actionPopup.style.top = (e.pageY - 5) + 'px';
+                    };
+                })(row);
+            }
+            
+            // View button
+            viewRecordBtn.onclick = function() {
+                if (selectedRecordId) {
+                    window.location.href = "{% url 'wood_detail' 0 %}".replace('0', selectedRecordId);
+                }
+                actionPopup.style.display = 'none';
+            };
+            
+            // Edit button
+            editRecordBtn.onclick = function() {
+                if (selectedRecordId) {
+                    window.location.href = "{% url 'edit_wood' 0 %}".replace('0', selectedRecordId);
+                }
+                actionPopup.style.display = 'none';
+            };
+            
+            // Close popup when clicking elsewhere
+            document.onclick = function(e) {
+                if (actionPopup && !actionPopup.contains(e.target)) {
+                    actionPopup.style.display = 'none';
                 }
             };
-
-            // Initialize year filter
-            initializeYearFilter();
-
-            // Get status filter buttons
-            const allRecordsBtn = document.getElementById('allRecordsBtn');
-            const activeRecordsBtn = document.getElementById('activeRecordsBtn');
-            const expiredRecordsBtn = document.getElementById('expiredRecordsBtn');
-            const expiringSoonRecordsBtn = document.getElementById('expiringSoonRecordsBtn');
-
-            // Function to check if a date is within 3 months
-            function isWithinThreeMonths(expiryDate) {
-                const today = new Date();
-                const threeMonthsFromNow = new Date();
-                threeMonthsFromNow.setMonth(today.getMonth() + 3);
-                expiryDate = new Date(expiryDate);
-                
-                return expiryDate > today && expiryDate <= threeMonthsFromNow;
-            }
-
-            // Function to check if a date is expired
-            function isExpired(expiryDate) {
-                const today = new Date();
-                return new Date(expiryDate) < today;
-            }
-
-            // Function to determine record status
-            function getRecordStatus(expiryDate) {
-                if (isExpired(expiryDate)) return 'expired';
-                if (isWithinThreeMonths(expiryDate)) return 'expiring soon';
-                return 'active';
-            }
-
-            // Set initial status for all rows
-            tableRows.forEach(row => {
-                const expiryDateCell = row.querySelector('td:nth-child(17)'); // Adjust index for expiry date column
-                if (expiryDateCell) {
-                    const status = getRecordStatus(expiryDateCell.textContent);
-                    row.setAttribute('data-status', status);
+            
+            // Close popup when pressing Escape
+            document.onkeydown = function(e) {
+                if (actionPopup && e.key === 'Escape') {
+                    actionPopup.style.display = 'none';
                 }
-            });
-
-            // Function to filter records by status
-            function filterByStatus(status) {
-                let hasResults = false;
-
-                tableRows.forEach(row => {
-                    const rowStatus = row.getAttribute('data-status');
-                    let showRow = false;
-
-                    switch(status) {
-                        case 'all':
-                            showRow = true;
-                            break;
-                        case 'active':
-                            showRow = rowStatus === 'active';
-                            break;
-                        case 'expired':
-                            showRow = rowStatus === 'expired';
-                            break;
-                        case 'expiring soon':
-                            showRow = rowStatus === 'expiring soon';
-                            break;
-                    }
-
-                    row.style.display = showRow ? '' : 'none';
-                    if (showRow) hasResults = true;
-                });
-
-                // Update button styles
-                updateButtonStyles(status);
-
-                // Show/hide no results message
-                if (!hasResults) {
-                    tableBody.style.display = 'none';
-                    noResultsMessage.style.display = 'block';
-                    noResultsMessage.innerHTML = `
-                        <div class="flex items-center justify-center p-8">
-                            <div class="text-center">
-                                <div class="text-gray-500 text-lg mb-2">No records found</div>
-                                <div class="text-gray-400">No ${status} records available</div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    tableBody.style.display = '';
-                    noResultsMessage.style.display = 'none';
-                }
-            }
-
-            // Function to update button styles
-            function updateButtonStyles(activeStatus) {
-                // Remove active class from all buttons
-                [allRecordsBtn, activeRecordsBtn, expiredRecordsBtn, expiringSoonRecordsBtn].forEach(btn => {
-                    btn.classList.remove('bg-transparent', 'border-2', 'border-white');
-                    // Restore original background colors
-                    if (btn === activeRecordsBtn) {
-                        btn.classList.add('bg-green-500');
-                    } else if (btn === expiredRecordsBtn) {
-                        btn.classList.add('bg-red-500');
-                    } else if (btn === expiringSoonRecordsBtn) {
-                        btn.classList.add('bg-yellow-500');
-                    }
-                });
-
-                // Add active class to selected button
-                switch(activeStatus) {
-                    case 'all':
-                        allRecordsBtn.classList.add('bg-transparent', 'border-2', 'border-white');
-                        break;
-                    case 'active':
-                        activeRecordsBtn.classList.add('bg-transparent', 'border-2', 'border-white');
-                        break;
-                    case 'expired':
-                        expiredRecordsBtn.classList.add('bg-transparent', 'border-2', 'border-white');
-                        break;
-                    case 'expiring soon':
-                        expiringSoonRecordsBtn.classList.add('bg-transparent', 'border-2', 'border-white');
-                        break;
-                }
-            }
-
-            // Event listeners for filter buttons
-            allRecordsBtn.addEventListener('click', () => filterByStatus('all'));
-            activeRecordsBtn.addEventListener('click', () => filterByStatus('active'));
-            expiredRecordsBtn.addEventListener('click', () => filterByStatus('expired'));
-            expiringSoonRecordsBtn.addEventListener('click', () => filterByStatus('expiring soon'));
-
-            // Initialize with all records
-            filterByStatus('all');
+            };
         });
+        
+        // Function to clear all filters (used by the "Clear filters" button)
+        function clearFilters() {
+            document.getElementById('recordSearch').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('startDateFilter').value = '';
+            document.getElementById('endDateFilter').value = '';
+            document.getElementById('yearFilter').value = '';
+            
+            // Update URL to remove filter parameters
+            window.history.replaceState({}, '', window.location.pathname);
+            
+            // Trigger the filter function to update the table
+            const event = new Event('input');
+            document.getElementById('recordSearch').dispatchEvent(event);
+            
+            // Hide the no results message
+            document.getElementById('noResultsMessage').classList.add('hidden');
+        }
     </script>
+
+    <!-- Add this HTML for the context menu popup right before your closing body tag -->
+    <div id="actionPopup" class="context-menu" style="display: none; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 8px; width: 150px;">
+        <div id="viewRecordBtn" class="context-menu-item" style="display: flex; align-items: center; padding: 8px; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 8px;">
+                <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+                <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+            </svg>
+            <span>View</span>
+        </div>
+        <div id="editRecordBtn" class="context-menu-item" style="display: flex; align-items: center; padding: 8px; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 8px;">
+                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z"/>
+            </svg>
+            <span>Edit</span>
+        </div>
+    </div>
+
 </body>
 </html>

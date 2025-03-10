@@ -65,7 +65,9 @@ class Lumber(models.Model):
     def clean(self):
         # Validate dates
         if self.date_issued and self.date_issued > timezone.now().date():
-            raise ValidationError({'date_issued': 'Date issued cannot be in the future'})
+            # Only raise error if not a special case
+            if not self.is_special_case:  # Define your condition here
+                raise ValidationError({'date_issued': 'Date issued cannot be in the future'})
             
         if self.date_issued and self.expiry_date and self.expiry_date < self.date_issued:
             raise ValidationError({'expiry_date': 'Expiry date must be after date issued'})
@@ -548,15 +550,11 @@ class Wood(models.Model):
         super().save(*args, **kwargs)
 
     def clean(self):
-        from django.core.exceptions import ValidationError
-        
-        # Validate dates
-        if self.date_issued and self.expiry_date:
-            if self.expiry_date <= self.date_issued:
-                raise ValidationError('Expiry date must be after date issued')
-            
-            if self.date_released and self.date_released < self.date_issued:
-                raise ValidationError('Release date cannot be before date issued')
+        # Allow future dates for specific permit types or conditions
+        if self.date_issued and self.date_issued > timezone.now().date():
+            # Only raise error if not a special case
+            if not self.is_special_case:  # Define your condition here
+                raise ValidationError({'date_issued': 'Date issued cannot be in the future'})
 
     @property
     def total_volume(self):
@@ -747,3 +745,35 @@ class VolumeRecord(models.Model):
 
     def __str__(self):
         return f"{self.cutting} - {self.volume} cu.m ({self.date})"
+
+class WoodProcessingPlant(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.TextField()
+    owner = models.CharField(max_length=255)
+    permit_number = models.CharField(max_length=100)
+    issue_date = models.DateField()
+    expiry_date = models.DateField()
+    status = models.CharField(max_length=20, choices=[
+        ('ACTIVE_NEW', 'Active (New)'),
+        ('ACTIVE_RENEWED', 'Active (Renewed)'),
+        ('EXPIRED', 'Expired'),
+        ('SUSPENDED', 'Suspended'),
+        ('CANCELLED', 'Cancelled')
+    ], default='ACTIVE_NEW')
+    
+    def __str__(self):
+        return self.name
+    
+    def save(self, *args, **kwargs):
+        # Auto-update status based on expiry date
+        today = datetime.now().date()
+        thirty_days_from_now = today + timedelta(days=30)
+        
+        if self.expiry_date < today:
+            self.status = 'EXPIRED'
+        elif self.expiry_date <= thirty_days_from_now:
+            self.status = 'EXPIRED'
+        else:
+            self.status = 'ACTIVE_NEW'
+            
+        super().save(*args, **kwargs)
