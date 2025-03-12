@@ -16,6 +16,24 @@
                 background-color: #ffff; /* Light green background */
             }
     
+            /* Hide all columns by default */
+            th, td {
+                display: none;
+            }
+    
+            /* Only show the columns we want */
+            th:nth-child(6), /* Owner column */
+            th:nth-child(7), /* Municipality column */
+            th:nth-child(14), /* Serial Number column */
+            td:nth-child(6), 
+            td:nth-child(7), 
+            td:nth-child(14),
+            /* Also show the actions column */
+            th:last-child,
+            td:last-child {
+                display: table-cell;
+            }
+    
             .table-container {
                 background: white;
                 margin-top: 1rem;
@@ -206,6 +224,11 @@
                 height: 16px;
                 color: #6B7280;
             }
+    
+            /* Increase the height of the scrollable area to show more records */
+            .overflow-y-auto {
+                max-height: 70vh !important; /* Use 70% of viewport height */
+            }
         </style>
     </head>
     
@@ -317,7 +340,7 @@
                     <p class="text-xs text-gray-600">View WPP records</p>
                 </div>
                 <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2M7 7h10"/>
                 </svg>
             </div>
         </a>
@@ -399,7 +422,7 @@
 <!-- Records Section - Full Width with Scroll -->
 <div class="w-full px-4 overflow-x-auto">
     <div class="table-container overflow-x-auto">
-        <div class="max-h-[calc(100vh-400px)] overflow-y-auto">
+        <div class="max-h-[70vh] overflow-y-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead>
                     <tr>
@@ -446,7 +469,7 @@
                             <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.ctpo_number }}</td>
                             <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.brand }}</td>
                             <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.model }}</td>
-                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.serial_number }}</td>
+                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap"><strong>{{ record.serial_number }}</strong></td>
                             <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.color }}</td>
                             <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.date_issued|date:"M d, Y" }}</td>
                             <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.expiry_date|date:"M d, Y" }}</td>
@@ -1389,8 +1412,10 @@
                 
                 if (!recordId) return;
 
-                contextMenu.style.left = `${e.pageX}px`;
-                contextMenu.style.top = `${e.pageY}px`;
+                // Position menu directly at cursor position with a slight offset to the right
+                contextMenu.style.position = 'fixed';
+                contextMenu.style.left = `${e.clientX + 15}px`;  // 15px to the right of cursor
+                contextMenu.style.top = `${e.clientY}px`;       // Same Y position as cursor
                 contextMenu.classList.remove('hidden');
 
                 const viewOption = document.getElementById('view-option');

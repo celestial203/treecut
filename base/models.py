@@ -312,8 +312,9 @@ class Chainsaw(models.Model):
     ]
 
     REGISTRATION_STATUS_CHOICES = [
+        ('NEW', 'NEW'),
         ('RENEWED', 'RENEWED'),
-        ('FOR RENEWAL', 'FOR RENEWAL'),
+        ('RENEWAL', 'RENEWAL'),
         ('EXPIRED', 'EXPIRED'),
     ]
 

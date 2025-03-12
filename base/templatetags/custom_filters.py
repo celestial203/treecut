@@ -1,5 +1,6 @@
 from django import template
 from datetime import datetime
+import re
 
 register = template.Library()
 
@@ -51,3 +52,27 @@ def split_species_data(species_string):
             })
     
     return species_list if species_list else [{'name': '', 'quantity': ''}]
+
+@register.filter
+def split_species(species_string):
+    """
+    Parse a species string like "Molave (5), Mahogany (3)" into a list of dictionaries
+    with name and quantity keys.
+    """
+    if not species_string:
+        return []
+    
+    result = []
+    # Split by comma and process each species entry
+    species_entries = species_string.split(',')
+    
+    for entry in species_entries:
+        entry = entry.strip()
+        # Use regex to extract species name and quantity
+        match = re.match(r'(.*?)\s*\((\d+)\)', entry)
+        if match:
+            species_name = match.group(1).strip()
+            quantity = match.group(2)
+            result.append({'name': species_name, 'quantity': quantity})
+    
+    return result

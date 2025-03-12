@@ -479,7 +479,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Date of Acquisition</label>
-                    <input type="date" name="{{ form.date_acquired.name }}" class="form-input" required>
+                    <input type="date" name="{{ form.date_acquired.name }}" class="form-input" placeholder="MM/DD/YYYY" required>
                 </div>
             </div>
 
@@ -519,12 +519,12 @@
             <div class="grid grid-cols-4 gap-6 mb-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Date Issued</label>
-                    <input type="date" name="{{ form.date_issued.name }}" class="form-input" required>
+                    <input type="date" name="{{ form.date_issued.name }}" class="form-input" placeholder="MM/DD/YYYY" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Expiry Date</label>
                     <input type="date" name="{{ form.expiry_date.name }}" class="form-input" readonly 
-                           title="Expiry date is automatically set to 2 years after the date issued">
+                           title="Expiry date is automatically set to 2 years after the date issued" placeholder="MM/DD/YYYY">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Status of Registration</label>
@@ -537,7 +537,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Date of Renewal</label>
-                    <input type="date" name="{{ form.date_renewal.name }}" class="form-input">
+                    <input type="date" name="{{ form.date_renewal.name }}" class="form-input" placeholder="MM/DD/YYYY">
                 </div>
             </div>
 
@@ -679,10 +679,81 @@
                 );
             });
             
+            // Replace all date inputs with custom date inputs that use MM/DD/YYYY format
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                // Create a wrapper div
+                const wrapper = document.createElement('div');
+                wrapper.className = 'date-picker-wrapper';
+                wrapper.style.position = 'relative';
+                
+                // Create a text display input (shows MM/DD/YYYY)
+                const displayInput = document.createElement('input');
+                displayInput.type = 'text';
+                displayInput.className = input.className;
+                displayInput.placeholder = 'MM/DD/YYYY';
+                displayInput.readOnly = true; // Make it read-only
+                
+                // Create the actual date picker (hidden but functional)
+                const datePicker = document.createElement('input');
+                datePicker.type = 'date';
+                datePicker.name = input.name;
+                datePicker.required = input.required;
+                datePicker.value = input.value;
+                datePicker.style.position = 'absolute';
+                datePicker.style.top = '0';
+                datePicker.style.left = '0';
+                datePicker.style.width = '100%';
+                datePicker.style.height = '100%';
+                datePicker.style.opacity = '0';
+                datePicker.style.cursor = 'pointer';
+                
+                // If there's an initial value, format it for display
+                if (input.value) {
+                    const date = new Date(input.value);
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const year = date.getFullYear();
+                    displayInput.value = `${month}/${day}/${year}`;
+                }
+                
+                // When date picker changes, update the display
+                datePicker.addEventListener('change', function() {
+                    if (this.value) {
+                        const date = new Date(this.value);
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const year = date.getFullYear();
+                        displayInput.value = `${month}/${day}/${year}`;
+                    } else {
+                        displayInput.value = '';
+                    }
+                });
+                
+                // Add calendar icon (black SVG instead of emoji)
+                const calendarIcon = document.createElement('div');
+                calendarIcon.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" viewBox="0 0 16 16">
+                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                    </svg>
+                `;
+                calendarIcon.style.position = 'absolute';
+                calendarIcon.style.right = '10px';
+                calendarIcon.style.top = '50%';
+                calendarIcon.style.transform = 'translateY(-50%)';
+                calendarIcon.style.pointerEvents = 'none';
+                
+                // Add elements to wrapper
+                wrapper.appendChild(displayInput);
+                wrapper.appendChild(datePicker);
+                wrapper.appendChild(calendarIcon);
+                
+                // Replace original input with our custom implementation
+                input.parentNode.replaceChild(wrapper, input);
+            });
+            
             // Auto-calculate expiry date when date issued changes
             const dateIssuedInput = document.querySelector('input[name="{{ form.date_issued.name }}"]');
             const expiryDateInput = document.querySelector('input[name="{{ form.expiry_date.name }}"]');
-            const dateAcquiredInput = document.querySelector('input[name="{{ form.date_acquired.name }}"]');
             
             if (dateIssuedInput && expiryDateInput) {
                 dateIssuedInput.addEventListener('change', function() {
@@ -693,70 +764,17 @@
                         expiryDate.setFullYear(dateIssued.getFullYear() + 2);
                         
                         // Format the date as YYYY-MM-DD for the input
-                        const formattedDate = expiryDate.toISOString().split('T')[0];
-                        expiryDateInput.value = formattedDate;
+                        const year = expiryDate.getFullYear();
+                        const month = String(expiryDate.getMonth() + 1).padStart(2, '0');
+                        const day = String(expiryDate.getDate()).padStart(2, '0');
+                        
+                        expiryDateInput.value = `${year}-${month}-${day}`;
+                        
+                        // Trigger the change event to update the display
+                        const event = new Event('change');
+                        expiryDateInput.dispatchEvent(event);
                     }
                 });
-            }
-
-            // Function to validate dates
-            function validateDates() {
-                const dateAcquired = dateAcquiredInput.value ? new Date(dateAcquiredInput.value) : null;
-                const dateIssued = dateIssuedInput.value ? new Date(dateIssuedInput.value) : null;
-                
-                // Clear previous error messages
-                const errorMessages = document.querySelectorAll('.date-error-message');
-                errorMessages.forEach(msg => msg.remove());
-                
-                // Reset styles
-                dateAcquiredInput.style.borderColor = '';
-                dateIssuedInput.style.borderColor = '';
-                
-                if (dateAcquired && dateIssued) {
-                    console.log('Validating dates:', 
-                        dateAcquired.toISOString().split('T')[0], 
-                        dateIssued.toISOString().split('T')[0]);
-                    
-                    // Check if date acquired is after date issued
-                    if (dateAcquired > dateIssued) {
-                        console.log('Validation failed: Date acquired is after date issued');
-                        
-                        // Create error message
-                        const errorMsg = document.createElement('p');
-                        errorMsg.className = 'date-error-message text-red-600 text-sm mt-1';
-                        errorMsg.textContent = 'Date acquired must be before date issued';
-                        
-                        // Add error styling
-                        dateAcquiredInput.style.borderColor = '#ef4444';
-                        
-                        // Add error message after the input
-                        dateAcquiredInput.parentNode.appendChild(errorMsg);
-                        
-                        return false;
-                    } else {
-                        console.log('Date validation passed');
-                        return true;
-                    }
-                }
-                return true; // If either date is not set, validation passes
-            }
-            
-            // Add event listeners for both date inputs
-            if (dateAcquiredInput && dateIssuedInput) {
-                dateAcquiredInput.addEventListener('change', validateDates);
-                dateIssuedInput.addEventListener('change', validateDates);
-                
-                // Add form submission validation
-                const form = document.getElementById('chainsawForm');
-                if (form) {
-                    form.addEventListener('submit', function(event) {
-                        if (!validateDates()) {
-                            event.preventDefault();
-                            // Scroll to the error
-                            dateAcquiredInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
-                    });
-                }
             }
 
             // Fetch the last number and increment it

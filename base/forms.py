@@ -125,52 +125,18 @@ class LumberForm(forms.ModelForm):
 class CuttingForm(forms.ModelForm):
     class Meta:
         model = Cutting
-        fields = '__all__'
-        widgets = {
-            'date_issued': forms.DateInput(
-                attrs={
-                    'type': 'date',
-                    'class': 'form-control',
-                    'required': True
-                }
-            ),
-            'expiry_date': forms.DateInput(
-                attrs={
-                    'type': 'date',
-                    'class': 'form-control'
-                }
-            ),
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance:
-            # Format dates for the form
-            if self.instance.date_issued:
-                self.initial['date_issued'] = self.instance.date_issued.strftime('%Y-%m-%d')
-
-    def clean_date_issued(self):
-        date_issued = self.cleaned_data.get('date_issued')
-        if not date_issued:
-            raise forms.ValidationError("Date issued is required.")
+        # Don't specify both fields and exclude - just use exclude
+        exclude = ['gross_volume', 'net_volume', 'created_by']
         
-        # Prevent future dates
-        if date_issued > timezone.now().date():
-            raise forms.ValidationError("Date issued cannot be in the future.")
-            
-        return date_issued
-
+        widgets = {
+            'date_issued': forms.DateInput(attrs={'type': 'date'}),
+            'expiry_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+    
     def clean(self):
         cleaned_data = super().clean()
-        # Any additional form validation logic here
+        print("Form cleaned data:", cleaned_data)
         return cleaned_data
-
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        # The net_volume and expiry_date will be calculated in the model's save method
-        if commit:
-            instance.save()
-        return instance
 
 # ChainsawForm
 class ChainsawForm(forms.ModelForm):

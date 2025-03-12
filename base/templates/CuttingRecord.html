@@ -229,6 +229,27 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Add form submission debugging
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                console.log('Form submission detected:', this.action);
+                
+                // Check if the form has a CSRF token
+                const csrfToken = this.querySelector('[name="csrfmiddlewaretoken"]');
+                if (!csrfToken) {
+                    console.warn('CSRF token missing from form!');
+                }
+                
+                // Log form data being submitted
+                const formData = new FormData(this);
+                console.log('Form data:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(`${key}: ${value}`);
+                }
+            });
+        });
+        
         // Add user menu toggle functionality
         const userMenuButton = document.getElementById('user-menu-button');
         const userMenu = document.getElementById('user-menu');
@@ -251,6 +272,18 @@
                 userMenuButton.setAttribute('aria-expanded', 'false');
             }
         });
+
+        // Add the missing toggleMobileMenu function
+        window.toggleMobileMenu = function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu) {
+                if (mobileMenu.style.display === 'none' || mobileMenu.style.display === '') {
+                    mobileMenu.style.display = 'block';
+                } else {
+                    mobileMenu.style.display = 'none';
+                }
+            }
+        };
 
         // Existing mobile menu code...
         const mobileMenuButton = document.getElementById('mobile-menu-button');
@@ -1022,6 +1055,29 @@
 
         // Initial calculation when page loads
         document.addEventListener('DOMContentLoaded', calculateVolumes);
+    </script>
+
+    <!-- Add this at the bottom of the page before </body> -->
+    <script>
+        // Debug any form submission errors
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for error messages in URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const errorMsg = urlParams.get('error');
+            if (errorMsg) {
+                console.error('Error returned from server:', errorMsg);
+                alert('Error: ' + errorMsg);
+            }
+            
+            // Add click tracking to edit links
+            const editLinks = document.querySelectorAll('a[href*="/edit/"]');
+            editLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    console.log('Edit link clicked:', this.href);
+                    // Continue with normal link behavior
+                });
+            });
+        });
     </script>
 </body>
 </html>
