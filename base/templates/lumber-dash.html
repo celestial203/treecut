@@ -98,14 +98,6 @@
                     </div>
                 </a>
 
-                <a href="{% url 'lumber_records' %}?status=expired" class="block">
-                    <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300">
-                        <div class="text-4xl font-bold text-black-700">{{ expired_lumber_count }}</div>
-                        <div class="text-green-900">Expired Lumber Records</div>
-                        <div class="mt-2 text-sm text-gray-500">Out of {{ lumber_count }} total records</div>
-                    </div>
-                </a>
-
                 <a href="{% url 'lumber_records' %}?status=active" class="block">
                     <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300">
                         <div class="text-4xl font-bold text-black-700">{{ active_lumber_count }}</div>
@@ -118,6 +110,14 @@
                     <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300">
                         <div class="text-4xl font-bold text-black-700">{{ expiring_soon_lumber_count }}</div>
                         <div class="text-green-900">Records to be Expire</div>
+                    </div>
+                </a>
+
+                <a href="{% url 'lumber_records' %}?status=expired" class="block">
+                    <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300">
+                        <div class="text-4xl font-bold text-black-700">{{ expired_lumber_count }}</div>
+                        <div class="text-green-900">Expired Lumber Records</div>
+                        <div class="mt-2 text-sm text-gray-500">Out of {{ lumber_count }} total records</div>
                     </div>
                 </a>
 
