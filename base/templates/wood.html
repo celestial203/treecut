@@ -1,5 +1,4 @@
 {% load static %}
-{% load form_filters %} 
 {% load widget_tweaks %}
 
 <!DOCTYPE html>
@@ -340,6 +339,47 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             background-color: #f0fdf4;
         }
+
+        /* Make all input text uppercase */
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            text-transform: uppercase;
+        }
+        
+        /* Ensure placeholder text is also uppercase */
+        input::placeholder,
+        select::placeholder,
+        textarea::placeholder {
+            text-transform: uppercase;
+        }
+
+        /* Update date picker styles */
+        .date-picker-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .date-picker-wrapper input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            background-color: #f8fafc;
+            cursor: pointer;
+        }
+
+        .date-picker-wrapper input[type="date"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 10; /* Increase z-index to ensure it's clickable */
+        }
     </style>
     <!-- Add SweetAlert2 CSS and JS -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
@@ -347,9 +387,12 @@
 </head>
 <body class="font-inter text-gray-900 bg-white">
     {% if messages %}
-    <div id="messages-container" class="fixed top-4 right-4 z-50">
+    <div id="messages-container" name="messages-container" class="fixed top-4 right-4 z-50">
         {% for message in messages %}
-            <div class="bg-{% if message.tags == 'success' %}green-500{% elif message.tags == 'error' %}red-500{% else %}blue-500{% endif %} text-white px-4 py-3 rounded shadow-lg mb-3 flex items-center justify-between" role="alert">
+            <div id="message-{{ forloop.counter }}" 
+                 name="message-{{ forloop.counter }}"
+                 class="bg-{% if message.tags == 'success' %}green-500{% elif message.tags == 'error' %}red-500{% else %}blue-500{% endif %} text-white px-4 py-3 rounded shadow-lg mb-3 flex items-center justify-between" 
+                 role="alert">
                 <div class="flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         {% if message.tags == 'success' %}
@@ -388,7 +431,11 @@
                         Welcome, {{ request.user.username }}
                     </div>
                     <div class="relative">
-                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" 
+                                id="user-menu-button" 
+                                name="user-menu-button"
+                                aria-expanded="false" 
+                                aria-haspopup="true">
                             ▼
                         </button>
                         <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
@@ -422,19 +469,23 @@
                 </div>
                 <!-- Mobile Menu Button -->
                 <div class="md:hidden">
-                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" 
+                            id="mobile-menu-button"
+                            name="mobile-menu-button">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M3 8h18M3 12h18M3 16h18M3 20h18"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6l8 8 8-8"></path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18"></path>
                         </svg>
                     </button>
-                    </button>
                 </div>
             </div>
         </div>
         <!-- Mobile Menu -->
-        <div class="md:hidden" id="mobile-menu" style="display: none;">
+        <div class="md:hidden" 
+             id="mobile-menu" 
+             name="mobile-menu" 
+             style="display: none;">
             <div class="px-2 pt-2 pb-3 space-y-1">
                 <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
             </div>
@@ -475,28 +526,28 @@
                 {% csrf_token %}
                 
                 <!-- Make the form errors visible for debugging -->
-                <div id="form-errors" class="text-red-500 mb-4"></div>
+                <div id="form-errors" name="form-errors" class="text-red-500 mb-4"></div>
 
                 <!-- First Row: Name and Type -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                        <label for="id_name" class="block text-sm font-medium text-gray-700">Name</label>
                         <input type="text" 
-                               id="name"
+                               id="id_name"
                                name="name" 
                                class="form-input mt-1 w-full" 
                                autocomplete="organization"
                                required>
                     </div>
                     <div>
-                        <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
-                        <select id="type" 
+                        <label for="id_type" class="block text-sm font-medium text-gray-700">Type</label>
+                        <select id="id_type" 
                                 name="type" 
                                 class="form-input mt-1 w-full" 
                                 autocomplete="off"
                                 required>
-                            <option value="Resawmill-new">Resawmill-new</option>
-                            <option value="Resawmill-renew">Resawmill-renew</option>
+                            <option value="Resawmill-new">RESAWMILL-NEW</option>
+                            <option value="Resawmill-renew">RESAWMILL-RENEWAL</option>
                         </select>
                     </div>
                 </div>
@@ -504,22 +555,22 @@
                 <!-- Second Row: WPP Number and Integrated -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label for="wpp_number" class="block text-sm font-medium text-gray-700">WPP Number</label>
+                        <label for="id_wpp_number" class="block text-sm font-medium text-gray-700">WPP Number</label>
                         <input type="text" 
-                               id="wpp_number"
+                               id="id_wpp_number"
                                name="wpp_number" 
                                class="form-input mt-1 w-full" 
                                autocomplete="off"
                                required>
                     </div>
                     <div>
-                        <label for="integrated" class="block text-sm font-medium text-gray-700">Integrated</label>
-                        <select id="integrated"
+                        <label for="id_integrated" class="block text-sm font-medium text-gray-700">Integrated</label>
+                        <select id="id_integrated"
                                 name="integrated" 
                                 class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
                                 autocomplete="off">
-                            <option value="Applicable">Applicable</option>
-                            <option value="Not Applicable">Not Applicable</option>
+                            <option value="Applicable">APPLICABLE</option>
+                            <option value="Not Applicable">NOT APPLICABLE</option>
                         </select>
                     </div>
                 </div>
@@ -532,18 +583,18 @@
                 <!-- Third Row: Business and Plant -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label for="business" class="block text-sm font-medium text-gray-700">Business</label>
+                        <label for="id_business" class="block text-sm font-medium text-gray-700">Business</label>
                         <input type="text" 
-                               id="business"
+                               id="id_business"
                                name="business" 
                                class="form-input mt-1 w-full" 
                                autocomplete="organization"
                                required>
                     </div>
                     <div>
-                        <label for="plant" class="block text-sm font-medium text-gray-700">Plant</label>
+                        <label for="id_plant" class="block text-sm font-medium text-gray-700">Plant</label>
                         <input type="text" 
-                               id="plant"
+                               id="id_plant"
                                name="plant" 
                                class="form-input mt-1 w-full" 
                                autocomplete="street-address"
@@ -554,22 +605,22 @@
                 <!-- Fourth Row: DRC and ALR -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label for="drc" class="block text-sm font-medium text-gray-700">DRC (cu.m)</label>
+                        <label for="id_drc" class="block text-sm font-medium text-gray-700">DRC (cu.m)</label>
                         <input type="number" 
-                               id="drc"
+                               id="id_drc"
+                               name="drc"
                                step="0.01" 
-                               name="drc" 
                                class="form-input mt-1 w-full" 
                                autocomplete="off"
                                oninput="calculateALR()"
                                required>
                     </div>
                     <div>
-                        <label for="alr" class="block text-sm font-medium text-gray-700">ALR (m³)</label>
+                        <label for="id_alr" class="block text-sm font-medium text-gray-700">ALR (m³)</label>
                         <input type="number" 
-                               id="alr"
+                               id="id_alr"
+                               name="alr"
                                step="0.01" 
-                               name="alr" 
                                class="form-input mt-1 w-full" 
                                autocomplete="off"
                                readonly>
@@ -581,18 +632,18 @@
                     <h3 class="text-lg font-bold text-gray-900 mb-2">Coordinates</h3>
                     <div class="grid grid-cols-2 gap-6">
                         <div>
-                            <label for="longitude" class="block text-sm font-medium text-gray-700">Longitude</label>
+                            <label for="id_longitude" class="block text-sm font-medium text-gray-700">Longitude</label>
                             <input type="text" 
-                                   id="longitude"
+                                   id="id_longitude"
                                    name="longitude" 
                                    class="form-input mt-1 w-full" 
                                    autocomplete="off"
                                    required>
                         </div>
                         <div>
-                            <label for="latitude" class="block text-sm font-medium text-gray-700">Latitude</label>
+                            <label for="id_latitude" class="block text-sm font-medium text-gray-700">Latitude</label>
                             <input type="text" 
-                                   id="latitude"
+                                   id="id_latitude"
                                    name="latitude" 
                                    class="form-input mt-1 w-full" 
                                    autocomplete="off"
@@ -608,13 +659,13 @@
 
                 <!-- Supplier Info -->
                 <div>
-                    <label for="supplier_info" class="block text-sm font-medium text-gray-700">Supplier Info</label>
+                    <label for="id_supplier_info" class="block text-sm font-medium text-gray-700">Supplier Info</label>
                     <input type="text" 
-                           id="supplier_info"
+                           id="id_supplier_info"
                            name="supplier_info" 
                            placeholder="Enter supplier name and address"
-                           autocomplete="off"
-                           class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-400 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                           class="form-input mt-1 block w-full"
+                           autocomplete="off">
                 </div>
 
                 <!-- Volume Contracted Section -->
@@ -622,19 +673,19 @@
                     <h3 class="text-lg font-bold text-gray-900 mb-2">Volume Contracted</h3>
                     <div class="grid grid-cols-2 gap-6">
                         <div>
-                            <label for="local_volume" class="block text-sm font-medium text-gray-700">Local</label>
+                            <label for="id_local_volume" class="block text-sm font-medium text-gray-700">Local</label>
                             <input type="text" 
-                                   id="local_volume"
+                                   id="id_local_volume"
                                    name="local_volume" 
                                    class="form-input mt-1 w-full"
                                    autocomplete="off">
                         </div>
                         <div>
-                            <label for="imported_volume" class="block text-sm font-medium text-gray-700">Imported</label>
+                            <label for="id_imported_volume" class="block text-sm font-medium text-gray-700">Imported</label>
                             <input type="number" 
-                                   id="imported_volume"
+                                   id="id_imported_volume"
+                                   name="imported_volume"
                                    step="0.01" 
-                                   name="imported_volume" 
                                    class="form-input mt-1 w-full"
                                    autocomplete="off">
                         </div>
@@ -644,19 +695,19 @@
                 <!-- Additional Fields -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label for="area" class="block text-sm font-medium text-gray-700">Area (ha)</label>
+                        <label for="id_area" class="block text-sm font-medium text-gray-700">Area (ha)</label>
                         <input type="number" 
-                               id="area"
+                               id="id_area"
+                               name="area"
                                step="0.01" 
-                               name="area" 
                                class="form-input mt-1 w-full" 
                                autocomplete="off"
                                required>
                     </div>
                     <div>
-                        <label for="approved_by" class="block text-sm font-medium text-gray-700">Approved by</label>
+                        <label for="id_approved_by" class="block text-sm font-medium text-gray-700">Approved by</label>
                         <input type="text" 
-                               id="approved_by"
+                               id="id_approved_by"
                                name="approved_by" 
                                class="form-input mt-1 w-full" 
                                autocomplete="off"
@@ -667,36 +718,34 @@
                 <!-- Dates Section -->
                 <div class="grid grid-cols-3 gap-6">
                     <div>
-                        <label for="date_issued" class="block text-sm font-medium text-gray-700">Date Issued</label>
+                        <label for="id_date_issued" class="block text-sm font-medium text-gray-700">Date Issued</label>
                         <input type="date" 
-                               id="date_issued"
+                               id="id_date_issued"
                                name="date_issued" 
                                class="form-input mt-1 w-full" 
-                               required 
-                               onchange="updateExpiryDate()">
+                               required>
                     </div>
                     <div>
-                        <label for="date_released" class="block text-sm font-medium text-gray-700">Date Released</label>
+                        <label for="id_date_released" class="block text-sm font-medium text-gray-700">Date Released</label>
                         <input type="date" 
-                               id="date_released"
+                               id="id_date_released"
                                name="date_released" 
                                class="form-input mt-1 w-full" 
                                required>
                     </div>
                     <div>
-                        <label for="expiry_date" class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                        <label for="id_expiry_date" class="block text-sm font-medium text-gray-700">Expiry Date</label>
                         <input type="date" 
-                               id="expiry_date"
+                               id="id_expiry_date"
                                name="expiry_date" 
-                               class="form-input mt-1 w-full" 
-                               readonly>
+                               class="form-input mt-1 w-full">
                     </div>
                 </div>
 
                 <!-- Status -->
                 <div class="mt-6">
-                    <label for="wood_status" class="block text-sm font-medium text-gray-700">Wood Status</label>
-                    <select id="wood_status"
+                    <label for="id_wood_status" class="block text-sm font-medium text-gray-700">Wood Status</label>
+                    <select id="id_wood_status"
                             name="wood_status" 
                             class="form-input mt-1 w-full" 
                             required>
@@ -711,9 +760,9 @@
 
                 <!-- File Attachment -->
                 <div class="mt-6">
-                    <label for="attachment" class="block text-sm font-medium text-gray-700">Attach File (Optional)</label>
+                    <label for="id_attachment" class="block text-sm font-medium text-gray-700">Attach File (Optional)</label>
                     <input type="file" 
-                           id="attachment"
+                           id="id_attachment"
                            name="attachment" 
                            class="form-input mt-1 w-full"
                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
@@ -750,342 +799,131 @@
     
 
     <script>
-        // Define these functions in the global scope
-        function calculateALR() {
-            const drcInput = document.querySelector('input[name="drc"]');
-            const alrInput = document.querySelector('input[name="alr"]');
-            
-            if (drcInput && drcInput.value) {
-                const drc = parseFloat(drcInput.value);
-                // Formula: DRC × 290 × 0.80
-                const alr = (drc * 290 * 0.80).toFixed(2);
-                alrInput.value = alr;
-            } else if (alrInput) {
-                alrInput.value = '';
-            }
-        }
-
-        function updateExpiryDate() {
-            const issuedDate = document.querySelector('input[name="date_issued"]').value;
-            if (issuedDate) {
-                const expiryDate = new Date(issuedDate);
-                // Add 5 years
-                expiryDate.setFullYear(expiryDate.getFullYear() + 5);
-                // Subtract one day to ensure it's not more than 5 years
-                expiryDate.setDate(expiryDate.getDate() - 1);
-                document.querySelector('input[name="expiry_date"]').value = expiryDate.toISOString().split('T')[0];
-            }
-        }
-
         document.addEventListener('DOMContentLoaded', function() {
-            // Check for success parameter in URL
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('success') && urlParams.get('success') === 'true') {
-                // Use setTimeout to ensure SweetAlert is fully loaded
-                setTimeout(function() {
-                    // Show success notification using standard alert if SweetAlert fails
-                    try {
-                        Swal.fire({
-                            title: 'Record Added Successfully!',
-                            text: 'The WPP record has been successfully saved to the database.',
-                            icon: 'success',
-                            confirmButtonText: 'Continue',
-                            confirmButtonColor: '#059669',
-                            timer: 3000,
-                            timerProgressBar: true
-                        });
-                    } catch (e) {
-                        console.error("SweetAlert error:", e);
-                        // Fallback to custom notification
-                        showNotification('WPP record has been successfully added.', 'success');
+            // Form validation and submission handling
+            if (wppForm) {
+                wppForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    
+                    // Clear previous error states
+                    clearErrors();
+                    
+                    // Validate required fields
+                    let hasErrors = false;
+                    const requiredFields = wppForm.querySelectorAll('[required]');
+                    let errorMessages = [];
+                    
+                    requiredFields.forEach(field => {
+                        if (!field.value.trim()) {
+                            hasErrors = true;
+                            const fieldName = field.getAttribute('placeholder') || field.getAttribute('name');
+                            errorMessages.push(`${fieldName} is required`);
+                            field.classList.add('invalid-input');
+                        }
+                    });
+                    
+                    // Validate coordinates format (optional but recommended)
+                    const longitude = document.getElementById('id_longitude').value;
+                    const latitude = document.getElementById('id_latitude').value;
+                    
+                    if (longitude && !isValidCoordinate(longitude, 'longitude')) {
+                        hasErrors = true;
+                        errorMessages.push('Invalid longitude format');
+                        document.getElementById('id_longitude').classList.add('invalid-input');
                     }
-                }, 100);
+                    
+                    if (latitude && !isValidCoordinate(latitude, 'latitude')) {
+                        hasErrors = true;
+                        errorMessages.push('Invalid latitude format');
+                        document.getElementById('id_latitude').classList.add('invalid-input');
+                    }
+                    
+                    // If there are errors, show SweetAlert
+                    if (hasErrors) {
+                        Swal.fire({
+                            title: 'Validation Error',
+                            html: errorMessages.join('<br>'),
+                            icon: 'error',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    } else {
+                        // If no errors, submit the form with success message
+                        wppForm.submit();
+                    }
+                });
+            }
+
+            // Helper functions
+            function clearErrors() {
+                document.querySelectorAll('.invalid-input').forEach(input => {
+                    input.classList.remove('invalid-input');
+                });
+            }
+
+            function showNotification(message, type) {
+                Swal.fire({
+                    title: type.charAt(0).toUpperCase() + type.slice(1),
+                    text: message,
+                    icon: type,
+                    confirmButtonColor: '#3085d6',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            }
+
+            function isValidCoordinate(coord, type) {
+                const value = parseFloat(coord);
+                if (isNaN(value)) return false;
                 
-                // Remove the success parameter from URL without refreshing
-                const newUrl = window.location.pathname;
-                window.history.replaceState({}, document.title, newUrl);
-            }
-            
-            // Disable HTML5 validation
-            const wppFormElement = document.getElementById('wppForm');
-            if (wppFormElement) {
-                // Add novalidate attribute to form
-                wppFormElement.setAttribute('novalidate', '');
-                
-                // Remove required attributes from all inputs
-                const requiredInputs = wppFormElement.querySelectorAll('[required]');
-                requiredInputs.forEach(input => {
-                    input.removeAttribute('required');
-                });
-            }
-            
-            // User menu dropdown toggle
-            const userMenuButton = document.getElementById('user-menu-button');
-            const userMenu = document.getElementById('user-menu');
-            const mobileMenuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.getElementById('mobile-menu');
-
-            // Toggle desktop user menu
-            if (userMenuButton && userMenu) {
-                userMenuButton.addEventListener('click', function() {
-                    const isExpanded = userMenuButton.getAttribute('aria-expanded') === 'true';
-                    userMenuButton.setAttribute('aria-expanded', !isExpanded);
-                    userMenu.classList.toggle('hidden');
-                });
-            }
-
-            // Toggle mobile menu
-            if (mobileMenuButton && mobileMenu) {
-                mobileMenuButton.addEventListener('click', function() {
-                    mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'block' : 'none';
-                });
-            }
-
-            // Close menus when clicking outside
-            document.addEventListener('click', function(event) {
-                if (userMenuButton && userMenu && !userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
-                    userMenu.classList.add('hidden');
-                    userMenuButton.setAttribute('aria-expanded', 'false');
+                if (type === 'longitude') {
+                    return value >= -180 && value <= 180;
+                } else if (type === 'latitude') {
+                    return value >= -90 && value <= 90;
                 }
-                
-                if (mobileMenuButton && mobileMenu && !mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
-                    mobileMenu.style.display = 'none';
-                }
-            });
+                return false;
+            }
 
             // Add event listener for DRC input
-            const drcInput = document.querySelector('input[name="drc"]');
+            const drcInput = document.getElementById('id_drc');
             if (drcInput) {
                 drcInput.addEventListener('input', calculateALR);
             }
 
-            // Add event listener for date issued
-            const dateIssuedInput = document.querySelector('input[name="date_issued"]');
-            if (dateIssuedInput) {
-                dateIssuedInput.addEventListener('change', updateExpiryDate);
+            function calculateALR() {
+                const drcInput = document.getElementById('id_drc');
+                const alrInput = document.getElementById('id_alr');
+                
+                if (drcInput && alrInput) {
+                    const drc = parseFloat(drcInput.value) || 0;
+                    const alr = drc * 290 * 0.80;
+                    alrInput.value = alr.toFixed(2);
+                }
             }
 
-            // Form submission handler - IMPROVED VERSION
-            const wppForm = document.getElementById('wppForm');
-            if (wppForm) {
-                wppForm.addEventListener('submit', function(event) {
-                    // Don't prevent default immediately - we'll decide later
-                    
-                    // Clear previous error messages
-                    const formErrorsDiv = document.getElementById('form-errors');
-                    if (formErrorsDiv) {
-                        formErrorsDiv.innerHTML = '';
-                    }
-                    
-                    // Remove all existing error messages
-                    const errorMessages = document.querySelectorAll('.error-message');
-                    errorMessages.forEach(msg => msg.remove());
-                    
-                    // Reset field borders
-                    const formFields = wppForm.querySelectorAll('input, select');
-                    formFields.forEach(field => {
-                        field.classList.remove('border-red-500');
-                    });
-                    
-                    let hasErrors = false;
-                    let errorsList = [];
-                    
-                    // Required fields validation
-                    const requiredFields = [
-                        { name: 'name', label: 'Name' },
-                        { name: 'type', label: 'Type' },
-                        { name: 'wpp_number', label: 'WPP Number' },
-                        { name: 'business', label: 'Business' },
-                        { name: 'plant', label: 'Plant' },
-                        { name: 'drc', label: 'DRC' },
-                        { name: 'area', label: 'Area' },
-                        { name: 'approved_by', label: 'Approved by' },
-                        { name: 'date_issued', label: 'Date Issued' },
-                        { name: 'date_released', label: 'Date Released' },
-                        { name: 'wood_status', label: 'Wood Status' },
-                        { name: 'longitude', label: 'Longitude' },
-                        { name: 'latitude', label: 'Latitude' }
-                    ];
-                    
-                    requiredFields.forEach(field => {
-                        const inputElement = wppForm.querySelector(`[name="${field.name}"]`);
-                        if (inputElement && !inputElement.value.trim()) {
-                            hasErrors = true;
-                            inputElement.classList.add('border-red-500');
-                            
-                            // Add to errors list
-                            errorsList.push(`${field.label} is required`);
-                            
-                            // Create and show error message
-                            const errorDiv = document.createElement('div');
-                            errorDiv.className = 'text-red-500 text-sm mt-1 error-message';
-                            errorDiv.textContent = `${field.label} is required`;
-                            inputElement.parentNode.appendChild(errorDiv);
+            function clearForm() {
+                if (wppForm) {
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: 'This will clear all form fields.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, clear it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            wppForm.reset();
+                            clearErrors();
+                            Swal.fire(
+                                'Cleared!',
+                                'The form has been cleared.',
+                                'success'
+                            );
                         }
                     });
-                    
-                    // Validate numeric fields
-                    const numericFields = [
-                        { name: 'drc', label: 'DRC', min: 0 },
-                        { name: 'area', label: 'Area', min: 0 }
-                    ];
-                    
-                    numericFields.forEach(field => {
-                        const inputElement = wppForm.querySelector(`[name="${field.name}"]`);
-                        if (inputElement && inputElement.value.trim()) {
-                            const value = parseFloat(inputElement.value);
-                            if (isNaN(value) || value <= field.min) {
-                                hasErrors = true;
-                                inputElement.classList.add('border-red-500');
-                                
-                                // Add to errors list
-                                errorsList.push(`${field.label} must be greater than ${field.min}`);
-                                
-                                // Create and show error message
-                                const errorDiv = document.createElement('div');
-                                errorDiv.className = 'text-red-500 text-sm mt-1 error-message';
-                                errorDiv.textContent = `${field.label} must be greater than ${field.min}`;
-                                inputElement.parentNode.appendChild(errorDiv);
-                            }
-                        }
-                    });
-                    
-                    // Validate dates
-                    const dateIssued = document.querySelector('input[name="date_issued"]').value;
-                    const dateReleased = document.querySelector('input[name="date_released"]').value;
-                    
-                    if (dateIssued && dateReleased) {
-                        const issuedDate = new Date(dateIssued);
-                        const releasedDate = new Date(dateReleased);
-                        const today = new Date();
-                        
-                        if (issuedDate > today) {
-                            hasErrors = true;
-                            const dateIssuedField = document.querySelector('input[name="date_issued"]');
-                            dateIssuedField.classList.add('border-red-500');
-                            
-                            // Add to errors list
-                            errorsList.push('Date issued cannot be in the future');
-                            
-                            // Create and show error message
-                            const errorDiv = document.createElement('div');
-                            errorDiv.className = 'text-red-500 text-sm mt-1 error-message';
-                            errorDiv.textContent = 'Date issued cannot be in the future';
-                            dateIssuedField.parentNode.appendChild(errorDiv);
-                        }
-                        
-                        if (releasedDate < issuedDate) {
-                            hasErrors = true;
-                            const dateReleasedField = document.querySelector('input[name="date_released"]');
-                            dateReleasedField.classList.add('border-red-500');
-                            
-                            // Add to errors list
-                            errorsList.push('Date released cannot be before date issued');
-                            
-                            // Create and show error message
-                            const errorDiv = document.createElement('div');
-                            errorDiv.className = 'text-red-500 text-sm mt-1 error-message';
-                            errorDiv.textContent = 'Date released cannot be before date issued';
-                            dateReleasedField.parentNode.appendChild(errorDiv);
-                        }
-                    }
-                    
-                    // Display all errors in the form-errors div
-                    if (formErrorsDiv && errorsList.length > 0) {
-                        formErrorsDiv.innerHTML = '<ul class="list-disc pl-5">' + 
-                            errorsList.map(error => `<li>${error}</li>`).join('') + 
-                            '</ul>';
-                    }
-                    
-                    // If there are errors, prevent form submission
-                    if (hasErrors) {
-                        event.preventDefault();
-                        
-                        // Show error notification
-                        showNotification('Please correct the errors below', 'error');
-                        
-                        // Scroll to the first error
-                        const firstError = document.querySelector('.error-message');
-                        if (firstError) {
-                            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
-                    } else {
-                        // No errors, allow form submission
-                        const submitButton = document.getElementById('submitButton');
-                        if (submitButton) {
-                            submitButton.disabled = true;
-                            submitButton.innerHTML = 'Submitting...';
-                        }
-                        
-                        showNotification('Submitting form...', 'info');
-                        // Form will submit naturally since we didn't prevent default
-                    }
-                });
+                }
             }
         });
-
-        // Function to show notification
-        function showNotification(message, type) {
-            const container = document.createElement('div');
-            container.className = `fixed top-4 right-4 z-50 bg-${type === 'success' ? 'green' : type === 'info' ? 'blue' : 'red'}-500 text-white px-4 py-3 rounded shadow-lg flex items-center justify-between`;
-            
-            let icon = '';
-            if (type === 'success') {
-                icon = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
-            } else if (type === 'error') {
-                icon = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
-            } else {
-                icon = '<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-            }
-            
-            container.innerHTML = `
-                <div class="flex items-center">
-                    ${icon}
-                    <span>${message}</span>
-                </div>
-                <button type="button" class="ml-4 text-white hover:text-gray-100 focus:outline-none" onclick="this.parentElement.remove()">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            `;
-            
-            document.body.appendChild(container);
-            
-            // Auto-remove after 5 seconds
-            setTimeout(() => {
-                if (container.parentNode) {
-                    container.remove();
-                }
-            }, 5000);
-        }
-
-        // Clear form function
-        function clearForm() {
-            document.getElementById('wppForm').reset();
-            const alrInput = document.querySelector('input[name="alr"]');
-            if (alrInput) {
-                alrInput.value = '';
-            }
-            
-            // Clear any error messages
-            const errorMessages = document.querySelectorAll('.error-message');
-            errorMessages.forEach(msg => msg.remove());
-            
-            // Reset field borders
-            const formFields = document.getElementById('wppForm').querySelectorAll('input, select');
-            formFields.forEach(field => {
-                field.classList.remove('border-red-500');
-            });
-            
-            // Clear form errors div
-            const formErrorsDiv = document.getElementById('form-errors');
-            if (formErrorsDiv) {
-                formErrorsDiv.innerHTML = '';
-            }
-            
-            showNotification('Form cleared', 'info');
-        }
     </script>
 </body>
 </html>

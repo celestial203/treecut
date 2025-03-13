@@ -284,7 +284,7 @@
     </style>
 </head>
 <body class="font-inter text-gray-900">
-    <!-- Navigation Bar -->
+    <!-- Add this after the body tag, before your existing content -->
     <nav class="bg-transparent shadow-lg border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
@@ -296,6 +296,25 @@
                 </div>
                 <!-- User Menu -->
                 <div class="hidden md:flex items-center space-x-4">
+                    <!-- Add notification bell before the welcome message -->
+                    <div class="relative" id="notification-container">
+                        <button class="text-gray-600 hover:text-gray-800 focus:outline-none relative" id="notification-button">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                            <span id="notification-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                        </button>
+                        
+                        <!-- Notification dropdown -->
+                        <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                            <div class="p-4">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">Notifications</h3>
+                                <div id="notification-list" class="space-y-3 max-h-96 overflow-y-auto">
+                                    <!-- Notifications will be inserted here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="text-lg text-gray-900 font-medium">
                         Welcome, {{ request.user.username }}
                     </div>
@@ -305,22 +324,21 @@
                         </button>
                         <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
                             <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
-                               
                                 <!-- Quick Actions -->
                                 <a href="{% url 'homepage' %}" class="block px-4 py-2 text-sm text-blue-700 hover:bg-gray-100">HOME</a>
                                 <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
                                 <div class="grid grid-cols-1 gap-2">
-                                    <a href="{% url 'wood-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">DASHBOARD</a>
+                                    <a href="{% url 'lumber-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">DASHBOARD</a>
                                     <div class="relative group">
-                                        <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                        <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CUTTING</a>
                                         <div class="absolute left-0 mt-0 w-48 bg-white rounded-md shadow-lg z-30 hidden group-hover:block">
-                                            <a href="{% url 'wood_records' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">View Records</a>
+                                            <a href="{% url 'cutting_records' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">View Records</a>
+                                            <a href="{% url 'trees' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">View Trees</a>
                                         </div>
                                     </div>
-                                    <a href="{% url 'chainsaw-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CHAINSAW </a>
-                                    <a href="{% url 'treecut-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CUTTING</a>
-                                    <a href="{% url 'lumber-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">LUMBER</a>
-
+                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">LUMBER</a>
+                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CHAINSAW</a>
+                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
                                 </div>
                                 <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
                                     <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -337,15 +355,13 @@
                     <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M3 8h18M3 12h18M3 16h18M3 20h18"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6l8 8 8-8"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18"></path>
                         </svg>
                     </button>
                 </div>
             </div>
         </div>
         <!-- Mobile Menu -->
-        <div class="md:hidden" id="mobile-menu" style="display: none;">
+        <div class="md:hidden hidden" id="mobile-menu">
             <div class="px-2 pt-2 pb-3 space-y-1">
                 <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
             </div>
@@ -638,11 +654,11 @@
                                 </td>
                                 <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
                                     <div class="flex space-x-2">
-                                        <a href="{% url 'wood_detail' record.id %}" class="text-blue-600 hover:text-blue-900">
+                                        <a href="{% url 'wood_detail' record.id %}" class="text-blue-400 hover:text-blue-900">
                                             <span class="font-bold">View</span>
                                         </a>
                                         
-                                        <a href="{% url 'edit_wood' record.id %}" class="text-orange-500 hover:text-orange-700">
+                                        <a href="{% url 'edit_wood' record.id %}" class="text-orange-400 hover:text-orange-700">
                                             <span class="font-bold">Edit</span>
                                         </a>
                                         
@@ -1141,6 +1157,128 @@
                     actionPopup.style.display = 'none';
                 }
             };
+
+            // Add these notification-related functions inside your DOMContentLoaded event listener
+            function initializeNotifications() {
+                const notificationButton = document.getElementById('notification-button');
+                const notificationDropdown = document.getElementById('notification-dropdown');
+                const notificationBadge = document.getElementById('notification-badge');
+                const notificationList = document.getElementById('notification-list');
+                
+                // Store dismissed notifications in localStorage
+                let dismissedNotifications = new Set(JSON.parse(localStorage.getItem('dismissedNotifications') || '[]'));
+
+                function updateNotifications() {
+                    const rows = document.querySelectorAll('tbody tr');
+                    const expiringRecords = [];
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    rows.forEach(row => {
+                        if (row.querySelector('td[colspan]')) return;
+
+                        const expiryDateCell = row.querySelector('td:nth-child(17)');
+                        if (expiryDateCell) {
+                            const expiryDate = new Date(expiryDateCell.textContent.trim());
+                            const threeMonthsBeforeExpiry = new Date(expiryDate);
+                            threeMonthsBeforeExpiry.setMonth(expiryDate.getMonth() - 3);
+
+                            const notificationId = `wood-${row.dataset.recordId}-${expiryDateCell.textContent}`;
+                            
+                            if (today >= threeMonthsBeforeExpiry && today < expiryDate && !dismissedNotifications.has(notificationId)) {
+                                const nameCell = row.querySelector('td:nth-child(1)');
+                                const wppNumberCell = row.querySelector('td:nth-child(4)');
+                                const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+
+                                expiringRecords.push({
+                                    id: notificationId,
+                                    name: nameCell.textContent.trim(),
+                                    wppNumber: wppNumberCell.textContent.trim(),
+                                    expiryDate,
+                                    daysUntilExpiry
+                                });
+                            }
+                        }
+                    });
+
+                    // Update notification badge
+                    if (expiringRecords.length > 0) {
+                        notificationBadge.textContent = expiringRecords.length;
+                        notificationBadge.classList.remove('hidden');
+                    } else {
+                        notificationBadge.classList.add('hidden');
+                    }
+
+                    // Update notification list
+                    notificationList.innerHTML = expiringRecords.length > 0 
+                        ? expiringRecords.map(record => `
+                            <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-100 relative mb-2" data-notification-id="${record.id}">
+                                <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 focus:outline-none close-notification">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                                <div class="font-semibold text-gray-900">${record.name}</div>
+                                <div class="text-sm text-gray-600">WPP Number: ${record.wppNumber}</div>
+                                <div class="text-sm text-red-600 mt-1">
+                                    Expires in ${record.daysUntilExpiry} days
+                                    (${record.expiryDate.toLocaleDateString()})
+                                </div>
+                            </div>
+                        `).join('')
+                        : '<div class="text-gray-500 text-center py-4">No notifications</div>';
+
+                    // Add event listeners to close buttons
+                    document.querySelectorAll('.close-notification').forEach(button => {
+                        button.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const notification = this.closest('[data-notification-id]');
+                            const notificationId = notification.dataset.notificationId;
+                            
+                            // Add to dismissed set and save to localStorage
+                            dismissedNotifications.add(notificationId);
+                            localStorage.setItem('dismissedNotifications', JSON.stringify([...dismissedNotifications]));
+                            
+                            // Remove the notification
+                            notification.remove();
+                            
+                            // Update badge count
+                            const remainingNotifications = notificationList.querySelectorAll('[data-notification-id]').length;
+                            if (remainingNotifications > 0) {
+                                notificationBadge.textContent = remainingNotifications;
+                            } else {
+                                notificationBadge.classList.add('hidden');
+                                notificationList.innerHTML = '<div class="text-gray-500 text-center py-4">No notifications</div>';
+                            }
+                        });
+                    });
+                }
+
+                // Toggle notification dropdown
+                if (notificationButton) {
+                    notificationButton.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        notificationDropdown.classList.toggle('hidden');
+                        updateNotifications(); // Update notifications when dropdown is opened
+                    });
+
+                    // Close dropdown when clicking outside
+                    document.addEventListener('click', function(e) {
+                        if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
+                            notificationDropdown.classList.add('hidden');
+                        }
+                    });
+                }
+
+                // Initial check for notifications
+                updateNotifications();
+
+                // Check for new notifications periodically (every 5 minutes)
+                setInterval(updateNotifications, 5 * 60 * 1000);
+            }
+
+            // Call initializeNotifications after DOM is loaded
+            initializeNotifications();
         });
         
         // Function to clear all filters (used by the "Clear filters" button)

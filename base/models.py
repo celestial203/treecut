@@ -502,9 +502,9 @@ class Wood(models.Model):
     )
     
     # Dates
-    date_issued = models.DateField(default=timezone.now)
+    date_issued = models.DateField()
     date_released = models.DateField(default=timezone.now)
-    expiry_date = models.DateField(null=True, blank=True)
+    expiry_date = models.DateField()
     
     # Approval and Status
     approved_by = models.CharField(max_length=200, null=True, blank=True, default='')
@@ -525,78 +525,32 @@ class Wood(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def save(self, *args, **kwargs):
-        # Calculate ALR if DRC is provided
-        if self.drc:
-            self.alr = round(float(self.drc) * 290 * 0.80, 2)
-        
-        # Set expiry date to 5 years from date issued, excluding weekends
-        if self.date_issued and not self.expiry_date:
-            # Start with the initial date
-            current_date = self.date_issued
-            years_to_add = 5
-            days_added = 0
-            
-            # Add 5 years worth of business days
-            target_days = years_to_add * 365
-            
-            while days_added < target_days:
-                current_date += timedelta(days=1)
-                # Skip weekends (5 = Saturday, 6 = Sunday)
-                if current_date.weekday() not in [5, 6]:
-                    days_added += 1
-            
-            self.expiry_date = current_date
-            
-        super().save(*args, **kwargs)
-
     def clean(self):
-        # Allow future dates for specific permit types or conditions
-        if self.date_issued and self.date_issued > timezone.now().date():
-            # Only raise error if not a special case
-            if not self.is_special_case:  # Define your condition here
-                raise ValidationError({'date_issued': 'Date issued cannot be in the future'})
+        super().clean()
+        if self.date_issued and self.expiry_date:
+            # Convert datetime to date if needed
+            if isinstance(self.date_issued, datetime):
+                self.date_issued = self.date_issued.date()
+            if isinstance(self.expiry_date, datetime):
+                self.expiry_date = self.expiry_date.date()
+            
+            # Now compare dates
+            if self.expiry_date <= self.date_issued:
+                raise ValidationError('Expiry date must be after date issued.')
 
-    @property
-    def total_volume(self):
-        """Calculate total volume (local + imported)"""
-        local = self.local_volume or 0
-        imported = self.imported_volume or 0
-        return local + imported
-
-    @property
-    def days_remaining(self):
-        """Calculate days remaining until expiry"""
-        if self.expiry_date:
-            remaining = (self.expiry_date - timezone.now().date()).days
-            return max(remaining, 0)
-        return 0
-
-    @property
-    def is_expired(self):
-        """Check if the record is expired"""
-        return self.days_remaining <= 0
-
-    @property
-    def is_expiring_soon(self):
-        """Check if the record is expiring within 3 months"""
-        if self.expiry_date:
-            today = timezone.now().date()
-            three_months_from_now = today + timedelta(days=90)  # 90 days = 3 months
-            return today <= self.expiry_date <= three_months_from_now
-        return False
-
-    @property
-    def expiry_warning(self):
-        """Returns True if the permit is expiring within 3 months"""
-        if not self.expiry_date:
-            return False
+    def save(self, *args, **kwargs):
+        # Calculate expiry date if not set (5 years from date issued)
+        if self.date_issued and not self.expiry_date:
+            if isinstance(self.date_issued, datetime):
+                self.date_issued = self.date_issued.date()
+            self.expiry_date = self.date_issued + timedelta(days=5*365)
         
-        today = timezone.now().date()
-        three_months_from_now = today + timedelta(days=90)  # 90 days = 3 months
+        # Calculate ALR if not set
+        if self.drc and (self.alr is None or self.alr == 0):
+            self.alr = self.drc * 290 * Decimal('0.80')
         
-        # Return True if expiry date is within the next 3 months
-        return today <= self.expiry_date <= three_months_from_now
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} - {self.wpp_number}"

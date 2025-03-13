@@ -781,80 +781,24 @@ def update_wood(request, pk):
 
 @login_required
 def wood_records(request):
-    # Get status filter from URL
+    # Get filter parameters
     status = request.GET.get('status')
+    today = date.today()
     
-    # Get current date for filtering
-    current_date = timezone.now().date()
-    thirty_days_from_now = current_date + timedelta(days=30)
+    # Base queryset
+    wood_records = Wood.objects.all()
     
     # Apply filters based on status
-    if status == 'expired':
-        wood_records = Wood.objects.filter(expiry_date__lt=current_date).order_by('-date_issued')
-    elif status == 'active_new':
-        wood_records = Wood.objects.filter(
-            expiry_date__gte=current_date,
-            permit_status='New'
-        ).order_by('-date_issued')
-    elif status == 'active_renewed':
-        wood_records = Wood.objects.filter(
-            expiry_date__gte=current_date,
-            permit_status='Renewed'
-        ).order_by('-date_issued')
-    elif status == 'expiring_soon':
-        wood_records = Wood.objects.filter(
-            expiry_date__gte=current_date,
-            expiry_date__lte=thirty_days_from_now
-        ).order_by('-date_issued')
-    elif status == 'suspended':
-        wood_records = Wood.objects.filter(permit_status='Suspended').order_by('-date_issued')
-    elif status == 'cancelled':
-        wood_records = Wood.objects.filter(permit_status='Cancelled').order_by('-date_issued')
-    else:
-        # Default: show all records
-        wood_records = Wood.objects.all().order_by('-date_issued')
+    if status:
+        wood_records = wood_records.filter(wood_status=status)  # Changed from permit_status to wood_status
     
-    # Set up pagination
-    paginator = Paginator(wood_records, 10)  # Show 10 records per page
-    page = request.GET.get('page')
-    
-    try:
-        wood_records = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page
-        wood_records = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range, deliver last page of results
-        wood_records = paginator.page(paginator.num_pages)
-    
-    # Count records by status for the filter buttons
-    expired_count = Wood.objects.filter(expiry_date__lt=current_date).count()
-    active_new_count = Wood.objects.filter(
-        expiry_date__gte=current_date,
-        permit_status='New'
-    ).count()
-    active_renewed_count = Wood.objects.filter(
-        expiry_date__gte=current_date,
-        permit_status='Renewed'
-    ).count()
-    expiring_soon_count = Wood.objects.filter(
-        expiry_date__gte=current_date,
-        expiry_date__lte=thirty_days_from_now
-    ).count()
-    suspended_count = Wood.objects.filter(permit_status='Suspended').count()
-    cancelled_count = Wood.objects.filter(permit_status='Cancelled').count()
+    # Order the results
+    wood_records = wood_records.order_by('-created_at')
     
     context = {
         'wood_records': wood_records,
-        'expired_count': expired_count,
-        'active_new_count': active_new_count,
-        'active_renewed_count': active_renewed_count,
-        'expiring_soon_count': expiring_soon_count,
-        'suspended_count': suspended_count,
-        'cancelled_count': cancelled_count,
-        'current_status': status,  # Pass the current status to highlight the active filter
+        'today': today,
     }
-    
     return render(request, 'wood_record.html', context)
 
 @login_required
@@ -1452,13 +1396,13 @@ def treecut_dash(request):
     # Active cutting permits (not expired)
     active_cutting_count = Cutting.objects.filter(
         Q(permit_type__in=['TCP', 'PLTP', 'SPLTP'], expiry_date__gte=current_date) |
-        Q(permit_type='STCP', volume_records__isnull=False)  # Has volume records
+        Q(permit_type='STCP', volume_records__isnull=False)
     ).distinct().count()
     
     # Calculate pending cutting permits (STCP with no volume records)
     pending_cutting_count = Cutting.objects.filter(
         permit_type='STCP',
-        volume_records__isnull=True  # No volume records yet
+        volume_records__isnull=True
     ).count()
 
     # Lumber Records counts
@@ -1769,3 +1713,5 @@ def wood_dash(request):
     }
     
     return render(request, 'wood-dash.html', context)
+
+

@@ -29,29 +29,29 @@
         
         /* Status-based row styling */
         tr.active-record {
-            background-color: transparent !important; /* Remove default background */
+            background-color: transparent !important;
         }
         
         tr.expired-record {
-            background-color: transparent !important; /* Remove default background */
+            background-color: transparent !important;
         }
         
         tr.expiring-soon-record {
-            background-color: transparent !important; /* Remove default background */
+            background-color: transparent !important;
         }
         
-        /* Alternating row colors */
+        /* Alternating row colors - changed from green to gray */
         tbody tr:nth-child(even) {
-            background-color: #f0f9f0; /* Very light mint green */
+            background-color: #f9fafb; /* Light gray instead of mint green */
         }
         
         tbody tr:nth-child(odd) {
             background-color: #ffffff; /* White */
         }
         
-        /* Hover effects only for tbody rows */
+        /* Hover effects - changed from green to gray */
         tbody tr:hover {
-            background-color: #e8f5e9 !important; /* Slightly darker mint green for hover */
+            background-color: #f3f4f6 !important; /* Light gray instead of mint green */
             transition: background-color 0.2s ease;
         }
         
@@ -97,6 +97,27 @@
                 </div>
                 <!-- User Menu -->
                 <div class="hidden md:flex items-center space-x-4">
+                    <!-- Add notification bell before the welcome message -->
+                    <div class="relative" id="notification-container">
+                        <button class="text-gray-600 hover:text-gray-800 focus:outline-none" id="notification-button">
+                            <div class="relative">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                                </svg>
+                                <span id="notification-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                            </div>
+                        </button>
+                        
+                        <!-- Notification dropdown -->
+                        <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                            <div class="p-4">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">Expiring Records</h3>
+                                <div id="notification-list" class="space-y-3 max-h-96 overflow-y-auto">
+                                    <!-- Notifications will be inserted here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="text-lg text-gray-900 font-medium">
                         Welcome, {{ request.user.username }}
                     </div>
@@ -277,86 +298,57 @@
         </div>
     </div>
 
-    <!-- Records Section - Full Width with Scroll -->
+    <!-- Records Section -->
     <div class="w-full py-4">
         <div class="bg-white shadow-2xl">
             <div class="overflow-x-auto">
                 <div class="inline-block min-w-full">
                     <div class="overflow-hidden">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50 sticky top-0 z-10">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">NO.</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">TRADE NAME</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">MANAGER/OWNER</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">CONTACT NO.</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">GENDER</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">LOCATION</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">PERMIT NO.</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">DATE ISSUED</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">EXPIRY DATE</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">SOURCE/SUPPLIER</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">VOLUME (m³)</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">SPECIES</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">FILE</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">ACTIONS</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                {% if lumber_records %}
-                                    {% for record in lumber_records %}
-                                    <tr class="hover:bg-gray-50 transition-colors duration-150 {% if record.is_expired %}bg-red-50{% endif %}" data-record-id="{{ record.id }}">
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.no }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.trade_name }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.manager_owner }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                            {% if record.contact_number %}
-                                                {{ record.contact_number }}
-                                            {% else %}
-                                                <span class="text-gray-400">N/A</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.gender }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.brgy }}, {{ record.municipality }}, {{ record.province }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.permit_no }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.date_issued|date:"d/m/Y" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.expiry_date|date:"d/m/Y" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.source_supplier }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.volume_cubic_meter }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.species }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                            {% if record.file %}
-                                            <a href="{{ record.file.url }}" class="text-blue-600 hover:underline flex items-center" target="_blank">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                </svg>
-                                                View 
-                                            </a>
-                                            {% else %}
-                                            <span class="text-gray-400">No file</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                            <div class="flex space-x-4">
-                                                <a href="{% url 'view_lumber_details' record.id %}" class="text-blue-600 hover:text-blue-800 font-medium">
-                                                    View
-                                                </a>
-                                                <a href="{% url 'edit_recordlumber' record.id %}" class="text-orange-500 hover:text-orange-700 font-medium">
-                                                    Edit
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                {% else %}
+                        <div class="max-h-[600px] overflow-y-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50 sticky top-0 z-10">
                                     <tr>
-                                        <td colspan="14" class="px-6 py-8 text-center text-gray-500">
-                                            No lumber records found. Please add a new record using the lumber form.
-                                        </td>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">TRADE NAME</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">MANAGER/OWNER</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">LOCATION</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">PERMIT NO.</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">ACTIONS</th>
                                     </tr>
-                                {% endif %}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    {% if lumber_records %}
+                                        {% for record in lumber_records %}
+                                        <tr class="hover:bg-gray-50 transition-colors duration-150 {% if record.is_expired %}bg-red-50{% endif %}" 
+                                            data-record-id="{{ record.id }}"
+                                            data-issue-date="{{ record.date_issued|date:'Y-m-d' }}"
+                                            data-expiry-date="{{ record.expiry_date|date:'Y-m-d' }}">
+                                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.trade_name }}</td>
+                                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.manager_owner }}</td>
+                                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.brgy }}, {{ record.municipality }}, {{ record.province }}</td>
+                                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ record.permit_no }}</td>
+                                            <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                                <div class="flex justify-center space-x-4">
+                                                    <a href="{% url 'view_lumber_details' record.id %}" class="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-2">
+                                                        
+                                                        View
+                                                    </a>
+                                                    <a href="{% url 'edit_recordlumber' record.id %}" class="text-orange-500 hover:text-orange-700 font-medium">
+                                                        Edit
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                                No lumber records found. Please add a new record using the lumber form.
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -466,14 +458,14 @@
                 
                 rows.forEach(row => {
                     // Skip if it's the "No records found" row
-                    if (row.querySelector('td[colspan="14"]')) {
+                    if (row.querySelector('td[colspan="5"]')) {
                         return;
                     }
                     
                     // Remove existing status classes
                     row.classList.remove('active-record', 'expired-record', 'expiring-soon-record');
                     
-                    const expiryDateCell = row.querySelector('td:nth-child(9)');
+                    const expiryDateCell = row.querySelector('td:nth-child(5)');
                     if (expiryDateCell) {
                         const expiryDate = parseDate(expiryDateCell.textContent.trim());
                         
@@ -519,11 +511,11 @@
                 
                 rows.forEach(row => {
                     // Skip if it's the "No records found" row
-                    if (row.querySelector('td[colspan="14"]')) {
+                    if (row.querySelector('td[colspan="5"]')) {
                         return;
                     }
                     
-                    const expiryDateCell = row.querySelector('td:nth-child(9)');
+                    const expiryDateCell = row.querySelector('td:nth-child(5)');
                     if (expiryDateCell) {
                         const expiryDate = parseDate(expiryDateCell.textContent.trim());
                         if (expiryDate && expiryDate > thirtyDaysFromNow) {
@@ -548,11 +540,11 @@
                 
                 rows.forEach(row => {
                     // Skip if it's the "No records found" row
-                    if (row.querySelector('td[colspan="14"]')) {
+                    if (row.querySelector('td[colspan="5"]')) {
                         return;
                     }
                     
-                    const expiryDateCell = row.querySelector('td:nth-child(9)');
+                    const expiryDateCell = row.querySelector('td:nth-child(5)');
                     if (expiryDateCell) {
                         const expiryDate = parseDate(expiryDateCell.textContent.trim());
                         if (expiryDate && expiryDate < today) {
@@ -580,11 +572,11 @@
                 
                 rows.forEach(row => {
                     // Skip if it's the "No records found" row
-                    if (row.querySelector('td[colspan="14"]')) {
+                    if (row.querySelector('td[colspan="5"]')) {
                         return;
                     }
                     
-                    const expiryDateCell = row.querySelector('td:nth-child(9)');
+                    const expiryDateCell = row.querySelector('td:nth-child(5)');
                     if (expiryDateCell) {
                         const expiryDate = parseDate(expiryDateCell.textContent.trim());
                         if (expiryDate && expiryDate >= today && expiryDate <= thirtyDaysFromNow) {
@@ -617,7 +609,7 @@
                 
                 rows.forEach(row => {
                     // Skip if it's the "No records found" row
-                    if (row.querySelector('td[colspan]')) {
+                    if (row.querySelector('td[colspan="5"]')) {
                         return;
                     }
                     
@@ -643,58 +635,6 @@
         if (startDateInput && endDateInput) {
             console.log('Date inputs found:', startDateInput, endDateInput);
             
-            // Improved date parsing function
-            function parseDate(dateStr) {
-                if (!dateStr) return null;
-                console.log('Parsing date:', dateStr);
-                
-                // Try different date formats
-                const formats = [
-                    // YYYY-MM-DD (HTML date input format)
-                    str => {
-                        if (str.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                            return new Date(str);
-                        }
-                        return null;
-                    },
-                    // DD/MM/YYYY
-                    str => {
-                        const parts = str.split('/');
-                        if (parts.length === 3) {
-                            return new Date(parts[2], parts[1] - 1, parts[0]);
-                        }
-                        return null;
-                    },
-                    // MM/DD/YYYY
-                    str => {
-                        const parts = str.split('/');
-                        if (parts.length === 3) {
-                            return new Date(parts[2], parts[0] - 1, parts[1]);
-                        }
-                        return null;
-                    },
-                    // MMM DD, YYYY (e.g., Mar 04, 2025)
-                    str => {
-                        const date = new Date(str);
-                        if (!isNaN(date.getTime())) {
-                            return date;
-                        }
-                        return null;
-                    }
-                ];
-                
-                for (const format of formats) {
-                    const date = format(dateStr);
-                    if (date && !isNaN(date.getTime())) {
-                        console.log('Successfully parsed date:', dateStr, 'to', date);
-                        return date;
-                    }
-                }
-                
-                console.warn('Failed to parse date:', dateStr);
-                return null;
-            }
-            
             function filterByDateRange() {
                 const startDateValue = startDateInput.value;
                 const endDateValue = endDateInput.value;
@@ -703,11 +643,9 @@
                 
                 if (!startDateValue && !endDateValue) {
                     console.log('No dates selected, showing all records');
-                    // No filtering needed, show all records
                     const rows = document.querySelectorAll('tbody tr');
                     rows.forEach(row => {
-                        // Skip if it's the "No records found" row
-                        if (row.querySelector('td[colspan]')) {
+                        if (row.querySelector('td[colspan="5"]')) {
                             return;
                         }
                         row.style.display = '';
@@ -715,84 +653,54 @@
                     return;
                 }
                 
-                // Convert input values to Date objects
                 const startDate = startDateValue ? new Date(startDateValue) : null;
                 const endDate = endDateValue ? new Date(endDateValue) : null;
                 
-                if (startDate) startDate.setHours(0, 0, 0, 0); // Start of day
-                
-                // If we have an end date, set it to end of day for inclusive comparison
+                if (startDate) startDate.setHours(0, 0, 0, 0);
                 const endOfDay = endDate ? new Date(endDate) : null;
                 if (endOfDay) endOfDay.setHours(23, 59, 59, 999);
                 
-                console.log('Parsed filter dates:', 
-                    startDate ? startDate.toISOString() : 'none', 
-                    endOfDay ? endOfDay.toISOString() : 'none');
-                
                 const rows = document.querySelectorAll('tbody tr');
-                console.log('Total rows to filter:', rows.length);
-                
                 let matchCount = 0;
                 let noResultsRow = document.querySelector('tr.no-results');
                 
                 rows.forEach((row, index) => {
-                    // Skip if it's the "No records found" row
-                    if (row.querySelector('td[colspan]') || row.classList.contains('no-results')) {
+                    if (row.querySelector('td[colspan="5"]') || row.classList.contains('no-results')) {
                         return;
                     }
                     
-                    // Get the date issued cell (column 8 - adjust if needed)
-                    const dateIssuedCell = row.querySelector('td:nth-child(8)');
+                    const dateIssued = new Date(row.dataset.issueDate);
                     
-                    if (dateIssuedCell) {
-                        const dateIssuedText = dateIssuedCell.textContent.trim();
-                        console.log(`Row ${index} date issued text:`, dateIssuedText);
+                    if (dateIssued) {
+                        let showRow = true;
                         
-                        const dateIssued = parseDate(dateIssuedText);
+                        // Check if the issued date falls within the date range
+                        if (startDate && endDate) {
+                            showRow = dateIssued >= startDate && dateIssued <= endDate;
+                        } else if (startDate) {
+                            showRow = dateIssued >= startDate;
+                        } else if (endDate) {
+                            showRow = dateIssued <= endDate;
+                        }
                         
-                        if (dateIssued) {
-                            let showRow = true;
-                            
-                            // Check if date is after or equal to start date
-                            if (startDate && dateIssued < startDate) {
-                                console.log(`Row ${index}: Date ${dateIssued.toDateString()} is before start date ${startDate.toDateString()}`);
-                                showRow = false;
-                            }
-                            
-                            // Check if date is before or equal to end date
-                            if (endOfDay && showRow && dateIssued > endOfDay) {
-                                console.log(`Row ${index}: Date ${dateIssued.toDateString()} is after end date ${endOfDay.toDateString()}`);
-                                showRow = false;
-                            }
-                            
-                            console.log(`Row ${index}: Show = ${showRow}`);
-                            row.style.display = showRow ? '' : 'none';
-                            
-                            if (showRow) {
-                                matchCount++;
-                            }
-                        } else {
-                            console.warn(`Row ${index}: Could not parse date "${dateIssuedText}"`);
-                            // If we can't parse the date, show the row by default
-                            row.style.display = '';
+                        row.style.display = showRow ? '' : 'none';
+                        
+                        if (showRow) {
+                            matchCount++;
                         }
                     } else {
-                        console.warn(`Row ${index}: No date issued cell found`);
-                        // If there's no date cell, show the row by default
                         row.style.display = '';
                     }
                 });
                 
-                console.log(`Filtering complete. ${matchCount} rows match the date range.`);
-                
-                // Show or hide "No results" message
+                // Update no results message
                 if (matchCount === 0) {
                     if (!noResultsRow) {
                         const tbody = document.querySelector('tbody');
                         noResultsRow = document.createElement('tr');
                         noResultsRow.classList.add('no-results');
                         noResultsRow.innerHTML = `
-                            <td colspan="14" class="px-6 py-8 text-center">
+                            <td colspan="5" class="px-6 py-8 text-center">
                                 <div class="text-gray-500 text-lg">No matching records found</div>
                                 <div class="text-gray-400 text-sm mt-2">Try adjusting your filter criteria</div>
                             </td>
@@ -806,15 +714,21 @@
                 }
             }
             
-            // Handle start date change
-            startDateInput.addEventListener('input', function() {
-                console.log('Start date input changed:', this.value);
-                filterByDateRange();
-            });
-            
+            // Add event listener for start date to automatically set end date range
             startDateInput.addEventListener('change', function() {
-                console.log('Start date changed:', this.value);
-                filterByDateRange();
+                const startDate = new Date(this.value);
+                if (startDate) {
+                    // Set end date to 9 months after start date
+                    const endDate = new Date(startDate);
+                    endDate.setMonth(endDate.getMonth() + 9);
+                    
+                    // Format the date as YYYY-MM-DD
+                    const formattedDate = endDate.toISOString().split('T')[0];
+                    endDateInput.value = formattedDate;
+                    
+                    // Trigger the filter
+                    filterByDateRange();
+                }
             });
             
             // Handle end date change
@@ -857,26 +771,86 @@
             });
         });
 
-        // Populate year dropdown with years from 2010 to current year
-        const yearFilter = document.getElementById('yearFilter');
-        if (yearFilter) {
-            const currentYear = new Date().getFullYear();
-            const startYear = 2010;
-            
-            // Add years from current year down to 2010
-            for (let year = currentYear; year >= startYear; year--) {
-                const option = document.createElement('option');
-                option.value = year.toString();
-                option.textContent = year.toString();
-                yearFilter.appendChild(option);
+        // Function to filter records by year
+        function filterByYear(year) {
+            if (!year) {
+                // If no year selected, show all records
+                const rows = document.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    // Skip if it's the "No records found" row
+                    if (row.querySelector('td[colspan="5"]')) {
+                        return;
+                    }
+                    row.style.display = '';
+                });
+                return;
             }
             
-            // Add event listener for year filter change
-            yearFilter.addEventListener('change', function() {
-                console.log('Year filter changed to:', this.value);
-                filterByYear(this.value);
+            const rows = document.querySelectorAll('tbody tr');
+            let matchCount = 0;
+            
+            rows.forEach(row => {
+                // Skip if it's the "No records found" row
+                if (row.querySelector('td[colspan="5"]')) {
+                    return;
+                }
+                
+                // Use the data-issue-date attribute instead of looking at cells
+                const dateIssued = new Date(row.dataset.issueDate);
+                
+                if (dateIssued && dateIssued.getFullYear().toString() === year) {
+                    row.style.display = '';
+                    matchCount++;
+                } else {
+                    row.style.display = 'none';
+                }
             });
+
+            // Show "No results" message if no matches found
+            const noResultsMessage = document.getElementById('noResultsMessage');
+            if (noResultsMessage) {
+                if (matchCount === 0) {
+                    noResultsMessage.classList.remove('hidden');
+                    noResultsMessage.innerHTML = `
+                        <div class="p-4 text-center">
+                            <div class="text-gray-500 text-lg">No records found for year ${year}</div>
+                            <div class="text-gray-400 text-sm mt-2">Try selecting a different year</div>
+                        </div>
+                    `;
+                } else {
+                    noResultsMessage.classList.add('hidden');
+                }
+            }
         }
+
+        // Populate year dropdown with years from 2010 to 2025
+        document.addEventListener('DOMContentLoaded', function() {
+            const yearFilter = document.getElementById('yearFilter');
+            if (yearFilter) {
+                const endYear = 2025;
+                const startYear = 2010;
+                
+                // Add "All Years" option
+                const allYearsOption = document.createElement('option');
+                allYearsOption.value = '';
+                allYearsOption.textContent = 'All Years';
+                yearFilter.appendChild(allYearsOption);
+                
+                // Add years from 2025 down to 2010
+                for (let year = endYear; year >= startYear; year--) {
+                    const option = document.createElement('option');
+                    option.value = year.toString();
+                    option.textContent = year.toString();
+                    yearFilter.appendChild(option);
+                }
+                
+                // Add event listener for year filter change
+                yearFilter.addEventListener('change', function() {
+                    console.log('Year filter changed to:', this.value);
+                    filterByYear(this.value);
+                });
+            }
+        });
 
         // Add context menu element to the body
         const contextMenu = document.createElement('div');
@@ -900,9 +874,11 @@
 
         // Handle double click on table rows
         const tableRows = document.querySelectorAll('tbody tr');
+        console.log('Found rows:', tableRows.length); // Debug log
+
         tableRows.forEach(row => {
             row.addEventListener('dblclick', function(e) {
-                if (row.querySelector('td[colspan="14"]')) return;
+                if (row.querySelector('td[colspan]')) return;
 
                 e.preventDefault();
                 
@@ -912,8 +888,10 @@
                 
                 if (!recordId) return;
 
-                contextMenu.style.left = `${e.pageX}px`;
-                contextMenu.style.top = `${e.pageY}px`;
+                // Position menu directly at cursor position with a slight offset to the right
+                contextMenu.style.position = 'fixed';
+                contextMenu.style.left = `${e.clientX + 15}px`;  // 15px to the right of cursor
+                contextMenu.style.top = `${e.clientY}px`;       // Same Y position as cursor
                 contextMenu.classList.remove('hidden');
 
                 const viewOption = document.getElementById('view-option');
@@ -985,163 +963,219 @@
         document.body.removeChild(downloadLink);
     }
 
-    // Function to filter records by year
-    function filterByYear(year) {
-        if (!year) {
-            // If no year selected, show all records
-            const rows = document.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                // Skip if it's the "No records found" row
-                if (row.querySelector('td[colspan="14"]')) {
-                    return;
-                }
-                row.style.display = '';
-            });
-            return;
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get button elements
+        const allRecordsBtn = document.getElementById('allRecordsBtn');
+        const activeRecordsBtn = document.getElementById('activeRecordsBtn');
+        const expiringSoonRecordsBtn = document.getElementById('expiringSoonRecordsBtn');
+        const expiredRecordsBtn = document.getElementById('expiredRecordsBtn');
+
+        // Helper function to check if a date is expired
+        function isExpired(row) {
+            const expiryDate = new Date(row.dataset.expiryDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return expiryDate < today;
         }
-        
-        const rows = document.querySelectorAll('tbody tr');
-        rows.forEach(row => {
-            // Skip if it's the "No records found" row
-            if (row.querySelector('td[colspan="14"]')) {
-                return;
-            }
+
+        // Update the isExpiringSoon function to check if within last 3 months before expiry
+        function isExpiringSoon(row) {
+            const expiryDate = new Date(row.dataset.expiryDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
             
-            // Check date issued cell (column 8) for the year
-            const dateIssuedCell = row.querySelector('td:nth-child(8)');
-            if (dateIssuedCell) {
-                const dateText = dateIssuedCell.textContent.trim();
-                const dateIssued = parseDate(dateText);
+            // Calculate date 3 months before expiry
+            const threeMonthsBeforeExpiry = new Date(expiryDate);
+            threeMonthsBeforeExpiry.setMonth(expiryDate.getMonth() - 3);
+            
+            // Record is "expiring soon" if today is after (or equal to) 3 months before expiry
+            // but before the actual expiry date
+            return today >= threeMonthsBeforeExpiry && today < expiryDate;
+        }
+
+        // Function to filter records based on status
+        function filterByStatus(status) {
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                // Skip the "no records" row if it exists
+                if (row.querySelector('td[colspan="5"]')) return;
+
+                // Get the permit number which contains the date
+                const permitCell = row.querySelector('td:nth-child(4)');
+                if (!permitCell) return;
+
+                const permitNo = permitCell.textContent;
+                // Extract date from permit number (assuming format includes date)
+                const dateMatch = permitNo.match(/\d{2,4}$/);
+                if (!dateMatch) return;
+
+                const permitDate = new Date(dateMatch[0]);
                 
-                if (dateIssued && dateIssued.getFullYear().toString() === year) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
+                switch(status) {
+                    case 'all':
+                        row.style.display = '';
+                        break;
+                    case 'active':
+                        row.style.display = !isExpired(row) && !isExpiringSoon(row) ? '' : 'none';
+                        break;
+                    case 'expiring':
+                        row.style.display = isExpiringSoon(row) ? '' : 'none';
+                        break;
+                    case 'expired':
+                        row.style.display = isExpired(row) ? '' : 'none';
+                        break;
                 }
+            });
+
+            // Update active button state
+            [allRecordsBtn, activeRecordsBtn, expiringSoonRecordsBtn, expiredRecordsBtn].forEach(btn => {
+                btn.classList.remove('bg-green-500', 'text-white');
+                btn.classList.add('bg-white', 'text-gray-700');
+            });
+
+            // Highlight active button
+            switch(status) {
+                case 'all':
+                    allRecordsBtn.classList.remove('bg-white', 'text-gray-700');
+                    allRecordsBtn.classList.add('bg-green-500', 'text-white');
+                    break;
+                case 'active':
+                    activeRecordsBtn.classList.remove('bg-white', 'text-gray-700');
+                    activeRecordsBtn.classList.add('bg-green-500', 'text-white');
+                    break;
+                case 'expiring':
+                    expiringSoonRecordsBtn.classList.remove('bg-white', 'text-gray-700');
+                    expiringSoonRecordsBtn.classList.add('bg-green-500', 'text-white');
+                    break;
+                case 'expired':
+                    expiredRecordsBtn.classList.remove('bg-white', 'text-gray-700');
+                    expiredRecordsBtn.classList.add('bg-green-500', 'text-white');
+                    break;
+            }
+        }
+
+        // Add click event listeners to buttons
+        allRecordsBtn.addEventListener('click', () => filterByStatus('all'));
+        activeRecordsBtn.addEventListener('click', () => filterByStatus('active'));
+        expiringSoonRecordsBtn.addEventListener('click', () => filterByStatus('expiring'));
+        expiredRecordsBtn.addEventListener('click', () => filterByStatus('expired'));
+
+        // Set "All Records" as default active button
+        filterByStatus('all');
+    });
+
+    // Update the notification JavaScript
+    document.addEventListener('DOMContentLoaded', function() {
+        const notificationButton = document.getElementById('notification-button');
+        const notificationDropdown = document.getElementById('notification-dropdown');
+        const notificationBadge = document.getElementById('notification-badge');
+        const notificationList = document.getElementById('notification-list');
+        
+        // Store dismissed notifications
+        let dismissedNotifications = new Set();
+
+        // Function to check for expiring records
+        function checkExpiringRecords() {
+            const rows = document.querySelectorAll('tbody tr');
+            const expiringRecords = [];
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            rows.forEach(row => {
+                if (row.querySelector('td[colspan="5"]')) return;
+
+                const expiryDate = new Date(row.dataset.expiryDate);
+                const threeMonthsBeforeExpiry = new Date(expiryDate);
+                threeMonthsBeforeExpiry.setMonth(expiryDate.getMonth() - 3);
+
+                // Only add if not dismissed
+                const notificationId = `${row.dataset.expiryDate}-${row.querySelector('td:nth-child(4)').textContent}`;
+                if (today >= threeMonthsBeforeExpiry && today < expiryDate && !dismissedNotifications.has(notificationId)) {
+                    const tradeName = row.querySelector('td:nth-child(1)').textContent;
+                    const permitNo = row.querySelector('td:nth-child(4)').textContent;
+                    const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+
+                    expiringRecords.push({
+                        id: notificationId,
+                        tradeName,
+                        permitNo,
+                        expiryDate,
+                        daysUntilExpiry
+                    });
+                }
+            });
+
+            // Update notification badge
+            if (expiringRecords.length > 0) {
+                notificationBadge.textContent = expiringRecords.length;
+                notificationBadge.classList.remove('hidden');
+            } else {
+                notificationBadge.classList.add('hidden');
+            }
+
+            // Update notification list
+            notificationList.innerHTML = expiringRecords.length > 0 
+                ? expiringRecords.map(record => `
+                    <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-100 relative" data-notification-id="${record.id}">
+                        <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 focus:outline-none close-notification">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                        <div class="font-semibold text-gray-900 pr-6">${record.tradeName}</div>
+                        <div class="text-sm text-gray-600">Permit No: ${record.permitNo}</div>
+                        <div class="text-sm text-red-600 mt-1">
+                            Expires in ${record.daysUntilExpiry} days
+                            (${record.expiryDate.toLocaleDateString()})
+                        </div>
+                    </div>
+                `).join('')
+                : '<div class="text-gray-500 text-center py-4">No records expiring soon</div>';
+
+            // Add event listeners to close buttons
+            document.querySelectorAll('.close-notification').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const notification = this.closest('[data-notification-id]');
+                    const notificationId = notification.dataset.notificationId;
+                    
+                    // Add to dismissed set
+                    dismissedNotifications.add(notificationId);
+                    
+                    // Remove the notification
+                    notification.remove();
+                    
+                    // Update badge count
+                    const remainingNotifications = notificationList.querySelectorAll('[data-notification-id]').length;
+                    if (remainingNotifications > 0) {
+                        notificationBadge.textContent = remainingNotifications;
+                    } else {
+                        notificationBadge.classList.add('hidden');
+                        notificationList.innerHTML = '<div class="text-gray-500 text-center py-4">No records expiring soon</div>';
+                    }
+                });
+            });
+        }
+
+        // Toggle notification dropdown
+        notificationButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            notificationDropdown.classList.toggle('hidden');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
+                notificationDropdown.classList.add('hidden');
             }
         });
-    }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get all necessary elements
-        const searchInput = document.getElementById('recordSearch');
-        const startDateInput = document.getElementById('startDate');
-        const endDateInput = document.getElementById('endDate');
-        const yearFilter = document.getElementById('yearFilter');
-        const tableRows = document.querySelectorAll('table tbody tr');
-        const noResultsMessage = document.getElementById('noResultsMessage');
-        const tableBody = document.querySelector('table tbody');
+        // Initial check for expiring records
+        checkExpiringRecords();
 
-        // Function to check if a date is within 3 months
-        function isWithinThreeMonths(expiryDate) {
-            const today = new Date();
-            const threeMonthsFromNow = new Date();
-            threeMonthsFromNow.setMonth(today.getMonth() + 3);
-            expiryDate = new Date(expiryDate);
-            return expiryDate > today && expiryDate <= threeMonthsFromNow;
-        }
-
-        // Function to check if a date is expired
-        function isExpired(expiryDate) {
-            return new Date(expiryDate) < new Date();
-        }
-
-        // Function to filter records
-        function filterRecords() {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
-            const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
-            const selectedYear = yearFilter.value;
-            let hasResults = false;
-
-            tableRows.forEach(row => {
-                if (row.querySelector('td[colspan]')) return; // Skip "No records" row
-
-                const cells = row.getElementsByTagName('td');
-                let rowText = '';
-                let dateCell = cells[7]; // Date issued cell
-                let expiryDateCell = cells[8]; // Expiry date cell
-                
-                // Get text content for search
-                for (let cell of cells) {
-                    rowText += cell.textContent.toLowerCase() + ' ';
-                }
-
-                // Parse dates
-                const dateIssued = dateCell ? new Date(dateCell.textContent.split('/').reverse().join('-')) : null;
-                const expiryDate = expiryDateCell ? new Date(expiryDateCell.textContent.split('/').reverse().join('-')) : null;
-
-                // Check all filter conditions
-                let showRow = true;
-
-                // Search term filter
-                if (searchTerm && !rowText.includes(searchTerm)) {
-                    showRow = false;
-                }
-
-                // Date range filter
-                if (startDate && endDate) {
-                    if (!dateIssued || dateIssued < startDate || dateIssued > endDate) {
-                        showRow = false;
-                    }
-                }
-
-                // Year filter
-                if (selectedYear && dateIssued && dateIssued.getFullYear().toString() !== selectedYear) {
-                    showRow = false;
-                }
-
-                // Update row visibility and status classes
-                if (showRow) {
-                    row.style.display = '';
-                    hasResults = true;
-                    
-                    // Update status classes
-                    row.classList.remove('active-record', 'expired-record', 'expiring-soon-record');
-                    if (expiryDate) {
-                        if (isExpired(expiryDate)) {
-                            row.classList.add('expired-record');
-                        } else if (isWithinThreeMonths(expiryDate)) {
-                            row.classList.add('expiring-soon-record');
-                        } else {
-                            row.classList.add('active-record');
-                        }
-                    }
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-
-            // Show/hide no results message
-            if (!hasResults) {
-                tableBody.style.display = 'none';
-                if (noResultsMessage) {
-                    noResultsMessage.style.display = 'block';
-                    noResultsMessage.innerHTML = `
-                        <div class="flex items-center justify-center p-8">
-                            <div class="text-center">
-                                <div class="text-gray-500 text-lg mb-2">No records found</div>
-                                <div class="text-gray-400">Try adjusting your search criteria</div>
-                            </div>
-                        </div>
-                    `;
-                }
-            } else {
-                tableBody.style.display = '';
-                if (noResultsMessage) {
-                    noResultsMessage.style.display = 'none';
-                }
-            }
-        }
-
-        // Add event listeners
-        if (searchInput) searchInput.addEventListener('input', filterRecords);
-        if (startDateInput) startDateInput.addEventListener('change', filterRecords);
-        if (endDateInput) endDateInput.addEventListener('change', filterRecords);
-        if (yearFilter) yearFilter.addEventListener('change', filterRecords);
-
-        // Initialize the filter
-        filterRecords();
+        // Check for expiring records periodically (every 5 minutes)
+        setInterval(checkExpiringRecords, 5 * 60 * 1000);
     });
 </script>
 

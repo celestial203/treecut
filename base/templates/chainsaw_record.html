@@ -245,6 +245,28 @@
             </div>
             <!-- User Menu -->
             <div class="hidden md:flex items-center space-x-4">
+                <!-- Add notification bell before the welcome message -->
+                <div class="relative" id="notification-container">
+                    <button class="text-gray-600 hover:text-gray-800 focus:outline-none" id="notification-button">
+                        <div class="relative">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                            <span id="notification-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                        </div>
+                    </button>
+                    
+                    <!-- Notification dropdown -->
+                    <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Expiring Records</h3>
+                            <div id="notification-list" class="space-y-3 max-h-96 overflow-y-auto">
+                                <!-- Notifications will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Existing welcome message and other elements -->
                 <div class="text-lg text-gray-900 font-medium">
                     Welcome, {{ request.user.username }}
                 </div>
@@ -1433,6 +1455,124 @@
             }
         });
     });
+</script>
+
+<!-- Add this script before the closing body tag -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const notificationButton = document.getElementById('notification-button');
+    const notificationDropdown = document.getElementById('notification-dropdown');
+    const notificationBadge = document.getElementById('notification-badge');
+    const notificationList = document.getElementById('notification-list');
+    
+    // Store dismissed notifications
+    let dismissedNotifications = new Set();
+
+    // Function to check for expiring records
+    function checkExpiringRecords() {
+        const rows = document.querySelectorAll('tbody tr');
+        const expiringRecords = [];
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        rows.forEach(row => {
+            if (row.querySelector('td[colspan="5"]')) return;
+
+            const expiryDateCell = row.querySelector('td:nth-child(16)'); // Adjust index for expiry date column
+            if (expiryDateCell) {
+                const expiryDate = new Date(expiryDateCell.textContent);
+                const threeMonthsBeforeExpiry = new Date(expiryDate);
+                threeMonthsBeforeExpiry.setMonth(expiryDate.getMonth() - 3);
+
+                const notificationId = `chainsaw-${row.dataset.recordId}-${expiryDateCell.textContent}`;
+                
+                if (today >= threeMonthsBeforeExpiry && today < expiryDate && !dismissedNotifications.has(notificationId)) {
+                    const ownerCell = row.querySelector('td:nth-child(5)');
+                    const serialNumberCell = row.querySelector('td:nth-child(13)');
+                    const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+
+                    expiringRecords.push({
+                        id: notificationId,
+                        owner: ownerCell.textContent,
+                        serialNumber: serialNumberCell.textContent,
+                        expiryDate: expiryDate,
+                        daysUntilExpiry
+                    });
+                }
+            }
+        });
+
+        // Update notification badge
+        if (expiringRecords.length > 0) {
+            notificationBadge.textContent = expiringRecords.length;
+            notificationBadge.classList.remove('hidden');
+        } else {
+            notificationBadge.classList.add('hidden');
+        }
+
+        // Update notification list
+        notificationList.innerHTML = expiringRecords.length > 0 
+            ? expiringRecords.map(record => `
+                <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-100 relative" data-notification-id="${record.id}">
+                    <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 focus:outline-none close-notification">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                    <div class="font-semibold text-gray-900">${record.owner}</div>
+                    <div class="text-sm text-gray-600">Serial No: ${record.serialNumber}</div>
+                    <div class="text-sm text-red-600 mt-1">
+                        Expires in ${record.daysUntilExpiry} days
+                        (${record.expiryDate.toLocaleDateString()})
+                    </div>
+                </div>
+            `).join('')
+            : '<div class="text-gray-500 text-center py-4">No records expiring soon</div>';
+
+        // Add event listeners to close buttons
+        document.querySelectorAll('.close-notification').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const notification = this.closest('[data-notification-id]');
+                const notificationId = notification.dataset.notificationId;
+                
+                // Add to dismissed set
+                dismissedNotifications.add(notificationId);
+                
+                // Remove the notification
+                notification.remove();
+                
+                // Update badge count
+                const remainingNotifications = notificationList.querySelectorAll('[data-notification-id]').length;
+                if (remainingNotifications > 0) {
+                    notificationBadge.textContent = remainingNotifications;
+                } else {
+                    notificationBadge.classList.add('hidden');
+                    notificationList.innerHTML = '<div class="text-gray-500 text-center py-4">No records expiring soon</div>';
+                }
+            });
+        });
+    }
+
+    // Toggle notification dropdown
+    notificationButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        notificationDropdown.classList.toggle('hidden');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
+            notificationDropdown.classList.add('hidden');
+        }
+    });
+
+    // Initial check for expiring records
+    checkExpiringRecords();
+
+    // Check for expiring records periodically (every 5 minutes)
+    setInterval(checkExpiringRecords, 5 * 60 * 1000);
+});
 </script>
 </body>
 </html>
