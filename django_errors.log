@@ -13851,3 +13851,5 @@ Traceback (most recent call last):
                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 TypeError: '>' not supported between instances of 'datetime.datetime' and 'datetime.date'
 ERROR 2025-03-13 13:28:08,393 basehttp "POST /wood/ HTTP/1.1" 500 100998
+WARNING 2025-03-13 14:34:59,364 log Not Found: /favicon.ico
+WARNING 2025-03-13 14:34:59,365 basehttp "GET /favicon.ico HTTP/1.1" 404 10029

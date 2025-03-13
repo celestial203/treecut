@@ -504,7 +504,7 @@ class Wood(models.Model):
     # Dates
     date_issued = models.DateField()
     date_released = models.DateField(default=timezone.now)
-    expiry_date = models.DateField()
+    expiry_date = models.DateField(default=timezone.now)
     
     # Approval and Status
     approved_by = models.CharField(max_length=200, null=True, blank=True, default='')
