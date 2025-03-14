@@ -187,20 +187,40 @@
             <form method="POST" enctype="multipart/form-data" action="{% url 'update_wood' wood.id %}" class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 {% csrf_token %}
                 
+                <!-- Wood Status -->
+                <div class="form-group">
+                    <label for="id_status" class="block text-sm font-medium text-gray-700 required">Wood Status</label>
+                    <select name="status" 
+                            id="id_status" 
+                            required
+                            autocomplete="off"
+                            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                        <option value="Active (New)" {% if wood.status == 'Active (New)' %}selected{% endif %}>Active (New)</option>
+                        <option value="Active (Renewed)" {% if wood.status == 'Active (Renewed)' %}selected{% endif %}>Active (Renewed)</option>
+                        <option value="Expired" {% if wood.status == 'Expired' %}selected{% endif %}>Expired</option>
+                        <option value="Suspended" {% if wood.status == 'Suspended' %}selected{% endif %}>Suspended</option>
+                        <option value="Cancelled" {% if wood.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+                
                 <!-- Name -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Name</label>
+                    <label for="id_name" class="block text-sm font-medium text-gray-700">Name</label>
                     <input type="text" 
+                           id="id_name"
                            name="name" 
                            value="{{ wood.name }}"
                            required
+                           autocomplete="name"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
                 <!-- Type -->
                 <div class="form-group">
                     <label for="id_type" class="block text-sm font-medium text-gray-700">Type</label>
-                    <select name="type" id="id_type" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
+                    <select name="type" 
+                            id="id_type" 
+                            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
                         {% for value, display_name in type_choices %}
                             <option value="{{ value }}" {% if wood.type == value %}selected{% endif %}>{{ display_name }}</option>
                         {% endfor %}
@@ -209,8 +229,9 @@
                 
                 <!-- Integrated -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Integrated</label>
+                    <label for="id_integrated" class="block text-sm font-medium text-gray-700">Integrated</label>
                     <select name="integrated" 
+                            id="id_integrated"
                             class="form-select mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                         <option value="Applicable" {% if wood.integrated == 'Applicable' %}selected{% endif %}>Applicable</option>
                         <option value="Not Applicable" {% if wood.integrated == 'Not Applicable' %}selected{% endif %}>Not Applicable</option>
@@ -219,157 +240,187 @@
                 
                 <!-- WPP Number -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">WPP Number</label>
+                    <label for="id_wpp_number" class="block text-sm font-medium text-gray-700">WPP Number</label>
                     <input type="text" 
+                           id="id_wpp_number"
                            name="wpp_number" 
                            value="{{ wood.wpp_number }}"
                            required
+                           autocomplete="off"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
                 <!-- Business -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Business</label>
+                    <label for="id_business" class="block text-sm font-medium text-gray-700">Business</label>
                     <input type="text" 
+                           id="id_business"
                            name="business" 
                            value="{{ wood.business }}"
+                           autocomplete="organization"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
                 <!-- Plant -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Plant</label>
+                    <label for="id_plant" class="block text-sm font-medium text-gray-700">Plant</label>
                     <input type="text" 
+                           id="id_plant"
                            name="plant" 
                            value="{{ wood.plant }}"
+                           autocomplete="off"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
                 <!-- DRC -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">DRC (cu.m)</label>
+                    <label for="id_drc" class="block text-sm font-medium text-gray-700">DRC (cu.m)</label>
                     <input type="number" 
+                           id="id_drc"
                            name="drc" 
                            value="{{ wood.drc }}"
                            step="0.01"
+                           autocomplete="off"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
                            onchange="calculateALR()">
                 </div>
                 
                 <!-- ALR -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">ALR (m³)</label>
+                    <label for="id_alr" class="block text-sm font-medium text-gray-700">ALR (m³)</label>
                     <input type="number" 
+                           id="id_alr"
                            name="alr" 
                            value="{{ wood.alr }}"
                            step="0.01"
                            readonly
+                           autocomplete="off"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-50">
                     <p class="text-sm text-gray-500 mt-1">Automatically calculated from DRC</p>
                 </div>
                 
                 <!-- Longitude -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Longitude</label>
-                    <input type="number" 
+                    <label for="id_longitude" class="block text-sm font-medium text-gray-700">Longitude</label>
+                    <input type="text" 
+                           id="id_longitude"
                            name="longitude" 
                            value="{{ wood.longitude }}"
-                           placeholder="e.g., 123.305953"
+                           placeholder=""
+                           autocomplete="off"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
                 <!-- Latitude -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Latitude</label>
+                    <label for="id_latitude" class="block text-sm font-medium text-gray-700">Latitude</label>
                     <input type="text" 
+                           id="id_latitude"
                            name="latitude" 
                            value="{{ wood.latitude }}"
-                           placeholder="e.g., 9.990572"
+                           placeholder=""
+                           autocomplete="off"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
                 <!-- Supplier Info -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Supplier Info</label>
+                    <label for="id_supplier_info" class="block text-sm font-medium text-gray-700">Supplier Info</label>
                     <input type="text" 
+                           id="id_supplier_info"
                            name="supplier_info" 
                            value="{{ wood.supplier_info }}"
                            placeholder=""
+                           autocomplete="off"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
                 <!-- Local Volume -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Local Volume</label>
+                    <label for="id_local_volume" class="block text-sm font-medium text-gray-700">Local Volume</label>
                     <input type="number" 
+                           id="id_local_volume"
                            name="local_volume" 
                            value="{{ wood.local_volume }}"
                            step="0.01"
+                           autocomplete="off"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
-                <!-- Imported Volume (Optional) -->
+                <!-- Imported Volume -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Imported Volume (Optional)</label>
+                    <label for="id_imported_volume" class="block text-sm font-medium text-gray-700">Imported Volume (Optional)</label>
                     <input type="number" 
+                           id="id_imported_volume"
                            name="imported_volume" 
                            value="{{ wood.imported_volume|default:'' }}"
                            step="0.01"
+                           autocomplete="off"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
-                <!-- Area (Optional) -->
+                <!-- Area -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Area (ha) (Optional)</label>
+                    <label for="id_area" class="block text-sm font-medium text-gray-700">Area (ha) (Optional)</label>
                     <input type="number" 
+                           id="id_area"
                            name="area" 
                            value="{{ wood.area|default:'' }}"
                            step="0.01"
+                           autocomplete="off"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
                 <!-- Date Issued -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Date Issued</label>
+                    <label for="id_date_issued" class="block text-sm font-medium text-gray-700">Date Issued</label>
                     <input type="date" 
+                           id="id_date_issued"
                            name="date_issued" 
                            value="{{ wood.date_issued|date:'Y-m-d' }}"
                            required
+                           autocomplete="off"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
                            onchange="updateExpiryDate()">
                 </div>
                 
                 <!-- Date Released -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Date Released</label>
+                    <label for="id_date_released" class="block text-sm font-medium text-gray-700">Date Released</label>
                     <input type="date" 
+                           id="id_date_released"
                            name="date_released" 
                            value="{{ wood.date_released|date:'Y-m-d' }}"
+                           autocomplete="off"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
                 <!-- Expiry Date -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                    <label for="id_expiry_date" class="block text-sm font-medium text-gray-700">Expiry Date</label>
                     <input type="date" 
+                           id="id_expiry_date"
                            name="expiry_date" 
                            value="{{ wood.expiry_date|date:'Y-m-d' }}"
                            required
+                           autocomplete="off"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
                 <!-- Approved By -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Approved By</label>
+                    <label for="id_approved_by" class="block text-sm font-medium text-gray-700">Approved By</label>
                     <input type="text" 
+                           id="id_approved_by"
                            name="approved_by" 
                            value="{{ wood.approved_by }}"
+                           autocomplete="off"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
 
                 {% if wood.attachment %}
                 <div class="mt-6">
-                    <label class="block text-sm font-medium text-gray-700">Current File</label>
+                    <div class="block text-sm font-medium text-gray-700">Current File</div>
                     <div class="mt-1 flex items-center">
                         <span class="text-sm text-gray-500">{{ wood.attachment.name }}</span>
                         <a href="{{ wood.attachment.url }}" target="_blank" class="ml-2 text-blue-600 hover:text-blue-800">
@@ -381,9 +432,11 @@
 
                 <!-- File Attachment -->
                 <div class="mt-6">
-                    <label class="block text-sm font-medium text-gray-700">Replace File</label>
+                    <label for="id_attachment" class="block text-sm font-medium text-gray-700">Replace File</label>
                     <input type="file" 
+                           id="id_attachment"
                            name="attachment" 
+                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                            class="form-input mt-1 w-full">
                     <p class="text-sm text-gray-500 mt-1">Leave empty to keep the current file</p>
                 </div>
@@ -543,7 +596,6 @@
             e.preventDefault();
             
             if (!validateForm()) {
-                console.error('Form validation failed');
                 Swal.fire({
                     title: 'Validation Error',
                     text: 'Please correct the errors in the form before submitting.',
@@ -553,84 +605,66 @@
                 });
                 return;
             }
+
+            // Show loading state
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>Updating...`;
             
             try {
                 const formData = new FormData(this);
-                
-                // Add CSRF token if not already in the form
-                if (!formData.has('csrfmiddlewaretoken')) {
-                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                    formData.append('csrfmiddlewaretoken', csrfToken);
-                }
-                
-                console.log('Submitting form data...');
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 
                 const response = await fetch(this.action, {
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                    }
+                        'X-CSRFToken': csrfToken
+                    },
+                    credentials: 'same-origin'
                 });
-                
-                console.log('Response status:', response.status);
-                
-                // Try to get response text first for debugging
-                const responseText = await response.text();
-                console.log('Response text:', responseText);
-                
-                // Then parse as JSON if possible
-                let result;
-                try {
-                    result = JSON.parse(responseText);
-                    console.log('Response data:', result);
-                } catch (error) {
-                    console.error('Error parsing JSON response:', error);
-                    document.getElementById('form-errors').textContent = 'Server response: ' + responseText;
-                    document.getElementById('form-errors').classList.remove('hidden');
-                    throw new Error('Invalid server response');
+
+                // Reset button state
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonText;
+
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
                 }
 
-                if (response.ok && result.success) {
-                    console.log('Form submission successful');
-                    
-                    // Show success message
-                    Swal.fire({
-                        title: 'Success!',
-                        text: result.message || 'Wood record has been successfully updated',
-                        icon: 'success',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#10B981',
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Redirect to records page
-                            window.location.href = "{% url 'wood_records' %}";
-                        }
-                    });
-                } else {
-                    console.error('Form submission failed:', result);
-                    
-                    // Show error message
-                    Swal.fire({
-                        title: 'Error!',
-                        text: result.message || 'There was a problem updating the record. Please try again.',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#EF4444',
-                    });
-                    
-                    // Display detailed errors if available
-                    if (result.errors) {
-                        document.getElementById('form-errors').textContent = 'Validation errors: ' + JSON.stringify(result.errors);
-                        document.getElementById('form-errors').classList.remove('hidden');
-                    }
+                if (!response.ok) {
+                    throw new Error(`Server error (${response.status}): Please try again or contact support if the problem persists.`);
                 }
+
+                // Show success message before redirecting
+                await Swal.fire({
+                    title: 'Success!',
+                    text: 'Record updated successfully',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#22c55e', // Green color
+                    timer: 2000, // Auto close after 2 seconds
+                    timerProgressBar: true
+                });
+
+                // Redirect to wood records page
+                window.location.href = "{% url 'wood_records' %}";
+
             } catch (error) {
                 console.error('Error during form submission:', error);
                 
+                // Reset button state
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonText;
+
                 Swal.fire({
                     title: 'Error!',
-                    text: 'There was a problem connecting to the server. Please try again.',
+                    text: error.message || 'There was a problem submitting the form. Please try again.',
                     icon: 'error',
                     confirmButtonText: 'OK',
                     confirmButtonColor: '#EF4444',

@@ -84,6 +84,39 @@
         </div>
     </nav>
 
+    <!-- Add this after the navigation bar -->
+    <div id="notification-container" class="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+        <div id="expiryNotification" class="hidden">
+            <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-md shadow-md">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700" id="expiryNotificationText">
+                            You have <span id="expiryCount" class="font-bold">0</span> records that expired today.
+                        </p>
+                        <div class="mt-2" id="expiredRecordsList">
+                            <!-- Expired records will be listed here -->
+                        </div>
+                    </div>
+                    <div class="ml-auto pl-3">
+                        <div class="-mx-1.5 -my-1.5">
+                            <button id="closeNotificationBtn" class="inline-flex rounded-md p-1.5 text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-600">
+                                <span class="sr-only">Dismiss</span>
+                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Content Section -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-8">
         <h1 class="text-4xl font-extrabold text-green-800 text-center font-serif mb-8">WOOD PROCESSING PLANT DASHBOARD</h1>
@@ -197,6 +230,61 @@
             }
         });
     }
+</script>
+
+<!-- Add this script before the closing body tag -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function checkExpiredRecords() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Get all wood records from your data
+        const woodRecords = document.querySelectorAll('[data-record-date]');
+        const expiredRecords = [];
+        
+        woodRecords.forEach(record => {
+            const issuedDate = new Date(record.dataset.recordDate);
+            const expiryDate = new Date(issuedDate);
+            expiryDate.setFullYear(issuedDate.getFullYear() + 5); // 5 years from issued date
+            
+            if (expiryDate.toDateString() === today.toDateString()) {
+                expiredRecords.push({
+                    name: record.dataset.recordName,
+                    wppNumber: record.dataset.recordWpp
+                });
+            }
+        });
+        
+        const notification = document.getElementById('expiryNotification');
+        const count = document.getElementById('expiryCount');
+        const list = document.getElementById('expiredRecordsList');
+        
+        if (expiredRecords.length > 0) {
+            count.textContent = expiredRecords.length;
+            
+            // Create the list of expired records
+            list.innerHTML = expiredRecords.map(record => `
+                <div class="text-sm text-red-600 mt-1">
+                    ${record.name} (WPP: ${record.wppNumber})
+                </div>
+            `).join('');
+            
+            notification.classList.remove('hidden');
+        }
+        
+        // Add close button functionality
+        const closeBtn = document.getElementById('closeNotificationBtn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                notification.classList.add('hidden');
+            });
+        }
+    }
+    
+    // Run the check when the page loads
+    checkExpiredRecords();
+});
 </script>
 
 </body>

@@ -1072,49 +1072,52 @@
 
                 function updateNotifications() {
                     const rows = document.querySelectorAll('tbody tr');
-                    const expiringRecords = [];
+                    const expiredRecords = [];
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
 
                     rows.forEach(row => {
                         if (row.querySelector('td[colspan]')) return;
 
-                        const expiryDateCell = row.querySelector('td:nth-child(17)');
-                        if (expiryDateCell) {
-                            const expiryDate = new Date(expiryDateCell.textContent.trim());
-                            const threeMonthsBeforeExpiry = new Date(expiryDate);
-                            threeMonthsBeforeExpiry.setMonth(expiryDate.getMonth() - 3);
-
-                            const notificationId = `wood-${row.dataset.recordId}-${expiryDateCell.textContent}`;
+                        const issuedDateCell = row.querySelector('td:nth-child(16)'); // Adjust index based on your issued date column
+                        if (issuedDateCell) {
+                            const issuedDate = new Date(issuedDateCell.textContent.trim());
+                            const expiryDate = new Date(issuedDate);
+                            expiryDate.setFullYear(issuedDate.getFullYear() + 5); // Add 5 years to issued date
                             
-                            if (today >= threeMonthsBeforeExpiry && today < expiryDate && !dismissedNotifications.has(notificationId)) {
+                            const notificationId = `wood-${row.dataset.recordId}-${expiryDate.toISOString()}`;
+                            
+                            // Check if the record expires today
+                            if (
+                                expiryDate.toDateString() === today.toDateString() && 
+                                !dismissedNotifications.has(notificationId)
+                            ) {
                                 const nameCell = row.querySelector('td:nth-child(1)');
-                                const wppNumberCell = row.querySelector('td:nth-child(4)');
-                                const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+                                const wppNumberCell = row.querySelector('td:nth-child(3)');
 
-                                expiringRecords.push({
+                                expiredRecords.push({
                                     id: notificationId,
                                     name: nameCell.textContent.trim(),
                                     wppNumber: wppNumberCell.textContent.trim(),
-                                    expiryDate,
-                                    daysUntilExpiry
+                                    issuedDate: issuedDate,
+                                    expiryDate: expiryDate
                                 });
                             }
                         }
                     });
 
                     // Update notification badge
-                    if (expiringRecords.length > 0) {
-                        notificationBadge.textContent = expiringRecords.length;
+                    if (expiredRecords.length > 0) {
+                        notificationBadge.textContent = expiredRecords.length;
                         notificationBadge.classList.remove('hidden');
                     } else {
                         notificationBadge.classList.add('hidden');
                     }
 
                     // Update notification list
-                    notificationList.innerHTML = expiringRecords.length > 0 
-                        ? expiringRecords.map(record => `
-                            <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-100 relative mb-2" data-notification-id="${record.id}">
+                    notificationList.innerHTML = expiredRecords.length > 0 
+                        ? expiredRecords.map(record => `
+                            <div class="p-3 bg-red-50 rounded-lg border border-red-100 relative mb-2" data-notification-id="${record.id}">
                                 <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 focus:outline-none close-notification">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -1122,9 +1125,11 @@
                                 </button>
                                 <div class="font-semibold text-gray-900">${record.name}</div>
                                 <div class="text-sm text-gray-600">WPP Number: ${record.wppNumber}</div>
-                                <div class="text-sm text-red-600 mt-1">
-                                    Expires in ${record.daysUntilExpiry} days
-                                    (${record.expiryDate.toLocaleDateString()})
+                                <div class="text-sm text-red-600 mt-1 font-bold">
+                                    EXPIRED TODAY
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    Issued: ${record.issuedDate.toLocaleDateString()}
                                 </div>
                             </div>
                         `).join('')
