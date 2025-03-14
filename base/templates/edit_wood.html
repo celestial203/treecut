@@ -271,9 +271,10 @@
                 <!-- Longitude -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Longitude</label>
-                    <input type="text" 
+                    <input type="number" 
                            name="longitude" 
                            value="{{ wood.longitude }}"
+                           placeholder="e.g., 123.305953"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
@@ -283,6 +284,7 @@
                     <input type="text" 
                            name="latitude" 
                            value="{{ wood.latitude }}"
+                           placeholder="e.g., 9.990572"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
@@ -306,22 +308,23 @@
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
-                <!-- Imported Volume -->
+                <!-- Imported Volume (Optional) -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Imported Volume</label>
+                    <label class="block text-sm font-medium text-gray-700">Imported Volume (Optional)</label>
                     <input type="number" 
                            name="imported_volume" 
-                           value="{{ wood.imported_volume }}"
+                           value="{{ wood.imported_volume|default:'' }}"
                            step="0.01"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 
-                <!-- Area -->
+                <!-- Area (Optional) -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700">Area</label>
-                    <input type="text" 
+                    <label class="block text-sm font-medium text-gray-700">Area (ha) (Optional)</label>
+                    <input type="number" 
                            name="area" 
-                           value="{{ wood.area }}"
+                           value="{{ wood.area|default:'' }}"
+                           step="0.01"
                            class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                 </div>
                 

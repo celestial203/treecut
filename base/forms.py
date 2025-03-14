@@ -168,39 +168,10 @@ class ChainsawForm(forms.ModelForm):
 class WoodForm(forms.ModelForm):
     class Meta:
         model = Wood
-        fields = [
-            'name', 'type', 'wpp_number', 'integrated', 
-            'business', 'plant', 'drc', 'alr',
-            'longitude', 'latitude', 'supplier_info',
-            'local_volume', 'imported_volume', 'area',
-            'approved_by', 'date_issued', 'date_released',
-            'expiry_date', 'wood_status', 'attachment'
-        ]
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-input', 'required': True}),
-            'type': forms.Select(attrs={'class': 'form-input', 'required': True}),
-            'wpp_number': forms.TextInput(attrs={'class': 'form-input', 'required': True}),
-            'business': forms.TextInput(attrs={'class': 'form-input', 'required': True}),
-            'plant': forms.TextInput(attrs={'class': 'form-input', 'required': True}),
-            'drc': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.01', 'required': True}),
-            'area': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.01', 'required': True}),
-            'approved_by': forms.TextInput(attrs={'class': 'form-input', 'required': True}),
-            'date_issued': forms.DateInput(attrs={'type': 'date', 'class': 'form-input', 'required': True}),
-            'date_released': forms.DateInput(attrs={'type': 'date', 'class': 'form-input', 'required': True}),
-            'expiry_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-input', 'readonly': True}),
-            'wood_status': forms.Select(attrs={'class': 'form-input', 'required': True}),
-            
-            # These fields might be causing issues if they're required in the model but not marked as required here
-            'longitude': forms.NumberInput(attrs={'class': 'form-input', 'step': 'any', 'required': True}),
-            'latitude': forms.NumberInput(attrs={'class': 'form-input', 'step': 'any', 'required': True}),
-            
-            # Optional fields
-            'integrated': forms.TextInput(attrs={'class': 'form-input'}),
-            'supplier_info': forms.TextInput(attrs={'class': 'form-input'}),
-            'local_volume': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.001'}),
-            'imported_volume': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.001'}),
-            'attachment': forms.FileInput(attrs={'class': 'form-input'})
-        }
+        fields = ['name', 'type', 'wpp_number', 'integrated', 'business', 'plant', 
+                 'drc', 'alr', 'longitude', 'latitude', 'supplier_info', 
+                 'local_volume', 'imported_volume', 'area', 'approved_by',
+                 'date_issued', 'date_released', 'expiry_date', 'wood_status', 'attachment']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -269,16 +240,22 @@ class WoodForm(forms.ModelForm):
         if drc is not None and drc <= 0:
             self.add_error('drc', 'DRC must be greater than 0')
 
-        # Validate area
-        area = cleaned_data.get('area')
-        if area is not None and area <= 0:
-            self.add_error('area', 'Area must be greater than 0')
+        # Only validate that expiry date is not before issue date
+        if date_issued and expiry_date and expiry_date < date_issued:
+            raise ValidationError({
+                'expiry_date': 'Expiry date cannot be before the issue date.'
+            })
 
         return cleaned_data
 
     def clean_date_issued(self):
         date_issued = self.cleaned_data.get('date_issued')
         return date_issued
+
+    def clean_alr(self):
+        alr = self.cleaned_data.get('alr')
+        # Remove any specific decimal place validation
+        return alr
 
 # CuttingRecordForm
 class CuttingRecordForm(forms.ModelForm):

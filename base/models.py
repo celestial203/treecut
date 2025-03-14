@@ -449,27 +449,25 @@ class Wood(models.Model):
         help_text="DRC in cubic meters",
         default=Decimal('0.00')
     )
-    alr = models.DecimalField(
-        max_digits=10, 
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.00'))],
-        help_text="ALR in cubic meters",
+    alr = models.CharField(  # Changed from DecimalField to CharField
+        max_length=20,
         null=True,
-        blank=True
+        blank=True,
+        help_text="Annual Log Requirement (ALR)"
     )
     
     # Location Information
-    latitude = models.DecimalField(
-        max_digits=9, 
-        decimal_places=6,
+    latitude = models.CharField(
+        max_length=20,
         null=True,
-        blank=True
+        blank=True,
+        help_text="Enter latitude (e.g., 9.990572)"
     )
-    longitude = models.DecimalField(
-        max_digits=9, 
-        decimal_places=6,
+    longitude = models.CharField(
+        max_length=20,
         null=True,
-        blank=True
+        blank=True,
+        help_text="Enter longitude (e.g., 123.305953)"
     )
     supplier_info = models.CharField(
         max_length=500, 
@@ -487,18 +485,16 @@ class Wood(models.Model):
         default=Decimal('0.000')
     )
     imported_volume = models.DecimalField(
-        max_digits=10, 
-        decimal_places=3,
-        validators=[MinValueValidator(Decimal('0.000'))],
-        help_text="Imported volume in cubic meters",
-        default=Decimal('0.000')
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
     )
     area = models.DecimalField(
         max_digits=10, 
         decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.00'))],
-        help_text="Area in hectares",
-        default=Decimal('0.00')
+        null=True,
+        blank=True
     )
     
     # Dates

@@ -364,6 +364,7 @@
         .date-picker-wrapper input[type="text"] {
             width: 100%;
             padding: 0.5rem;
+            padding-right: 2rem; /* Space for calendar icon */
             border: 1px solid #e2e8f0;
             border-radius: 0.375rem;
             background-color: #f8fafc;
@@ -617,10 +618,9 @@
                     </div>
                     <div>
                         <label for="id_alr" class="block text-sm font-medium text-gray-700">ALR (m³)</label>
-                        <input type="number" 
+                        <input type="text"
                                id="id_alr"
                                name="alr"
-                               step="0.01" 
                                class="form-input mt-1 w-full" 
                                autocomplete="off"
                                readonly>
@@ -633,21 +633,21 @@
                     <div class="grid grid-cols-2 gap-6">
                         <div>
                             <label for="id_longitude" class="block text-sm font-medium text-gray-700">Longitude</label>
-                            <input type="text" 
+                            <input type="number" 
                                    id="id_longitude"
                                    name="longitude" 
-                                   class="form-input mt-1 w-full" 
-                                   autocomplete="off"
-                                   required>
+                                   placeholder=""
+                                   class="form-input mt-1 w-full"
+                                   autocomplete="off">
                         </div>
                         <div>
                             <label for="id_latitude" class="block text-sm font-medium text-gray-700">Latitude</label>
-                            <input type="text" 
+                            <input type="number" 
                                    id="id_latitude"
                                    name="latitude" 
-                                   class="form-input mt-1 w-full" 
-                                   autocomplete="off"
-                                   required>
+                                   placeholder=""
+                                   class="form-input mt-1 w-full"
+                                   autocomplete="off">
                         </div>
                     </div>
                 </div>
@@ -674,14 +674,15 @@
                     <div class="grid grid-cols-2 gap-6">
                         <div>
                             <label for="id_local_volume" class="block text-sm font-medium text-gray-700">Local</label>
-                            <input type="text" 
+                            <input type="number" 
                                    id="id_local_volume"
                                    name="local_volume" 
+                                   step="0.01"
                                    class="form-input mt-1 w-full"
                                    autocomplete="off">
                         </div>
                         <div>
-                            <label for="id_imported_volume" class="block text-sm font-medium text-gray-700">Imported</label>
+                            <label for="id_imported_volume" class="block text-sm font-medium text-gray-700">Imported (Optional)</label>
                             <input type="number" 
                                    id="id_imported_volume"
                                    name="imported_volume"
@@ -695,14 +696,13 @@
                 <!-- Additional Fields -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label for="id_area" class="block text-sm font-medium text-gray-700">Area (ha)</label>
+                        <label for="id_area" class="block text-sm font-medium text-gray-700">Area (ha) (Optional)</label>
                         <input type="number" 
                                id="id_area"
                                name="area"
                                step="0.01" 
-                               class="form-input mt-1 w-full" 
-                               autocomplete="off"
-                               required>
+                               class="form-input mt-1 w-full"
+                               autocomplete="off">
                     </div>
                     <div>
                         <label for="id_approved_by" class="block text-sm font-medium text-gray-700">Approved by</label>
@@ -895,8 +895,8 @@
                 
                 if (drcInput && alrInput) {
                     const drc = parseFloat(drcInput.value) || 0;
-                    const alr = drc * 290 * 0.80;
-                    alrInput.value = alr.toFixed(2);
+                    const alr = drc * 0.80 * 290;
+                    alrInput.value = alr.toFixed(1);
                 }
             }
 
@@ -923,6 +923,78 @@
                     });
                 }
             }
+
+            // Add date format customization
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                // Create a wrapper div
+                const wrapper = document.createElement('div');
+                wrapper.className = 'date-picker-wrapper';
+                wrapper.style.position = 'relative';
+                
+                // Create a text display input (shows MM/DD/YYYY)
+                const displayInput = document.createElement('input');
+                displayInput.type = 'text';
+                displayInput.className = input.className;
+                displayInput.placeholder = 'MM/DD/YYYY';
+                displayInput.readOnly = true; // Make it read-only
+                
+                // Create the actual date picker (hidden but functional)
+                const datePicker = document.createElement('input');
+                datePicker.type = 'date';
+                datePicker.name = input.name;
+                datePicker.required = input.required;
+                datePicker.value = input.value;
+                datePicker.style.position = 'absolute';
+                datePicker.style.top = '0';
+                datePicker.style.left = '0';
+                datePicker.style.width = '100%';
+                datePicker.style.height = '100%';
+                datePicker.style.opacity = '0';
+                datePicker.style.cursor = 'pointer';
+                
+                // If there's an initial value, format it for display
+                if (input.value) {
+                    const date = new Date(input.value);
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const year = date.getFullYear();
+                    displayInput.value = `${month}/${day}/${year}`;
+                }
+                
+                // When date picker changes, update the display
+                datePicker.addEventListener('change', function() {
+                    if (this.value) {
+                        const date = new Date(this.value);
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        const year = date.getFullYear();
+                        displayInput.value = `${month}/${day}/${year}`;
+                    } else {
+                        displayInput.value = '';
+                    }
+                });
+                
+                // Add calendar icon (black SVG instead of emoji)
+                const calendarIcon = document.createElement('div');
+                calendarIcon.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" viewBox="0 0 16 16">
+                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                    </svg>
+                `;
+                calendarIcon.style.position = 'absolute';
+                calendarIcon.style.right = '10px';
+                calendarIcon.style.top = '50%';
+                calendarIcon.style.transform = 'translateY(-50%)';
+                calendarIcon.style.pointerEvents = 'none';
+                
+                // Add elements to wrapper
+                wrapper.appendChild(displayInput);
+                wrapper.appendChild(datePicker);
+                wrapper.appendChild(calendarIcon);
+                
+                // Replace original input with our custom implementation
+                input.parentNode.replaceChild(wrapper, input);
+            });
         });
     </script>
 </body>

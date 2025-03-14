@@ -512,209 +512,111 @@
                 <div class="inline-block min-w-full">
                     <div class="overflow-hidden">
                         <table class="min-w-full divide-y divide-gray-200">
+                            <!-- Table Headers -->
                             <thead class="bg-gray-50 sticky top-0 z-10">
-                        <tr>
-                          
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Name
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Type
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Integrated
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                WPP Number
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Business
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Plant
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                DRC (cu.m)
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                ALR (m³)
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Longitude
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Latitude
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Supplier Info
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Local Volume
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Imported Volume
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Area
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Date Issued
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Date Released
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Expiry Date
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Approved By
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Status
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Attachment
-                            </th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% if wood_records %}
-                            {% for record in wood_records %}
-                            <tr class="hover:bg-gray-50 cursor-pointer" data-status="{{ record.get_wood_status_display|lower }}" data-record-id="{{ record.id }}">
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.name }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.get_type_display }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.integrated }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.wpp_number }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.business }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.plant }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.drc }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.alr }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.longitude }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.latitude }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {% if record.supplier_info and record.supplier_info != "None" and record.supplier_info != "" %}
-                                        {{ record.supplier_info }}
-                                    {% else %}
-                                        <span class="text-gray-500">No supplier info</span>
-                                    {% endif %}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.local_volume }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.imported_volume }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.area }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.date_issued|date:"M d, Y" }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.date_released|date:"M d, Y" }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.expiry_date|date:"M d, Y" }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.approved_by }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {{ record.get_wood_status_display }}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    {% if record.attachment %}
-                                        <a href="{{ record.attachment.url }}" class="text-blue-600 hover:underline" target="_blank">View File</a>
-                                    {% else %}
-                                        No file
-                                    {% endif %}
-                                </td>
-                                <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                    <div class="flex space-x-2">
-                                        <a href="{% url 'wood_detail' record.id %}" class="text-blue-400 hover:text-blue-900">
-                                            <span class="font-bold">View</span>
-                                        </a>
-                                        
-                                        <a href="{% url 'edit_wood' record.id %}" class="text-orange-400 hover:text-orange-700">
-                                            <span class="font-bold">Edit</span>
-                                        </a>
-                                        
-                                       
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="22" class="px-6 py-3 text-center text-xs text-gray-900">
-                                    No wood records found
-                                </td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-                
-                <!-- No Results Message -->
-                <div id="noResultsMessage" class="hidden bg-white rounded-lg shadow-lg my-4">
-                    <!-- Message will be inserted here by JavaScript -->
-                </div>
-            </div>
-            
-            <!-- Pagination -->
-            {% if wood_records.has_other_pages %}
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div class="text-sm text-gray-700" id="resultsCounter">
-                        Showing {{ wood_records.start_index }} to {{ wood_records.end_index }} of {{ wood_records.paginator.count }} records
+                                <tr>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                        Name
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                        Type
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                        WPP Number
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                        Business
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                        Plant
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% if wood_records %}
+                                    {% for record in wood_records %}
+                                    <tr class="hover:bg-gray-50 cursor-pointer" data-status="{{ record.get_wood_status_display|lower }}" data-record-id="{{ record.id }}">
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap uppercase">
+                                            {{ record.name }}
+                                        </td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap uppercase">
+                                            {{ record.get_type_display }}
+                                        </td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap uppercase">
+                                            {{ record.wpp_number }}
+                                        </td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap uppercase">
+                                            {{ record.business }}
+                                        </td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap uppercase">
+                                            {{ record.plant }}
+                                        </td>
+                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
+                                            <div class="flex space-x-2">
+                                                <a href="{% url 'wood_detail' record.id %}" class="text-blue-400 hover:text-blue-900">
+                                                    <span class="font-bold">View</span>
+                                                </a>
+                                                <a href="{% url 'edit_wood' record.id %}" class="text-orange-400 hover:text-orange-700">
+                                                    <span class="font-bold">Edit</span>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="px-6 py-3 text-center text-xs text-gray-900">
+                                            No wood records found
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                        
+                        <!-- No Results Message -->
+                        <div id="noResultsMessage" class="hidden bg-white rounded-lg shadow-lg my-4">
+                            <!-- Message will be inserted here by JavaScript -->
+                        </div>
                     </div>
-                    <nav class="flex space-x-2">
-                        {% if wood_records.has_previous %}
-                            <a href="?page={{ wood_records.previous_page_number }}" class="px-3 py-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
-                                Previous
-                            </a>
-                        {% endif %}
-                        
-                        {% for num in wood_records.paginator.page_range %}
-                            {% if wood_records.number == num %}
-                                <span class="px-3 py-1 rounded-md bg-blue-600 text-white">{{ num }}</span>
-                            {% elif num > wood_records.number|add:'-3' and num < wood_records.number|add:'3' %}
-                                <a href="?page={{ num }}" class="px-3 py-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
-                                    {{ num }}
-                                </a>
-                            {% endif %}
-                        {% endfor %}
-                        
-                        {% if wood_records.has_next %}
-                            <a href="?page={{ wood_records.next_page_number }}" class="px-3 py-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
-                                Next
-                            </a>
-                        {% endif %}
-                    </nav>
+                    
+                    <!-- Pagination -->
+                    {% if wood_records.has_other_pages %}
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-700" id="resultsCounter">
+                                Showing {{ wood_records.start_index }} to {{ wood_records.end_index }} of {{ wood_records.paginator.count }} records
+                            </div>
+                            <nav class="flex space-x-2">
+                                {% if wood_records.has_previous %}
+                                    <a href="?page={{ wood_records.previous_page_number }}" class="px-3 py-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
+                                        Previous
+                                    </a>
+                                {% endif %}
+                                
+                                {% for num in wood_records.paginator.page_range %}
+                                    {% if wood_records.number == num %}
+                                        <span class="px-3 py-1 rounded-md bg-blue-600 text-white">{{ num }}</span>
+                                    {% elif num > wood_records.number|add:'-3' and num < wood_records.number|add:'3' %}
+                                        <a href="?page={{ num }}" class="px-3 py-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
+                                            {{ num }}
+                                        </a>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if wood_records.has_next %}
+                                    <a href="?page={{ wood_records.next_page_number }}" class="px-3 py-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
+                                        Next
+                                    </a>
+                                {% endif %}
+                            </nav>
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
-            {% endif %}
         </div>
     </div>
 
