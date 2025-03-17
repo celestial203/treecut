@@ -10,6 +10,7 @@ from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 # The import statement for VolumeRecord should be placed at the top of the file with other import statements.
 
 class Lumber(models.Model):
@@ -251,6 +252,8 @@ class Cutting(models.Model):
         return f"{self.permit_type}-{self.permit_number}"
 
     def save(self, *args, **kwargs):
+        if not os.path.exists(os.path.join(settings.MEDIA_ROOT, 'permits')):
+            os.makedirs(os.path.join(settings.MEDIA_ROOT, 'permits'))
         if self.date_issued:
             # Always calculate expiry date as 50 business days
             self.expiry_date = calculate_expiry_date(self.date_issued)
@@ -459,6 +462,14 @@ class Wood(models.Model):
     def __str__(self):
         return f"{self.name} - {self.wpp_number}"
 
+    def save(self, *args, **kwargs):
+        # Update status based on expiry date
+        if self.expiry_date:
+            today = timezone.now().date()
+            if today > self.expiry_date:
+                self.wood_status = 'EXPIRED'
+        super().save(*args, **kwargs)
+
 class CuttingRecord(models.Model):
     SPECIES_CHOICES = [
         ('Molave', 'Molave'),
@@ -599,6 +610,35 @@ class VolumeRecord(models.Model):
 
     def __str__(self):
         return f"{self.cutting} - {self.volume} cu.m ({self.date})"
+
+    def save(self, *args, **kwargs):
+        # Convert any float values to Decimal before operations
+        if isinstance(self.volume, float):
+            self.volume = Decimal(str(self.volume))
+        
+        # Calculate the volume if needed
+        if self.calculated_volume is None:
+            self.calculated_volume = self.volume
+
+        # Get the latest record for this cutting
+        latest_record = VolumeRecord.objects.filter(
+            cutting=self.cutting,
+            date_added__lt=timezone.now()
+        ).order_by('-date_added').first()
+
+        if latest_record:
+            # Ensure values are Decimal
+            latest_balance = Decimal(str(latest_record.remaining_balance))
+            current_volume = Decimal(str(self.calculated_volume))
+            self.remaining_balance = latest_balance - current_volume
+        else:
+            # For first entry
+            if hasattr(self.cutting, 'gross_volume'):
+                gross_volume = Decimal(str(self.cutting.gross_volume))
+                current_volume = Decimal(str(self.calculated_volume))
+                self.remaining_balance = gross_volume - current_volume
+
+        super().save(*args, **kwargs)
 
 class WoodProcessingPlant(models.Model):
     name = models.CharField(max_length=255)

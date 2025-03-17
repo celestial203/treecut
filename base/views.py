@@ -196,8 +196,9 @@ def cutting(request):
             gross_volume = request.POST.get('gross_volume')
             if gross_volume:
                 try:
-                    cutting.gross_volume = float(gross_volume)
-                    cutting.net_volume = cutting.gross_volume * 0.70
+                    # Convert to Decimal instead of float
+                    cutting.gross_volume = Decimal(str(gross_volume))
+                    cutting.net_volume = cutting.gross_volume * Decimal('0.70')  # Use Decimal for multiplication
                 except ValueError:
                     messages.error(request, 'Invalid gross volume value')
                     return render(request, 'cutting.html', {'form': form})
@@ -390,6 +391,14 @@ def edit_recordlumber(request, pk):
 @login_required
 def edit_cutting(request, pk):
     cutting = get_object_or_404(Cutting, pk=pk)
+    species_choices = [
+        'Select Species',
+        'Molave',
+        'Yemane',
+        'Mahogany',
+        'Narra',
+        # Add all your species choices here
+    ]
     
     if request.method == 'POST':
         form = CuttingForm(request.POST, request.FILES, instance=cutting)
@@ -405,7 +414,7 @@ def edit_cutting(request, pk):
                 # Validate species and quantities
                 if not species_list or not quantities:
                     messages.error(request, 'At least one species with quantity is required')
-                    return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting})
+                    return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting, 'species_choices': species_choices})
                 
                 # Combine species with their quantities
                 species_with_qty = []
@@ -416,20 +425,22 @@ def edit_cutting(request, pk):
                             qty_int = int(qty)
                             if qty_int <= 0:
                                 messages.error(request, 'Quantity must be greater than 0')
-                                return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting})
+                                return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting, 'species_choices': species_choices})
                             total_trees += qty_int
                             species_with_qty.append(f"{species} ({qty})")
                         except ValueError:
                             messages.error(request, 'Invalid quantity value')
-                            return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting})
+                            return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting, 'species_choices': species_choices})
                 
                 cutting.species = ', '.join(species_with_qty)
                 cutting.no_of_trees = total_trees
                 
                 # Calculate volumes based on total_volume_granted
                 if cutting.total_volume_granted:
-                    cutting.gross_volume = cutting.total_volume_granted + (cutting.total_volume_granted * 0.30)
-                    cutting.net_volume = cutting.total_volume_granted * 0.70
+                    # Convert to Decimal and use Decimal for calculations
+                    total_volume = Decimal(str(cutting.total_volume_granted))
+                    cutting.gross_volume = total_volume + (total_volume * Decimal('0.30'))
+                    cutting.net_volume = total_volume * Decimal('0.70')
                 
                 # Save the record
                 cutting.save()
@@ -444,20 +455,22 @@ def edit_cutting(request, pk):
     else:
         form = CuttingForm(instance=cutting)
     
-    return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting})
+    return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting, 'species_choices': species_choices})
 
 @login_required
 def view_cutting(request, cutting_id):
-    cutting = get_object_or_404(Cutting, id=cutting_id)
-    volume_records = VolumeRecord.objects.filter(cutting=cutting)
-    today = timezone.now().date()
-    
-    context = {
-        'cutting': cutting,
-        'volume_records': volume_records,
-        'today': today,
-    }
-    return render(request, 'view_cutting.html', context)
+    try:
+        cutting = get_object_or_404(Cutting, id=cutting_id)
+        volume_records = VolumeRecord.objects.filter(cutting=cutting).order_by('-date')
+        
+        context = {
+            'cutting': cutting,
+            'volume_records': volume_records,
+        }
+        return render(request, 'view_cutting.html', context)
+    except Cutting.DoesNotExist:
+        messages.error(request, 'Cutting record not found.')
+        return redirect('cutting_records')
 
 @login_required
 def add_cutting_record(request, cutting_id):
@@ -481,6 +494,7 @@ def add_cutting_record(request, cutting_id):
             print("POST data received:", request.POST)
             print("Files received:", request.FILES)
             
+            date_str = request.POST.get('date')
             species = request.POST.get('species')
             volume = request.POST.get('volume')
             number_of_trees = request.POST.get('number_of_trees')
@@ -488,10 +502,19 @@ def add_cutting_record(request, cutting_id):
             calculated_volume = request.POST.get('calculated_volume') or volume
             
             # Validate required fields
-            if not all([species, volume, number_of_trees]):
+            if not all([date_str, species, volume, number_of_trees]):
                 return JsonResponse({
                     'success': False,
                     'message': 'Please fill in all required fields'
+                })
+            
+            # Convert date string to datetime object
+            try:
+                date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid date format'
                 })
             
             # Convert string values to Decimal for consistent decimal arithmetic
@@ -517,6 +540,7 @@ def add_cutting_record(request, cutting_id):
                 # Create new volume record
                 new_record = VolumeRecord.objects.create(
                     cutting=cutting,
+                    date=date_obj,
                     species=species,
                     volume=volume_decimal,
                     calculated_volume=calc_volume_decimal,
@@ -534,7 +558,7 @@ def add_cutting_record(request, cutting_id):
                     'message': 'Volume record added successfully',
                     'new_record': {
                         'id': new_record.id,
-                        'date_added': new_record.date_added.strftime('%b %d, %Y'),
+                        'date': new_record.date.strftime('%b %d, %Y'),
                         'species': new_record.species,
                         'number_of_trees': new_record.number_of_trees,
                         'volume': str(new_record.volume),
@@ -866,34 +890,19 @@ def edit_cutting_record(request, record_id):
         'record': record
     })
 
+@login_required
 def cutting_records(request):
-    status = request.GET.get('status')
-    today = date.today()
+    # Get all cutting records with their related volume records
+    cuttings = Cutting.objects.prefetch_related('volume_records').all()
     
-    # Base queryset
-    cuttings = Cutting.objects.all()
-    
-    # Apply filters based on status
-    if status == 'expired':
-        cuttings = cuttings.filter(expiry_date__lt=today)
-    elif status == 'active':
-        cuttings = cuttings.filter(
-            Q(permit_type__in=['TCP', 'PLTP', 'SPLTP'], expiry_date__gte=today) |
-            Q(permit_type='STCP', volume_records__isnull=False)
-        ).distinct()
-    elif status == 'pending':
-        # Show STCP permits that have no volume records
-        cuttings = cuttings.filter(
-            permit_type='STCP',
-            volume_records__isnull=True
-        )
-    
-    # Order the results
-    cuttings = cuttings.order_by('-created_at')
+    # Update remaining balance for each cutting based on latest volume record
+    for cutting in cuttings:
+        latest_volume = cutting.volume_records.order_by('-date_added').first()
+        if latest_volume:
+            cutting.remaining_balance = latest_volume.remaining_balance
     
     context = {
         'cuttings': cuttings,
-        'today': today,
     }
     return render(request, 'CuttingRecord.html', context)
 
@@ -1173,14 +1182,15 @@ def split_species_data(species_string):
 def calculate_volumes(request):
     if request.method == 'GET':
         try:
-            total_volume = float(request.GET.get('total_volume', 0))
+            # Convert input to Decimal and use Decimal for calculations
+            total_volume = Decimal(str(request.GET.get('total_volume', '0')))
             gross_volume = total_volume  # Gross volume equals total volume
-            net_volume = total_volume * 0.70  # Net volume is 70% of total volume
+            net_volume = total_volume * Decimal('0.70')  # Net volume is 70% of total volume
             
             return JsonResponse({
                 'success': True,
-                'gross_volume': '{:.2f}'.format(gross_volume),
-                'net_volume': '{:.2f}'.format(net_volume)
+                'gross_volume': '{:.2f}'.format(float(gross_volume)),
+                'net_volume': '{:.2f}'.format(float(net_volume))
             })
         except (ValueError, TypeError) as e:
             return JsonResponse({
@@ -1590,34 +1600,50 @@ def get_last_chainsaw_number(request):
 def lumber_dash(request):
     current_date = timezone.now().date()
     
-    # Get basic counts
-    lumber_count = Lumber.objects.count()
+    # Get QuerySets using WoodProcessingPlant model instead of Wood
+    all_plants = WoodProcessingPlant.objects.all()
     
-    # For expired lumber records
-    expired_lumber_count = Lumber.objects.filter(
-        expiry_date__lt=current_date
-    ).count()
+    # Active plants
+    active_plants = all_plants.filter(
+        status__in=['ACTIVE_NEW', 'ACTIVE_RENEWED'],
+        expiry_date__gt=current_date
+    )
     
-    # For active lumber records
-    active_lumber_count = Lumber.objects.filter(
-        expiry_date__gte=current_date
-    ).count()
+    # Expiring plants
+    expiring_plants = active_plants.filter(
+        expiry_date__lte=current_date + timedelta(days=90)
+    )
     
-    # For lumber records expiring soon (within 30 days but not expired)
-    thirty_days_from_now = current_date + timedelta(days=30)
-    expiring_soon_lumber_count = Lumber.objects.filter(
-        expiry_date__gte=current_date,
-        expiry_date__lte=thirty_days_from_now
-    ).count()
-
+    # Expired plants
+    expired_plants = all_plants.filter(
+        Q(expiry_date__lt=current_date) |
+        Q(status='EXPIRED')
+    )
+    
+    # Get counts
+    total_count = all_plants.count()
+    active_count = active_plants.count()
+    expiring_soon_count = expiring_plants.count()
+    expired_count = expired_plants.count()
+    
+    # Debug print
+    print(f"""
+DEBUG COUNTS:
+Total Records: {total_count}
+Active Records: {active_count}
+Expiring Soon: {expiring_soon_count}
+Expired: {expired_count}
+Current Date: {current_date}
+    """)
+    
     context = {
-        'lumber_count': lumber_count,
-        'expired_lumber_count': expired_lumber_count,
-        'active_lumber_count': active_lumber_count,
-        'expiring_soon_lumber_count': expiring_soon_lumber_count,
+        'total_count': total_count,
+        'active_count': active_count,
+        'expiring_soon_count': expiring_soon_count,
+        'expired_count': expired_count,
     }
     
-    return render(request, 'lumber-dash.html', context)
+    return render(request, 'wood-dash.html', context)
 
 @login_required
 def lumber_form(request):
@@ -1702,56 +1728,81 @@ def wood_dashboard(request):
 
 @login_required
 def wood_dash(request):
-    # Get current date for filtering
     current_date = timezone.now().date()
-    thirty_days_from_now = current_date + timedelta(days=30)
     
-    # Calculate all the counts needed for the dashboard
-    wood_count = Wood.objects.count()
+    # Get QuerySets using WoodProcessingPlant model instead of Wood
+    all_plants = WoodProcessingPlant.objects.all()
     
-    # Expiring soon count
-    expiring_soon_wood_count = Wood.objects.filter(
-        expiry_date__gte=current_date,
-        expiry_date__lte=thirty_days_from_now
-    ).count()
+    # Active plants
+    active_plants = all_plants.filter(
+        status__in=['ACTIVE_NEW', 'ACTIVE_RENEWED'],
+        expiry_date__gt=current_date
+    )
     
-    # Active (New) count
-    active_new_count = Wood.objects.filter(
-        expiry_date__gte=current_date,
-        permit_status='New'
-    ).count()
+    # Expiring plants
+    expiring_plants = active_plants.filter(
+        expiry_date__lte=current_date + timedelta(days=90)
+    )
     
-    # Active (Renewed) count
-    active_renewed_count = Wood.objects.filter(
-        expiry_date__gte=current_date,
-        permit_status='Renewed'
-    ).count()
+    # Expired plants
+    expired_plants = all_plants.filter(
+        Q(expiry_date__lt=current_date) |
+        Q(status='EXPIRED')
+    )
     
-    # Expired count
-    expired_wood_count = Wood.objects.filter(
-        expiry_date__lt=current_date
-    ).count()
+    # Get counts
+    total_count = all_plants.count()
+    active_count = active_plants.count()
+    expiring_soon_count = expiring_plants.count()
+    expired_count = expired_plants.count()
     
-    # Suspended count
-    suspended_count = Wood.objects.filter(
-        permit_status='Suspended'
-    ).count()
-    
-    # Cancelled count
-    cancelled_count = Wood.objects.filter(
-        permit_status='Cancelled'
-    ).count()
+    # Debug print
+    print(f"""
+DEBUG COUNTS:
+Total Records: {total_count}
+Active Records: {active_count}
+Expiring Soon: {expiring_soon_count}
+Expired: {expired_count}
+Current Date: {current_date}
+    """)
     
     context = {
-        'wood_count': wood_count,
-        'expiring_soon_wood_count': expiring_soon_wood_count,
-        'active_new_count': active_new_count,
-        'active_renewed_count': active_renewed_count,
-        'expired_wood_count': expired_wood_count,
-        'suspended_count': suspended_count,
-        'cancelled_count': cancelled_count,
+        'total_count': total_count,
+        'active_count': active_count,
+        'expiring_soon_count': expiring_soon_count,
+        'expired_count': expired_count,
     }
     
     return render(request, 'wood-dash.html', context)
+
+@login_required
+def get_volume_details(request, cutting_id):
+    try:
+        cutting = Cutting.objects.get(id=cutting_id)
+        volumes = VolumeRecord.objects.filter(cutting=cutting).order_by('date')
+        
+        volume_data = [{
+            'date': volume.date.strftime('%Y-%m-%d'),
+            'species': volume.species,
+            'volume': str(volume.volume),
+            'calculated_volume': str(volume.calculated_volume),
+            'remaining_balance': str(volume.remaining_balance),
+            'remarks': volume.remarks
+        } for volume in volumes]
+        
+        return JsonResponse({
+            'success': True,
+            'volumes': volume_data
+        })
+    except Cutting.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Cutting record not found'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        })
 
 

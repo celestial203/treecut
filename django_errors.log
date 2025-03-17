@@ -14956,3 +14956,305 @@ LINE 1: ...e", "base_wood"."type", "base_wood"."wpp_number", "base_wood...
                                                              ^
 
 ERROR 2025-03-17 09:19:20,641 basehttp "GET /wood/records/ HTTP/1.1" 500 176734
+WARNING 2025-03-17 09:39:42,535 log Not Found: /favicon.ico
+WARNING 2025-03-17 09:39:42,538 basehttp "GET /favicon.ico HTTP/1.1" 404 10029
+WARNING 2025-03-17 09:44:45,387 log Not Found: /favicon.ico
+WARNING 2025-03-17 09:44:45,388 basehttp "GET /favicon.ico HTTP/1.1" 404 10029
+ERROR 2025-03-17 09:51:01,487 log Internal Server Error: /wood-dash/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 134, in render
+    compiled_parent = self.get_parent(context)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 131, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 109, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 163, in find_template
+    raise TemplateDoesNotExist(name, tried=tried)
+django.template.exceptions.TemplateDoesNotExist: base.html
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 1719, in wood_dashboard
+    return render(request, 'wood-dash.html', context)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 109, in render
+    reraise(exc, self.backend)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 130, in reraise
+    raise new from exc
+django.template.exceptions.TemplateDoesNotExist: base.html
+ERROR 2025-03-17 09:51:01,495 basehttp "GET /wood-dash/ HTTP/1.1" 500 138997
+ERROR 2025-03-17 09:51:07,286 log Internal Server Error: /wood-dash/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 134, in render
+    compiled_parent = self.get_parent(context)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 131, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader_tags.py", line 109, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\engine.py", line 163, in find_template
+    raise TemplateDoesNotExist(name, tried=tried)
+django.template.exceptions.TemplateDoesNotExist: base.html
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 1719, in wood_dashboard
+    return render(request, 'wood-dash.html', context)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 109, in render
+    reraise(exc, self.backend)
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\template\backends\django.py", line 130, in reraise
+    raise new from exc
+django.template.exceptions.TemplateDoesNotExist: base.html
+ERROR 2025-03-17 09:51:07,299 basehttp "GET /wood-dash/ HTTP/1.1" 500 138860
+WARNING 2025-03-17 10:38:01,689 log Not Found: /media/permits/pic.jpg
+WARNING 2025-03-17 10:38:01,692 basehttp "GET /media/permits/pic.jpg HTTP/1.1" 404 10290
+WARNING 2025-03-17 10:58:43,563 log Not Found: /cutting/9/volume-details/
+WARNING 2025-03-17 10:58:43,565 basehttp "GET /cutting/9/volume-details/ HTTP/1.1" 404 10071
+WARNING 2025-03-17 10:58:46,490 log Not Found: /cutting/9/volume-details/
+WARNING 2025-03-17 10:58:46,492 basehttp "GET /cutting/9/volume-details/ HTTP/1.1" 404 10071
+WARNING 2025-03-17 10:58:46,634 log Not Found: /cutting/9/volume-details/
+WARNING 2025-03-17 10:58:46,636 basehttp "GET /cutting/9/volume-details/ HTTP/1.1" 404 10071
+WARNING 2025-03-17 11:01:16,755 log Not Found: /media/permits/pic_y8jfJvG.jpg
+WARNING 2025-03-17 11:01:16,756 basehttp "GET /media/permits/pic_y8jfJvG.jpg HTTP/1.1" 404 10534
+WARNING 2025-03-17 11:01:29,159 log Not Found: /media/permits/beb_Kgc6yrz.jpg
+WARNING 2025-03-17 11:01:29,161 basehttp "GET /media/permits/beb_Kgc6yrz.jpg HTTP/1.1" 404 10534
+WARNING 2025-03-17 11:02:34,792 log Not Found: /media/permits/pic_GJ552Qc.jpg
+WARNING 2025-03-17 11:02:34,794 basehttp "GET /media/permits/pic_GJ552Qc.jpg HTTP/1.1" 404 10534
+WARNING 2025-03-17 11:02:57,549 log Not Found: /media/permits/beb_Kgc6yrz.jpg
+WARNING 2025-03-17 11:02:57,552 basehttp "GET /media/permits/beb_Kgc6yrz.jpg HTTP/1.1" 404 10534
+WARNING 2025-03-17 11:03:19,188 log Not Found: /cutting/127/view/
+WARNING 2025-03-17 11:03:19,190 basehttp "GET /cutting/127/view/ HTTP/1.1" 404 3590
+WARNING 2025-03-17 11:03:30,316 log Not Found: /media/permits/pic_cwHtj8N.jpg
+WARNING 2025-03-17 11:03:30,317 basehttp "GET /media/permits/pic_cwHtj8N.jpg HTTP/1.1" 404 10534
+WARNING 2025-03-17 11:03:33,100 log Not Found: /media/permits/beb_Kgc6yrz.jpg
+WARNING 2025-03-17 11:03:33,103 basehttp "GET /media/permits/beb_Kgc6yrz.jpg HTTP/1.1" 404 10534
+WARNING 2025-03-17 11:09:41,938 log Not Found: /media/permits/beb_Kgc6yrz.jpg
+WARNING 2025-03-17 11:09:41,940 basehttp "GET /media/permits/beb_Kgc6yrz.jpg HTTP/1.1" 404 10364
+WARNING 2025-03-17 11:11:02,430 log Not Found: /media/permits/pic_y8jfJvG.jpg
+WARNING 2025-03-17 11:11:02,431 basehttp "GET /media/permits/pic_y8jfJvG.jpg HTTP/1.1" 404 10364
+WARNING 2025-03-17 11:11:38,037 log Not Found: /favicon.ico
+WARNING 2025-03-17 11:11:38,038 basehttp "GET /favicon.ico HTTP/1.1" 404 10241
+WARNING 2025-03-17 11:11:42,645 log Not Found: /media/permits/pic_Df8cI6c.jpg
+WARNING 2025-03-17 11:11:42,646 basehttp "GET /media/permits/pic_Df8cI6c.jpg HTTP/1.1" 404 10364
+WARNING 2025-03-17 11:12:39,619 log Not Found: /media/permits/pic_Df8cI6c.jpg
+WARNING 2025-03-17 11:12:39,620 basehttp "GET /media/permits/pic_Df8cI6c.jpg HTTP/1.1" 404 10364
+WARNING 2025-03-17 11:12:43,388 log Not Found: /media/permits/pic_Df8cI6c.jpg
+WARNING 2025-03-17 11:12:43,408 basehttp "GET /media/permits/pic_Df8cI6c.jpg HTTP/1.1" 404 10364
+WARNING 2025-03-17 11:23:15,877 log Not Found: /media/permits/pic_Df8cI6c.jpg
+WARNING 2025-03-17 11:23:15,878 basehttp "GET /media/permits/pic_Df8cI6c.jpg HTTP/1.1" 404 10364
+WARNING 2025-03-17 11:37:01,457 log Not Found: /media/permits/pic_TOBqF6p.jpg
+WARNING 2025-03-17 11:37:01,459 basehttp "GET /media/permits/pic_TOBqF6p.jpg HTTP/1.1" 404 10364
+WARNING 2025-03-17 11:37:33,631 log Not Found: /media/permits/pic_Df8cI6c.jpg
+WARNING 2025-03-17 11:37:33,632 basehttp "GET /media/permits/pic_Df8cI6c.jpg HTTP/1.1" 404 10364
+WARNING 2025-03-17 11:43:42,512 log Not Found: /media/permits/pic_Df8cI6c.jpg
+WARNING 2025-03-17 11:43:42,519 basehttp "GET /media/permits/pic_Df8cI6c.jpg HTTP/1.1" 404 10364
+WARNING 2025-03-17 11:44:40,620 log Not Found: /media/permits/pic_Df8cI6c.jpg
+WARNING 2025-03-17 11:44:40,622 basehttp "GET /media/permits/pic_Df8cI6c.jpg HTTP/1.1" 404 10364
+WARNING 2025-03-17 11:45:56,001 log Not Found: /media/permits/jinwoo_bb_knRD65W.jpg
+WARNING 2025-03-17 11:45:56,003 basehttp "GET /media/permits/jinwoo_bb_knRD65W.jpg HTTP/1.1" 404 10388
+WARNING 2025-03-17 11:46:00,442 log Not Found: /media/permits/pic.jpg
+WARNING 2025-03-17 11:46:00,444 basehttp "GET /media/permits/pic.jpg HTTP/1.1" 404 10332
+WARNING 2025-03-17 11:54:43,147 log Not Found: /media/permits/pic_Df8cI6c.jpg
+WARNING 2025-03-17 11:54:43,149 basehttp "GET /media/permits/pic_Df8cI6c.jpg HTTP/1.1" 404 10364
+ERROR 2025-03-17 11:55:32,013 log Internal Server Error: /cutting/records/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 891, in cutting_records
+    total_volume_used = CuttingRecord.objects.filter(cutting=cutting).aggregate(
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1476, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1494, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1501, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\query.py", line 1609, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\query.py", line 1641, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\query.py", line 1491, in build_filter
+    lookups, parts, reffed_expression = self.solve_lookup_type(arg, summarize)
+                                        ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\query.py", line 1303, in solve_lookup_type
+    _, field, _, lookup_parts = self.names_to_path(lookup_splitted, self.get_meta())
+                                ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\sql\query.py", line 1768, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'cutting' into field. Choices are: calculated_volume, date, date_added, id, number_of_trees, parent_tcp, parent_tcp_id, remaining_balance, remarks, species, volume, volume_type
+ERROR 2025-03-17 11:55:32,022 basehttp "GET /cutting/records/ HTTP/1.1" 500 112770
+ERROR 2025-03-17 11:56:08,920 log Internal Server Error: /cutting/records/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 891, in cutting_records
+    for cutting in cuttings:
+                   ^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 400, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1930, in _fetch_all
+    self._prefetch_related_objects()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1320, in _prefetch_related_objects
+    prefetch_related_objects(self._result_cache, *self._prefetch_related_lookups)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 2355, in prefetch_related_objects
+    raise AttributeError(
+    ...<7 lines>...
+    )
+AttributeError: Cannot find 'volumerecord_set' on Cutting object, 'volumerecord_set' is an invalid parameter to prefetch_related()
+ERROR 2025-03-17 11:56:08,925 basehttp "GET /cutting/records/ HTTP/1.1" 500 93835
+ERROR 2025-03-17 11:56:09,727 log Internal Server Error: /cutting/records/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 891, in cutting_records
+    for cutting in cuttings:
+                   ^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 400, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1930, in _fetch_all
+    self._prefetch_related_objects()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1320, in _prefetch_related_objects
+    prefetch_related_objects(self._result_cache, *self._prefetch_related_lookups)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 2355, in prefetch_related_objects
+    raise AttributeError(
+    ...<7 lines>...
+    )
+AttributeError: Cannot find 'volumerecord_set' on Cutting object, 'volumerecord_set' is an invalid parameter to prefetch_related()
+ERROR 2025-03-17 11:56:09,731 basehttp "GET /cutting/records/ HTTP/1.1" 500 93835
+ERROR 2025-03-17 11:56:11,722 log Internal Server Error: /cutting/records/
+Traceback (most recent call last):
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\jessa\OneDrive\Desktop\treecut\treecut\base\views.py", line 891, in cutting_records
+    for cutting in cuttings:
+                   ^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 400, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1930, in _fetch_all
+    self._prefetch_related_objects()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 1320, in _prefetch_related_objects
+    prefetch_related_objects(self._result_cache, *self._prefetch_related_lookups)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jessa\AppData\Local\Programs\Python\Python313\Lib\site-packages\django\db\models\query.py", line 2355, in prefetch_related_objects
+    raise AttributeError(
+    ...<7 lines>...
+    )
+AttributeError: Cannot find 'volumerecord_set' on Cutting object, 'volumerecord_set' is an invalid parameter to prefetch_related()
+ERROR 2025-03-17 11:56:11,727 basehttp "GET /cutting/records/ HTTP/1.1" 500 93698
+WARNING 2025-03-17 11:57:21,454 log Not Found: /media/permits/beb_Kgc6yrz.jpg
+WARNING 2025-03-17 11:57:21,455 basehttp "GET /media/permits/beb_Kgc6yrz.jpg HTTP/1.1" 404 10364
+WARNING 2025-03-17 13:06:40,727 log Not Found: /media/permits/pic_y8jfJvG.jpg
+WARNING 2025-03-17 13:06:40,731 basehttp "GET /media/permits/pic_y8jfJvG.jpg HTTP/1.1" 404 10364
+WARNING 2025-03-17 13:06:43,948 log Not Found: /media/permits/pic_TOBqF6p.jpg
+WARNING 2025-03-17 13:06:43,949 basehttp "GET /media/permits/pic_TOBqF6p.jpg HTTP/1.1" 404 10364
+WARNING 2025-03-17 13:17:45,384 log Not Found: /favicon.ico
+WARNING 2025-03-17 13:17:45,387 basehttp "GET /favicon.ico HTTP/1.1" 404 10241

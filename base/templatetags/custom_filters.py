@@ -54,25 +54,21 @@ def split_species_data(species_string):
     return species_list if species_list else [{'name': '', 'quantity': ''}]
 
 @register.filter
-def split_species(species_string):
-    """
-    Parse a species string like "Molave (5), Mahogany (3)" into a list of dictionaries
-    with name and quantity keys.
-    """
-    if not species_string:
+def split_species(value):
+    if not value:
         return []
     
-    result = []
-    # Split by comma and process each species entry
-    species_entries = species_string.split(',')
+    # Split the species string into individual items
+    species_list = []
+    pattern = r'([^(]+)\s*\((\d+)\)'
+    matches = re.finditer(pattern, value)
     
-    for entry in species_entries:
-        entry = entry.strip()
-        # Use regex to extract species name and quantity
-        match = re.match(r'(.*?)\s*\((\d+)\)', entry)
-        if match:
-            species_name = match.group(1).strip()
-            quantity = match.group(2)
-            result.append({'name': species_name, 'quantity': quantity})
+    for match in matches:
+        species_name = match.group(1).strip()
+        quantity = int(match.group(2))
+        species_list.append({
+            'name': species_name,
+            'quantity': quantity
+        })
     
-    return result
+    return species_list

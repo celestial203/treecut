@@ -286,6 +286,7 @@ class VolumeRecordForm(forms.ModelForm):
     class Meta:
         model = VolumeRecord
         fields = [
+            'date',
             'species',
             'volume',
             'number_of_trees',
@@ -293,7 +294,11 @@ class VolumeRecordForm(forms.ModelForm):
             'attachment'
         ]
         widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
+            'date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-input',
+                'required': True
+            }),
             'remarks': forms.Textarea(attrs={'rows': 3}),
             'number_of_trees': forms.NumberInput(attrs={'class': 'form-input'}),
             'species': forms.Select(attrs={'class': 'form-select'}),

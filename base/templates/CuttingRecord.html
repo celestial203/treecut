@@ -13,7 +13,7 @@
     <style>
         /* Enhanced styling */
         body {
-            background-color: #ffff; /* Light green background */
+            background-color: #fff; /* Light green background */
         }
 
         .table-container {
@@ -208,7 +208,7 @@
                             </div>
                             <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
                                 <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"/>
                                 </svg>
                                 Sign Out
                             </a>
@@ -224,7 +224,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6l8 8 8-8"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18"></path>
                     </svg>
-                </button>
                 </button>
             </div>
         </div>
@@ -400,13 +399,20 @@
                     </svg>
                     Total Trees
                 </a>
+                <button id="consumedRecordsBtn" 
+                        class="px-4 py-2 bg-transparent border-2 border-red-500 text-red-600 rounded-lg transition-all duration-200 text-sm font-medium hover:bg-red-50 active:bg-red-100 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    Consumed
+                </button>
             </div>
 
             <!-- Search Fields -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 <!-- Permit Search -->
                 <div class="search-container">
-                    <label class="block text-black text-sm mb-2">Search Record</label>
+                    <label class="block text-black text-sm mb-2">Search Permit Number</label>
                     <input type="text" 
                            id="permitSearch" 
                            placeholder="" 
@@ -464,78 +470,39 @@
                                 <tr>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Permit Type</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Permit Number</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">File</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Permittee</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Representative</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Location</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Latitude</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Longitude</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Species</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">TCT/OCT No.</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Tax Dec. No.</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Lot No.</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Area (ha.)</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">No. of Trees</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Total Volume Granted</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Gross Volume</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Net Volume</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Date Issued</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Expiry Date</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Status</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 {% if cuttings %}
                                     {% for cutting in cuttings %}
-                                    <tr class="hover:bg-gray-50" 
+                                    <tr class="hover:bg-gray-50 cursor-pointer"
                                         data-record-id="{{ cutting.id }}"
-                                        {% if cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}
-                                            hover:bg-red-100
-                                        {% else %}
-                                            hover:bg-green-100
-                                        {% endif %}">
-                                        <td class="px-6 py-3 text-xs font-bold text-gray-900 whitespace-nowrap">{{ cutting.permit_type }}</td>
-                                        <td class="px-6 py-3 text-xs font-bold text-gray-900 whitespace-nowrap">{{ cutting.permit_number }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">
-                                            {% if cutting.permit_file %}
-                                                <a href="{{ cutting.permit_file.url }}" class="text-blue-600 hover:text-blue-800">View</a>
-                                            {% else %}
-                                                -
-                                            {% endif %}
-                                        </td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.permittee }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.rep_by|default:"-" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.location|default:"-" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.latitude|default:"-" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.longitude|default:"-" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.species|default:"-" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.tct_oct_no|default:"-" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.tax_dec_no|default:"-" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.lot_no|default:"-" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.area|default:"-" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.no_of_trees|default:"-" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.total_volume_granted|default:"-" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.gross_volume|default:"-" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.net_volume|default:"-" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.date_issued|date:"Y-m-d" }}</td>
-                                        <td class="px-6 py-3 text-xs text-gray-900 whitespace-nowrap">{{ cutting.expiry_date|date:"Y-m-d" }}</td>
-                                        <td class="px-6 py-3 whitespace-nowrap">
-                                            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                {% if cutting.situation == 'Good' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
-                                                {{ cutting.situation }}
-                                            </span>
-                                        </td>
+                                        data-is-consumed="{% if cutting.remaining_balance <= 0.0 or cutting.remaining_balance == '0.00' %}true{% else %}false{% endif %}"
+                                        ondblclick="handleRowDoubleClick(this, '{% url 'view_cutting' cutting.id %}')"
+                                        {% if cutting.remaining_balance <= 0.0 or cutting.remaining_balance == '0.00' %}style="background-color: #fee2e2;"{% endif %}>
+                                        <td class="px-6 py-3 text-xs font-bold whitespace-nowrap {% if cutting.remaining_balance <= 0.0 or cutting.remaining_balance == '0.00' %}text-red-700 bg-red-100{% endif %}">{{ cutting.permit_type }}</td>
+                                        <td class="px-6 py-3 text-xs font-bold whitespace-nowrap {% if cutting.remaining_balance <= 0.0 or cutting.remaining_balance == '0.00' %}text-red-700 bg-red-100{% endif %}">{{ cutting.permit_number }}</td>
+                                        <td class="px-6 py-3 text-xs whitespace-nowrap">{{ cutting.permittee }}</td>
+                                        <td class="px-6 py-3 text-xs whitespace-nowrap">{{ cutting.rep_by|default:"-" }}</td>
+                                        <td class="px-6 py-3 text-xs whitespace-nowrap">{{ cutting.location|default:"-" }}</td>
                                         <td class="px-6 py-3 text-xs font-medium space-x-2 whitespace-nowrap">
-                                            <a href="{% url 'view_cutting' cutting.id %}" class="text-blue-600 hover:text-blue-900">View</a>
-                                            <a href="{% url 'edit_cutting' cutting.id %}" class="text-amber-600 hover:text-amber-900">Edit</a>
-                                            <a href="{% url 'add_cutting_record' cutting.id %}" class="text-green-600 hover:text-green-900">Vol</a>
+                                            <a href="{% url 'view_cutting' cutting.id %}" class="text-blue-600 hover:text-blue-900">VIEW</a>
+                                            {% if cutting.remaining_balance <= 0.0 or cutting.remaining_balance == '0.00' %}
+                                                <span class="text-red-600 font-bold">CONSUMED</span>
+                                            {% else %}
+                                                <a href="{% url 'edit_cutting' cutting.id %}" class="text-amber-600 hover:text-amber-900">EDIT</a>
+                                                <a href="{% url 'add_cutting_record' cutting.id %}" class="text-green-600 hover:text-green-900">VOL</a>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                     {% endfor %}
                                 {% else %}
                                     <tr>
-                                        <td colspan="21" class="px-6 py-8 text-center text-gray-500">
+                                        <td colspan="6" class="px-6 py-8 text-center text-gray-500">
                                             <div class="text-sm">No records found</div>
                                             <div class="text-xs mt-1">No cutting records are available at this time</div>
                                         </td>
@@ -656,86 +623,38 @@
                 const endDateVal = endDate.value ? new Date(endDate.value) : null;
                 const yearVal = yearFilter.value;
 
-                if (startDateVal) startDateVal.setHours(0, 0, 0, 0); // Start of day
-                
-                // If we have an end date, set it to end of day for inclusive comparison
-                const endOfDay = endDateVal ? new Date(endDateVal) : null;
-                if (endOfDay) endOfDay.setHours(23, 59, 59, 999);
-                
-                console.log('Filtering by date range:', 
-                    startDateVal ? startDateVal.toISOString() : 'none', 
-                    endOfDay ? endOfDay.toISOString() : 'none');
-
                 let hasResults = false;
 
-                rows.forEach((row, index) => {
+                rows.forEach((row) => {
                     if (!row.id || row.id !== 'noResultsRow') {
-                        // Get the permit number for text search
+                        // Get text from the permit number cell (2nd column)
                         const permitText = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
                         
-                        // Get the date issued cell (column 18)
-                        const dateIssuedCell = row.querySelector('td:nth-child(18)');
-                        
-                        let matchesDateRange = true;
-                        
-                        if (dateIssuedCell && (startDateVal || endOfDay)) {
-                            const dateIssuedText = dateIssuedCell.textContent.trim();
-                            console.log(`Row ${index} date issued text:`, dateIssuedText);
-                            
-                            const dateIssued = parseDate(dateIssuedText);
-                            
-                            if (dateIssued) {
-                                // Check if date is after or equal to start date
-                                if (startDateVal && dateIssued < startDateVal) {
-                                    console.log(`Row ${index}: Date ${dateIssued.toDateString()} is before start date ${startDateVal.toDateString()}`);
-                                    matchesDateRange = false;
-                                }
-                                
-                                // Check if date is before or equal to end date
-                                if (endOfDay && matchesDateRange && dateIssued > endOfDay) {
-                                    console.log(`Row ${index}: Date ${dateIssued.toDateString()} is after end date ${endOfDay.toDateString()}`);
-                                    matchesDateRange = false;
-                                }
-                            } else {
-                                console.warn(`Row ${index}: Could not parse date "${dateIssuedText}"`);
-                            }
-                        }
-                        
-                        // Get the year for year filter
-                        const rowYear = row.querySelector('td:nth-child(18)').textContent;
-                        const yearMatch = rowYear.match(/\d{4}/);
-                        const extractedYear = yearMatch ? yearMatch[0] : '';
-                        const matchesYear = !yearVal || extractedYear === yearVal;
-                        
-                        // Check permit type filter - EXACT match instead of includes
+                        // Get the permit type for filtering (1st column)
                         const permitType = row.querySelector('td:nth-child(1)').textContent.trim();
+                        
+                        // Check permit type filter
                         const matchesPermitType = currentPermitType === 'all' || permitType === currentPermitType;
                         
-                        // Check status filter
-                        const expiryDateText = row.querySelector('td:nth-child(19)').textContent.trim();
-                        const expiryDate = parseDate(expiryDateText);
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
+                        // Check if the row matches the search term
+                        const matchesPermit = permitText.includes(permitTerm);
                         
-                        // Get the situation status (column 20)
-                        const situationCell = row.querySelector('td:nth-child(20)');
-                        const situationText = situationCell ? situationCell.textContent.trim() : '';
+                        // For status filtering, we'll need to get this from a data attribute since the column is no longer visible
+                        const isExpired = row.classList.contains('hover:bg-red-100');
+                        const isPending = row.classList.contains('hover:bg-yellow-100');
                         
                         let statusMatch = true;
                         if (currentStatus !== 'all') {
-                            if (currentStatus === 'active' && expiryDate && expiryDate < today) {
+                            if (currentStatus === 'active' && isExpired) {
                                 statusMatch = false;
-                            } else if (currentStatus === 'expired' && (!expiryDate || expiryDate >= today)) {
+                            } else if (currentStatus === 'expired' && !isExpired) {
                                 statusMatch = false;
-                            } else if (currentStatus === 'pending') {
-                                // Check if the situation text contains "Pending" or similar status
-                                statusMatch = situationText.toLowerCase().includes('pending');
+                            } else if (currentStatus === 'pending' && !isPending) {
+                                statusMatch = false;
                             }
                         }
-                        
-                        const matchesPermit = permitText.includes(permitTerm);
-                        
-                        if (matchesPermit && matchesDateRange && matchesYear && matchesPermitType && statusMatch) {
+
+                        if (matchesPermit && matchesPermitType && statusMatch) {
                             row.style.display = '';
                             hasResults = true;
                         } else {
@@ -752,7 +671,7 @@
                         const noResultsRow = document.createElement('tr');
                         noResultsRow.id = 'noResultsRow';
                         noResultsRow.innerHTML = `
-                            <td colspan="21" class="px-6 py-8 text-center">
+                            <td colspan="6" class="px-6 py-8 text-center">
                                 <div class="text-gray-500 text-lg">No matching records found</div>
                                 <div class="text-gray-400 text-sm mt-2">Try adjusting your search criteria</div>
                             </td>
@@ -966,6 +885,50 @@
                     contextMenu.classList.add('hidden');
                 }
             });
+
+            // Add handler for Consumed Records button
+            document.getElementById('consumedRecordsBtn').addEventListener('click', function() {
+                const rows = document.querySelectorAll('tbody tr');
+                let hasResults = false;
+
+                rows.forEach((row) => {
+                    if (!row.id || row.id !== 'noResultsRow') {
+                        // Check if the row has the red background (consumed)
+                        const isConsumed = row.style.backgroundColor === 'rgb(254, 226, 226)' || 
+                                         row.querySelector('td:last-child').textContent.includes('CONSUMED');
+                        
+                        if (isConsumed) {
+                            row.style.display = '';
+                            hasResults = true;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+
+                // Update button styles
+                updateButtonStyles('status');
+                this.classList.add('ring-2', 'ring-red-500');
+
+                // Show no results message if needed
+                const existingNoResults = document.getElementById('noResultsRow');
+                if (!hasResults) {
+                    if (!existingNoResults) {
+                        const tbody = document.querySelector('tbody');
+                        const noResultsRow = document.createElement('tr');
+                        noResultsRow.id = 'noResultsRow';
+                        noResultsRow.innerHTML = `
+                            <td colspan="6" class="px-6 py-8 text-center">
+                                <div class="text-gray-500 text-lg">No consumed records found</div>
+                                <div class="text-gray-400 text-sm mt-2">All permits are still active</div>
+                            </td>
+                        `;
+                        tbody.appendChild(noResultsRow);
+                    }
+                } else if (existingNoResults) {
+                    existingNoResults.remove();
+                }
+            });
         });
 
         // Export function that only exports visible rows
@@ -1067,26 +1030,147 @@
         document.addEventListener('DOMContentLoaded', calculateVolumes);
     </script>
 
-    <!-- Add this at the bottom of the page before </body> -->
+    <!-- Volume Details Modal -->
+    <div id="volumeDetailsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-4/5 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center pb-3">
+                <h3 class="text-xl font-semibold">Volume Details</h3>
+                <button onclick="closeVolumeModal()" class="text-gray-400 hover:text-gray-500">&times;</button>
+            </div>
+            <div id="volumeDetailsContent" class="mt-4">
+                <!-- Volume details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Debug any form submission errors
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check for error messages in URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            const errorMsg = urlParams.get('error');
-            if (errorMsg) {
-                console.error('Error returned from server:', errorMsg);
-                alert('Error: ' + errorMsg);
-            }
+        function viewVolumeDetails(cuttingId) {
+            const modal = document.getElementById('volumeDetailsModal');
+            const content = document.getElementById('volumeDetailsContent');
             
-            // Add click tracking to edit links
-            const editLinks = document.querySelectorAll('a[href*="/edit/"]');
-            editLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    console.log('Edit link clicked:', this.href);
-                    // Continue with normal link behavior
+            // Show loading state
+            content.innerHTML = '<div class="text-center">Loading...</div>';
+            modal.classList.remove('hidden');
+            
+            // Fetch volume details
+            fetch(`/get-volume-details/${cuttingId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        content.innerHTML = `
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                        <tr>
+                                            <th class="px-4 py-2 text-left">Date</th>
+                                            <th class="px-4 py-2 text-left">Species</th>
+                                            <th class="px-4 py-2 text-left">Volume</th>
+                                            <th class="px-4 py-2 text-left">Calculated Volume</th>
+                                            <th class="px-4 py-2 text-left">Remaining Balance</th>
+                                            <th class="px-4 py-2 text-left">Remarks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.volumes.map(v => `
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-2">${v.date}</td>
+                                                <td class="px-4 py-2">${v.species}</td>
+                                                <td class="px-4 py-2">${v.volume}</td>
+                                                <td class="px-4 py-2">${v.calculated_volume}</td>
+                                                <td class="px-4 py-2">${v.remaining_balance}</td>
+                                                <td class="px-4 py-2">${v.remarks || '-'}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                    } else {
+                        content.innerHTML = '<div class="text-center text-red-500">Error loading volume details</div>';
+                    }
+                })
+                .catch(error => {
+                    content.innerHTML = '<div class="text-center text-red-500">Error loading volume details</div>';
+                    console.error('Error:', error);
                 });
-            });
+        }
+
+        function closeVolumeModal() {
+            document.getElementById('volumeDetailsModal').classList.add('hidden');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('volumeDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeVolumeModal();
+            }
+        });
+    </script>
+
+    <!-- Add this JavaScript after your existing scripts -->
+    <script>
+        function handleRowDoubleClick(row, viewUrl) {
+            const recordId = row.getAttribute('data-record-id');
+            const isConsumed = row.getAttribute('data-is-consumed') === 'true';
+            
+            // Show context menu with options based on consumed status
+            const contextMenu = document.querySelector('.context-menu');
+            if (contextMenu) {
+                const rect = row.getBoundingClientRect();
+                contextMenu.style.left = `${rect.right}px`;
+                contextMenu.style.top = `${rect.top}px`;
+                contextMenu.classList.remove('hidden');
+                
+                // Context menu with conditional options
+                contextMenu.innerHTML = `
+                    <div class="context-menu-item" onclick="window.location.href='${viewUrl}'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        View
+                    </div>
+                    ${!isConsumed ? `
+                        <div class="context-menu-item" onclick="window.location.href='/cutting/${recordId}/edit/'">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            Edit
+                        </div>
+                        <div class="context-menu-item" onclick="window.location.href='/cutting/${recordId}/record/add/'">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Add Volume
+                        </div>
+                    ` : `
+                        <div class="context-menu-item text-red-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            Consumed Record
+                        </div>
+                    `}
+                `;
+            }
+        }
+
+        // Close context menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const contextMenu = document.querySelector('.context-menu');
+            if (contextMenu && !contextMenu.contains(e.target) && !e.target.closest('tr')) {
+                contextMenu.classList.add('hidden');
+            }
+        });
+
+        // Close context menu on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const contextMenu = document.querySelector('.context-menu');
+                if (contextMenu) {
+                    contextMenu.classList.add('hidden');
+                }
+            }
         });
     </script>
 </body>

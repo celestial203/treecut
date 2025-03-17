@@ -104,6 +104,12 @@
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 py-8">
         <div class="bg-white rounded-xl shadow-xl overflow-hidden border-2 border-green-500">
+            {% if volume_records.last.remaining_balance <= 0 %}
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4">
+                <p class="font-bold"> CONSUMED</p>
+                <p>This permit has reached its maximum allowed volume.</p>
+            </div>
+            {% endif %}
             <!-- Record Header -->
             <div class="bg-transparent px-6 py-4">
                 <div class="flex justify-between items-center">

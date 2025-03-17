@@ -258,59 +258,79 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Number of Trees Field -->
                             <div>
-                                <label for="no_of_trees" class="block text-sm font-medium text-gray-700 required">Number of Trees <span class="text-red-500">*</span></label>
-                                <input type="number" name="no_of_trees" id="no_of_trees" value="{{ cutting.no_of_trees }}" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" required>
+                                <label for="no_of_trees" class="block text-sm font-medium text-gray-700">Number of Trees</label>
+                                <input type="number" 
+                                       name="no_of_trees" 
+                                       id="no_of_trees" 
+                                       value="{{ cutting.no_of_trees|default:0 }}"
+                                       step="1"
+                                       min="0"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 bg-gray-50" 
+                                       readonly>
                             </div>
                             
                             <!-- Species Field -->
                             <div>
-                                <label for="species" class="block text-sm font-medium text-gray-700 required">Species <span class="text-red-500">*</span></label>
-                                
-                                <!-- Hidden input for the species field -->
+                                <label for="species" class="block text-sm font-medium text-gray-700 required">Species *</label>
                                 <input type="hidden" name="species" id="hidden_species" value="{{ cutting.species }}">
                                 
                                 <div id="species-container" class="space-y-2">
-                                    <!-- First row - always present -->
-                                    <div class="flex items-center species-row">
-                                        <select name="species[]" class="mt-1 block w-64 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
-                                            <option value="">Select Species</option>
-                                            {% for species_choice in species_choices %}
-                                                <option value="{{ species_choice }}">{{ species_choice }}</option>
-                                            {% endfor %}
-                                        </select>
-                                        <input type="number" name="species_quantity[]" value="1" min="1" class="ml-2 mt-1 block w-24 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" placeholder="Qty">
-                                        <button type="button" class="add-species ml-2 mt-1 p-2 bg-green-500 text-white rounded-md">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Additional rows from existing data -->
-                                    <div id="additional-species-rows">
-                                        {% if cutting.species %}
-                                            {% with species_items=cutting.species|split_species %}
-                                                {% for species_item in species_items %}
-                                                    {% if not forloop.first %}
-                                                        <div class="flex items-center species-row">
-                                                            <select name="species[]" class="mt-1 block w-64 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
-                                                                <option value="">Select Species</option>
-                                                                {% for species_choice in species_choices %}
-                                                                    <option value="{{ species_choice }}" {% if species_item.name == species_choice %}selected{% endif %}>{{ species_choice }}</option>
-                                                                {% endfor %}
-                                                            </select>
-                                                            <input type="number" name="species_quantity[]" value="{{ species_item.quantity }}" min="1" class="ml-2 mt-1 block w-24 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" placeholder="Qty">
-                                                            <button type="button" class="remove-species ml-2 mt-1 p-2 bg-red-500 text-white rounded-md">
-                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                                </svg>
-                                                            </button>
-                                                        </div>
+                                    {% if cutting.species %}
+                                        {% with species_list=cutting.species|split_species %}
+                                            {% for species_item in species_list %}
+                                                <div class="flex items-center gap-2">
+                                                    <select name="species[]" class="block w-1/2 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                                                        <option value="">Select Species</option>
+                                                        {% for species_choice in species_choices %}
+                                                            <option value="{{ species_choice }}" {% if species_choice == species_item.name %}selected{% endif %}>
+                                                                {{ species_choice }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <input type="number" 
+                                                           name="species_quantity[]" 
+                                                           value="{{ species_item.quantity }}" 
+                                                           min="1" 
+                                                           class="block w-24 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" 
+                                                           placeholder="Qty">
+                                                    {% if forloop.first %}
+                                                        <button type="button" class="add-species p-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                            </svg>
+                                                        </button>
+                                                    {% else %}
+                                                        <button type="button" class="remove-species p-2 bg-red-500 text-white rounded-md hover:bg-red-600">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                            </svg>
+                                                        </button>
                                                     {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        {% endwith %}
+                                    {% else %}
+                                        <!-- Default empty row if no species exist -->
+                                        <div class="flex items-center gap-2">
+                                            <select name="species[]" class="block w-1/2 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                                                <option value="">Select Species</option>
+                                                {% for species_choice in species_choices %}
+                                                    <option value="{{ species_choice }}">{{ species_choice }}</option>
                                                 {% endfor %}
-                                            {% endwith %}
-                                        {% endif %}
-                                    </div>
+                                            </select>
+                                            <input type="number" 
+                                                   name="species_quantity[]" 
+                                                   value="1" 
+                                                   min="1" 
+                                                   class="block w-24 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" 
+                                                   placeholder="Qty">
+                                            <button type="button" class="add-species p-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -325,8 +345,9 @@
                                 <input type="number" 
                                        name="total_volume_granted"
                                        id="total_volume_granted"
-                                       value="{{ cutting.total_volume_granted }}"
+                                       value="{{ cutting.total_volume_granted|default:'0.00' }}"
                                        step="0.01"
+                                       min="0"
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                             <div>
@@ -406,105 +427,97 @@
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('form');
             const speciesContainer = document.getElementById('species-container');
-            const additionalRows = document.getElementById('additional-species-rows');
             const hiddenSpeciesField = document.getElementById('hidden_species');
-            
-            // Set the first species row with existing data if available
-            if ('{{ cutting.species }}') {
-                try {
-                    const speciesItems = {{ cutting.species|split_species|safe }};
-                    if (speciesItems && speciesItems.length > 0) {
-                        const firstRow = speciesContainer.querySelector('.species-row');
-                        const speciesSelect = firstRow.querySelector('select[name="species[]"]');
-                        const quantityInput = firstRow.querySelector('input[name="species_quantity[]"]');
-                        
-                        // Find the matching option and select it
-                        for (let i = 0; i < speciesSelect.options.length; i++) {
-                            if (speciesSelect.options[i].value === speciesItems[0].name) {
-                                speciesSelect.selectedIndex = i;
-                                break;
-                            }
-                        }
-                        
-                        // Set the quantity
-                        quantityInput.value = speciesItems[0].quantity || 1;
-                    }
-                } catch (e) {
-                    console.error("Error parsing species data:", e);
-                }
+            const noOfTreesInput = document.getElementById('no_of_trees');
+            const totalVolumeInput = document.getElementById('total_volume_granted');
+            const grossVolumeInput = document.getElementById('gross_volume');
+            const netVolumeInput = document.getElementById('net_volume');
+
+            // Function to update total number of trees
+            function updateTotalTrees() {
+                const quantityInputs = speciesContainer.querySelectorAll('input[name="species_quantity[]"]');
+                let total = 0;
+                quantityInputs.forEach(input => {
+                    total += parseInt(input.value) || 0;
+                });
+                noOfTreesInput.value = total;
             }
-            
+
             // Add new species row
             document.addEventListener('click', function(e) {
                 if (e.target.closest('.add-species')) {
                     const newRow = document.createElement('div');
-                    newRow.className = 'flex items-center species-row';
+                    newRow.className = 'flex items-center gap-2';
                     newRow.innerHTML = `
-                        <select name="species[]" class="mt-1 block w-64 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                        <select name="species[]" class="block w-1/2 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
                             <option value="">Select Species</option>
                             {% for species_choice in species_choices %}
                                 <option value="{{ species_choice }}">{{ species_choice }}</option>
                             {% endfor %}
                         </select>
-                        <input type="number" name="species_quantity[]" value="1" min="1" class="ml-2 mt-1 block w-24 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" placeholder="Qty">
-                        <button type="button" class="remove-species ml-2 mt-1 p-2 bg-red-500 text-white rounded-md">
+                        <input type="number" 
+                               name="species_quantity[]" 
+                               value="1" 
+                               min="1"
+                               step="1"
+                               class="block w-24 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" 
+                               placeholder="Qty">
+                        <button type="button" class="remove-species p-2 bg-red-500 text-white rounded-md hover:bg-red-600">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
                         </button>
                     `;
-                    additionalRows.appendChild(newRow);
+                    speciesContainer.appendChild(newRow);
+                    
+                    const newQuantityInput = newRow.querySelector('input[name="species_quantity[]"]');
+                    newQuantityInput.addEventListener('input', updateTotalTrees);
+                    
+                    updateTotalTrees();
                 }
             });
             
             // Remove species row
             document.addEventListener('click', function(e) {
                 if (e.target.closest('.remove-species')) {
-                    e.target.closest('.species-row').remove();
+                    const row = e.target.closest('.flex');
+                    row.remove();
+                    updateTotalTrees();
                 }
             });
             
-            // Update hidden species field before form submission
+            // Add event listeners to existing quantity inputs
+            speciesContainer.querySelectorAll('input[name="species_quantity[]"]').forEach(input => {
+                input.addEventListener('input', updateTotalTrees);
+            });
+
+            // Simple form submission
             if (form) {
-                form.addEventListener('submit', function(e) {
-                    // Get all species and quantities
-                    const speciesSelects = document.querySelectorAll('select[name="species[]"]');
-                    const quantityInputs = document.querySelectorAll('input[name="species_quantity[]"]');
-                    
+                form.addEventListener('submit', function() {
+                    const speciesRows = speciesContainer.querySelectorAll('.flex');
                     let speciesData = [];
-                    let isValid = true;
                     
-                    // Validate and collect species data
-                    for (let i = 0; i < speciesSelects.length; i++) {
-                        const select = speciesSelects[i];
-                        const input = quantityInputs[i];
-                        
-                        if (select.value && input.value) {
-                            speciesData.push(`${select.value} (${input.value})`);
-                        } else if (select.value || input.value) {
-                            // If one is filled but not the other
-                            isValid = false;
-                            break;
+                    speciesRows.forEach(row => {
+                        const select = row.querySelector('select[name="species[]"]');
+                        const quantity = row.querySelector('input[name="species_quantity[]"]');
+                        if (select.value && quantity.value) {
+                            const quantityValue = parseInt(quantity.value) || 0;
+                            speciesData.push(`${select.value} (${quantityValue})`);
                         }
-                        // Skip completely empty rows
-                    }
+                    });
                     
-                    // If validation fails, show error and prevent submission
-                    if (!isValid) {
-                        e.preventDefault();
-                        alert('Please provide both species and quantity for each row');
-                        return;
-                    }
-                    
-                    if (speciesData.length === 0) {
-                        e.preventDefault();
-                        alert('Please add at least one species with quantity');
-                        return;
-                    }
-                    
-                    // Update the hidden species field with the combined data
                     hiddenSpeciesField.value = speciesData.join(', ');
-                    console.log('Submitting species:', hiddenSpeciesField.value);
+
+                    // Ensure volume fields are properly formatted as decimal strings
+                    if (totalVolumeInput) {
+                        totalVolumeInput.value = parseFloat(totalVolumeInput.value || 0).toFixed(2);
+                    }
+                    if (grossVolumeInput) {
+                        grossVolumeInput.value = parseFloat(grossVolumeInput.value || 0).toFixed(2);
+                    }
+                    if (netVolumeInput) {
+                        netVolumeInput.value = parseFloat(netVolumeInput.value || 0).toFixed(2);
+                    }
                 });
             }
 

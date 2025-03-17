@@ -213,6 +213,7 @@
             document.getElementById('inputVolume').addEventListener('input', updateCalculations);
 
             function updateCalculations() {
+                const date = document.getElementById('date').value;
                 const volume = parseFloat(document.getElementById('inputVolume').value) || 0;
                 const species = document.querySelector('select[name="species"]').value;
                 // Initialize remaining balance to gross volume when no records exist
@@ -233,6 +234,10 @@
 
                     details = `
                         <div class="text-sm space-y-1">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Date:</span>
+                                <span>${date}</span>
+                            </div>
                             <div class="flex justify-between text-gray-600">
                                 <span>Original Volume:</span>
                                 <span>${volume.toFixed(2)} cu.m</span>
@@ -266,6 +271,10 @@
 
                     details = `
                         <div class="text-sm space-y-1">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Date:</span>
+                                <span>${date}</span>
+                            </div>
                             <div class="flex justify-between text-gray-600">
                                 <span>Current Balance:</span>
                                 <span>${currentBalance.toFixed(2)} cu.m</span>
@@ -309,6 +318,9 @@
                     addVolumeButton.innerHTML = 'Add Volume';
                 }
             }
+
+            // Add event listener for date field
+            document.getElementById('date').addEventListener('change', updateCalculations);
         });
     </script>
 
@@ -421,6 +433,12 @@
                 {% endif %}
 
                 <div class="space-y-4">
+                    <!-- Date Selection -->
+                    <div>
+                        <label for="date" class="block text-sm font-medium text-gray-700">Date*</label>
+                        <input type="date" name="date" id="date" class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                    </div>
+
                     <!-- Species Selection -->
                     <div>
                         <label for="species" class="block text-sm font-medium text-gray-700">Species*</label>
@@ -526,6 +544,7 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Species</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. of Trees</th>
@@ -540,6 +559,7 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         {% for record in volume_records %}
                         <tr id="record-row-{{ record.id }}" class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.date|date:"M d, Y" }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ record.date_added|date:"M d, Y" }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.species }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ record.number_of_trees }}</td>
@@ -798,22 +818,22 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Species</label>
                         <select name="species" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="Sawn Lumber" ${cells[1].textContent === 'Sawn Lumber' ? 'selected' : ''}>Sawn Lumber</option>
-                            <option value="Fuel Wood" ${cells[1].textContent === 'Fuel Wood' ? 'selected' : ''}>Fuel Wood</option>
-                            <option value="Minepoles" ${cells[1].textContent === 'Minepoles' ? 'selected' : ''}>Minepoles</option>
-                            <option value="Molave" ${cells[1].textContent === 'Molave' ? 'selected' : ''}>Molave</option>
-                            <option value="Yemane" ${cells[1].textContent === 'Yemane' ? 'selected' : ''}>Yemane</option>
-                            <option value="Mahogany" ${cells[1].textContent === 'Mahogany' ? 'selected' : ''}>Mahogany</option>
-                            <option value="Narra" ${cells[1].textContent === 'Narra' ? 'selected' : ''}>Narra</option>
+                            <option value="Sawn Lumber" ${cells[2].textContent === 'Sawn Lumber' ? 'selected' : ''}>Sawn Lumber</option>
+                            <option value="Fuel Wood" ${cells[2].textContent === 'Fuel Wood' ? 'selected' : ''}>Fuel Wood</option>
+                            <option value="Minepoles" ${cells[2].textContent === 'Minepoles' ? 'selected' : ''}>Minepoles</option>
+                            <option value="Molave" ${cells[2].textContent === 'Molave' ? 'selected' : ''}>Molave</option>
+                            <option value="Yemane" ${cells[2].textContent === 'Yemane' ? 'selected' : ''}>Yemane</option>
+                            <option value="Mahogany" ${cells[2].textContent === 'Mahogany' ? 'selected' : ''}>Mahogany</option>
+                            <option value="Narra" ${cells[2].textContent === 'Narra' ? 'selected' : ''}>Narra</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Number of Trees</label>
-                        <input type="number" name="number_of_trees" value="${cells[2].textContent}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <input type="number" name="number_of_trees" value="${cells[3].textContent}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Volume</label>
-                        <input type="number" step="0.01" name="volume" value="${cells[3].textContent}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <input type="number" step="0.01" name="volume" value="${cells[4].textContent}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Remarks</label>

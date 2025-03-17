@@ -51,11 +51,12 @@ urlpatterns = [
     path('chainsaw-dash/', views.chainsaw_dash, name='chainsaw-dash'),
     path('get-last-chainsaw-number/', views.get_last_chainsaw_number, name='get_last_chainsaw_number'),
     path('wood-dash/', views.wood_dashboard, name='wood-dash'),
+    path('get-volume-details/<int:cutting_id>/', views.get_volume_details, name='get-volume-details'),
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     # try:
     #     import debug_toolbar
     #     urlpatterns.append(path('__debug__/', include(debug_toolbar.urls)))
