@@ -70,7 +70,7 @@ class LumberForm(forms.ModelForm):
             'no': forms.TextInput(attrs={'readonly': 'readonly'}),
             'trade_name': forms.TextInput(attrs={'required': True, 'class': 'form-input'}),
             'manager_owner': forms.TextInput(attrs={'required': True, 'class': 'form-input'}),
-            'contact_number': forms.TextInput(attrs={'required': True, 'pattern': '^09\d{9}$', 'class': 'form-input'}),
+            'contact_number': forms.TextInput(attrs={'required': True, 'pattern': r'^09\d{9}$', 'class': 'form-input'}),
             'gender': forms.Select(attrs={'required': True, 'class': 'form-input'}),
             'brgy': forms.TextInput(attrs={'required': True, 'class': 'form-input'}),
             'municipality': forms.TextInput(attrs={'required': True, 'class': 'form-input'}),
@@ -168,38 +168,54 @@ class ChainsawForm(forms.ModelForm):
 class WoodForm(forms.ModelForm):
     class Meta:
         model = Wood
-        fields = ['name', 'type', 'wpp_number', 'integrated', 'business', 'plant', 
-                 'drc', 'alr', 'longitude', 'latitude', 'supplier_info', 
-                 'local_volume', 'imported_volume', 'area', 'approved_by',
-                 'date_issued', 'date_released', 'expiry_date', 'wood_status', 'attachment']
+        fields = [
+            'name', 
+            'type', 
+            'wpp_number', 
+            'business_name',
+            'address',
+            'drc',
+            'alr',
+            'longitude',
+            'latitude',
+            'supplier_info',
+            'local_volume',
+            'imported_volume',
+            'area',
+            'approved_by',
+            'date_issued',
+            'date_released',
+            'expiry_date',
+            'wood_status',
+            'attachment'
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Ensure the type field has both options
-        self.fields['type'].choices = [
-            ('', 'Select Type'),
-            ('Resawmill-new', 'Resawmill-new'),
-            ('Resawmill-renew', 'Resawmill-renew')
-        ]
+        # Add any field-specific widgets or attributes
+        self.fields['date_issued'].widget = forms.DateInput(attrs={'type': 'date'})
+        self.fields['date_released'].widget = forms.DateInput(attrs={'type': 'date'})
+        self.fields['expiry_date'].widget = forms.DateInput(attrs={'type': 'date'})
         
-        # Mark required fields - make sure this matches your model requirements
-        required_fields = ['name', 'type', 'wpp_number', 'business', 'plant', 
-                         'drc', 'area', 'approved_by', 'date_issued', 
-                         'date_released', 'wood_status', 'longitude', 'latitude']
+        # Remove the fields that don't exist in the model
+        if 'plant' in self.fields:
+            del self.fields['plant']
+        if 'business' in self.fields:
+            del self.fields['business']
+        if 'integrated' in self.fields:
+            del self.fields['integrated']
+        
+        # Mark required fields
+        required_fields = [
+            'name', 'type', 'wpp_number', 'business_name', 'address',
+            'drc', 'approved_by', 'date_issued', 
+            'date_released', 'wood_status'
+        ]
         for field in required_fields:
             self.fields[field].required = True
-            
+
     def clean(self):
         cleaned_data = super().clean()
-        date_issued = cleaned_data.get('date_issued')
-        expiry_date = cleaned_data.get('expiry_date')
-
-        # Only validate that expiry date is not before issue date
-        if date_issued and expiry_date and expiry_date < date_issued:
-            raise ValidationError({
-                'expiry_date': 'Expiry date cannot be before the issue date.'
-            })
-
         return cleaned_data
 
     def clean_date_issued(self):

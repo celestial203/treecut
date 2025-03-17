@@ -531,26 +531,33 @@
         <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-8">
             <h2 class="text-2xl font-bold mb-6">Add New WPP Record</h2>
 
-            <form method="post" action="{% url 'wood' %}" enctype="multipart/form-data" class="space-y-6" id="wppForm" novalidate>
+            <form method="post" 
+                  action="{% url 'wood' %}" 
+                  enctype="multipart/form-data" 
+                  class="space-y-6" 
+                  id="wppForm" 
+                  name="wppForm" 
+                  novalidate>
                 {% csrf_token %}
                 
-                <!-- Make the form errors visible for debugging -->
+                <!-- Fix for form-errors -->
                 <div id="form-errors" name="form-errors" class="text-red-500 mb-4"></div>
 
-                <!-- First Row: Name and Type -->
+                <!-- Fix for form fields -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label for="id_name" class="block text-sm font-medium text-gray-700">Name</label>
+                        <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
                         <input type="text" 
-                               id="id_name"
+                               id="name"
                                name="name" 
                                class="form-input mt-1 w-full" 
                                autocomplete="organization"
                                required>
                     </div>
+                    
                     <div>
-                        <label for="id_type" class="block text-sm font-medium text-gray-700">Type</label>
-                        <select id="id_type" 
+                        <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
+                        <select id="type" 
                                 name="type" 
                                 class="form-input mt-1 w-full" 
                                 autocomplete="off"
@@ -559,9 +566,10 @@
                             <option value="Resawmill-renew">RESAWMILL-RENEWAL</option>
                         </select>
                     </div>
+                    
                 </div>
 
-                <!-- Second Row: WPP Number and Integrated -->
+                <!-- Second Row: WPP Number and Business Name -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
                         <label for="wpp_number" class="block text-sm font-medium text-gray-700">WPP Number</label>
@@ -574,9 +582,9 @@
                                autocomplete="off">
                     </div>
                     <div>
-                        <label for="business_name" class="block text-sm font-medium text-gray-700">Business Name</label>
+                        <label for="id_business_name" class="block text-sm font-medium text-gray-700">Business Name</label>
                         <input type="text" 
-                               id="business_name"
+                               id="id_business_name"
                                name="business_name" 
                                placeholder="Enter business name"
                                class="form-input mt-1 w-full"
@@ -585,12 +593,7 @@
                     </div>
                 </div>
 
-                <!-- Location Section -->
-                <div class="mt-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Location</h3>
-                </div>
-
-                <!-- Third Row: Business and Plant -->
+                <!-- Location Fields -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
                         <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
@@ -602,19 +605,9 @@
                                required
                                autocomplete="off">
                     </div>
-                    <div>
-                        <label for="proprietor" class="block text-sm font-medium text-gray-700">Proprietor</label>
-                        <input type="text" 
-                               id="proprietor"
-                               name="proprietor" 
-                               placeholder="Enter proprietor name"
-                               class="form-input mt-1 w-full"
-                               required
-                               autocomplete="off">
-                    </div>
                 </div>
 
-                <!-- Fourth Row: DRC and ALR with auto calculation restored -->
+                <!-- DRC and ALR Fields -->
                 <div class="grid grid-cols-2 gap-6">
                     <div>
                         <label for="drc" class="block text-sm font-medium text-gray-700">DRC (cu.m)</label>
@@ -638,28 +631,25 @@
                     </div>
                 </div>
 
-                <!-- Coordinates Section -->
-                <div class="mt-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Coordinates</h3>
-                    <div class="grid grid-cols-2 gap-6">
-                        <div>
-                            <label for="longitude" class="block text-sm font-medium text-gray-700">Longitude</label>
-                            <input type="number" 
-                                   id="longitude"
-                                   name="longitude" 
-                                   placeholder=""
-                                   class="form-input mt-1 w-full"
-                                   autocomplete="off">
-                        </div>
-                        <div>
-                            <label for="latitude" class="block text-sm font-medium text-gray-700">Latitude</label>
-                            <input type="number" 
-                                   id="latitude"
-                                   name="latitude" 
-                                   placeholder=""
-                                   class="form-input mt-1 w-full"
-                                   autocomplete="off">
-                        </div>
+                <!-- Coordinates Fields -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label for="longitude" class="block text-sm font-medium text-gray-700">Longitude</label>
+                        <input type="number" 
+                               id="longitude"
+                               name="longitude" 
+                               placeholder=""
+                               class="form-input mt-1 w-full"
+                               autocomplete="off">
+                    </div>
+                    <div>
+                        <label for="latitude" class="block text-sm font-medium text-gray-700">Latitude</label>
+                        <input type="number" 
+                               id="latitude"
+                               name="latitude" 
+                               placeholder=""
+                               class="form-input mt-1 w-full"
+                               autocomplete="off">
                     </div>
                 </div>
 
@@ -810,14 +800,15 @@
     
 
     <script>
-        // Add these menu toggle functions at the start of your script
         document.addEventListener('DOMContentLoaded', function() {
             // User menu toggle
             const userMenuButton = document.getElementById('user-menu-button');
             const userMenu = document.getElementById('user-menu');
+            const wppForm = document.getElementById('wppForm');
             
             if (userMenuButton && userMenu) {
-                userMenuButton.addEventListener('click', function() {
+                userMenuButton.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent event from bubbling up
                     const isExpanded = userMenuButton.getAttribute('aria-expanded') === 'true';
                     userMenuButton.setAttribute('aria-expanded', !isExpanded);
                     userMenu.classList.toggle('hidden');
@@ -838,51 +829,30 @@
             
             if (mobileMenuButton && mobileMenu) {
                 mobileMenuButton.addEventListener('click', function() {
-                    mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'block' : 'none';
+                    const currentDisplay = window.getComputedStyle(mobileMenu).display;
+                    mobileMenu.style.display = currentDisplay === 'none' ? 'block' : 'none';
                 });
             }
-        });
 
-        // Move clearForm function outside DOMContentLoaded
-        function clearForm() {
-            const wppForm = document.getElementById('wppForm');
-            if (wppForm) {
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: 'This will clear all form fields.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, clear it!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        wppForm.reset();
-                        // Clear any validation states
-                        document.querySelectorAll('.invalid-input').forEach(input => {
-                            input.classList.remove('invalid-input');
-                        });
-                        // Reset the ALR field
-                        document.getElementById('id_alr').value = '';
-                        // Reset all date display inputs
-                        document.querySelectorAll('.date-picker-wrapper input[type="text"]').forEach(input => {
-                            input.value = '';
-                        });
-                        Swal.fire(
-                            'Cleared!',
-                            'The form has been cleared.',
-                            'success'
-                        );
-                    }
-                });
+            // ALR calculation function
+            function calculateALR() {
+                const drcInput = document.getElementById('drc');
+                const alrInput = document.getElementById('alr');
+                
+                if (drcInput && alrInput) {
+                    const drc = parseFloat(drcInput.value) || 0;
+                    const alr = drc * 0.80 * 290;
+                    alrInput.value = alr.toFixed(1);
+                }
             }
-        }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add event listener for clear button
-            document.getElementById('clearFormButton').addEventListener('click', clearForm);
-            
-            // Form validation and submission handling
+            // Add event listener for DRC input
+            const drcInput = document.getElementById('drc');
+            if (drcInput) {
+                drcInput.addEventListener('input', calculateALR);
+            }
+
+            // Form validation and submission
             if (wppForm) {
                 wppForm.addEventListener('submit', function(event) {
                     event.preventDefault();
@@ -904,23 +874,22 @@
                         }
                     });
                     
-                    // Validate coordinates format (optional but recommended)
-                    const longitude = document.getElementById('id_longitude').value;
-                    const latitude = document.getElementById('id_latitude').value;
+                    // Validate coordinates if they exist
+                    const longitude = document.getElementById('longitude');
+                    const latitude = document.getElementById('latitude');
                     
-                    if (longitude && !isValidCoordinate(longitude, 'longitude')) {
+                    if (longitude && longitude.value && !isValidCoordinate(longitude.value, 'longitude')) {
                         hasErrors = true;
                         errorMessages.push('Invalid longitude format');
-                        document.getElementById('id_longitude').classList.add('invalid-input');
+                        longitude.classList.add('invalid-input');
                     }
                     
-                    if (latitude && !isValidCoordinate(latitude, 'latitude')) {
+                    if (latitude && latitude.value && !isValidCoordinate(latitude.value, 'latitude')) {
                         hasErrors = true;
                         errorMessages.push('Invalid latitude format');
-                        document.getElementById('id_latitude').classList.add('invalid-input');
+                        latitude.classList.add('invalid-input');
                     }
                     
-                    // If there are errors, show SweetAlert
                     if (hasErrors) {
                         Swal.fire({
                             title: 'Validation Error',
@@ -929,7 +898,6 @@
                             confirmButtonColor: '#3085d6'
                         });
                     } else {
-                        // If no errors, submit the form with success message
                         wppForm.submit();
                     }
                 });
@@ -939,17 +907,6 @@
             function clearErrors() {
                 document.querySelectorAll('.invalid-input').forEach(input => {
                     input.classList.remove('invalid-input');
-                });
-            }
-
-            function showNotification(message, type) {
-                Swal.fire({
-                    title: type.charAt(0).toUpperCase() + type.slice(1),
-                    text: message,
-                    icon: type,
-                    confirmButtonColor: '#3085d6',
-                    timer: 3000,
-                    timerProgressBar: true
                 });
             }
 
@@ -965,43 +922,20 @@
                 return false;
             }
 
-            // Add event listener for DRC input
-            const drcInput = document.getElementById('id_drc');
-            if (drcInput) {
-                drcInput.addEventListener('input', calculateALR);
-            }
-
-            // Restore the ALR calculation function
-            function calculateALR() {
-                const drcInput = document.getElementById('id_drc');
-                const alrInput = document.getElementById('id_alr');
-                
-                if (drcInput && alrInput) {
-                    const drc = parseFloat(drcInput.value) || 0;
-                    const alr = drc * 0.80 * 290;
-                    alrInput.value = alr.toFixed(1);
-                }
-            }
-
-            // Update the JavaScript date picker implementation:
+            // Initialize date pickers
             document.querySelectorAll('input[type="date"]').forEach(input => {
+                if (!input) return; // Skip if input doesn't exist
+
                 const wrapper = document.createElement('div');
                 wrapper.className = 'date-picker-wrapper';
                 wrapper.style.position = 'relative';
                 
-                // Create a text display input (shows MM/DD/YYYY)
                 const displayInput = document.createElement('input');
                 displayInput.type = 'text';
                 displayInput.className = input.className;
                 displayInput.placeholder = 'MM/DD/YYYY';
                 displayInput.readOnly = true;
                 
-                // Make the display input clickable to trigger the date picker
-                displayInput.addEventListener('click', function() {
-                    datePicker.showPicker(); // This triggers the date picker
-                });
-                
-                // Create the actual date picker
                 const datePicker = document.createElement('input');
                 datePicker.type = 'date';
                 datePicker.name = input.name;
@@ -1015,29 +949,36 @@
                 datePicker.style.opacity = '0';
                 datePicker.style.cursor = 'pointer';
 
-                // If there's an initial value, format it for display
                 if (input.value) {
-                    const date = new Date(input.value);
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const year = date.getFullYear();
-                    displayInput.value = `${month}/${day}/${year}`;
+                    try {
+                        const date = new Date(input.value);
+                        if (!isNaN(date.getTime())) {
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const year = date.getFullYear();
+                            displayInput.value = `${month}/${day}/${year}`;
+                        }
+                    } catch (e) {
+                        console.error('Error formatting date:', e);
+                    }
                 }
                 
-                // When date picker changes, update the display
                 datePicker.addEventListener('change', function() {
                     if (this.value) {
-                        const date = new Date(this.value);
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const day = String(date.getDate()).padStart(2, '0');
-                        const year = date.getFullYear();
-                        displayInput.value = `${month}/${day}/${year}`;
+                        try {
+                            const date = new Date(this.value);
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const year = date.getFullYear();
+                            displayInput.value = `${month}/${day}/${year}`;
+                        } catch (e) {
+                            console.error('Error updating date display:', e);
+                        }
                     } else {
                         displayInput.value = '';
                     }
                 });
                 
-                // Add calendar icon
                 const calendarIcon = document.createElement('div');
                 calendarIcon.innerHTML = `
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" viewBox="0 0 16 16">
@@ -1051,13 +992,13 @@
                 calendarIcon.style.pointerEvents = 'none';
                 calendarIcon.style.zIndex = '0';
                 
-                // Add elements to wrapper
                 wrapper.appendChild(displayInput);
                 wrapper.appendChild(datePicker);
                 wrapper.appendChild(calendarIcon);
                 
-                // Replace original input with our custom implementation
-                input.parentNode.replaceChild(wrapper, input);
+                if (input.parentNode) {
+                    input.parentNode.replaceChild(wrapper, input);
+                }
             });
         });
     </script>

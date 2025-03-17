@@ -420,141 +420,44 @@ class Chainsaw(models.Model):
             return 'Active'
 
 class Wood(models.Model):
-    STATUS_CHOICES = [
+    WOOD_STATUS_CHOICES = [
         ('ACTIVE_NEW', 'Active (New)'),
         ('ACTIVE_RENEWED', 'Active (Renewed)'),
         ('EXPIRED', 'Expired'),
         ('SUSPENDED', 'Suspended'),
-        ('CANCELLED', 'Cancelled'),
+        ('CANCELLED', 'Cancelled')
     ]
-    
+
     TYPE_CHOICES = [
-        ('Resawmill-new', 'Resawmill-new'),
-        ('Resawmill-renew', 'Resawmill-renew'),
+        ('Resawmill-new', 'RESAWMILL-NEW'),
+        ('Resawmill-renew', 'RESAWMILL-RENEWAL')
     ]
-    
-    # Basic Information
-    name = models.CharField(max_length=200, default='', help_text="Name of the wood processing plant")
+
+    name = models.CharField(max_length=255)
     type = models.CharField(max_length=50, choices=TYPE_CHOICES)
-    wpp_number = models.CharField(max_length=100, default='', help_text="WPP registration number")
-    integrated = models.CharField(max_length=100, blank=True, null=True)
-    business = models.CharField(max_length=200, default='', help_text="Business name")
-    plant = models.CharField(max_length=200, default='', help_text="Plant location/address")
-    
-    # Technical Details
-    drc = models.DecimalField(
-        max_digits=10, 
-        decimal_places=2,
-        validators=[MinValueValidator(Decimal('0.00'))],
-        help_text="DRC in cubic meters",
-        default=Decimal('0.00')
-    )
-    alr = models.CharField(  # Changed from DecimalField to CharField
-        max_length=20,
-        null=True,
-        blank=True,
-        help_text="Annual Log Requirement (ALR)"
-    )
-    
-    # Location Information
-    latitude = models.CharField(
-        max_length=20,
-        null=True,
-        blank=True,
-        help_text="Enter latitude (e.g., 9.990572)"
-    )
-    longitude = models.CharField(
-        max_length=20,
-        null=True,
-        blank=True,
-        help_text="Enter longitude (e.g., 123.305953)"
-    )
-    supplier_info = models.CharField(
-        max_length=500, 
-        help_text="Location/Address of supplier",
-        null=True,
-        blank=True
-    )
-    
-    # Volume Contracted
-    local_volume = models.DecimalField(
-        max_digits=10, 
-        decimal_places=3,
-        validators=[MinValueValidator(Decimal('0.000'))],
-        help_text="Local volume in cubic meters",
-        default=Decimal('0.000')
-    )
-    imported_volume = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        null=True,
-        blank=True
-    )
-    area = models.DecimalField(
-        max_digits=10, 
-        decimal_places=2,
-        null=True,
-        blank=True
-    )
-    
-    # Dates
+    wpp_number = models.CharField(max_length=100)
+    business_name = models.CharField(max_length=255, null=True, blank=True, default='Default Business Name')
+    address = models.CharField(max_length=255, null=True, blank=True, default='')
+    drc = models.DecimalField(max_digits=10, decimal_places=2)
+    alr = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    supplier_info = models.TextField(null=True, blank=True)
+    local_volume = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    imported_volume = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    area = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    approved_by = models.CharField(max_length=255, default='CENRO')
     date_issued = models.DateField()
-    date_released = models.DateField(default=timezone.now)
-    expiry_date = models.DateField(default=timezone.now)
-    
-    # Approval and Status
-    approved_by = models.CharField(max_length=200, null=True, blank=True, default='')
-    wood_status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='ACTIVE_NEW'
-    )
-    
-    # File Attachment
-    attachment = models.FileField(
-        upload_to='wood_files/',
-        null=True,
-        blank=True
-    )
-    
-    # Timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    date_released = models.DateField()
+    expiry_date = models.DateField(null=True, blank=True)
+    wood_status = models.CharField(max_length=20, choices=WOOD_STATUS_CHOICES, default='ACTIVE_NEW')
+    attachment = models.FileField(upload_to='wood_attachments/', null=True, blank=True)
 
-    def clean(self):
-        super().clean()
-        if self.date_issued and self.expiry_date:
-            # Convert datetime to date if needed
-            if isinstance(self.date_issued, datetime):
-                self.date_issued = self.date_issued.date()
-            if isinstance(self.expiry_date, datetime):
-                self.expiry_date = self.expiry_date.date()
-            
-            # Now compare dates
-            if self.expiry_date <= self.date_issued:
-                raise ValidationError('Expiry date must be after date issued.')
-
-    def save(self, *args, **kwargs):
-        # Calculate expiry date if not set (5 years from date issued)
-        if self.date_issued and not self.expiry_date:
-            if isinstance(self.date_issued, datetime):
-                self.date_issued = self.date_issued.date()
-            self.expiry_date = self.date_issued + timedelta(days=5*365)
-        
-        # Calculate ALR if not set
-        if self.drc and (self.alr is None or self.alr == 0):
-            self.alr = self.drc * 290 * Decimal('0.80')
-        
-        self.full_clean()
-        super().save(*args, **kwargs)
+    class Meta:
+        db_table = 'base_wood'
 
     def __str__(self):
         return f"{self.name} - {self.wpp_number}"
-
-    class Meta:
-        ordering = ['-date_issued']
-        verbose_name = "Wood Processing Plant"
-        verbose_name_plural = "Wood Processing Plants"
 
 class CuttingRecord(models.Model):
     SPECIES_CHOICES = [
