@@ -712,7 +712,7 @@ def update_wood(request, pk):
                 wood.date_issued = request.POST.get('date_issued')
                 wood.date_released = request.POST.get('date_released')
                 wood.expiry_date = request.POST.get('expiry_date')
-                wood.status = request.POST.get('status')
+                wood.wood_status = request.POST.get('wood_status')
                 
                 # Handle file upload if a new file is provided
                 if 'attachment' in request.FILES:
@@ -781,23 +781,33 @@ def update_wood(request, pk):
 
 @login_required
 def wood_records(request):
-    # Get filter parameters
     status = request.GET.get('status')
-    today = date.today()
+    today = timezone.now().date()
     
     # Base queryset
     wood_records = Wood.objects.all()
     
-    # Apply filters based on status
-    if status:
-        wood_records = wood_records.filter(wood_status=status)  # Changed from permit_status to wood_status
-    
-    # Order the results
-    wood_records = wood_records.order_by('-created_at')
+    # Apply filters based on status parameter
+    if status == 'active_new':
+        wood_records = wood_records.filter(wood_status='ACTIVE (NEW)')
+    elif status == 'active_renewed':
+        wood_records = wood_records.filter(wood_status='ACTIVE (RENEWED)')
+    elif status == 'expired':
+        wood_records = wood_records.filter(wood_status='EXPIRED')
+    elif status == 'suspended':
+        wood_records = wood_records.filter(wood_status='SUSPENDED')
+    elif status == 'cancelled':
+        wood_records = wood_records.filter(wood_status='CANCELLED')
+    elif status == 'expiring_soon':
+        expiry_threshold = today + timedelta(days=90)
+        wood_records = wood_records.filter(
+            expiry_date__gt=today,
+            expiry_date__lte=expiry_threshold
+        )
     
     context = {
         'wood_records': wood_records,
-        'today': today,
+        'current_status': status,
     }
     return render(request, 'wood_record.html', context)
 
@@ -1396,13 +1406,13 @@ def treecut_dash(request):
     # Active cutting permits (not expired)
     active_cutting_count = Cutting.objects.filter(
         Q(permit_type__in=['TCP', 'PLTP', 'SPLTP'], expiry_date__gte=current_date) |
-        Q(permit_type='STCP', volume_records__isnull=False)
-    ).distinct().count()
+        Q(permit_type='STCP', situation='Good')
+    ).count()
     
     # Calculate pending cutting permits (STCP with no volume records)
     pending_cutting_count = Cutting.objects.filter(
         permit_type='STCP',
-        volume_records__isnull=True
+        situation='Pending'
     ).count()
 
     # Lumber Records counts
@@ -1645,17 +1655,47 @@ def lumber_form(request):
 
 @login_required
 def wood_dashboard(request):
-    # Now you can use WoodProcessingPlant model
-    wood_count = WoodProcessingPlant.objects.count()
-    active_wood_count = WoodProcessingPlant.objects.filter(status='active').count()
-    expired_wood_count = WoodProcessingPlant.objects.filter(status='expired').count()
-    expiring_soon_wood_count = WoodProcessingPlant.objects.filter(status='expiring_soon').count()
-    
+    today = timezone.now().date()
+    expiry_threshold = today + timedelta(days=90)
+
+    # Get all records
+    wood_records = Wood.objects.all()
+
+    # Filter for different statuses - using wood_status instead of status
+    active_new_count = wood_records.filter(
+        wood_status='ACTIVE (NEW)'
+    ).count()
+
+    active_renewed_count = wood_records.filter(
+        wood_status='ACTIVE (RENEWED)'
+    ).count()
+
+    expired_count = wood_records.filter(
+        wood_status='EXPIRED'
+    ).count()
+
+    suspended_count = wood_records.filter(
+        wood_status='SUSPENDED'
+    ).count()
+
+    cancelled_count = wood_records.filter(
+        wood_status='CANCELLED'
+    ).count()
+
+    # Calculate expiring soon
+    expiring_soon_count = wood_records.filter(
+        expiry_date__gt=today,
+        expiry_date__lte=expiry_threshold
+    ).count()
+
     context = {
-        'wood_count': wood_count,
-        'active_wood_count': active_wood_count,
-        'expired_wood_count': expired_wood_count,
-        'expiring_soon_wood_count': expiring_soon_wood_count,
+        'wood_count': wood_records.count(),
+        'expiring_soon_wood_count': expiring_soon_count,
+        'active_new_count': active_new_count,
+        'active_renewed_count': active_renewed_count,
+        'expired_wood_count': expired_count,
+        'suspended_count': suspended_count,
+        'cancelled_count': cancelled_count,
     }
     
     return render(request, 'wood-dash.html', context)

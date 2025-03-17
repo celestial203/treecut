@@ -810,6 +810,39 @@
     
 
     <script>
+        // Add these menu toggle functions at the start of your script
+        document.addEventListener('DOMContentLoaded', function() {
+            // User menu toggle
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            
+            if (userMenuButton && userMenu) {
+                userMenuButton.addEventListener('click', function() {
+                    const isExpanded = userMenuButton.getAttribute('aria-expanded') === 'true';
+                    userMenuButton.setAttribute('aria-expanded', !isExpanded);
+                    userMenu.classList.toggle('hidden');
+                });
+
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                        userMenuButton.setAttribute('aria-expanded', 'false');
+                        userMenu.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'block' : 'none';
+                });
+            }
+        });
+
         // Move clearForm function outside DOMContentLoaded
         function clearForm() {
             const wppForm = document.getElementById('wppForm');
