@@ -116,7 +116,7 @@
                     </div>
                 </a>
 
-                <a href="{% url 'cutting_records' %}?status=pending" class="block">
+                <a href="{% url 'cutting_records' %}?status=pending&no_volume=true" class="block">
                     <div class="bg-transparent border-2 border-green-600 rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-green-50">
                         <div class="text-4xl font-bold text-black">{{ pending_cutting_count }}</div>
                         <div class="text-green-900">Pending STCP</div>

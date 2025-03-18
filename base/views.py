@@ -390,9 +390,8 @@ def edit_recordlumber(request, pk):
 #FOR CUTTING ####
 @login_required
 def edit_cutting(request, pk):
-    cutting = get_object_or_404(Cutting, pk=pk)
+    cutting = get_object_or_404(Cutting, id=pk)
     species_choices = [
-        'Select Species',
         'Molave',
         'Yemane',
         'Mahogany',
@@ -402,60 +401,47 @@ def edit_cutting(request, pk):
     
     if request.method == 'POST':
         form = CuttingForm(request.POST, request.FILES, instance=cutting)
-        
         if form.is_valid():
             try:
-                cutting = form.save(commit=False)
-                
-                # Handle species and quantities
-                species_list = request.POST.getlist('species[]')
-                quantities = request.POST.getlist('species_quantity[]')
-                
-                # Validate species and quantities
-                if not species_list or not quantities:
-                    messages.error(request, 'At least one species with quantity is required')
-                    return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting, 'species_choices': species_choices})
-                
-                # Combine species with their quantities
-                species_with_qty = []
-                total_trees = 0
-                for species, qty in zip(species_list, quantities):
-                    if species and qty:
-                        try:
-                            qty_int = int(qty)
-                            if qty_int <= 0:
-                                messages.error(request, 'Quantity must be greater than 0')
-                                return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting, 'species_choices': species_choices})
-                            total_trees += qty_int
-                            species_with_qty.append(f"{species} ({qty})")
-                        except ValueError:
-                            messages.error(request, 'Invalid quantity value')
-                            return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting, 'species_choices': species_choices})
-                
-                cutting.species = ', '.join(species_with_qty)
-                cutting.no_of_trees = total_trees
-                
-                # Calculate volumes based on total_volume_granted
-                if cutting.total_volume_granted:
-                    # Convert to Decimal and use Decimal for calculations
-                    total_volume = Decimal(str(cutting.total_volume_granted))
-                    cutting.gross_volume = total_volume + (total_volume * Decimal('0.30'))
-                    cutting.net_volume = total_volume * Decimal('0.70')
-                
-                # Save the record
-                cutting.save()
-                messages.success(request, f'Successfully updated cutting record for {cutting.permit_type}-{cutting.permit_number}')
+                cutting = form.save()
+                messages.success(request, 'Cutting record updated successfully.')
                 return redirect('view_cutting', cutting.id)
             except Exception as e:
-                messages.error(request, f'Error saving record: {str(e)}')
+                messages.error(request, f'Error updating cutting record: {str(e)}')
         else:
-            for field, errors in form.errors.items():
-                for error in errors:
-                    messages.error(request, f"{field}: {error}")
+            messages.error(request, 'Please correct the errors below.')
     else:
-        form = CuttingForm(instance=cutting)
+        # Initialize form with current data
+        initial_data = {
+            'permit_type': cutting.permit_type,
+            'permit_number': cutting.permit_number,
+            'date_issued': cutting.date_issued,
+            'expiry_date': cutting.expiry_date,
+            'permittee': cutting.permittee,
+            'rep_by': cutting.rep_by,
+            'location': cutting.location,
+            'latitude': cutting.latitude,
+            'longitude': cutting.longitude,
+            'tct_oct_no': cutting.tct_oct_no,
+            'tax_dec_no': cutting.tax_dec_no,
+            'lot_no': cutting.lot_no,
+            'area': cutting.area,
+            'species': cutting.species,
+            'no_of_trees': cutting.no_of_trees,
+            'total_volume_granted': cutting.total_volume_granted,
+            'gross_volume': cutting.gross_volume,
+            'net_volume': cutting.net_volume,
+            'status': cutting.status,
+            'situation': cutting.situation,
+        }
+        form = CuttingForm(instance=cutting, initial=initial_data)
     
-    return render(request, 'edit_cutting.html', {'form': form, 'cutting': cutting, 'species_choices': species_choices})
+    context = {
+        'form': form,
+        'cutting': cutting,
+        'species_choices': species_choices,
+    }
+    return render(request, 'edit_cutting.html', context)
 
 @login_required
 def view_cutting(request, cutting_id):

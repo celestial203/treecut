@@ -11,6 +11,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 # The import statement for VolumeRecord should be placed at the top of the file with other import statements.
 
 class Lumber(models.Model):
@@ -163,145 +165,71 @@ def calculate_expiry_date(date_issued):
     return current_date
 
 class Cutting(models.Model):
-    PERMIT_CHOICES = [
-        ('TCP', 'TCP'),
-        ('STCP', 'STCP'),
-        ('PLTP', 'PLTP'),
-        ('SPLTP', 'SPLTP'),
+    STATUS_CHOICES = [
+        ('ACTIVE', 'Active'),
+        ('EXPIRED', 'Expired'),
+        ('CONSUMED', 'Consumed'),
+        ('PENDING', 'Pending'),
+        ('Active', 'Active'),  # Added to match existing records
+        ('Expired', 'Expired'),  # Added to match existing records
+        ('Pending', 'Pending'),  # Added to match existing records
     ]
-    
+
     SITUATION_CHOICES = [
         ('Good', 'Good'),
         ('Pending', 'Pending'),
-        ('Active', 'Active'),
-        ('Expired', 'Expired'),
+        ('Consumed', 'Consumed'),
+        ('Active', 'Active'),  # Added to match existing records
     ]
-    
-    permit_type = models.CharField(max_length=5, choices=PERMIT_CHOICES, default='TCP')
-    permit_number = models.CharField(max_length=20, help_text='Permit identification number')
-    permittee = models.CharField(max_length=100)
-    location = models.CharField(max_length=200, blank=True, null=True)
-    
-    # Making new fields nullable
-    tct_oct_no = models.CharField(max_length=100, verbose_name="TCT/OCT No.", null=True, blank=True)
-    tax_dec_no = models.CharField(max_length=100, verbose_name="Tax Declaration No.", null=True, blank=True)
-    lot_no = models.CharField(max_length=100, verbose_name="Lot No.", null=True, blank=True)
-    area = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Area (ha.)", null=True, blank=True)
-    no_of_trees = models.IntegerField(verbose_name="Number of Trees", null=True, blank=True)
-    species = models.TextField(help_text="For PLTP, separate multiple species with commas")
-    permit_file = models.FileField(
-        upload_to='permits/',
-        null=True,
-        blank=True,
-        help_text="Upload permit document"
+
+    permit_type = models.CharField(max_length=100)
+    permit_number = models.CharField(max_length=100)
+    date_issued = models.DateField()
+    expiry_date = models.DateField()
+    permittee = models.CharField(max_length=200)
+    rep_by = models.CharField(max_length=200, blank=True, null=True)
+    location = models.CharField(max_length=200, null=True, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
+    tct_oct_no = models.CharField(max_length=100, blank=True, null=True)
+    tax_dec_no = models.CharField(max_length=100, blank=True, null=True)
+    lot_no = models.CharField(max_length=100, blank=True, null=True)
+    area = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    species = models.TextField(blank=True, null=True)
+    no_of_trees = models.IntegerField(default=0)
+    total_volume_granted = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    gross_volume = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    net_volume = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    permit_file = models.FileField(upload_to='permits/', blank=True, null=True)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='PENDING'
     )
-    
-    total_volume_granted = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total Volume Granted (cu.m.)")
-    gross_volume = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        null=True,
-        blank=True
+    situation = models.CharField(
+        max_length=20,
+        choices=SITUATION_CHOICES,
+        default='Pending'
     )
-    net_volume = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        editable=False  # Make this field non-editable since it's calculated
-    )
-    
-    date_issued = models.DateField(default=timezone.now)
-    expiry_date = models.DateField(editable=False)
-    rep_by = models.CharField(max_length=100, blank=True, null=True, verbose_name="Representative")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    situation = models.CharField(
-        max_length=50, 
-        choices=SITUATION_CHOICES,
-        default='Pending',
-        verbose_name='Situation'
-    )
-
-    latitude = models.DecimalField(
-        max_digits=9,
-        decimal_places=6,
-        validators=[
-            MaxValueValidator(999.999999),
-        ],
-        null=True,
-        blank=True,
-        help_text="Latitude coordinates (e.g. 10.123456)"
-    )
-    longitude = models.DecimalField(
-        max_digits=9,
-        decimal_places=6,
-        validators=[
-            MaxValueValidator(999.999999),
-        ],
-        null=True,
-        blank=True,
-        help_text="Longitude coordinates (e.g. 123.456789)"
-    )
-
-    class Meta:
-        ordering = ['-date_issued']
-        unique_together = ['permit_type', 'permit_number']
 
     def __str__(self):
-        return f"{self.permit_type}-{self.permit_number}"
+        return f"{self.permit_type} - {self.permit_number}"
 
     def save(self, *args, **kwargs):
-        if not os.path.exists(os.path.join(settings.MEDIA_ROOT, 'permits')):
-            os.makedirs(os.path.join(settings.MEDIA_ROOT, 'permits'))
-        if self.date_issued:
-            # Always calculate expiry date as 50 business days
-            self.expiry_date = calculate_expiry_date(self.date_issued)
-            
-        # Calculate net volume if gross volume exists
-        if self.gross_volume:
-            self.net_volume = round(float(self.gross_volume) * 0.70, 2)
-        
-        # Handle status based on permit type
-        today = timezone.now().date()
-        
-        if self.permit_type == 'STCP':
-            # For STCP: Status depends on volume records
-            if not self.pk:  # New record
-                self.situation = 'Pending'
-            else:
-                has_records = CuttingRecord.objects.filter(parent_tcp=self).exists()
-                self.situation = 'Good' if has_records else 'Pending'
-        else:
-            # For TCP, PLTP, SPLTP: Status depends on dates
-            if self.expiry_date:
-                if today > self.expiry_date:
-                    self.situation = 'Expired'
-                else:
-                    self.situation = 'Active'
-        
+        print(f"Attempting to save cutting with data: {self.__dict__}")
         super().save(*args, **kwargs)
+        print("Save completed")
 
-    def update_situation(self):
-        """Update the situation status based on permit type and conditions"""
-        today = timezone.now().date()
-        
-        if self.permit_type == 'STCP':
-            # Only update STCP permits based on volume records
-            has_records = CuttingRecord.objects.filter(parent_tcp=self).exists()
-            new_situation = 'Good' if has_records else 'Pending'
-            
-            if self.situation != new_situation:
-                self.situation = new_situation
-                self.save(update_fields=['situation'])
-        else:
-            # For other permit types, update based on expiry date
-            if self.expiry_date:
-                new_situation = 'Expired' if today > self.expiry_date else 'Active'
-                
-                if self.situation != new_situation:
-                    self.situation = new_situation
-                    self.save(update_fields=['situation'])
+    def is_consumed(self):
+        return self.gross_volume >= self.total_volume_granted
+
+@receiver(pre_save, sender=Cutting)
+def cutting_pre_save(sender, instance, **kwargs):
+    print(f"Pre-save signal triggered for cutting: {instance.id}")
+    if instance.is_consumed():
+        print("Permit is consumed")
 
 def chainsaw_file_path(instance, filename):
     # Generate file path: chainsaw_files/YYYY/MM/filename

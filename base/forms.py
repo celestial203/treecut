@@ -125,9 +125,9 @@ class LumberForm(forms.ModelForm):
 class CuttingForm(forms.ModelForm):
     class Meta:
         model = Cutting
-        # Don't specify both fields and exclude - just use exclude
-        exclude = ['gross_volume', 'net_volume', 'created_by']
-        
+        fields = [
+            'date_issued', 'expiry_date', 'status'
+        ]
         widgets = {
             'date_issued': forms.DateInput(attrs={'type': 'date'}),
             'expiry_date': forms.DateInput(attrs={'type': 'date'}),

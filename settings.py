@@ -26,10 +26,10 @@ DEBUG = False
 ALLOWED_HOSTS = ['yourusername.pythonanywhere.com']
 
 # Static files settings
-STATIC_ROOT = '/home/yourusername/Treecut/static'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
+    os.path.join(BASE_DIR, 'base/static'),
 ]
 
 # Default primary key field type
