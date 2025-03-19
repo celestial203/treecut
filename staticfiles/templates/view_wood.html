@@ -1,0 +1,411 @@
+{% load static %}
+{% load form_filters %}
+{% load widget_tweaks %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CENRO Argao - Wood Processing Plant Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: white; /* Changed from light green to white */
+        }
+        
+        .detail-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            border: 2px solid #16a34a; /* Added green border */
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #4b5563;
+            font-size: 0.875rem;
+        }
+        
+        .detail-value {
+            color: #111827;
+            font-size: 1rem;
+            margin-top: 0.25rem;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .status-active {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-expired {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-expiring {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                background-color: white;
+            }
+            
+            .detail-card {
+                box-shadow: none;
+                border: 1px solid #e5e7eb;
+            }
+            
+            nav, .no-print {
+                display: none !important;
+            }
+            
+            .file-preview {
+                display: block !important;
+                page-break-before: always;
+                margin-top: 20px;
+            }
+            
+            .file-preview img {
+                max-width: 100%;
+                height: auto;
+            }
+            
+            .file-preview-title {
+                font-weight: bold;
+                font-size: 16px;
+                margin-bottom: 10px;
+                color: #166534;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="bg-transparent shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0">
+                        <span class="text-xl font-bold text-green-700">FUS-CENRO-ARGAO</span>
+                    </div>
+                </div>
+                <!-- User Menu -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <div class="text-lg text-gray-900 font-medium">
+                        Welcome, {{ request.user.username }}
+                    </div>
+                    <div class="relative">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                            ▼
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                               
+                                <!-- Quick Actions -->
+                                <a href="{% url 'homepage' %}" class="block px-4 py-2 text-sm text-blue-700 hover:bg-gray-100">HOME</a>
+                                <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <a href="{% url 'wood-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">DASHBOARD</a>
+                                    <div class="relative group">
+                                        <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                        <div class="absolute left-0 mt-0 w-48 bg-white rounded-md shadow-lg z-30 hidden group-hover:block">
+                                            <a href="{% url 'wood_records' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">View Records</a>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'chainsaw-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CHAINSAW </a>
+                                    <a href="{% url 'treecut-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CUTTING</a>
+                                    <a href="{% url 'lumber-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">LUMBER</a>
+
+                                </div>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                    </svg>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M3 8h18M3 12h18M3 16h18M3 20h18"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6l8 8 8-8"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="md:hidden" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">Wood Processing Plant Details</h1>
+            
+            <div class="flex space-x-3">
+                <a href="{% url 'update_wood' wood.id %}" class="bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded-md flex items-center no-print">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Edit
+                </a>
+                
+                <button onclick="window.print()" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md flex items-center no-print">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                    Print
+                </button>
+            </div>
+        </div>
+        
+        <div class="detail-card mb-8">
+            <!-- Status Badge -->
+            <div class="flex justify-end mb-4">
+                <span class="status-badge {% if is_expired %}status-expired{% elif is_expiring_soon %}status-expiring{% else %}status-active{% endif %}">
+                    {% if is_expired %}
+                        Expired
+                    {% elif is_expiring_soon %}
+                        Expiring Soon
+                    {% else %}
+                        Active
+                    {% endif %}
+                </span>
+            </div>
+            
+            <!-- Basic Information -->
+            <h2 class="text-lg font-semibold mb-4 text-green-700">Basic Information</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="mb-4">
+                    <div class="detail-label">Name</div>
+                    <div class="detail-value">{{ wood.name }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">Type</div>
+                    <div class="detail-value">{{ wood.get_type_display }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">Integrated</div>
+                    <div class="detail-value">{{ wood.integrated|default:"N/A" }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">WPP Number</div>
+                    <div class="detail-value">{{ wood.wpp_number }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">Business</div>
+                    <div class="detail-value">{{ wood.business }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">Plant</div>
+                    <div class="detail-value">{{ wood.plant }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">DRC (cu.m)</div>
+                    <div class="detail-value">{{ wood.drc }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">ALR (m³)</div>
+                    <div class="detail-value">{{ wood.alr }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">Status</div>
+                    <div class="detail-value">{{ wood.get_wood_status_display }}</div>
+                </div>
+            </div>
+            
+            <!-- Location Information -->
+            <h2 class="text-lg font-semibold mb-4 mt-8 text-green-700">Location Information</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="mb-4">
+                    <div class="detail-label">Longitude</div>
+                    <div class="detail-value">{{ wood.longitude|default:"N/A" }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">Latitude</div>
+                    <div class="detail-value">{{ wood.latitude|default:"N/A" }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">Area</div>
+                    <div class="detail-value">{{ wood.area|default:"N/A" }}</div>
+                </div>
+            </div>
+            
+            <!-- Supply Information -->
+            <h2 class="text-lg font-semibold mb-4 mt-8 text-green-700">Supply Information</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="mb-4">
+                    <div class="detail-label">Supplier Info</div>
+                    <div class="detail-value">{{ wood.supplier_info|default:"N/A" }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">Local Volume</div>
+                    <div class="detail-value">{{ wood.local_volume|default:"N/A" }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">Imported Volume</div>
+                    <div class="detail-value">{{ wood.imported_volume|default:"N/A" }}</div>
+                </div>
+            </div>
+            
+            <!-- Permit Details -->
+            <h2 class="text-lg font-semibold mb-4 mt-8 text-green-700">Permit Details</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="mb-4">
+                    <div class="detail-label">Date Issued</div>
+                    <div class="detail-value">{{ wood.date_issued|date:"F d, Y" }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">Date Released</div>
+                    <div class="detail-value">{{ wood.date_released|date:"F d, Y"|default:"N/A" }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">Expiry Date</div>
+                    <div class="detail-value">{{ wood.expiry_date|date:"F d, Y" }}</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="detail-label">Approved By</div>
+                    <div class="detail-value">{{ wood.approved_by|default:"N/A" }}</div>
+                </div>
+            </div>
+            
+            <!-- Attached File -->
+            {% if wood.attachment %}
+            <div class="mt-8">
+                <h2 class="text-lg font-semibold mb-4 text-green-700">Attached File</h2>
+                <a href="{{ wood.attachment.url }}" target="_blank" class="text-blue-600 hover:text-blue-800 flex items-center no-print">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Download File
+                </a>
+                
+                <!-- File preview for printing -->
+                <div class="file-preview" style="display: none;">
+                    <div class="file-preview-title">Attached Document</div>
+                    {% with file_ext=wood.attachment.name|lower %}
+                        {% if '.pdf' in file_ext %}
+                            <div>PDF document: {{ wood.attachment.name }}</div>
+                        {% elif '.jpg' in file_ext or '.jpeg' in file_ext or '.png' in file_ext or '.gif' in file_ext %}
+                            <img src="{{ wood.attachment.url }}" alt="Attached document" />
+                        {% else %}
+                            <div>Attached file: {{ wood.attachment.name }}</div>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <footer class="bg-blue-900 text-white mt-auto py-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // User menu dropdown toggle
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            
+            if (userMenuButton && userMenu) {
+                userMenuButton.addEventListener('click', function() {
+                    userMenu.classList.toggle('hidden');
+                });
+                
+                // Close the menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                        userMenu.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    if (mobileMenu.style.display === 'none') {
+                        mobileMenu.style.display = 'block';
+                    } else {
+                        mobileMenu.style.display = 'none';
+                    }
+                });
+            }
+            
+            // Print functionality
+            const printButton = document.querySelector('button[onclick="window.print()"]');
+            if (printButton) {
+                printButton.addEventListener('click', function() {
+                    window.print();
+                });
+            }
+            
+            // File preview for printing
+            const filePreview = document.querySelector('.file-preview');
+            if (filePreview) {
+                // Make sure file preview is visible when printing
+                window.addEventListener('beforeprint', function() {
+                    filePreview.style.display = 'block';
+                });
+                
+                // Hide file preview after printing
+                window.addEventListener('afterprint', function() {
+                    filePreview.style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

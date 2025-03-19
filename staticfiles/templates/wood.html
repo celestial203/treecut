@@ -1,0 +1,1006 @@
+{% load static %}
+{% load widget_tweaks %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CENRO Argao - Wood Processing Plant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: white;
+        }
+        .modal-open {
+            overflow: hidden;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        #notificationModal {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Add smooth transition for validation info */
+        .validation-info {
+            transition: all 0.3s ease-in-out;
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .validation-info:not(.hidden) {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Make form labels more readable */
+        .form-group label {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* Style form inputs */
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            font-size: 1rem;
+            padding: 0.5rem;
+            width: 100%;
+            border-radius: 0.375rem;
+            border: 1px solid #D1D5DB;
+        }
+
+        /* Hover effect for inputs */
+        .form-group input:hover,
+        .form-group select:hover,
+        .form-group textarea:hover {
+            border-color: #9CA3AF;
+        }
+
+        /* Focus effect for inputs */
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563EB;
+            ring: 2px;
+            ring-color: #93C5FD;
+        }
+
+        .form-input {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                   focus:border-blue-500 focus:ring-blue-500 
+                   bg-gray-50 text-gray-900;
+            padding: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .form-input:hover {
+            @apply border-blue-400;
+        }
+
+        .form-input:focus {
+            @apply ring-2 ring-blue-200;
+        }
+
+        .form-input:invalid {
+            @apply border-red-300;
+        }
+
+        .form-input:invalid:focus {
+            @apply ring-red-200;
+        }
+
+        /* Custom styling for date inputs */
+        input[type="date"].form-input {
+            @apply p-2;
+        }
+
+        /* Custom styling for select inputs */
+        select.form-input {
+            @apply pr-8;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Error message styling */
+        .error-message {
+            @apply text-red-500 text-sm mt-1;
+            display: none;
+        }
+
+        /* Required field indicator */
+        label:after {
+            content: " *";
+            @apply text-red-500;
+        }
+
+        input, select, textarea {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            width: 100%;
+            color: #4B5563;
+        }
+        input::placeholder, select::placeholder, textarea::placeholder {
+            color: #6B7280;
+            opacity: 0.8;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        .form-input {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                   focus:border-blue-500 focus:ring-blue-500 
+                   bg-gray-50 text-gray-900;
+        }
+        input[type="date"] {
+            padding: 0.4rem;
+            color: #4B5563;
+        }
+        select {
+            background-color: #f8fafc;
+            padding: 0.4rem;
+            color: #4B5563;
+        }
+        input:hover, select:hover, textarea:hover {
+            border-color: #60A5FA;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Add specific styling for date inputs to show the placeholder */
+        input[type="date"]::before {
+            content: attr(placeholder);
+            position: absolute;
+            color: #6B7280;
+        }
+
+        input[type="date"]:focus::before,
+        input[type="date"]:valid::before {
+            display: none;
+        }
+
+        /* Style file input */
+        input[type="file"] {
+            padding: 0.375rem;
+        }
+        input[type="file"]::-webkit-file-upload-button {
+            padding: 0.5rem 1rem;
+            margin-right: 1rem;
+            background-color: #E5E7EB;
+            border: none;
+            border-radius: 0.375rem;
+            color: #374151;
+            cursor: pointer;
+        }
+        input[type="file"]::-webkit-file-upload-button:hover {
+            background-color: #D1D5DB;
+        }
+
+        /* Remove the previous date input styles and add these new ones */
+        .date-input {
+            position: relative;
+            background-color: #f8fafc;
+        }
+
+        .date-input::-webkit-calendar-picker-indicator {
+            background: transparent;
+            bottom: 0;
+            color: transparent;
+            cursor: pointer;
+            height: auto;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: auto;
+        }
+
+        /* Remove the previous ::before pseudo-element styles for date inputs */
+        input[type="date"]::before {
+            content: none;
+        }
+
+        /* Add these styles to your existing style section */
+        .validation-message {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .validation-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .no-results-message {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Add visual feedback for updates */
+        .updated {
+            animation: highlight 0.3s ease-out;
+        }
+        
+        @keyframes highlight {
+            0% { background-color: #fff; }
+            50% { background-color: #e3f2fd; }
+            100% { background-color: #fff; }
+        }
+
+        /* Style for readonly net volume field */
+        #netVolume {
+            background-color: #f8fafc;
+            color: #4B5563;
+            cursor: default;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            outline: none;
+        }
+
+        input[type="number"]:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        input[readonly] {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        /* Situation dropdown styling */
+        select[name="situation"] {
+            @apply bg-white border border-gray-300 rounded-md shadow-sm;
+            padding: 0.5rem;
+            width: 100%;
+        }
+
+        select[name="situation"]:focus {
+            @apply ring-2 ring-blue-500 border-blue-500;
+            outline: none;
+        }
+
+        /* Style for the options */
+        select[name="situation"] option[value="Good"] {
+            color: #059669;
+        }
+
+        select[name="situation"] option[value="Pending"] {
+            color: #d97706;
+        }
+
+        .bg-blue-600 {
+            background-color: #3b82f6; /* Updated to match theme */
+        }
+        .bg-blue-700 {
+            background-color: #2563eb; /* Updated to match theme */
+        }
+        .bg-white {
+            background-color: #ffffff; /* White background for forms */
+        }
+        .text-gray-700 {
+            color: #4B5563; /* Dark gray text */
+        }
+
+        /* Add validation styles */
+        .error-message {
+            @apply text-red-500 text-sm mt-1;
+            display: none;
+        }
+
+        .invalid-input {
+            @apply border-red-500 !important;
+        }
+
+        .valid-input {
+            @apply border-green-500 !important;
+        }
+
+        /* Update container styling */
+        .max-w-5xl {
+            border: 2px solid #059669; /* Green border */
+            border-radius: 0.5rem; /* Rounded corners */
+        }
+
+        /* Box hover effects */
+        .border-2.border-green-500 {
+            background-color: white;
+            transition: all 0.3s ease;
+            min-height: 120px; /* Ensure consistent height */
+        }
+
+        .border-2.border-green-500:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: #f0fdf4;
+        }
+
+        /* Make all input text uppercase */
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            text-transform: uppercase;
+        }
+        
+        /* Ensure placeholder text is also uppercase */
+        input::placeholder,
+        select::placeholder,
+        textarea::placeholder {
+            text-transform: uppercase;
+        }
+
+        /* Update date picker styles */
+        .date-picker-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .date-picker-wrapper input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            padding-right: 2rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            background-color: #f8fafc;
+        }
+
+        .date-picker-wrapper input[type="date"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .date-picker-wrapper svg {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+    </style>
+    <!-- Add SweetAlert2 CSS and JS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="font-inter text-gray-900 bg-white">
+    {% if messages %}
+    <div id="messages-container" name="messages-container" class="fixed top-4 right-4 z-50">
+        {% for message in messages %}
+            <div id="message-{{ forloop.counter }}" 
+                 name="message-{{ forloop.counter }}"
+                 class="bg-{% if message.tags == 'success' %}green-500{% elif message.tags == 'error' %}red-500{% else %}blue-500{% endif %} text-white px-4 py-3 rounded shadow-lg mb-3 flex items-center justify-between" 
+                 role="alert">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        {% if message.tags == 'success' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        {% elif message.tags == 'error' %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        {% else %}
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        {% endif %}
+                    </svg>
+                    <span>{{ message }}</span>
+                </div>
+                <button type="button" class="ml-4 text-white hover:text-gray-100 focus:outline-none" onclick="this.parentElement.remove()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Header with Logo -->
+    <nav class="bg-transparent shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0">
+                        <span class="text-xl font-bold text-green-700">FUS-CENRO-ARGAO</span>
+                    </div>
+                </div>
+                <!-- User Menu -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <div class="text-lg text-gray-900 font-medium">
+                        Welcome, {{ request.user.username }}
+                    </div>
+                    <div class="relative">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" 
+                                id="user-menu-button" 
+                                name="user-menu-button"
+                                aria-expanded="false" 
+                                aria-haspopup="true">
+                            ▼
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                               
+                                <!-- Quick Actions -->
+                                <a href="{% url 'homepage' %}" class="block px-4 py-2 text-sm text-blue-700 hover:bg-gray-100">HOME</a>
+                                <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <a href="{% url 'wood-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">DASHBOARD</a>
+                                    <div class="relative group">
+                                        <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+                                        <div class="absolute left-0 mt-0 w-48 bg-white rounded-md shadow-lg z-30 hidden group-hover:block">
+                                            <a href="{% url 'wood_records' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">View Records</a>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'chainsaw-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CHAINSAW </a>
+                                    <a href="{% url 'treecut-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CUTTING</a>
+                                    <a href="{% url 'lumber-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">LUMBER</a>
+
+                                </div>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                    </svg>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" 
+                            id="mobile-menu-button"
+                            name="mobile-menu-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M3 8h18M3 12h18M3 16h18M3 20h18"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6l8 8 8-8"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="md:hidden" 
+             id="mobile-menu" 
+             name="mobile-menu" 
+             style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Box section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Lumber Dealer Box -->
+            <a href="{% url 'lumber' %}" class="bg-white p-2 rounded-lg border-2 border-green-600 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700">Lumber Dealer</h3>
+                <p class="text-xs text-gray-600">Add Lumber Dealers</p>
+            </a>
+
+            <!-- Cutting Permits Box -->
+            <a href="{% url 'cutting' %}" class="bg-white p-2 rounded-lg border-2 border-green-600 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700">Cutting Permits</h3>
+                <p class="text-xs text-gray-600">Add Tree Cutting Permits</p>
+            </a>
+
+            <!-- WPP Box -->
+            <a href="{% url 'chainsaw' %}" class="bg-white p-2 rounded-lg border-2 border-green-600 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700">Chainsaw</h3>
+                <p class="text-xs text-gray-600">Add Chainsaw</p>
+            </a>
+        </div>
+        <!-- Green Line -->
+        <hr class="border-t-2 border-green-600 mt-2">
+    </div>
+
+    <!-- Main form container -->
+    <div class="container mx-auto px-4 py-8 mb-20">
+        <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-bold mb-6">Add New WPP Record</h2>
+
+            <form method="post" 
+                  action="{% url 'wood' %}" 
+                  enctype="multipart/form-data" 
+                  class="space-y-6" 
+                  id="wppForm" 
+                  name="wppForm" 
+                  novalidate>
+                {% csrf_token %}
+                
+                <!-- Fix for form-errors -->
+                <div id="form-errors" name="form-errors" class="text-red-500 mb-4"></div>
+
+                <!-- Fix for form fields -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                        <input type="text" 
+                               id="name"
+                               name="name" 
+                               class="form-input mt-1 w-full" 
+                               autocomplete="organization"
+                               required>
+                    </div>
+                    
+                    <div>
+                        <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
+                        <select id="type" 
+                                name="type" 
+                                class="form-input mt-1 w-full" 
+                                autocomplete="off"
+                                required>
+                            <option value="Resawmill-new">RESAWMILL-NEW</option>
+                            <option value="Resawmill-renew">RESAWMILL-RENEWAL</option>
+                        </select>
+                    </div>
+                    
+                </div>
+
+                <!-- Second Row: WPP Number and Business Name -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label for="wpp_number" class="block text-sm font-medium text-gray-700">WPP Number</label>
+                        <input type="text" 
+                               id="wpp_number"
+                               name="wpp_number" 
+                               placeholder="Enter WPP number"
+                               class="form-input mt-1 w-full"
+                               required
+                               autocomplete="off">
+                    </div>
+                    <div>
+                        <label for="id_business_name" class="block text-sm font-medium text-gray-700">Business Name</label>
+                        <input type="text" 
+                               id="id_business_name"
+                               name="business_name" 
+                               placeholder="Enter business name"
+                               class="form-input mt-1 w-full"
+                               required
+                               autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- Location Fields -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
+                        <input type="text" 
+                               id="address"
+                               name="address" 
+                               placeholder="Enter complete address"
+                               class="form-input mt-1 w-full"
+                               required
+                               autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- DRC and ALR Fields -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label for="drc" class="block text-sm font-medium text-gray-700">DRC (cu.m)</label>
+                        <input type="number" 
+                               id="drc"
+                               name="drc"
+                               step="0.01" 
+                               class="form-input mt-1 w-full" 
+                               autocomplete="off"
+                               oninput="calculateALR()"
+                               required>
+                    </div>
+                    <div>
+                        <label for="alr" class="block text-sm font-medium text-gray-700">ALR (m³)</label>
+                        <input type="text"
+                               id="alr"
+                               name="alr"
+                               class="form-input mt-1 w-full" 
+                               autocomplete="off"
+                               readonly>
+                    </div>
+                </div>
+
+                <!-- Coordinates Fields -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label for="longitude" class="block text-sm font-medium text-gray-700">Longitude</label>
+                        <input type="number" 
+                               id="longitude"
+                               name="longitude" 
+                               placeholder=""
+                               class="form-input mt-1 w-full"
+                               autocomplete="off">
+                    </div>
+                    <div>
+                        <label for="latitude" class="block text-sm font-medium text-gray-700">Latitude</label>
+                        <input type="number" 
+                               id="latitude"
+                               name="latitude" 
+                               placeholder=""
+                               class="form-input mt-1 w-full"
+                               autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- Supplier Section -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">Supplier</h3>
+                </div>
+
+                <!-- Supplier Info -->
+                <div>
+                    <label for="supplier_info" class="block text-sm font-medium text-gray-700">Supplier Info</label>
+                    <input type="text" 
+                           id="supplier_info"
+                           name="supplier_info" 
+                           placeholder="Enter supplier name and address"
+                           class="form-input mt-1 block w-full"
+                           autocomplete="off">
+                </div>
+
+                <!-- Volume Contracted Section -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">Volume Contracted</h3>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label for="local_volume" class="block text-sm font-medium text-gray-700">Local</label>
+                            <input type="number" 
+                                   id="local_volume"
+                                   name="local_volume" 
+                                   step="0.01"
+                                   class="form-input mt-1 w-full"
+                                   autocomplete="off">
+                        </div>
+                        <div>
+                            <label for="imported_volume" class="block text-sm font-medium text-gray-700">Imported (Optional)</label>
+                            <input type="number" 
+                                   id="imported_volume"
+                                   name="imported_volume"
+                                   step="0.01" 
+                                   class="form-input mt-1 w-full"
+                                   autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Fields -->
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label for="area" class="block text-sm font-medium text-gray-700">Area (ha) (Optional)</label>
+                        <input type="number" 
+                               id="area"
+                               name="area"
+                               step="0.01" 
+                               class="form-input mt-1 w-full"
+                               autocomplete="off">
+                    </div>
+                    <div>
+                        <label for="approved_by" class="block text-sm font-medium text-gray-700">Approved by</label>
+                        <input type="text" 
+                               id="approved_by"
+                               name="approved_by" 
+                               class="form-input mt-1 w-full" 
+                               autocomplete="off"
+                               required>
+                    </div>
+                </div>
+
+                <!-- Dates Section -->
+                <div class="grid grid-cols-3 gap-6">
+                    <div>
+                        <label for="date_issued" class="block text-sm font-medium text-gray-700">Date Issued</label>
+                        <input type="date" 
+                               id="date_issued"
+                               name="date_issued" 
+                               class="form-input mt-1 w-full" 
+                               required>
+                    </div>
+                    <div>
+                        <label for="date_released" class="block text-sm font-medium text-gray-700">Date Released</label>
+                        <input type="date" 
+                               id="date_released"
+                               name="date_released" 
+                               class="form-input mt-1 w-full" 
+                               required>
+                    </div>
+                    <div>
+                        <label for="expiry_date" class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                        <input type="date" 
+                               id="expiry_date"
+                               name="expiry_date" 
+                               class="form-input mt-1 w-full">
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="mt-6">
+                    <label for="wood_status" class="block text-sm font-medium text-gray-700">Wood Status</label>
+                    <select id="wood_status"
+                            name="wood_status" 
+                            class="form-input mt-1 w-full" 
+                            required>
+                        <option value="">Select Status</option>
+                        <option value="ACTIVE_NEW">Active (New)</option>
+                        <option value="ACTIVE_RENEWED">Active (Renewed)</option>
+                        <option value="EXPIRED">Expired</option>
+                        <option value="SUSPENDED">Suspended</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                </div>
+
+                <!-- File Attachment -->
+                <div class="mt-6">
+                    <label for="attachment" class="block text-sm font-medium text-gray-700">Attach File (Optional)</label>
+                    <input type="file" 
+                           id="attachment"
+                           name="attachment" 
+                           class="form-input mt-1 w-full"
+                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                </div>
+
+                <!-- Button section -->
+                <div class="flex flex-wrap gap-3 mt-6 justify-end">
+                    <button type="button" id="clearFormButton" class="px-6 py-2 bg-white text-red-600 border border-red-300 rounded-md hover:bg-red-50 transition-colors duration-200 text-sm font-medium min-w-[120px]">
+                        Clear Form
+                    </button>
+                    
+                    <button type="submit" id="submitButton" class="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200 flex items-center justify-center text-sm font-medium min-w-[120px]">
+                        <span class="mr-1">+</span> Submit
+                    </button>
+                    
+                    <a href="{% url 'wood_records' %}" class="px-6 py-2 bg-white text-green-600 border border-green-500 rounded-md hover:bg-green-300 transition-colors duration-200 flex items-center justify-center text-sm font-medium min-w-[120px]">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        View Records
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-blue-800 text-white w-full py-8">
+        <div class="text-center">
+            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+        </div>
+    </footer>
+    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // User menu toggle
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            const wppForm = document.getElementById('wppForm');
+            
+            if (userMenuButton && userMenu) {
+                userMenuButton.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent event from bubbling up
+                    const isExpanded = userMenuButton.getAttribute('aria-expanded') === 'true';
+                    userMenuButton.setAttribute('aria-expanded', !isExpanded);
+                    userMenu.classList.toggle('hidden');
+                });
+
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                        userMenuButton.setAttribute('aria-expanded', 'false');
+                        userMenu.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    const currentDisplay = window.getComputedStyle(mobileMenu).display;
+                    mobileMenu.style.display = currentDisplay === 'none' ? 'block' : 'none';
+                });
+            }
+
+            // ALR calculation function
+            function calculateALR() {
+                const drcInput = document.getElementById('drc');
+                const alrInput = document.getElementById('alr');
+                
+                if (drcInput && alrInput) {
+                    const drc = parseFloat(drcInput.value) || 0;
+                    const alr = drc * 0.80 * 290;
+                    alrInput.value = alr.toFixed(1);
+                }
+            }
+
+            // Add event listener for DRC input
+            const drcInput = document.getElementById('drc');
+            if (drcInput) {
+                drcInput.addEventListener('input', calculateALR);
+            }
+
+            // Form validation and submission
+            if (wppForm) {
+                wppForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    
+                    // Clear previous error states
+                    clearErrors();
+                    
+                    // Validate required fields
+                    let hasErrors = false;
+                    const requiredFields = wppForm.querySelectorAll('[required]');
+                    let errorMessages = [];
+                    
+                    requiredFields.forEach(field => {
+                        if (!field.value.trim()) {
+                            hasErrors = true;
+                            const fieldName = field.getAttribute('placeholder') || field.getAttribute('name');
+                            errorMessages.push(`${fieldName} is required`);
+                            field.classList.add('invalid-input');
+                        }
+                    });
+                    
+                    // Validate coordinates if they exist
+                    const longitude = document.getElementById('longitude');
+                    const latitude = document.getElementById('latitude');
+                    
+                    if (longitude && longitude.value && !isValidCoordinate(longitude.value, 'longitude')) {
+                        hasErrors = true;
+                        errorMessages.push('Invalid longitude format');
+                        longitude.classList.add('invalid-input');
+                    }
+                    
+                    if (latitude && latitude.value && !isValidCoordinate(latitude.value, 'latitude')) {
+                        hasErrors = true;
+                        errorMessages.push('Invalid latitude format');
+                        latitude.classList.add('invalid-input');
+                    }
+                    
+                    if (hasErrors) {
+                        Swal.fire({
+                            title: 'Validation Error',
+                            html: errorMessages.join('<br>'),
+                            icon: 'error',
+                            confirmButtonColor: '#3085d6'
+                        });
+                    } else {
+                        wppForm.submit();
+                    }
+                });
+            }
+
+            // Helper functions
+            function clearErrors() {
+                document.querySelectorAll('.invalid-input').forEach(input => {
+                    input.classList.remove('invalid-input');
+                });
+            }
+
+            function isValidCoordinate(coord, type) {
+                const value = parseFloat(coord);
+                if (isNaN(value)) return false;
+                
+                if (type === 'longitude') {
+                    return value >= -180 && value <= 180;
+                } else if (type === 'latitude') {
+                    return value >= -90 && value <= 90;
+                }
+                return false;
+            }
+
+            // Initialize date pickers
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                if (!input) return; // Skip if input doesn't exist
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'date-picker-wrapper';
+                wrapper.style.position = 'relative';
+                
+                const displayInput = document.createElement('input');
+                displayInput.type = 'text';
+                displayInput.className = input.className;
+                displayInput.placeholder = 'MM/DD/YYYY';
+                displayInput.readOnly = true;
+                
+                const datePicker = document.createElement('input');
+                datePicker.type = 'date';
+                datePicker.name = input.name;
+                datePicker.required = input.required;
+                datePicker.value = input.value;
+                datePicker.style.position = 'absolute';
+                datePicker.style.top = '0';
+                datePicker.style.left = '0';
+                datePicker.style.width = '100%';
+                datePicker.style.height = '100%';
+                datePicker.style.opacity = '0';
+                datePicker.style.cursor = 'pointer';
+
+                if (input.value) {
+                    try {
+                        const date = new Date(input.value);
+                        if (!isNaN(date.getTime())) {
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const year = date.getFullYear();
+                            displayInput.value = `${month}/${day}/${year}`;
+                        }
+                    } catch (e) {
+                        console.error('Error formatting date:', e);
+                    }
+                }
+                
+                datePicker.addEventListener('change', function() {
+                    if (this.value) {
+                        try {
+                            const date = new Date(this.value);
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const year = date.getFullYear();
+                            displayInput.value = `${month}/${day}/${year}`;
+                        } catch (e) {
+                            console.error('Error updating date display:', e);
+                        }
+                    } else {
+                        displayInput.value = '';
+                    }
+                });
+                
+                const calendarIcon = document.createElement('div');
+                calendarIcon.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" viewBox="0 0 16 16">
+                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                    </svg>
+                `;
+                calendarIcon.style.position = 'absolute';
+                calendarIcon.style.right = '10px';
+                calendarIcon.style.top = '50%';
+                calendarIcon.style.transform = 'translateY(-50%)';
+                calendarIcon.style.pointerEvents = 'none';
+                calendarIcon.style.zIndex = '0';
+                
+                wrapper.appendChild(displayInput);
+                wrapper.appendChild(datePicker);
+                wrapper.appendChild(calendarIcon);
+                
+                if (input.parentNode) {
+                    input.parentNode.replaceChild(wrapper, input);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

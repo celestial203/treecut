@@ -1,0 +1,155 @@
+{% load static %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consume Volume</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<nav class="bg-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center">
+                         <span class="text-xl font-bold text-darkgreen">CENRO-ARGAO-FUS</span>
+                        </div>
+
+                <!-- Navigation Links -->
+                <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                    <a href="{% url 'dashboard' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
+                        Dashboard
+                    </a>
+                    <a href="{% url 'cutting' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
+                        Tree Cutting Permits 
+                    </a>
+                    <a href="{% url 'lumber' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
+                        Lumber Dealers
+                    </a>
+                    <a href="{% url 'chainsaw' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
+                        Chainsaw
+                    </a>
+                    <a href="{% url 'wood' %}" class="text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-blue-500 hover:text-blue-800 text-m font-medium">
+                        WPP
+                    </a>
+                </div>
+            </div>
+            <!-- User Menu -->
+            <div class="flex items-center">
+                <div class="text-m text-gray-800">
+                    Welcome, {{ request.user.username }}
+                </div>
+                <a href="{% url 'logout' %}" class="ml-4 text-m text-blue-600 hover:text-blue-800">
+                    Sign Out
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+<body class="bg-gradient-to-r from-green-600 to-blue-600 text-white">
+    <!-- Page Header -->
+    <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-6 shadow-md">
+        <div class="max-w-7xl mx-auto px-4">
+            <h1 class="text-3xl font-bold mb-2">Consume Volume</h1>
+            <p class="text-sm opacity-90">Record volume consumption for TCP No. {{ cutting.tcp_no }}</p>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto bg-white p-8 mt-8 shadow-xl rounded-lg">
+        <!-- Cutting Details -->
+        <div class="mb-8">
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <p class="text-sm text-gray-600">TCP No.</p>
+                    <p class="font-semibold">{{ cutting.tcp_no }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Date Issued</p>
+                    <p class="font-semibold">{{ cutting.permit_issue_date }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Permittee</p>
+                    <p class="font-semibold">{{ cutting.permittee }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Location</p>
+                    <p class="font-semibold">{{ cutting.location }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Volume Breakdown -->
+        <div class="mb-8">
+            <h3 class="text-lg font-semibold mb-4">Volume Breakdown</h3>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Species</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pieces</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dimensions</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Volume</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Balance</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for volume in cutting.volumes.all %}
+                    <tr>
+                        <td class="px-6 py-4">{{ volume.date|date:"Y-m-d" }}</td>
+                        <td class="px-6 py-4">{{ volume.species }}</td>
+                        <td class="px-6 py-4">{{ volume.pieces }}</td>
+                        <td class="px-6 py-4">{{ volume.dimensions }}</td>
+                        <td class="px-6 py-4 text-right">{{ volume.volume }} cu.m.</td>
+                        <td class="px-6 py-4 text-right">{{ volume.running_balance }} cu.m.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">Consume Details</h2>
+                <p class="text-gray-600 mt-2">Current Balance: {{ cutting.remaining_balance }} cu.m.</p>
+            </div>
+            <a href="{% url 'records' %}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition duration-150">
+                Back to Records
+            </a>
+        </div>
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            <div class="space-y-6">
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Quantity (cu.m.)</label>
+                    {{ form.quantity|add_class:"mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" }}
+                </div>
+                
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700">Remarks</label>
+                    {{ form.remarks|add_class:"mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500" }}
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-4 mt-8">
+                <a href="{% url 'records' %}" 
+                   class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition duration-150 flex items-center">
+                    <span>Cancel</span>
+                </a>
+                <button type="submit" 
+                        class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition duration-150 flex items-center">
+                    <span>Consume Volume</span>
+                </button>
+            </div>
+        </form>
+    </div>
+    <footer class="bg-blue-900 text-white mt-auto py-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+        </div>
+    </footer>
+</body>
+</html> 

@@ -70,9 +70,9 @@ TEMPLATES = [
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'base', 'static'),
+    BASE_DIR / "base",
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 
 # Add this setting to handle the duplicate file issue

@@ -15600,3 +15600,17 @@ WARNING 2025-03-18 08:54:32,663 basehttp "GET /static/lumber.jpg HTTP/1.1" 404 1
 WARNING 2025-03-18 08:54:32,669 basehttp "GET /static/wood.jpg HTTP/1.1" 404 1951
 WARNING 2025-03-18 08:54:32,913 basehttp "GET /static/chainsaw.png HTTP/1.1" 404 1963
 WARNING 2025-03-18 08:54:32,916 basehttp "GET /static/treecutting.png HTTP/1.1" 404 1972
+WARNING 2025-03-19 08:29:08,045 basehttp "GET /static/base/images/wood.jpg HTTP/1.1" 404 1987
+WARNING 2025-03-19 08:29:08,045 basehttp "GET /static/base/images/lumber.jpg HTTP/1.1" 404 1993
+WARNING 2025-03-19 08:29:08,490 basehttp "GET /static/base/images/treecutting.png HTTP/1.1" 404 2008
+WARNING 2025-03-19 08:29:08,490 basehttp "GET /static/base/images/chainsaw.png HTTP/1.1" 404 1999
+WARNING 2025-03-19 08:29:08,558 log Not Found: /favicon.ico
+WARNING 2025-03-19 08:29:08,558 basehttp "GET /favicon.ico HTTP/1.1" 404 10241
+WARNING 2025-03-19 08:31:54,597 basehttp "GET /static/pictures/wood.jpg HTTP/1.1" 404 1978
+WARNING 2025-03-19 08:31:54,598 basehttp "GET /static/pictures/lumber.jpg HTTP/1.1" 404 1984
+WARNING 2025-03-19 08:31:54,732 basehttp "GET /static/pictures/treecutting.png HTTP/1.1" 404 1999
+WARNING 2025-03-19 08:31:54,734 basehttp "GET /static/pictures/chainsaw.png HTTP/1.1" 404 1990
+WARNING 2025-03-19 08:33:19,703 basehttp "GET /static/pictures/lumber.jpg HTTP/1.1" 404 1984
+WARNING 2025-03-19 08:33:19,703 basehttp "GET /static/pictures/wood.jpg HTTP/1.1" 404 1978
+WARNING 2025-03-19 08:33:19,852 basehttp "GET /static/pictures/treecutting.png HTTP/1.1" 404 1999
+WARNING 2025-03-19 08:33:19,855 basehttp "GET /static/pictures/chainsaw.png HTTP/1.1" 404 1990

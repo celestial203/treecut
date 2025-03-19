@@ -1,0 +1,1092 @@
+{% load static %}
+{% load widget_tweaks %}
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CENRO Argao - Cutting Records</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-color: #ffffff; /* White background */
+        }
+        .modal-open {
+            overflow: hidden;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        #notificationModal {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Add smooth transition for validation info */
+        .validation-info {
+            transition: all 0.3s ease-in-out;
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        .validation-info:not(.hidden) {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Make form labels more readable */
+        .form-group label {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* Style form inputs */
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            font-size: 1rem;
+            padding: 0.5rem;
+            width: 100%;
+            border-radius: 0.375rem;
+            border: 1px solid #D1D5DB;
+        }
+
+        /* Hover effect for inputs */
+        .form-group input:hover,
+        .form-group select:hover,
+        .form-group textarea:hover {
+            border-color: #9CA3AF;
+        }
+
+        /* Focus effect for inputs */
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563EB;
+            ring: 2px;
+            ring-color: #93C5FD;
+        }
+
+        .form-input {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                   focus:border-blue-500 focus:ring-blue-500 
+                   bg-gray-50 text-gray-900; /* Updated to match theme */
+            padding: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .form-input:hover {
+            @apply border-blue-400;
+        }
+
+        .form-input:focus {
+            @apply ring-2 ring-blue-200;
+        }
+
+        .form-input:invalid {
+            @apply border-red-300;
+        }
+
+        .form-input:invalid:focus {
+            @apply ring-red-200;
+        }
+
+        /* Custom styling for date inputs */
+        input[type="date"].form-input {
+            @apply p-2;
+        }
+
+        /* Custom styling for select inputs */
+        select.form-input {
+            @apply pr-8;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Error message styling */
+        .error-message {
+            @apply mt-1 text-sm text-red-600;
+        }
+
+        /* Required field indicator */
+        label:after {
+            content: " *";
+            @apply text-red-500;
+        }
+
+        input, select, textarea {
+            background-color: #f8fafc; /* Light gray background */
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            width: 100%;
+            color: #4B5563; /* Dark gray text */
+        }
+        input::placeholder, select::placeholder, textarea::placeholder {
+            color: #6B7280;
+            opacity: 0.8;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        .form-input {
+            @apply mt-1 block w-full rounded-md border-gray-300 shadow-sm 
+                   focus:border-blue-500 focus:ring-blue-500 
+                   bg-gray-50 text-gray-900;
+        }
+        input[type="date"] {
+            padding: 0.4rem;
+            color: #4B5563;
+        }
+        select {
+            background-color: #f8fafc;
+            padding: 0.4rem;
+            color: #4B5563;
+        }
+        input:hover, select:hover, textarea:hover {
+            border-color: #60A5FA;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Add specific styling for date inputs to show the placeholder */
+        input[type="date"]::before {
+            content: attr(placeholder);
+            position: absolute;
+            color: #6B7280;
+        }
+
+        input[type="date"]:focus::before,
+        input[type="date"]:valid::before {
+            display: none;
+        }
+
+        /* Style file input */
+        input[type="file"] {
+            padding: 0.375rem;
+        }
+        input[type="file"]::-webkit-file-upload-button {
+            padding: 0.5rem 1rem;
+            margin-right: 1rem;
+            background-color: #E5E7EB;
+            border: none;
+            border-radius: 0.375rem;
+            color: #374151;
+            cursor: pointer;
+        }
+        input[type="file"]::-webkit-file-upload-button:hover {
+            background-color: #D1D5DB;
+        }
+
+        /* Remove the previous date input styles and add these new ones */
+        .date-input {
+            position: relative;
+            background-color: #f8fafc;
+        }
+
+        .date-input::-webkit-calendar-picker-indicator {
+            background: transparent;
+            bottom: 0;
+            color: transparent;
+            cursor: pointer;
+            height: auto;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: auto;
+        }
+
+        /* Remove the previous ::before pseudo-element styles for date inputs */
+        input[type="date"]::before {
+            content: none;
+        }
+
+        /* Add these styles to your existing style section */
+        .validation-message {
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .validation-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .no-results-message {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Add visual feedback for updates */
+        .updated {
+            animation: highlight 0.3s ease-out;
+        }
+        
+        @keyframes highlight {
+            0% { background-color: #fff; }
+            50% { background-color: #e3f2fd; }
+            100% { background-color: #fff; }
+        }
+
+        /* Style for readonly net volume field */
+        #netVolume {
+            background-color: #f8fafc;
+            color: #4B5563;
+            cursor: default;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            outline: none;
+        }
+
+        input[type="number"]:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        input[readonly] {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        /* Situation dropdown styling */
+        select[name="situation"] {
+            @apply bg-white border border-gray-300 rounded-md shadow-sm;
+            padding: 0.5rem;
+            width: 100%;
+        }
+
+        select[name="situation"]:focus {
+            @apply ring-2 ring-blue-500 border-blue-500;
+            outline: none;
+        }
+
+        /* Style for the options */
+        select[name="situation"] option[value="Good"] {
+            color: #059669;
+        }
+
+        select[name="situation"] option[value="Pending"] {
+            color: #d97706;
+        }
+
+        .bg-blue-600 {
+            background-color: #3b82f6; /* Updated to match theme */
+        }
+        .bg-blue-700 {
+            background-color: #2563eb; /* Updated to match theme */
+        }
+        .bg-white {
+            background-color: #ffffff; /* White background for forms */
+        }
+        .text-gray-700 {
+            color: #4B5563; /* Dark gray text */
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900">
+    <!-- Header with Logo -->
+    <nav class="bg-transparent shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0">
+                        <span class="text-xl font-bold text-green-700">FUS-CENRO-ARGAO</span>
+                    </div>
+                </div>
+                <!-- User Menu -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <div class="text-lg text-gray-900 font-medium">
+                        Welcome, {{ request.user.username }}
+                    </div>
+                    <div class="relative">
+                        <button class="text-lg text-blue-600 hover:text-blue-800 transition duration-200 focus:outline-none" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+                            ▼
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 hidden" id="user-menu">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button">
+                               
+                                <!-- Quick Actions -->
+                                <a href="{% url 'homepage' %}" class="block px-4 py-2 text-sm text-blue-700 hover:bg-gray-100">HOME</a>
+                                <div class="px-4 py-2 text-sm text-black-800">Quick Actions</div>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <a href="{% url 'treecut-dash' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">DASHBOARD</a>
+                                    <div class="relative group">
+                                        <a href="{% url 'cutting' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CUTTING</a>
+                                        <div class="absolute left-0 mt-0 w-48 bg-white rounded-md shadow-lg z-30 hidden group-hover:block">
+                                            <a href="{% url 'cutting_records' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">View Records</a>
+                                            <a href="{% url 'trees' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">View Trees</a>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'lumber' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">LUMBER </a>
+                                    <a href="{% url 'chainsaw' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">CHAINSAW</a>
+                                    <a href="{% url 'wood' %}" class="block px-4 py-2 text-sm text-green-700 hover:bg-gray-100">WPP</a>
+
+                                </div>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-black-900 hover:bg-gray-100" role="menuitem">
+                                    <svg class="inline w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12H8m8 0l-4-4m4 4l-4 4"></path>
+                                    </svg>
+                                    Sign Out
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none" id="mobile-menu-button">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M3 8h18M3 12h18M3 16h18M3 20h18"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6l8 8 8-8"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18"></path>
+                        </svg>
+                    </button>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="md:hidden" id="mobile-menu" style="display: none;">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="mt-4"></div>
+
+    <!-- Quick Access Boxes -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Box 1 - Cutting -->
+            <a href="{% url 'chainsaw' %}" class="bg-white p-2 rounded-lg border-2 border-green-600 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700">Chainsaw</h3>
+                <p class="text-xs text-gray-600">Add Chainsaw Records</p>
+            </a>
+
+            <!-- Box 2 - Lumber -->
+            <a href="{% url 'lumber' %}" class="bg-white p-2 rounded-lg border-2 border-green-600 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700">Lumber Dealer</h3>
+                <p class="text-xs text-gray-600">Add Lumber Dealers</p>
+            </a>
+
+            <!-- Box 3 - WPP -->
+            <a href="{% url 'wood' %}" class="bg-white p-2 rounded-lg border-2 border-green-600 shadow-md hover:shadow-lg transition-shadow duration-300">
+                <h3 class="text-base font-semibold text-green-700">Wood Processing Plant</h3>
+                <p class="text-xs text-gray-600">Add WPP</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Horizontal Line -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <hr class="border-t-2 border-green-500 my-4">
+    </div>
+
+    <!-- Add New Record Form -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-lg shadow-lg p-6 border-2 border-green-500">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 tracking-wider uppercase">ADD NEW TREE CUTTING PERMIT</h2>
+            <form method="post" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+                
+                {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                    <div class="p-4 {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %} rounded-lg shadow-sm">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if form.errors %}
+                <div class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg shadow-sm">
+                    <p class="font-bold">Please correct the following errors:</p>
+                    <ul class="list-disc list-inside mt-2">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Form groups remain the same but with enhanced styling -->
+                    <!-- Each form-group gets additional hover and focus effects -->
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.permit_type.id_for_label }}" class="text-gray-700">Permit Type</label>
+                        {{ form.permit_type|add_class:"form-input" }}
+                        {% if form.permit_type.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.permit_type.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Continue with all other form groups using the same enhanced styling -->
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.permit_number.id_for_label }}" class="text-gray-700">Permit Number</label>
+                        {{ form.permit_number|add_class:"form-input" }}
+                        {% if form.permit_number.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.permit_number.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.permittee.id_for_label }}" class="text-gray-700">Permittee</label>
+                        {{ form.permittee|add_class:"form-input" }}
+                        {% if form.permittee.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.permittee.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Representative moved here -->
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.rep_by.id_for_label }}" class="text-gray-700">Representative</label>
+                        {{ form.rep_by|add_class:"form-input" }}
+                        {% if form.rep_by.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.rep_by.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group transition-all duration-200 hover:shadow-sm col-span-2">
+                        <label for="{{ form.location.id_for_label }}" class="text-gray-700">Location</label>
+                        {{ form.location|add_class:"form-input" }}
+                        {% if form.location.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.location.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Coordinates -->
+                    <div class="col-span-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="form-group transition-all duration-200 hover:shadow-sm">
+                                <label for="{{ form.latitude.id_for_label }}" class="text-gray-700">Latitude</label>
+                                {{ form.latitude|add_class:"form-input" }}
+                                {% if form.latitude.errors %}
+                                    <div class="text-red-600 text-sm mt-1">{{ form.latitude.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group transition-all duration-200 hover:shadow-sm">
+                                <label for="{{ form.longitude.id_for_label }}" class="text-gray-700">Longitude</label>
+                                {{ form.longitude|add_class:"form-input" }}
+                                {% if form.longitude.errors %}
+                                    <div class="text-red-600 text-sm mt-1">{{ form.longitude.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Property Information -->
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.tct_oct_no.id_for_label }}" class="text-gray-700">TCT/OCT No.</label>
+                        {{ form.tct_oct_no|add_class:"form-input" }}
+                        {% if form.tct_oct_no.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.tct_oct_no.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Add Status Field Here -->
+                    <div class="form-group transition-all duration-200 hover:shadow-sm" style="display: none;">
+                        <label for="{{ form.situation.id_for_label }}" class="text-gray-700">Situation</label>
+                        {{ form.situation|add_class:"form-input" }}
+                        {% if form.situation.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.situation.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.tax_dec_no.id_for_label }}" class="text-gray-700">Tax Declaration No.</label>
+                        {{ form.tax_dec_no|add_class:"form-input" }}
+                        {% if form.tax_dec_no.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.tax_dec_no.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.lot_no.id_for_label }}" class="text-gray-700">Lot No.</label>
+                        {{ form.lot_no|add_class:"form-input" }}
+                        {% if form.lot_no.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.lot_no.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Area and Trees -->
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.area.id_for_label }}" class="text-gray-700">Area (ha.)</label>
+                        {{ form.area|add_class:"form-input" }}
+                        {% if form.area.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.area.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Replace your existing species and number of trees fields with this -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Number of Trees field -->
+                        <div>
+                            <label class="text-sm text-gray-600 required">Number of Trees</label>
+                            <input type="number" 
+                                   name="no_of_trees" 
+                                   id="no_of_trees" 
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                   readonly>
+                        </div>
+
+                        <!-- Species field -->
+                        <div>
+                            <label class="text-sm text-gray-600 required">Species</label>
+                            <div id="species-container">
+                                <div class="space-y-2">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-full">
+                                            <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                                <option value="">Select Species</option>
+                                                <option value="Molave">Molave</option>
+                                                <option value="Germelina">Yemane</option>
+                                                <option value="Mahogany">Mahogany</option>
+                                                <option value="Narra">Narra</option>
+                                                <option value="Narra">Minepoles</option>
+                                            </select>
+                                        </div>
+                                        <div class="w-32">
+                                            <input type="number" 
+                                                   name="species_quantity[]" 
+                                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                                   placeholder="Quantity"
+                                                   min="1"
+                                                   required
+                                                   oninput="calculateTotalTrees()">
+                                        </div>
+                                        <button type="button" class="add-species-btn px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Volume Information -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Volume Information</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm text-gray-600">Total Volume Granted</label>
+                                <input type="number" 
+                                       name="total_volume_granted"
+                                       step="0.01"
+                                       class="form-control">
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-600">Gross Volume</label>
+                                <input type="number" 
+                                       name="gross_volume"
+                                       step="0.01"
+                                       readonly
+                                       class="form-control">
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-600">Net Volume</label>
+                                <input type="number" 
+                                       name="net_volume"
+                                       step="0.01"
+                                       readonly
+                                       class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date fields -->
+                    <div class="form-group mb-4">
+                        <label for="date_issued" class="block text-sm font-medium text-gray-700">Date Issued</label>
+                        <input type="date" 
+                               name="date_issued"
+                               id="date_issued"
+                               class="form-input datepicker"
+                               required
+                               oninput="calculateExpiryDate()"
+                               onchange="calculateExpiryDate()"
+                        >
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="expiry_date" class="block text-sm font-medium text-gray-700">Expiry Date</label>
+                        <input type="date" 
+                               id="expiry_date"
+                               name="expiry_date"
+                               class="form-input"
+                               readonly
+                        >
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.permit_file.id_for_label }}" class="text-gray-700">Attach File</label>
+                        {{ form.permit_file|add_class:"form-input" }}
+                        {% if form.permit_file.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.permit_file.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-6 space-x-4">
+                    <button type="reset" class="px-6 py-2 border border-red-300 rounded-lg text-gray-700 hover:bg-red-50 transition duration-200">
+                        Clear Form
+                    </button>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200 shadow-md flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        <span>Submit</span>
+                    </button>
+                    <div class="flex items-center space-x-3">
+                        <a href="{% url 'cutting_records' %}" 
+                           class="inline-flex items-center px-4 py-2 text-sm font-medium text-green-600 bg-transparent border-2 border-green-500 rounded-lg 
+                                  hover:bg-green-500 hover:text-white transition-all duration-200 shadow-sm">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                            View Records
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white mt-auto py-6">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm">&copy; 2025 Department of Environment and Natural Resources. All rights reserved.</p>
+            <p class="text-sm mt-1">CENRO ARGAO | Argao, Cebu</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const permitTypeSelect = document.getElementById('{{ form.permit_type.id_for_label }}');
+            const speciesContainer = document.getElementById('species-container');
+            const numberOfTreesInput = document.querySelector('input[name="no_of_trees"]');
+            const grossVolumeInput = document.querySelector('input[name="gross_volume"]');
+            const netVolumeInput = document.getElementById('net_volume');
+            const dateIssued = document.getElementById('date_issued');
+            const expiryDate = document.getElementById('expiry_date');
+
+            // Form submission handler
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const species = document.querySelectorAll('select[name="species[]"]');
+                    const quantities = document.querySelectorAll('input[name="species_quantity[]"]');
+                    let speciesData = [];
+                    let isValid = true;
+
+                    species.forEach((select, index) => {
+                        if (select.value && quantities[index].value) {
+                            speciesData.push(`${select.value} (${quantities[index].value})`);
+                        } else {
+                            isValid = false;
+                        }
+                    });
+
+                    if (!isValid) {
+                        alert('Please fill in all species and quantities');
+                        return false;
+                    }
+
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'species';
+                    hiddenInput.value = speciesData.join(', ');
+                    form.appendChild(hiddenInput);
+
+                    form.submit();
+                });
+            }
+
+            // Add permit type change handler
+            if (permitTypeSelect) {
+                permitTypeSelect.addEventListener('change', function() {
+                    setupSpeciesFields();
+                });
+
+                // Initialize on page load for all permit types
+                setupSpeciesFields();
+            }
+
+            function setupSpeciesFields() {
+                speciesContainer.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-full">
+                                <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                    <option value="">Select Species</option>
+                                    <option value="Molave">Molave</option>
+                                    <option value="Germelina">Yemane</option>
+                                    <option value="Mahogany">Mahogany</option>
+                                    <option value="Narra">Narra</option>
+                                </select>
+                            </div>
+                            <div class="w-32">
+                                <input type="number" 
+                                       name="species_quantity[]" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                       placeholder="Quantity"
+                                       min="1"
+                                       required
+                                       oninput="calculateTotalTrees()">
+                            </div>
+                            <button type="button" class="add-species-btn px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>`;
+
+                // Make number of trees read-only
+                if (numberOfTreesInput) {
+                    numberOfTreesInput.readOnly = true;
+                    numberOfTreesInput.style.backgroundColor = '#f3f4f6';
+                }
+
+                initializeSpeciesHandlers();
+            }
+
+            function initializeSpeciesHandlers() {
+                const addButton = document.querySelector('.add-species-btn');
+                if (addButton) {
+                    addButton.addEventListener('click', function() {
+                        const newRow = `
+                            <div class="flex items-center gap-2 mt-2">
+                                <div class="w-full">
+                                    <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                        <option value="">Select Species</option>
+                                        <option value="Molave">Molave</option>
+                                        <option value="Yemane">Yemane</option>
+                                        <option value="Mahogany">Mahogany</option>
+                                        <option value="Narra">Narra</option>
+                                    </select>
+                                </div>
+                                <div class="w-32">
+                                    <input type="number" 
+                                           name="species_quantity[]" 
+                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                           placeholder="Quantity"
+                                           min="1"
+                                           required
+                                           oninput="calculateTotalTrees()">
+                                </div>
+                                <button type="button" class="remove-species-btn px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600" onclick="removeSpeciesRow(this)">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>`;
+                        
+                        speciesContainer.querySelector('.space-y-2').insertAdjacentHTML('beforeend', newRow);
+                        calculateTotalTrees();
+                    });
+                }
+            }
+
+            // Global functions for accessibility
+            window.calculateTotalTrees = function() {
+                const quantities = document.querySelectorAll('input[name="species_quantity[]"]');
+                let total = 0;
+                quantities.forEach(input => {
+                    total += parseInt(input.value) || 0;
+                });
+                if (numberOfTreesInput) {
+                    numberOfTreesInput.value = total;
+                }
+            }
+
+            window.removeSpeciesRow = function(button) {
+                const container = speciesContainer.querySelector('.space-y-2');
+                if (container.children.length > 1) {
+                    button.closest('.flex').remove();
+                    calculateTotalTrees();
+                } else {
+                    alert('At least one species must remain');
+                }
+            }
+
+            function calculateNetVolume() {
+                const grossVolume = parseFloat(grossVolumeInput.value) || 0;
+                const netVolume = (grossVolume * 0.70).toFixed(2);
+                netVolumeInput.value = netVolume;
+            }
+
+            window.calculateNetVolume = calculateNetVolume;
+
+            if (grossVolumeInput) {
+                grossVolumeInput.addEventListener('input', calculateNetVolume);
+            }
+
+            function getBusinessDays(startDate, endDate) {
+                let count = 0;
+                const curDate = new Date(startDate);
+                const end = new Date(endDate);
+                
+                while (curDate <= end) {
+                    const dayOfWeek = curDate.getDay();
+                    if (dayOfWeek !== 0 && dayOfWeek !== 6) count++;
+                    curDate.setDate(curDate.getDate() + 1);
+                }
+                return count;
+            }
+
+            if (dateIssued && expiryDate) {
+                dateIssued.addEventListener('change', function() {
+                    if (expiryDate.value) {
+                        const issued = new Date(this.value);
+                        const expiry = new Date(expiryDate.value);
+                        
+                        if (expiry < issued) {
+                            alert('Expiry date cannot be earlier than issue date');
+                            expiryDate.value = '';
+                        }
+                    }
+                });
+
+                expiryDate.addEventListener('change', function() {
+                    if (this.value && dateIssued.value) {
+                        const issued = new Date(dateIssued.value);
+                        const expiry = new Date(this.value);
+                        
+                        if (expiry < issued) {
+                            alert('Expiry date cannot be earlier than date issued');
+                            this.value = '';
+                            return;
+                        }
+
+                        const businessDays = getBusinessDays(issued, expiry);
+                        if (businessDays > 50) {
+                            alert('The expiry date exceeds 50 business days (excluding weekends)');
+                            this.value = '';
+                        }
+                    }
+                });
+            }
+
+            form.addEventListener('submit', function(e) {
+                const permitType = document.querySelector('[name="permit_type"]').value;
+                let hasError = false;
+                let errorMessages = [];
+
+                const requiredFields = {
+                    'permit_type': 'Permit Type',
+                    'permit_number': 'Permit Number',
+                    'permittee': 'Permittee',
+                    'location': 'Location',
+                    'latitude': 'Latitude',
+                    'longitude': 'Longitude',
+                    'tct_oct_no': 'TCT/OCT No.',
+                    'tax_dec_no': 'Tax Declaration No.',
+                    'lot_no': 'Lot No.',
+                    'area': 'Area',
+                    'no_of_trees': 'Number of Trees',
+                    'total_volume_granted': 'Total Volume Granted',
+                    'gross_volume': 'Gross Volume',
+                    'date_issued': 'Date Issued',
+                    'expiry_date': 'Expiry Date',
+                    'rep_by': 'Representative'
+                };
+
+                const speciesSelects = document.querySelectorAll('select[name="species[]"]');
+                const speciesQuantities = document.querySelectorAll('input[name="species_quantity[]"]');
+                
+                if (speciesSelects.length === 0) {
+                    hasError = true;
+                    errorMessages.push('At least one species must be added');
+                }
+
+                speciesSelects.forEach((select, index) => {
+                    if (!select.value) {
+                        hasError = true;
+                        errorMessages.push(`Species ${index + 1} must be selected`);
+                        select.classList.add('border-red-500');
+                    }
+
+                    const quantity = speciesQuantities[index];
+                    if (!quantity.value || parseInt(quantity.value) < 1) {
+                        hasError = true;
+                        errorMessages.push(`Quantity for species ${index + 1} must be at least 1`);
+                        quantity.classList.add('border-red-500');
+                    }
+                });
+
+                const selectedSpecies = Array.from(speciesSelects).map(select => select.value);
+                const uniqueSpecies = new Set(selectedSpecies);
+                if (selectedSpecies.length !== uniqueSpecies.size) {
+                    hasError = true;
+                    errorMessages.push('Duplicate species are not allowed');
+                }
+
+                const numericFields = {
+                    'latitude': [-90, 90],
+                    'longitude': [-180, 180],
+                    'area': [0, Infinity],
+                    'no_of_trees': [1, Infinity],
+                    'total_volume_granted': [0, Infinity],
+                    'gross_volume': [0, Infinity]
+                };
+
+                Object.entries(numericFields).forEach(([fieldName, [min, max]]) => {
+                    const field = document.querySelector(`[name="${fieldName}"]`);
+                    if (field && field.value.trim()) {
+                        const value = parseFloat(field.value);
+                        if (isNaN(value) || value < min || value > max) {
+                            hasError = true;
+                            errorMessages.push(`${requiredFields[fieldName]} must be a valid number ${min === -Infinity ? '' : `greater than ${min}`}${max === Infinity ? '' : ` and less than ${max}`}`);
+                            field.classList.add('border-red-500');
+                        }
+                    }
+                });
+
+                if (hasError) {
+                    e.preventDefault();
+                    alert(errorMessages.join('\n'));
+                }
+            });
+
+            if (grossVolumeInput) {
+                grossVolumeInput.addEventListener('input', function() {
+                    const grossVolume = parseFloat(this.value) || 0;
+                    const netVolume = (grossVolume * 0.70).toFixed(2);
+                    netVolumeInput.value = netVolume;
+                });
+            }
+
+            // Add this new function
+            window.calculateExpiryDate = function() {
+                const dateIssued = document.getElementById('date_issued');
+                const expiryDate = document.getElementById('expiry_date');
+                
+                if (!dateIssued.value) return;
+
+                const startDate = new Date(dateIssued.value);
+                let businessDays = 50;
+                let currentDate = new Date(startDate);
+                
+                while (businessDays > 0) {
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    const dayOfWeek = currentDate.getDay();
+                    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip weekends
+                        businessDays--;
+                    }
+                }
+                
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                expiryDate.value = `${year}-${month}-${day}`;
+            }
+
+            // Calculate on page load if date is set
+            document.addEventListener('DOMContentLoaded', function() {
+                const dateIssued = document.getElementById('date_issued');
+                if (dateIssued.value) {
+                    calculateExpiryDate();
+                }
+            });
+
+            // Toggle User Menu
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userMenu = document.getElementById('user-menu');
+            if (userMenuButton && userMenu) {
+                userMenuButton.addEventListener('click', function() {
+                    userMenu.classList.toggle('hidden');
+                });
+            }
+
+            // Toggle Mobile Menu
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', function() {
+                    const isHidden = mobileMenu.style.display === 'none';
+                    mobileMenu.style.display = isHidden ? 'block' : 'none';
+                });
+            }
+
+            // Close menus when clicking outside
+            document.addEventListener('click', function(event) {
+                // Close user menu when clicking outside
+                if (userMenu && !userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                    userMenu.classList.add('hidden');
+                }
+
+                // Close mobile menu when clicking outside
+                if (mobileMenu && !mobileMenuButton.contains(event.target) && !mobileMenu.contains(event.target)) {
+                    mobileMenu.style.display = 'none';
+                }
+            });
+
+            // Wait for the page to load
+            window.onload = function() {
+                // Get the input elements
+                const totalVolumeInput = document.querySelector('input[name="total_volume_granted"]');
+                const grossVolumeInput = document.querySelector('input[name="gross_volume"]');
+                const netVolumeInput = document.querySelector('input[name="net_volume"]');
+
+                // Function to calculate volumes
+                function calculateVolumes() {
+                    // Get total volume value
+                    let totalVolume = parseFloat(totalVolumeInput.value) || 0;
+                    
+                    // Calculate volumes
+                    let grossVolume = (totalVolume + (totalVolume * 0.30)).toFixed(2);
+                    let netVolume = (totalVolume * 0.70).toFixed(2);
+                    
+                    // Update the fields
+                    grossVolumeInput.value = grossVolume;
+                    netVolumeInput.value = netVolume;
+                }
+
+                // Add event listener to total volume input
+                if (totalVolumeInput) {
+                    totalVolumeInput.addEventListener('input', calculateVolumes);
+                    // Calculate initial values
+                    calculateVolumes();
+                }
+            };
+        });
+    </script>
+</body>
+</html>
