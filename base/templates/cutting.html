@@ -368,7 +368,6 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18"></path>
                         </svg>
                     </button>
-                    </button>
                 </div>
             </div>
         </div>
@@ -567,15 +566,22 @@
                             <div id="species-container">
                                 <div class="space-y-2">
                                     <div class="flex items-center gap-2">
-                                        <div class="w-full">
-                                            <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                        <div class="w-full relative">
+                                            <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required onchange="toggleOtherSpecies(this)">
                                                 <option value="">Select Species</option>
                                                 <option value="Molave">Molave</option>
-                                                <option value="Germelina">Yemane</option>
+                                                <option value="Yemane">Yemane</option>
                                                 <option value="Mahogany">Mahogany</option>
                                                 <option value="Narra">Narra</option>
-                                                <option value="Narra">Minepoles</option>
+                                                <option value="Minepoles">Minepoles</option>
+                                                <option value="Others">Others</option>
                                             </select>
+                                            <div class="other-species-fields" style="display: none;">
+                                                <input type="text" 
+                                                       name="other_species[]" 
+                                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                                       placeholder="Please specify species">
+                                            </div>
                                         </div>
                                         <div class="w-32">
                                             <input type="number" 
@@ -705,19 +711,80 @@
             const dateIssued = document.getElementById('date_issued');
             const expiryDate = document.getElementById('expiry_date');
 
+            // Updated toggleOtherSpecies function with more specific selectors
+            window.toggleOtherSpecies = function(selectElement) {
+                try {
+                    const parentDiv = selectElement.closest('.w-full.relative');
+                    if (!parentDiv) {
+                        console.error('Parent div not found');
+                        return;
+                    }
+
+                    const otherSpeciesFields = parentDiv.querySelector('.other-species-fields');
+                    if (!otherSpeciesFields) {
+                        console.error('Other species fields div not found');
+                        return;
+                    }
+
+                    const otherSpeciesInput = otherSpeciesFields.querySelector('input[name="other_species[]"]');
+                    if (!otherSpeciesInput) {
+                        console.error('Other species input not found');
+                        return;
+                    }
+
+                    console.log('Selected value:', selectElement.value); // Debug log
+
+                    if (selectElement.value === 'Others') {
+                        otherSpeciesFields.style.display = 'block';
+                        otherSpeciesInput.required = true;
+                    } else {
+                        otherSpeciesFields.style.display = 'none';
+                        otherSpeciesInput.required = false;
+                        otherSpeciesInput.value = '';
+                    }
+                } catch (error) {
+                    console.error('Error in toggleOtherSpecies:', error);
+                }
+            };
+
+            // Initialize all existing select elements
+            document.querySelectorAll('select[name="species[]"]').forEach(select => {
+                // Initial call to set up the correct state
+                toggleOtherSpecies(select);
+                
+                // Add change event listener
+                select.addEventListener('change', function() {
+                    toggleOtherSpecies(this);
+                });
+            });
+
             // Form submission handler
             if (form) {
                 form.addEventListener('submit', function(e) {
                     e.preventDefault();
                     
                     const species = document.querySelectorAll('select[name="species[]"]');
+                    const otherSpecies = document.querySelectorAll('input[name="other_species[]"]');
                     const quantities = document.querySelectorAll('input[name="species_quantity[]"]');
                     let speciesData = [];
                     let isValid = true;
 
                     species.forEach((select, index) => {
-                        if (select.value && quantities[index].value) {
-                            speciesData.push(`${select.value} (${quantities[index].value})`);
+                        if (select.value) {
+                            let speciesName = select.value;
+                            if (speciesName === 'Others') {
+                                speciesName = otherSpecies[index].value;
+                                if (!speciesName) {
+                                    isValid = false;
+                                    alert('Please enter the species name for Others');
+                                    return;
+                                }
+                            }
+                            if (quantities[index].value) {
+                                speciesData.push(`${speciesName} (${quantities[index].value})`);
+                            } else {
+                                isValid = false;
+                            }
                         } else {
                             isValid = false;
                         }
@@ -725,7 +792,7 @@
 
                     if (!isValid) {
                         alert('Please fill in all species and quantities');
-                        return false;
+                        return;
                     }
 
                     const hiddenInput = document.createElement('input');
@@ -752,14 +819,22 @@
                 speciesContainer.innerHTML = `
                     <div class="space-y-2">
                         <div class="flex items-center gap-2">
-                            <div class="w-full">
-                                <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                            <div class="w-full relative">
+                                <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required onchange="toggleOtherSpecies(this)">
                                     <option value="">Select Species</option>
                                     <option value="Molave">Molave</option>
-                                    <option value="Germelina">Yemane</option>
+                                    <option value="Yemane">Yemane</option>
                                     <option value="Mahogany">Mahogany</option>
                                     <option value="Narra">Narra</option>
+                                    <option value="Minepoles">Minepoles</option>
+                                    <option value="Others">Others</option>
                                 </select>
+                                <div class="other-species-fields" style="display: none;">
+                                    <input type="text" 
+                                           name="other_species[]" 
+                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                           placeholder="Please specify species">
+                                </div>
                             </div>
                             <div class="w-32">
                                 <input type="number" 
@@ -793,14 +868,22 @@
                     addButton.addEventListener('click', function() {
                         const newRow = `
                             <div class="flex items-center gap-2 mt-2">
-                                <div class="w-full">
-                                    <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                                <div class="w-full relative">
+                                    <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required onchange="toggleOtherSpecies(this)">
                                         <option value="">Select Species</option>
                                         <option value="Molave">Molave</option>
                                         <option value="Yemane">Yemane</option>
                                         <option value="Mahogany">Mahogany</option>
                                         <option value="Narra">Narra</option>
+                                        <option value="Minepoles">Minepoles</option>
+                                        <option value="Others">Others</option>
                                     </select>
+                                    <div class="other-species-fields" style="display: none;">
+                                        <input type="text" 
+                                               name="other_species[]" 
+                                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                               placeholder="Please specify species">
+                                    </div>
                                 </div>
                                 <div class="w-32">
                                     <input type="number" 
@@ -819,7 +902,6 @@
                             </div>`;
                         
                         speciesContainer.querySelector('.space-y-2').insertAdjacentHTML('beforeend', newRow);
-                        calculateTotalTrees();
                     });
                 }
             }

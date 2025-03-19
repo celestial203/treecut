@@ -615,6 +615,15 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Add this new code at the beginning of the DOMContentLoaded function
+            // Convert input text to uppercase
+            const textInputs = document.querySelectorAll('input[type="text"]');
+            textInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    this.value = this.value.toUpperCase();
+                });
+            });
+
             console.log('DOM loaded, initializing toggle menu functionality');
             
             // User menu dropdown toggle
@@ -751,30 +760,53 @@
                 input.parentNode.replaceChild(wrapper, input);
             });
             
-            // Auto-calculate expiry date when date issued changes
+            // Remove the auto-calculation and keep only the date validation
             const dateIssuedInput = document.querySelector('input[name="{{ form.date_issued.name }}"]');
             const expiryDateInput = document.querySelector('input[name="{{ form.expiry_date.name }}"]');
             
             if (dateIssuedInput && expiryDateInput) {
                 dateIssuedInput.addEventListener('change', function() {
-                    if (this.value) {
-                        // Calculate expiry date (2 years from date issued)
-                        const dateIssued = new Date(this.value);
-                        const expiryDate = new Date(dateIssued);
-                        expiryDate.setFullYear(dateIssued.getFullYear() + 2);
-                        
-                        // Format the date as YYYY-MM-DD for the input
-                        const year = expiryDate.getFullYear();
-                        const month = String(expiryDate.getMonth() + 1).padStart(2, '0');
-                        const day = String(expiryDate.getDate()).padStart(2, '0');
-                        
-                        expiryDateInput.value = `${year}-${month}-${day}`;
-                        
-                        // Trigger the change event to update the display
-                        const event = new Event('change');
-                        expiryDateInput.dispatchEvent(event);
+                    if (this.value && expiryDateInput.value) {
+                        validateDates();
                     }
                 });
+
+                expiryDateInput.addEventListener('change', function() {
+                    if (this.value && dateIssuedInput.value) {
+                        validateDates();
+                    }
+                });
+
+                function validateDates() {
+                    const issuedDate = new Date(dateIssuedInput.value);
+                    const expiryDate = new Date(expiryDateInput.value);
+
+                    if (expiryDate <= issuedDate) {
+                        Swal.fire({
+                            title: 'Invalid Date',
+                            text: 'Expiry date must be after the date issued',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                        expiryDateInput.value = '';
+                        return false;
+                    }
+
+                    // Check if selected date is a weekend
+                    const day = expiryDate.getDay();
+                    if (day === 0 || day === 6) {
+                        Swal.fire({
+                            title: 'Invalid Date',
+                            text: 'Expiry date cannot be on a weekend (Saturday or Sunday)',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                        expiryDateInput.value = '';
+                        return false;
+                    }
+
+                    return true;
+                }
             }
 
             // Fetch the last number and increment it

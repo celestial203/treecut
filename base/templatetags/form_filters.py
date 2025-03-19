@@ -1,6 +1,7 @@
 from django import template
 from django.forms.boundfield import BoundField
 from datetime import date, timedelta
+from django.utils import timezone
 
 register = template.Library()
 
@@ -50,4 +51,9 @@ def expiring_records(records):
     thirty_days_from_now = today + timedelta(days=30)
     return [record for record in records if record.expiry_date 
             and record.expiry_date >= today 
-            and record.expiry_date <= thirty_days_from_now] 
+            and record.expiry_date <= thirty_days_from_now]
+
+@register.filter
+def filter_active(records):
+    current_date = timezone.now().date()
+    return [record for record in records if record.expiry_date and record.expiry_date >= current_date] 

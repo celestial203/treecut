@@ -482,10 +482,20 @@ def add_cutting_record(request, cutting_id):
             
             date_str = request.POST.get('date')
             species = request.POST.get('species')
+            other_species = request.POST.get('other_species')  # Get other_species value
             volume = request.POST.get('volume')
             number_of_trees = request.POST.get('number_of_trees')
             remarks = request.POST.get('remarks', '')
             calculated_volume = request.POST.get('calculated_volume') or volume
+            
+            # Handle "Others" species
+            if species == 'Others':
+                if not other_species:
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Please specify the species name'
+                    })
+                species = other_species  # Use the custom species name
             
             # Validate required fields
             if not all([date_str, species, volume, number_of_trees]):
@@ -520,14 +530,14 @@ def add_cutting_record(request, cutting_id):
                 # Ensure current_balance is Decimal
                 current_balance = Decimal(str(current_balance))
                 
-                # Calculate new remaining balance using Decimal and round to 2 decimal places
+                # Calculate new remaining balance
                 new_remaining_balance = (current_balance - calc_volume_decimal).quantize(Decimal('0.01'))
                 
                 # Create new volume record
                 new_record = VolumeRecord.objects.create(
                     cutting=cutting,
                     date=date_obj,
-                    species=species,
+                    species=species,  # This will now be either the selected species or the custom one
                     volume=volume_decimal,
                     calculated_volume=calc_volume_decimal,
                     number_of_trees=trees_int,
@@ -1015,11 +1025,11 @@ def lumber_records(request):
         lumber_records = Lumber.objects.filter(expiry_date__lt=current_date).order_by('-date_issued')
     elif status == 'active':
         lumber_records = Lumber.objects.filter(expiry_date__gte=current_date).order_by('-date_issued')
-    elif status == 'expiring_soon':  # New filter for expiring soon records
-        thirty_days_from_now = current_date + timedelta(days=30)
+    elif status == 'expiring_soon':  # Update this filter to match dashboard
+        three_months_from_now = current_date + timedelta(days=90)  # Changed from 30 to 90 days
         lumber_records = Lumber.objects.filter(
-            expiry_date__gte=current_date,
-            expiry_date__lte=thirty_days_from_now
+            expiry_date__gt=current_date,
+            expiry_date__lte=three_months_from_now
         ).order_by('-date_issued')
     else:
         lumber_records = Lumber.objects.all().order_by('-date_issued')
@@ -1027,11 +1037,11 @@ def lumber_records(request):
     # Count expired records
     expired_count = Lumber.objects.filter(expiry_date__lt=current_date).count()
     
-    # Count records expiring in next 30 days but not expired yet
-    thirty_days_from_now = current_date + timedelta(days=30)
+    # Count records expiring in next 90 days but not expired yet
+    three_months_from_now = current_date + timedelta(days=90)  # Changed from 30 to 90 days
     expiring_soon_count = Lumber.objects.filter(
-        expiry_date__gte=current_date,
-        expiry_date__lte=thirty_days_from_now
+        expiry_date__gt=current_date,
+        expiry_date__lte=three_months_from_now
     ).count()
 
     context = {
@@ -1074,28 +1084,34 @@ def chainsaw_records(request):
     elif status == 'active':
         chainsaw_records = Chainsaw.objects.filter(expiry_date__gte=current_date).order_by('-date_issued')
     elif status == 'expiring_soon':
-        # For chainsaws expiring soon (within 3 months but not expired)
-        three_months_from_now = current_date + timedelta(days=90)  # 90 days = ~3 months
+        # For chainsaws expiring within 3 months but not expired
+        three_months_from_now = current_date + timedelta(days=90)  # 90 days = 3 months
         chainsaw_records = Chainsaw.objects.filter(
             expiry_date__gt=current_date,  # Not expired yet
-            expiry_date__lte=three_months_from_now  # But will expire within 3 months
+            expiry_date__lte=three_months_from_now  # Will expire within 3 months
         ).order_by('-date_issued')
-        
-        # Debug output to check if any records match this filter
-        print(f"Current date: {current_date}")
-        print(f"Three months from now: {three_months_from_now}")
-        print(f"Expiring soon records count: {chainsaw_records.count()}")
-        for record in chainsaw_records:
-            print(f"Record ID: {record.id}, Expiry date: {record.expiry_date}")
     else:
         # Default: show all records
         chainsaw_records = Chainsaw.objects.all().order_by('-date_issued')
     
-    # Make sure we're passing the records to the template
+    # Count expired records
+    expired_count = Chainsaw.objects.filter(
+        expiry_date__lt=current_date
+    ).count()
+    
+    # Count records expiring in next 3 months but not expired yet
+    three_months_from_now = current_date + timedelta(days=90)
+    expiring_soon_count = Chainsaw.objects.filter(
+        expiry_date__gt=current_date,
+        expiry_date__lte=three_months_from_now
+    ).count()
+    
     context = {
         'chainsaw_records': chainsaw_records,
         'current_date': current_date,
-        'status': status,  # Pass the current status to highlight the active filter
+        'status': status,
+        'expired_count': expired_count,
+        'expiring_soon_count': expiring_soon_count,
     }
     
     return render(request, 'chainsaw_record.html', context)
@@ -1586,31 +1602,27 @@ def get_last_chainsaw_number(request):
 def lumber_dash(request):
     current_date = timezone.now().date()
     
-    # Get QuerySets using WoodProcessingPlant model instead of Wood
-    all_plants = WoodProcessingPlant.objects.all()
+    # Get all lumber records
+    lumber_records = Lumber.objects.all()
     
-    # Active plants
-    active_plants = all_plants.filter(
-        status__in=['ACTIVE_NEW', 'ACTIVE_RENEWED'],
-        expiry_date__gt=current_date
-    )
+    # Count total records
+    total_count = lumber_records.count()
     
-    # Expiring plants
-    expiring_plants = active_plants.filter(
+    # Count active records (not expired)
+    active_count = lumber_records.filter(
+        expiry_date__gte=current_date
+    ).count()
+    
+    # Count expired records
+    expired_count = lumber_records.filter(
+        expiry_date__lt=current_date
+    ).count()
+    
+    # Count records expiring soon (within next 3 months but not expired yet)
+    expiring_soon_count = lumber_records.filter(
+        expiry_date__gt=current_date,
         expiry_date__lte=current_date + timedelta(days=90)
-    )
-    
-    # Expired plants
-    expired_plants = all_plants.filter(
-        Q(expiry_date__lt=current_date) |
-        Q(status='EXPIRED')
-    )
-    
-    # Get counts
-    total_count = all_plants.count()
-    active_count = active_plants.count()
-    expiring_soon_count = expiring_plants.count()
-    expired_count = expired_plants.count()
+    ).count()
     
     # Debug print
     print(f"""
@@ -1629,7 +1641,7 @@ Current Date: {current_date}
         'expired_count': expired_count,
     }
     
-    return render(request, 'wood-dash.html', context)
+    return render(request, 'lumber-dash.html', context)
 
 @login_required
 def lumber_form(request):
@@ -1790,5 +1802,23 @@ def get_volume_details(request, cutting_id):
             'success': False,
             'message': str(e)
         })
+
+def get_expiring_chainsaws(request):
+    # Calculate date 3 months from now
+    three_months_from_now = timezone.now().date() + timedelta(days=90)
+    today = timezone.now().date()
+    
+    # Get chainsaws expiring within the next 3 months
+    expiring_chainsaws = Chainsaw.objects.filter(
+        expiry_date__gt=today,
+        expiry_date__lte=three_months_from_now
+    ).values('id', 'owner', 'serial_number', 'expiry_date')
+    
+    # Convert QuerySet to list and format dates
+    chainsaw_list = list(expiring_chainsaws)
+    for chainsaw in chainsaw_list:
+        chainsaw['expiry_date'] = chainsaw['expiry_date'].isoformat()
+    
+    return JsonResponse(chainsaw_list, safe=False)
 
 

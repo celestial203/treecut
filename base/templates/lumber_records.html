@@ -1075,6 +1075,25 @@
         // Store dismissed notifications
         let dismissedNotifications = new Set();
 
+        // Function to check if a date is a weekend
+        function isWeekend(date) {
+            const day = date.getDay();
+            return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
+        }
+
+        // Function to calculate business days between dates
+        function getBusinessDays(startDate, endDate) {
+            let count = 0;
+            const curDate = new Date(startDate.getTime());
+            while (curDate <= endDate) {
+                if (!isWeekend(curDate)) {
+                    count++;
+                }
+                curDate.setDate(curDate.getDate() + 1);
+            }
+            return count;
+        }
+
         // Function to check for expiring records
         function checkExpiringRecords() {
             const rows = document.querySelectorAll('tbody tr');
@@ -1094,14 +1113,14 @@
                 if (today >= threeMonthsBeforeExpiry && today < expiryDate && !dismissedNotifications.has(notificationId)) {
                     const tradeName = row.querySelector('td:nth-child(1)').textContent;
                     const permitNo = row.querySelector('td:nth-child(4)').textContent;
-                    const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+                    const businessDaysUntilExpiry = getBusinessDays(today, expiryDate);
 
                     expiringRecords.push({
                         id: notificationId,
                         tradeName,
                         permitNo,
                         expiryDate,
-                        daysUntilExpiry
+                        businessDaysUntilExpiry
                     });
                 }
             });
@@ -1126,7 +1145,7 @@
                         <div class="font-semibold text-gray-900 pr-6">${record.tradeName}</div>
                         <div class="text-sm text-gray-600">Permit No: ${record.permitNo}</div>
                         <div class="text-sm text-red-600 mt-1">
-                            Expires in ${record.daysUntilExpiry} days
+                            Expires in ${record.businessDaysUntilExpiry} business days
                             (${record.expiryDate.toLocaleDateString()})
                         </div>
                     </div>

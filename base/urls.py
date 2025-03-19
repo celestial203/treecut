@@ -52,6 +52,7 @@ urlpatterns = [
     path('get-last-chainsaw-number/', views.get_last_chainsaw_number, name='get_last_chainsaw_number'),
     path('wood-dash/', views.wood_dashboard, name='wood-dash'),
     path('get-volume-details/<int:cutting_id>/', views.get_volume_details, name='get-volume-details'),
+    path('get-expiring-chainsaws/', views.get_expiring_chainsaws, name='get-expiring-chainsaws'),
 ]
 
 if settings.DEBUG:

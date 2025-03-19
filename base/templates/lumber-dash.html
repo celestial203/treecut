@@ -27,6 +27,25 @@
                 </div>
                 <!-- User Menu -->
                 <div class="hidden md:flex items-center space-x-4">
+                    <!-- Add notification button before the welcome message -->
+                    <div class="relative">
+                        <button id="notification-button" class="p-2 text-gray-600 hover:text-gray-800 focus:outline-none">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                            <span id="notification-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                        </button>
+                        
+                        <!-- Notification dropdown -->
+                        <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                            <div class="p-4">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">Expiring Records</h3>
+                                <div id="notification-list" class="space-y-3 max-h-96 overflow-y-auto">
+                                    <!-- Notifications will be inserted here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="text-lg text-gray-900 font-medium">
                         Welcome, {{ request.user.username }}
                     </div>
@@ -86,46 +105,47 @@
 
     <div class="min-h-screen flex flex-col">
         <!-- Lumber Dealers -->
-        <h1 class="text-5xl font-extrabold text-green-800 text-center font-serif mb-8 mt-10">LUMBER DASHBOARD</h1>
+        <h1 class="text-5xl font-extrabold text-green-800 text-center font-serif mb-8 mt-10">LUMBER DEALERS DASHBOARD</h1>
         <!-- Stats Overview for lumber dealers-->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
             <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
                 <a href="{% url 'lumber' %}" class="block">
                     <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300">
                         <div class="text-4xl font-bold text-black-700">+</div>
-                        <div class="text-green-900">Add Lumber Dealers</div>
+                        <div class="text-green-900">Register Lumber Dealer</div>
                         <div class="mt-2 text-sm text-gray-500">Click to add new dealer</div>
                     </div>
                 </a>
 
                 <a href="{% url 'lumber_records' %}?status=active" class="block">
                     <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300">
-                        <div class="text-4xl font-bold text-black-700">{{ active_lumber_count }}</div>
-                        <div class="text-green-900">Active Lumber Records</div>
-                        <div class="mt-2 text-sm text-gray-500">Out of {{ lumber_count }} total records</div>
+                        <div class="text-4xl font-bold text-black-700">{{ active_count }}</div>
+                        <div class="text-green-900">Active Dealers</div>
+                        <div class="mt-2 text-sm text-gray-500">Currently active permits</div>
                     </div>
                 </a>
 
                 <a href="{% url 'lumber_records' %}?status=expiring_soon" class="block">
                     <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300">
-                        <div class="text-4xl font-bold text-black-700">{{ expiring_soon_lumber_count }}</div>
-                        <div class="text-green-900">Records to be Expire</div>
+                        <div class="text-4xl font-bold text-black-700">{{ expiring_soon_count }}</div>
+                        <div class="text-green-900">To Expire</div>
+                        <div class="mt-2 text-sm text-gray-500">Expiring within 3 months</div>
                     </div>
                 </a>
 
                 <a href="{% url 'lumber_records' %}?status=expired" class="block">
                     <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300">
-                        <div class="text-4xl font-bold text-black-700">{{ expired_lumber_count }}</div>
-                        <div class="text-green-900">Expired Lumber Records</div>
-                        <div class="mt-2 text-sm text-gray-500">Out of {{ lumber_count }} total records</div>
+                        <div class="text-4xl font-bold text-black-700">{{ expired_count }}</div>
+                        <div class="text-green-900">Expired</div>
+                        <div class="mt-2 text-sm text-gray-500">Expired dealer permits</div>
                     </div>
                 </a>
 
                 <a href="{% url 'lumber_records' %}" class="block">
                     <div class="bg-transparent border-2 border-green-600 rounded-lg p-6 transform hover:scale-105 transition duration-300">
-                        <div class="text-4xl font-bold text-black-700">{{ lumber_count }}</div>
-                        <div class="text-green-900">Total Lumber Records</div>
-                        <div class="mt-2 text-sm text-gray-500">View all records</div>
+                        <div class="text-4xl font-bold text-black-700">{{ total_count }}</div>
+                        <div class="text-green-900">Total Records</div>
+                        <div class="mt-2 text-sm text-gray-500">All dealer permits</div>
                     </div>
                 </a>
             </div>
@@ -157,6 +177,81 @@
     document.getElementById('mobile-menu-button').addEventListener('click', function() {
         const mobileMenu = document.getElementById('mobile-menu');
         mobileMenu.style.display = mobileMenu.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Add notification system
+    document.addEventListener('DOMContentLoaded', function() {
+        const notificationButton = document.getElementById('notification-button');
+        const notificationDropdown = document.getElementById('notification-dropdown');
+        const notificationBadge = document.getElementById('notification-badge');
+        const notificationList = document.getElementById('notification-list');
+        
+        // Store dismissed notifications
+        let dismissedNotifications = new Set();
+
+        // Function to check for expiring records
+        function checkExpiringRecords() {
+            const expiringCount = {{ expiring_soon_count }};
+            
+            if (expiringCount > 0) {
+                notificationBadge.textContent = expiringCount;
+                notificationBadge.classList.remove('hidden');
+                
+                // Updated notification message with close button
+                notificationList.innerHTML = `
+                    <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-100 relative" id="expiring-notification">
+                        <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600" onclick="dismissNotification('expiring-notification')">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                        <div class="font-semibold text-gray-900">Expiring Permits Alert</div>
+                        <div class="text-sm text-red-600 mt-1">
+                            ${expiringCount} permit${expiringCount > 1 ? 's' : ''} expiring within 3 months
+                        </div>
+                        <a href="{% url 'lumber_records' %}?status=expiring_soon" class="text-sm text-blue-600 hover:text-blue-800 mt-2 block">
+                            View Details →
+                        </a>
+                    </div>
+                `;
+            } else {
+                notificationBadge.classList.add('hidden');
+                notificationList.innerHTML = '<div class="text-gray-500 text-center py-4">No records expiring soon</div>';
+            }
+        }
+
+        // Function to dismiss individual notifications
+        window.dismissNotification = function(notificationId) {
+            const notification = document.getElementById(notificationId);
+            if (notification) {
+                notification.remove();
+                
+                // Update the notification badge count
+                const remainingNotifications = notificationList.querySelectorAll('[id$="-notification"]').length;
+                if (remainingNotifications === 0) {
+                    notificationBadge.classList.add('hidden');
+                    notificationList.innerHTML = '<div class="text-gray-500 text-center py-4">No records expiring soon</div>';
+                } else {
+                    notificationBadge.textContent = remainingNotifications;
+                }
+            }
+        };
+
+        // Toggle notification dropdown
+        notificationButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            notificationDropdown.classList.toggle('hidden');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!notificationButton.contains(e.target) && !notificationDropdown.contains(e.target)) {
+                notificationDropdown.classList.add('hidden');
+            }
+        });
+
+        // Initial check for expiring records
+        checkExpiringRecords();
     });
 </script>
 </body>

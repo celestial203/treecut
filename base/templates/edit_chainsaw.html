@@ -555,29 +555,62 @@
                 });
             }
             
-            // Auto-calculate expiry date (2 years from issued date)
+            // Remove auto-calculation and keep only the date validation
             const dateIssuedField = document.querySelector('[name="date_issued"]');
             const expiryDateField = document.querySelector('[name="expiry_date"]');
             
             if (dateIssuedField && expiryDateField) {
                 dateIssuedField.addEventListener('change', function() {
-                    if (this.value) {
-                        // Parse the issued date
-                        const issuedDate = new Date(this.value);
-                        
-                        // Add 2 years to the issued date
-                        const expiryDate = new Date(issuedDate);
-                        expiryDate.setFullYear(expiryDate.getFullYear() + 2);
-                        
-                        // Format the expiry date as YYYY-MM-DD for the input field
-                        const year = expiryDate.getFullYear();
-                        const month = String(expiryDate.getMonth() + 1).padStart(2, '0');
-                        const day = String(expiryDate.getDate()).padStart(2, '0');
-                        
-                        // Set the expiry date field value
-                        expiryDateField.value = `${year}-${month}-${day}`;
+                    if (this.value && expiryDateField.value) {
+                        validateDates();
                     }
                 });
+
+                expiryDateField.addEventListener('change', function() {
+                    if (this.value && dateIssuedField.value) {
+                        validateDates();
+                    }
+                });
+
+                function validateDates() {
+                    const issuedDate = new Date(dateIssuedField.value);
+                    const expiryDate = new Date(expiryDateField.value);
+
+                    // Clear previous error messages
+                    const errorMessages = document.querySelectorAll('.date-error-message');
+                    errorMessages.forEach(msg => msg.remove());
+
+                    // Reset styles
+                    dateIssuedField.classList.remove('error-field');
+                    expiryDateField.classList.remove('error-field');
+
+                    // Validate expiry date is after issued date
+                    if (expiryDate <= issuedDate) {
+                        Swal.fire({
+                            title: 'Invalid Date',
+                            text: 'Expiry date must be after the date issued',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                        expiryDateField.value = '';
+                        return false;
+                    }
+
+                    // Check if selected date is a weekend
+                    const day = expiryDate.getDay();
+                    if (day === 0 || day === 6) {
+                        Swal.fire({
+                            title: 'Invalid Date',
+                            text: 'Expiry date cannot be on a weekend (Saturday or Sunday)',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                        expiryDateField.value = '';
+                        return false;
+                    }
+
+                    return true;
+                }
             }
             
             // Form validation with SweetAlert
@@ -641,26 +674,6 @@
                         }
                     }
                 });
-                
-                // Check if expiry date is after date issued
-                const dateIssued = form.querySelector('[name="date_issued"]');
-                const expiryDate = form.querySelector('[name="expiry_date"]');
-                
-                if (dateIssued && expiryDate && dateIssued.value && expiryDate.value) {
-                    const issuedDate = new Date(dateIssued.value);
-                    const expiry = new Date(expiryDate.value);
-                    
-                    if (expiry <= issuedDate) {
-                        isValid = false;
-                        expiryDate.classList.add('error-field');
-                        errorMessages.push('Expiry date must be after the date issued');
-                        
-                        const errorMsg = document.createElement('p');
-                        errorMsg.className = 'error-message';
-                        errorMsg.textContent = 'Expiry date must be after the date issued';
-                        expiryDate.parentElement.appendChild(errorMsg);
-                    }
-                }
                 
                 // If validation fails, show SweetAlert and prevent form submission
                 if (!isValid) {

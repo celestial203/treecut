@@ -126,13 +126,36 @@ class CuttingForm(forms.ModelForm):
     class Meta:
         model = Cutting
         fields = [
-            'date_issued', 'expiry_date', 'status'
+            'permit_type',
+            'permit_number',
+            'date_issued',
+            'expiry_date',
+            'permittee',
+            'rep_by',
+            'location',
+            'latitude',
+            'longitude',
+            'tct_oct_no',
+            'tax_dec_no',
+            'lot_no',
+            'area',
+            'species',
+            'no_of_trees',
+            'total_volume_granted',
+            'gross_volume',
+            'net_volume',
+            'permit_file',
+            'status',
+            'situation'
         ]
         widgets = {
             'date_issued': forms.DateInput(attrs={'type': 'date'}),
             'expiry_date': forms.DateInput(attrs={'type': 'date'}),
+            'gross_volume': forms.NumberInput(attrs={'step': '0.01'}),
+            'net_volume': forms.NumberInput(attrs={'step': '0.01', 'readonly': True}),
+            'total_volume_granted': forms.NumberInput(attrs={'step': '0.01'}),
         }
-    
+
     def clean(self):
         cleaned_data = super().clean()
         print("Form cleaned data:", cleaned_data)
@@ -231,7 +254,7 @@ class WoodForm(forms.ModelForm):
 class CuttingRecordForm(forms.ModelForm):
     class Meta:
         model = CuttingRecord
-        fields = ['species', 'number_of_trees', 'volume', 'calculated_volume', 'remarks']
+        fields = ['species', 'other_species', 'number_of_trees', 'volume', 'calculated_volume', 'remarks']
         widgets = {
             'volume': forms.NumberInput(attrs={
                 'class': 'form-input',
@@ -240,8 +263,12 @@ class CuttingRecordForm(forms.ModelForm):
             'number_of_trees': forms.NumberInput(attrs={
                 'class': 'form-input'
             }),
-            'species': forms.TextInput(attrs={
+            'species': forms.Select(attrs={
                 'class': 'form-input'
+            }),
+            'other_species': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Enter species name'
             }),
             'remarks': forms.Textarea(attrs={
                 'class': 'form-textarea',
@@ -249,34 +276,24 @@ class CuttingRecordForm(forms.ModelForm):
             })
         }
 
-    def clean_volume(self):
-        volume = self.cleaned_data.get('volume')
-        if volume <= 0:
-            raise ValidationError("Volume must be greater than 0")
-        return volume
-
-    def clean_number_of_trees(self):
-        number_of_trees = self.cleaned_data.get('number_of_trees')
-        if number_of_trees <= 0:
-            raise ValidationError("Number of trees must be greater than 0")
-        return number_of_trees
-
     def clean(self):
         cleaned_data = super().clean()
-        volume = cleaned_data.get('volume')
         species = cleaned_data.get('species')
+        other_species = cleaned_data.get('other_species')
+        
+        if species == 'Others' and not other_species:
+            raise ValidationError({'other_species': 'Please specify the species name when selecting Others'})
+        
+        volume = cleaned_data.get('volume')
         calculated_volume = cleaned_data.get('calculated_volume')
         
         if volume and species:
             if species.endswith('Fuel Wood'):
-                # For Fuel Wood, use the volume directly as deduction
                 cleaned_data['calculated_volume'] = volume
             elif species.endswith('SL'):
-                # For SL species, add 40%
                 calculated_volume = volume + (volume * Decimal('0.40'))
                 cleaned_data['calculated_volume'] = calculated_volume
             else:
-                # For regular species, add 30%
                 calculated_volume = volume + (volume * Decimal('0.30'))
                 cleaned_data['calculated_volume'] = calculated_volume
             

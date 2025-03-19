@@ -261,7 +261,7 @@
                         <div class="p-4">
                             <h3 class="text-lg font-semibold text-gray-900 mb-2">Expiring Records</h3>
                             <div id="notification-list" class="space-y-3 max-h-96 overflow-y-auto">
-                                <!-- Notifications will be inserted here -->
+                                <!-- Notifications will be dynamically inserted here -->
                             </div>
                         </div>
                     </div>
@@ -319,7 +319,7 @@
     <!-- Mobile Menu -->
     <div class="md:hidden" id="mobile-menu" style="display: none;">
         <div class="px-2 pt-2 pb-3 space-y-1">
-            <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign Out</a>
+            <a href="{% url 'logout' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Sign Out</a>
         </div>
     </div>
 </nav>
@@ -378,19 +378,19 @@
         <!-- Filter Buttons Row -->
         <div class="flex gap-4 mb-6 flex-wrap">
             <button id="allRecordsBtn" 
-                    class="px-6 py-2 bg-white text-black rounded-lg border-2 border-green-500 hover:bg-green-50 transition-all duration-200 text-sm font-medium">
+                    class="px-6 py-2 bg-white text-black rounded-lg border-2 border-green-500 hover:bg-green-50 transition-all duration-200 text-sm font-medium cursor-pointer">
                 All Records
             </button>
             <button id="activeRecordsBtn" 
-                    class="px-6 py-2 bg-white text-black rounded-lg border-2 border-green-500 hover:bg-green-50 transition-all duration-200 text-sm font-medium">
+                    class="px-6 py-2 bg-white text-black rounded-lg border-2 border-green-500 hover:bg-green-50 transition-all duration-200 text-sm font-medium cursor-pointer">
                 Active
             </button>
             <button id="expiringSoonRecordsBtn" 
-                    class="px-6 py-2 bg-white text-black rounded-lg border-2 border-green-500 hover:bg-green-50 transition-all duration-200 text-sm font-medium">
+                    class="px-6 py-2 bg-white text-black rounded-lg border-2 border-green-500 hover:bg-green-50 transition-all duration-200 text-sm font-medium cursor-pointer">
                 To expire
             </button>
             <button id="expiredRecordsBtn" 
-                    class="px-6 py-2 bg-white text-black rounded-lg border-2 border-green-500 hover:bg-green-50 transition-all duration-200 text-sm font-medium">
+                    class="px-6 py-2 bg-white text-black rounded-lg border-2 border-green-500 hover:bg-green-50 transition-all duration-200 text-sm font-medium cursor-pointer">
                 Expired
             </button>
         </div>
@@ -891,18 +891,14 @@
         
         // Expiring Soon Records button
         if (expiringSoonRecordsBtn) {
+            console.log('Found expiring soon button');
+            
             expiringSoonRecordsBtn.addEventListener('click', function() {
                 console.log('Expiring Soon Records button clicked');
                 
-                const rows = tableBody.querySelectorAll('tr:not(#noRecordsRow)');
+                const rows = document.querySelectorAll('tbody tr:not(#noRecordsRow)');
                 const today = new Date();
-                const threeMonthsLater = new Date();
-                threeMonthsLater.setMonth(today.getMonth() + 3);
-                
-                console.log('Date range for expiring soon:', 
-                    today.toISOString().split('T')[0], 'to', 
-                    threeMonthsLater.toISOString().split('T')[0]);
-                
+                today.setHours(0, 0, 0, 0);
                 let visibleRowCount = 0;
                 
                 rows.forEach(row => {
@@ -918,31 +914,35 @@
                         const expiryDateText = expiryDateCell.textContent.trim();
                         
                         if (expiryDateText) {
-                            // Parse the expiry date (format: "Jan 15, 2023")
+                            // Parse the expiry date
                             const expiryDate = new Date(expiryDateText);
                             
-                            // Check if the date is valid and within the next 3 months
-                            if (!isNaN(expiryDate.getTime()) && 
-                                expiryDate >= today && 
-                                expiryDate <= threeMonthsLater) {
-                                row.style.display = '';
-                                visibleRowCount++;
-                                console.log('Showing expiring soon row with expiry date:', expiryDateText);
+                            if (!isNaN(expiryDate.getTime())) {
+                                // Calculate days until expiry
+                                const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+                                
+                                // Show if within 90 days and not expired
+                                if (daysUntilExpiry <= 90 && daysUntilExpiry > 0) {
+                                    row.style.display = '';
+                                    visibleRowCount++;
+                                    console.log('Showing expiring soon row:', expiryDateText);
+                                } else {
+                                    row.style.display = 'none';
+                                    console.log('Hiding row - not expiring soon:', expiryDateText);
+                                }
                             } else {
                                 row.style.display = 'none';
-                                console.log('Hiding row - not expiring soon with expiry date:', expiryDateText);
+                                console.log('Invalid date format:', expiryDateText);
                             }
                         } else {
                             row.style.display = 'none';
-                            console.log('Hiding row - no expiry date');
+                            console.log('Empty date cell');
                         }
                     } else {
                         row.style.display = 'none';
-                        console.log('Hiding row - no expiry date cell');
+                        console.log('No expiry date cell found');
                     }
                 });
-                
-                console.log('Total visible rows after filtering:', visibleRowCount);
                 
                 // Show "No records found" row if no matches
                 const noRecordsRow = document.getElementById('noRecordsRow');
@@ -955,9 +955,6 @@
                         console.log('Hiding no records message');
                     }
                 }
-                
-                // Highlight this button
-                highlightActiveButton(expiringSoonRecordsBtn);
             });
         }
         
@@ -1465,114 +1462,116 @@ document.addEventListener('DOMContentLoaded', function() {
     const notificationBadge = document.getElementById('notification-badge');
     const notificationList = document.getElementById('notification-list');
     
-    // Store dismissed notifications
-    let dismissedNotifications = new Set();
-
-    // Function to check for expiring records
     function checkExpiringRecords() {
-        const rows = document.querySelectorAll('tbody tr');
-        const expiringRecords = [];
+        const rows = document.querySelectorAll('tbody tr:not(#noRecordsRow)');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        let expiringCount = 0;
+        let notificationHTML = '';
 
         rows.forEach(row => {
-            if (row.querySelector('td[colspan="5"]')) return;
+            if (row.querySelector('td[colspan]')) return;
 
-            const expiryDateCell = row.querySelector('td:nth-child(16)'); // Adjust index for expiry date column
-            if (expiryDateCell) {
-                const expiryDate = new Date(expiryDateCell.textContent);
-                const threeMonthsBeforeExpiry = new Date(expiryDate);
-                threeMonthsBeforeExpiry.setMonth(expiryDate.getMonth() - 3);
+            const expiryDateCell = row.querySelector('td:nth-child(17)');
+            const ownerCell = row.querySelector('td:nth-child(6)');
+            const serialCell = row.querySelector('td:nth-child(14)');
 
-                const notificationId = `chainsaw-${row.dataset.recordId}-${expiryDateCell.textContent}`;
+            if (expiryDateCell && ownerCell && serialCell) {
+                const expiryDate = new Date(expiryDateCell.textContent.trim());
                 
-                if (today >= threeMonthsBeforeExpiry && today < expiryDate && !dismissedNotifications.has(notificationId)) {
-                    const ownerCell = row.querySelector('td:nth-child(5)');
-                    const serialNumberCell = row.querySelector('td:nth-child(13)');
-                    const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
-
-                    expiringRecords.push({
-                        id: notificationId,
-                        owner: ownerCell.textContent,
-                        serialNumber: serialNumberCell.textContent,
-                        expiryDate: expiryDate,
-                        daysUntilExpiry
-                    });
+                if (!isNaN(expiryDate.getTime())) {
+                    const businessDays = getBusinessDaysBetween(today, expiryDate);
+                    
+                    if (businessDays <= 60 && businessDays > 0) {
+                        const notificationId = `notification-${serialCell.textContent.trim()}`;
+                        expiringCount++;
+                        notificationHTML += `
+                            <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-100 relative mb-2" id="${notificationId}">
+                                <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600" 
+                                        onclick="dismissIndividualNotification('${notificationId}')">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                                <div class="font-semibold text-gray-900">${ownerCell.textContent.trim()}</div>
+                                <div class="text-sm text-gray-600">Serial No: ${serialCell.textContent.trim()}</div>
+                                <div class="text-sm text-red-600 mt-1">
+                                    Expires in ${businessDays} business days
+                                    (${expiryDate.toLocaleDateString()})
+                                </div>
+                            </div>
+                        `;
+                    }
                 }
             }
         });
 
-        // Update notification badge
-        if (expiringRecords.length > 0) {
-            notificationBadge.textContent = expiringRecords.length;
+        // Update badge and notification list
+        if (expiringCount > 0) {
+            notificationBadge.textContent = expiringCount;
             notificationBadge.classList.remove('hidden');
+            notificationList.innerHTML = notificationHTML;
         } else {
             notificationBadge.classList.add('hidden');
+            notificationList.innerHTML = '<div class="text-gray-500 text-center py-4">No records expiring soon</div>';
         }
+    }
 
-        // Update notification list
-        notificationList.innerHTML = expiringRecords.length > 0 
-            ? expiringRecords.map(record => `
-                <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-100 relative" data-notification-id="${record.id}">
-                    <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 focus:outline-none close-notification">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                    <div class="font-semibold text-gray-900">${record.owner}</div>
-                    <div class="text-sm text-gray-600">Serial No: ${record.serialNumber}</div>
-                    <div class="text-sm text-red-600 mt-1">
-                        Expires in ${record.daysUntilExpiry} days
-                        (${record.expiryDate.toLocaleDateString()})
-                    </div>
-                </div>
-            `).join('')
-            : '<div class="text-gray-500 text-center py-4">No records expiring soon</div>';
-
-        // Add event listeners to close buttons
-        document.querySelectorAll('.close-notification').forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const notification = this.closest('[data-notification-id]');
-                const notificationId = notification.dataset.notificationId;
-                
-                // Add to dismissed set
-                dismissedNotifications.add(notificationId);
-                
-                // Remove the notification
-                notification.remove();
-                
-                // Update badge count
-                const remainingNotifications = notificationList.querySelectorAll('[data-notification-id]').length;
-                if (remainingNotifications > 0) {
-                    notificationBadge.textContent = remainingNotifications;
-                } else {
-                    notificationBadge.classList.add('hidden');
-                    notificationList.innerHTML = '<div class="text-gray-500 text-center py-4">No records expiring soon</div>';
-                }
-            });
-        });
+    // Function to calculate business days
+    function getBusinessDaysBetween(startDate, endDate) {
+        let count = 0;
+        let currentDate = new Date(startDate);
+        
+        while (currentDate <= endDate) {
+            // Check if it's a weekday (1-5 are Monday-Friday)
+            if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+                count++;
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+        return count;
     }
 
     // Toggle notification dropdown
     notificationButton.addEventListener('click', function(e) {
         e.stopPropagation();
         notificationDropdown.classList.toggle('hidden');
+        // Check expiring records when dropdown is opened
+        checkExpiringRecords();
     });
 
     // Close dropdown when clicking outside
     document.addEventListener('click', function(e) {
-        if (!notificationDropdown.contains(e.target) && !notificationButton.contains(e.target)) {
+        if (!notificationButton.contains(e.target) && !notificationDropdown.contains(e.target)) {
             notificationDropdown.classList.add('hidden');
         }
     });
 
     // Initial check for expiring records
     checkExpiringRecords();
-
-    // Check for expiring records periodically (every 5 minutes)
-    setInterval(checkExpiringRecords, 5 * 60 * 1000);
 });
+</script>
+
+<!-- Add this script to dismiss individual notifications -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add function to dismiss individual notifications
+        window.dismissIndividualNotification = function(notificationId) {
+            const notification = document.getElementById(notificationId);
+            if (notification) {
+                notification.remove();
+                
+                // Update the notification count
+                const remainingNotifications = notificationList.querySelectorAll('[id^="notification-"]').length;
+                if (remainingNotifications === 0) {
+                    notificationBadge.classList.add('hidden');
+                    notificationList.innerHTML = '<div class="text-gray-500 text-center py-4">No records expiring soon</div>';
+                } else {
+                    notificationBadge.textContent = remainingNotifications;
+                }
+            }
+        };
+    });
 </script>
 </body>
 </html>

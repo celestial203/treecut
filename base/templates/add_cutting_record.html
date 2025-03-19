@@ -201,22 +201,47 @@
                 updateExpiryDate(dateIssued.value);
             }
 
-            // Add event listener for species selection
-            document.querySelector('select[name="species"]').addEventListener('change', function() {
-                const volume = document.getElementById('inputVolume').value;
-                if (volume) {
-                    updateCalculations();
+            // Move this function outside DOMContentLoaded to make it globally available
+            function toggleOtherSpecies(selectElement) {
+                console.log('Toggle function called with value:', selectElement.value); // Debug log
+                
+                const parentDiv = selectElement.closest('.relative');
+                const otherSpeciesFields = parentDiv.querySelector('.other-species-fields');
+                const otherSpeciesInput = otherSpeciesFields.querySelector('input[name="other_species"]');
+                
+                if (selectElement.value === 'Others') {
+                    console.log('Showing other species field'); // Debug log
+                    otherSpeciesFields.style.display = 'block';
+                    otherSpeciesInput.required = true;
+                } else {
+                    console.log('Hiding other species field'); // Debug log
+                    otherSpeciesFields.style.display = 'none';
+                    otherSpeciesInput.required = false;
+                    otherSpeciesInput.value = '';
                 }
-            });
+            }
 
-            // Add event listener for volume input
-            document.getElementById('inputVolume').addEventListener('input', updateCalculations);
+            // Initialize the toggle state on page load
+            const speciesSelect = document.getElementById('species');
+            if (speciesSelect) {
+                toggleOtherSpecies(speciesSelect);
+                
+                // Add change event listener
+                speciesSelect.addEventListener('change', function() {
+                    toggleOtherSpecies(this);
+                });
+            }
 
+            // Updated updateCalculations function
             function updateCalculations() {
                 const date = document.getElementById('date').value;
                 const volume = parseFloat(document.getElementById('inputVolume').value) || 0;
-                const species = document.querySelector('select[name="species"]').value;
-                // Initialize remaining balance to gross volume when no records exist
+                const speciesSelect = document.getElementById('species');
+                const species = speciesSelect.value;
+                const otherSpeciesInput = document.querySelector('input[name="other_species"]');
+                const speciesDisplay = species === 'Others' ? (otherSpeciesInput.value || 'Custom Species') : species;
+
+                // Initialize remaining balance
                 const currentBalance = {% if volume_records %}
                     parseFloat({{ volume_records.first.remaining_balance|default:0 }})
                 {% else %}
@@ -237,6 +262,10 @@
                             <div class="flex justify-between text-gray-600">
                                 <span>Date:</span>
                                 <span>${date}</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600">
+                                <span>Species:</span>
+                                <span>${speciesDisplay}</span>
                             </div>
                             <div class="flex justify-between text-gray-600">
                                 <span>Original Volume:</span>
@@ -265,7 +294,7 @@
                         </div>
                     `;
                 } else {
-                    // For all other species, use original volume
+                    // For all other species, including Others
                     calculatedVolume = volume;
                     const newBalance = currentBalance - calculatedVolume;
 
@@ -274,6 +303,10 @@
                             <div class="flex justify-between text-gray-600">
                                 <span>Date:</span>
                                 <span>${date}</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600">
+                                <span>Species:</span>
+                                <span>${speciesDisplay}</span>
                             </div>
                             <div class="flex justify-between text-gray-600">
                                 <span>Current Balance:</span>
@@ -291,13 +324,11 @@
                     `;
                 }
 
-                // Store calculated volume in hidden field for form submission
+                // Store calculated volume and update display
                 document.getElementById('calculatedVolumeForDB').value = calculatedVolume || 0;
-                
-                // Update the calculation details display
                 document.getElementById('calculationDetails').innerHTML = details;
 
-                // Add validation check
+                // Update submit button state
                 const addVolumeButton = document.querySelector('button[type="submit"]');
                 if (currentBalance <= 0) {
                     addVolumeButton.disabled = true;
@@ -319,8 +350,14 @@
                 }
             }
 
-            // Add event listener for date field
+            // Initialize event listeners
+            document.getElementById('inputVolume').addEventListener('input', updateCalculations);
             document.getElementById('date').addEventListener('change', updateCalculations);
+
+            // Initial calculation if needed
+            if (document.getElementById('species').value) {
+                toggleOtherSpecies(document.getElementById('species'));
+            }
         });
     </script>
 
@@ -435,24 +472,34 @@
                 <div class="space-y-4">
                     <!-- Date Selection -->
                     <div>
-                        <label for="date" class="block text-sm font-medium text-gray-700">Date*</label>
+                        <label for="date" class="block text-sm font-medium text-gray-700">Date</label>
                         <input type="date" name="date" id="date" class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
                     </div>
 
                     <!-- Species Selection -->
                     <div>
-                        <label for="species" class="block text-sm font-medium text-gray-700">Species*</label>
-                        <select name="species" id="species" class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
-                            <option value="">Select Species</option>
-                            <option value="Sawn Lumber">Sawn Lumber</option>
-                            <option value="Fuel Wood">Fuel Wood</option>
-                            <option value="Minepoles">Minepoles</option>
-                            <option value="Molave">Molave</option>
-                            <option value="Yemane">Yemane</option>
-                            <option value="Mahogany">Mahogany</option>
-                            <option value="Narra">Narra</option>
-                            <option value="Narra">Teabolts</option>
-                        </select>
+                        <label for="species" class="block text-sm font-medium text-gray-700">Species</label>
+                        <div class="w-full relative">
+                            <select name="species" id="species" class="input-field mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required onchange="toggleOtherSpecies(this)">
+                                <option value="">Select Species</option>
+                                <option value="Sawn Lumber">Sawn Lumber</option>
+                                <option value="Fuel Wood">Fuel Wood</option>
+                                <option value="Minepoles">Minepoles</option>
+                                <option value="Molave">Molave</option>
+                                <option value="Yemane">Yemane</option>
+                                <option value="Mahogany">Mahogany</option>
+                                <option value="Narra">Narra</option>
+                                <option value="Logbolts">Logbolts</option>
+                                <option value="Others">Others</option>
+                            </select>
+                            <div class="other-species-fields mt-2" style="display: none;">
+                                <input type="text" 
+                                       name="other_species" 
+                                       id="other_species"
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                       placeholder="Please specify species">
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Normal/SL Species Fields -->
@@ -598,212 +645,6 @@
     </footer>
 
     <script>
-        function updateNormalCalculations() {
-            const volume = parseFloat(document.getElementById('inputVolume').value) || 0;
-            const species = document.querySelector('select[name="species"]').value;
-            const isSL = species.endsWith('SL');
-            // Safely get the current balance with a fallback to 0
-            const currentBalance = {% if volume_records %}
-                parseFloat({{ volume_records.first.remaining_balance|default:0 }})
-            {% else %}
-                parseFloat({{ cutting.gross_volume|default:0 }})
-            {% endif %} || 0;
-
-            let calculatedVolume;
-            let details;
-
-            if (isSL) {
-                // Calculate 40% additional for Sawn Lumber
-                const additionalVolume = volume * 0.40;
-                calculatedVolume = volume + additionalVolume;
-                const newBalance = currentBalance - calculatedVolume;
-
-                details = `
-                    <div class="text-sm space-y-1">
-                        <div class="flex justify-between text-gray-600">
-                            <span>Original Volume:</span>
-                            <span>${volume.toFixed(2)} cu.m</span>
-                        </div>
-                        <div class="flex justify-between text-green-600">
-                            <span>Additional 40%:</span>
-                            <span>+${additionalVolume.toFixed(2)} cu.m</span>
-                        </div>
-                        <div class="flex justify-between text-blue-600">
-                            <span>Total Volume:</span>
-                            <span>${calculatedVolume.toFixed(2)} cu.m</span>
-                        </div>
-                        <div class="flex justify-between text-gray-600 border-t pt-1">
-                            <span>Current Balance:</span>
-                            <span>${currentBalance.toFixed(2)} cu.m</span>
-                        </div>
-                        <div class="flex justify-between text-red-600">
-                            <span>Volume to Deduct:</span>
-                            <span>-${calculatedVolume.toFixed(2)} cu.m</span>
-                        </div>
-                        <div class="flex justify-between font-semibold ${newBalance < 0 ? 'text-red-600' : 'text-blue-600'} border-t pt-1">
-                            <span>New Remaining Balance:</span>
-                            <span>${newBalance.toFixed(2)} cu.m</span>
-                        </div>
-                    </div>
-                `;
-            } else {
-                // For all other species, use original volume
-                calculatedVolume = volume;
-                const newBalance = currentBalance - calculatedVolume;
-
-                details = `
-                    <div class="text-sm space-y-1">
-                        <div class="flex justify-between text-gray-600">
-                            <span>Current Balance:</span>
-                            <span>${currentBalance.toFixed(2)} cu.m</span>
-                        </div>
-                        <div class="flex justify-between text-red-600">
-                            <span>Volume to Deduct:</span>
-                            <span>-${calculatedVolume.toFixed(2)} cu.m</span>
-                        </div>
-                        <div class="flex justify-between font-semibold ${newBalance < 0 ? 'text-red-600' : 'text-blue-600'} border-t pt-1">
-                            <span>New Remaining Balance:</span>
-                            <span>${newBalance.toFixed(2)} cu.m</span>
-                        </div>
-                    </div>
-                `;
-            }
-
-            // Store calculated volume in hidden field for form submission
-            document.getElementById('calculatedVolumeForDB').value = calculatedVolume || 0;
-            
-            // Update the calculation details display
-            document.getElementById('calculationDetails').innerHTML = details;
-
-            // Add validation check
-            const addVolumeButton = document.querySelector('button[type="submit"]');
-            if (currentBalance <= 0) {
-                addVolumeButton.disabled = true;
-                addVolumeButton.classList.remove('bg-green-600', 'hover:bg-blue-700');
-                addVolumeButton.classList.add('bg-red-600', 'cursor-not-allowed');
-                addVolumeButton.innerHTML = 'CONSUMED - Cannot Add Volume';
-                
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Permit Consumed',
-                    text: 'This permit has been fully consumed. No more volume can be added.',
-                    confirmButtonColor: '#3085d6'
-                });
-            } else {
-                addVolumeButton.disabled = false;
-                addVolumeButton.classList.remove('bg-red-600', 'cursor-not-allowed');
-                addVolumeButton.classList.add('bg-green-600', 'hover:bg-blue-700');
-                addVolumeButton.innerHTML = 'Add Volume';
-            }
-        }
-
-        function updateFuelWoodCalculations() {
-            const deduction = parseFloat(document.getElementById('inputDeduction').value) || 0;
-            
-            // Get the remaining balance from the latest record, if no records exist use gross volume
-            const currentBalance = {% if volume_records %}
-                parseFloat({{ volume_records.first.remaining_balance|default:0 }})
-            {% else %}
-                parseFloat({{ cutting.gross_volume|default:0 }})
-            {% endif %} || 0;
-            
-            // For Fuel Wood, the deduction is the calculated volume
-            document.getElementById('calculatedVolumeForDB').value = deduction;
-            
-            const newBalance = currentBalance - deduction;
-            
-            const details = `
-                <div class="text-sm space-y-1">
-                    <div class="flex justify-between text-gray-600">
-                        <span>Current Balance:</span>
-                        <span>${currentBalance.toFixed(2)} cu.m</span>
-                    </div>
-                    <div class="flex justify-between text-red-600">
-                        <span>Deduction:</span>
-                        <span>-${deduction.toFixed(2)} cu.m</span>
-                    </div>
-                    <div class="flex justify-between font-semibold ${newBalance < 0 ? 'text-red-600' : 'text-blue-600'} border-t pt-1">
-                        <span>New Remaining Balance:</span>
-                        <span>${newBalance.toFixed(2)} cu.m</span>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('calculationDetails').innerHTML = details;
-
-            // Add validation check - only check if current balance is 0
-            const addVolumeButton = document.querySelector('button[type="submit"]');
-            if (currentBalance === 0) {
-                addVolumeButton.disabled = true;
-                addVolumeButton.classList.remove('bg-green-600', 'hover:bg-blue-700');
-                addVolumeButton.classList.add('bg-red-600', 'cursor-not-allowed');
-                addVolumeButton.innerHTML = 'CONSUMED - Cannot Add Volume';
-                
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Permit Consumed',
-                    text: 'This permit has been fully consumed. No more volume can be added.',
-                    confirmButtonColor: '#3085d6'
-                });
-            } else {
-                addVolumeButton.disabled = false;
-                addVolumeButton.classList.remove('bg-red-600', 'cursor-not-allowed');
-                addVolumeButton.classList.add('bg-green-600', 'hover:bg-blue-700');
-                addVolumeButton.innerHTML = 'Add Volume';
-            }
-        }
-
-        // Add input event listener for real-time updates
-        document.getElementById('inputDeduction').addEventListener('input', updateFuelWoodCalculations);
-
-        // Species change event listener
-        document.querySelector('select[name="species"]').addEventListener('change', function() {
-            const normalFields = document.getElementById('normalFields');
-            const fuelWoodFields = document.getElementById('fuelWoodFields');
-            const isFuelWood = this.value.endsWith('Fuel Wood');
-            
-            // Toggle fields visibility
-            normalFields.classList.toggle('hidden', isFuelWood);
-            fuelWoodFields.classList.toggle('hidden', !isFuelWood);
-            
-            // Reset values and update calculations
-            document.getElementById('inputVolume').value = '';
-            document.getElementById('inputDeduction').value = '';
-            document.getElementById('calculationDetails').innerHTML = '';
-        });
-
-        // Initialize calculations on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const species = document.querySelector('select[name="species"]').value;
-            if (species.endsWith('Fuel Wood')) {
-                updateFuelWoodCalculations();
-            } else {
-                updateNormalCalculations();
-            }
-
-            // Add initial validation check when page loads
-            const currentBalance = {% if volume_records %}
-                parseFloat({{ volume_records.first.remaining_balance|default:0 }})
-            {% else %}
-                parseFloat({{ cutting.gross_volume|default:0 }})
-            {% endif %} || 0;
-            const addVolumeButton = document.querySelector('button[type="submit"]');
-            
-            if (currentBalance === 0) {
-                addVolumeButton.disabled = true;
-                addVolumeButton.classList.remove('bg-green-600', 'hover:bg-blue-700');
-                addVolumeButton.classList.add('bg-red-600', 'cursor-not-allowed');
-                addVolumeButton.innerHTML = 'CONSUMED - Cannot Add Volume';
-                
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Permit Consumed',
-                    text: 'This permit has been fully consumed. No more volume can be added.',
-                    confirmButtonColor: '#3085d6'
-                });
-            }
-        });
-
         function editRecord(recordId) {
             // Get the row element
             const row = document.getElementById(`record-row-${recordId}`);
@@ -815,9 +656,9 @@
             form.innerHTML = `
                 <input type="hidden" name="record_id" value="${recordId}">
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
+                    <div class="relative">
                         <label class="block text-sm font-medium text-gray-700">Species</label>
-                        <select name="species" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <select name="species" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" onchange="toggleEditOtherSpecies(this)">
                             <option value="Sawn Lumber" ${cells[2].textContent === 'Sawn Lumber' ? 'selected' : ''}>Sawn Lumber</option>
                             <option value="Fuel Wood" ${cells[2].textContent === 'Fuel Wood' ? 'selected' : ''}>Fuel Wood</option>
                             <option value="Minepoles" ${cells[2].textContent === 'Minepoles' ? 'selected' : ''}>Minepoles</option>
@@ -825,7 +666,16 @@
                             <option value="Yemane" ${cells[2].textContent === 'Yemane' ? 'selected' : ''}>Yemane</option>
                             <option value="Mahogany" ${cells[2].textContent === 'Mahogany' ? 'selected' : ''}>Mahogany</option>
                             <option value="Narra" ${cells[2].textContent === 'Narra' ? 'selected' : ''}>Narra</option>
+                            <option value="Logbolts" ${cells[2].textContent === 'Logbolts' ? 'selected' : ''}>Logbolts</option>
+                            <option value="Others" ${!['Sawn Lumber', 'Fuel Wood', 'Minepoles', 'Molave', 'Yemane', 'Mahogany', 'Narra', 'Logbolts'].includes(cells[2].textContent) ? 'selected' : ''}>Others</option>
                         </select>
+                        <div class="other-species-fields" style="display: none;">
+                            <input type="text" 
+                                   name="other_species" 
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                   placeholder="Please specify species"
+                                   value="${!['Sawn Lumber', 'Fuel Wood', 'Minepoles', 'Molave', 'Yemane', 'Mahogany', 'Narra', 'Logbolts'].includes(cells[2].textContent) ? cells[2].textContent : ''}">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Number of Trees</label>
@@ -873,6 +723,16 @@
             const form = document.querySelector(`#record-row-${recordId} form`);
             const formData = new FormData(form);
             
+            // Handle other_species field
+            const species = formData.get('species');
+            if (species === 'Others') {
+                const otherSpecies = formData.get('other_species');
+                if (!otherSpecies) {
+                    alert('Please specify the species name');
+                    return;
+                }
+            }
+
             fetch(`/edit-volume-record/${recordId}/`, {
                 method: 'POST',
                 body: formData,
@@ -883,7 +743,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Refresh the page to show updated data
                     location.reload();
                 } else {
                     alert('Error updating record: ' + data.error);
@@ -901,7 +760,15 @@
             
             const formData = new FormData(this);
             const species = document.querySelector('select[name="species"]').value;
-            const numberOfTrees = document.getElementById('number_of_trees').value;
+            
+            // Validate other_species if "Others" is selected
+            if (species === 'Others') {
+                const otherSpecies = document.querySelector('input[name="other_species"]').value;
+                if (!otherSpecies) {
+                    alert('Please specify the species name');
+                    return;
+                }
+            }
             
             // Get volume based on species type
             let volume;
@@ -918,13 +785,13 @@
             
             // Ensure all required fields are set
             formData.set('species', species);
-            formData.set('number_of_trees', numberOfTrees);
+            formData.set('number_of_trees', document.getElementById('number_of_trees').value);
 
             // Debug logging
             console.log('Submitting form with:', {
                 species: species,
                 volume: volume,
-                numberOfTrees: numberOfTrees,
+                numberOfTrees: document.getElementById('number_of_trees').value,
                 formData: Object.fromEntries(formData)
             });
 

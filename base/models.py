@@ -165,24 +165,28 @@ def calculate_expiry_date(date_issued):
     return current_date
 
 class Cutting(models.Model):
+    PERMIT_TYPE_CHOICES = [
+        ('TCP', 'TCP'),
+        ('PLTP', 'PLTP'),
+        ('STCP', 'STCP'),
+        ('SPLTP', 'SPLTP'),
+    ]
+
     STATUS_CHOICES = [
         ('ACTIVE', 'Active'),
         ('EXPIRED', 'Expired'),
         ('CONSUMED', 'Consumed'),
         ('PENDING', 'Pending'),
-        ('Active', 'Active'),  # Added to match existing records
-        ('Expired', 'Expired'),  # Added to match existing records
-        ('Pending', 'Pending'),  # Added to match existing records
-    ]
-
-    SITUATION_CHOICES = [
-        ('Good', 'Good'),
+        ('Active', 'Active'),
+        ('Expired', 'Expired'),
         ('Pending', 'Pending'),
-        ('Consumed', 'Consumed'),
-        ('Active', 'Active'),  # Added to match existing records
     ]
 
-    permit_type = models.CharField(max_length=100)
+    permit_type = models.CharField(
+        max_length=100,
+        choices=PERMIT_TYPE_CHOICES,
+        default='TCP'
+    )
     permit_number = models.CharField(max_length=100)
     date_issued = models.DateField()
     expiry_date = models.DateField()
@@ -208,7 +212,7 @@ class Cutting(models.Model):
     )
     situation = models.CharField(
         max_length=20,
-        choices=SITUATION_CHOICES,
+        choices=STATUS_CHOICES,
         default='Pending'
     )
     created_at = models.DateTimeField(auto_now_add=True)
@@ -295,26 +299,16 @@ class Chainsaw(models.Model):
         return f"{self.name} - {self.serial_number}"
 
     def save(self, *args, **kwargs):
-        # Calculate expiry date (2 years from date issued, excluding weekends)
-        if self.date_issued:
-            # Start with the initial date
-            current_date = self.date_issued
-            days_to_add = 2 * 365  # 2 years worth of days
-            days_added = 0
-            
-            while days_added < days_to_add:
-                current_date += timedelta(days=1)
-                # Skip weekends (5 = Saturday, 6 = Sunday)
-                if current_date.weekday() not in [5, 6]:
-                    days_added += 1
-            
-            self.expiry_date = current_date
+        if self.date_issued and self.expiry_date:
+            # Validate that expiry date is not on a weekend
+            if self.expiry_date.weekday() in [5, 6]:  # 5 = Saturday, 6 = Sunday
+                raise ValidationError('Expiry date cannot be on a weekend')
             
             # Update registration status based on expiry date
             today = timezone.now().date()
             if today > self.expiry_date:
                 self.registration_status = 'EXPIRED'
-            elif (self.expiry_date - today).days <= 90:  # If within 90 days (3 months) of expiry
+            elif (self.expiry_date - today).days <= 90:  # If within 90 days of expiry
                 self.registration_status = 'FOR RENEWAL'
             
         super().save(*args, **kwargs)
@@ -408,6 +402,7 @@ class CuttingRecord(models.Model):
         ('Narra', 'Narra'),
         ('Minepoles', 'Minepoles'),
         ('Teabolts', 'Teabolts'),
+        ('Others', 'Others'),  # Add Others option
     ]
     
     VOLUME_TYPE_CHOICES = [
@@ -427,6 +422,7 @@ class CuttingRecord(models.Model):
         default='Initial'
     )
     species = models.CharField(max_length=100, choices=SPECIES_CHOICES, default='Molave')
+    other_species = models.CharField(max_length=100, blank=True, null=True)  # New field for custom species
     volume = models.DecimalField(max_digits=10, decimal_places=2)
     calculated_volume = models.DecimalField(
         max_digits=10, 
@@ -449,9 +445,13 @@ class CuttingRecord(models.Model):
         ordering = ['-date_added']
 
     def __str__(self):
-        return f"{self.parent_tcp.permit_number} - {self.species} - {self.volume}cu.m"
+        species_name = self.other_species if self.species == 'Others' else self.species
+        return f"{self.parent_tcp.permit_number} - {species_name} - {self.volume}cu.m"
 
     def clean(self):
+        super().clean()
+        if self.species == 'Others' and not self.other_species:
+            raise ValidationError({'other_species': 'Please specify the species name when selecting Others'})
         if self.volume is None:
             raise ValidationError({'volume': 'Volume is required.'})
         if self.number_of_trees is None:
@@ -521,9 +521,22 @@ class CuttingPermit(models.Model):
     # ... rest of the model ...
 
 class VolumeRecord(models.Model):
+    SPECIES_CHOICES = [
+        ('Sawn Lumber', 'Sawn Lumber'),
+        ('Fuel Wood', 'Fuel Wood'),
+        ('Minepoles', 'Minepoles'),
+        ('Molave', 'Molave'),
+        ('Yemane', 'Yemane'),
+        ('Mahogany', 'Mahogany'),
+        ('Narra', 'Narra'),
+        ('Logbolts', 'Logbolts'),
+        ('Others', 'Others'),
+    ]
+    
     cutting = models.ForeignKey('Cutting', on_delete=models.CASCADE, related_name='volume_records')
     date = models.DateField(default=timezone.now)
-    species = models.CharField(max_length=100)
+    species = models.CharField(max_length=100, choices=SPECIES_CHOICES)
+    other_species = models.CharField(max_length=100, blank=True, null=True)
     number_of_trees = models.IntegerField()
     volume = models.DecimalField(max_digits=10, decimal_places=2)
     calculated_volume = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -537,7 +550,12 @@ class VolumeRecord(models.Model):
         ordering = ['-date_added']
 
     def __str__(self):
-        return f"{self.cutting} - {self.volume} cu.m ({self.date})"
+        species_display = self.other_species if self.species == 'Others' else self.species
+        return f"{self.cutting} - {species_display} - {self.volume} cu.m ({self.date})"
+
+    def clean(self):
+        if self.species == 'Others' and not self.other_species:
+            raise ValidationError({'other_species': 'Please specify the species name when selecting Others'})
 
     def save(self, *args, **kwargs):
         # Convert any float values to Decimal before operations
