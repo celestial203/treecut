@@ -15761,3 +15761,11 @@ django.core.exceptions.FieldError: Cannot resolve keyword 'owner' into field. Ch
 ERROR 2025-03-19 11:48:21,172 basehttp "GET /get-expiring-chainsaws/ HTTP/1.1" 500 108448
 WARNING 2025-03-19 12:03:04,620 log Not Found: /media/permits/beb_Kgc6yrz.jpg
 WARNING 2025-03-19 12:03:04,624 basehttp "GET /media/permits/beb_Kgc6yrz.jpg HTTP/1.1" 404 10561
+WARNING 2025-03-25 08:25:16,001 log Not Found: /favicon.ico
+WARNING 2025-03-25 08:25:16,002 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
+WARNING 2025-03-25 08:41:47,186 log Not Found: /favicon.ico
+WARNING 2025-03-25 08:41:47,189 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
+WARNING 2025-03-25 09:31:07,273 log Not Found: /favicon.ico
+WARNING 2025-03-25 09:31:07,274 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
+WARNING 2025-03-25 10:14:59,039 log Not Found: /favicon.ico
+WARNING 2025-03-25 10:14:59,041 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
