@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from base.forms import LoginForm, LumberForm, CuttingForm, ChainsawForm, WoodForm, CuttingRecordForm, VolumeRecordForm
-from base.models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord, CuttingPermit, VolumeRecord, WoodProcessingPlant
+from base.models import Lumber, Cutting, Chainsaw, Wood, CuttingRecord, CuttingPermit, VolumeRecord, WoodProcessingPlant, TreeSpecies
 from datetime import datetime, timedelta, date
 from django.utils import timezone
 import os
@@ -16,6 +16,8 @@ from django.urls import reverse
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django import template
 from django.views.decorators.http import require_POST
+from django.db import transaction
+import json
 
 # Login view
 def login_view(request):
@@ -162,54 +164,73 @@ def cutting(request):
     if request.method == 'POST':
         form = CuttingForm(request.POST, request.FILES)
         if form.is_valid():
-            cutting = form.save(commit=False)
-            
-            # Handle species and quantities for all permit types
-            species_list = request.POST.getlist('species[]')
-            quantities = request.POST.getlist('species_quantity[]')
-            
-            # Validate species and quantities
-            if not species_list or not quantities:
-                messages.error(request, 'At least one species with quantity is required')
-                return render(request, 'cutting.html', {'form': form})
-            
-            # Combine species with their quantities
-            species_with_qty = []
-            total_trees = 0
-            for species, qty in zip(species_list, quantities):
-                if species and qty:
+            try:
+                # Save the form first to create the cutting record
+                cutting = form.save(commit=False)
+                
+                # Process species data from the form
+                species_data_json = request.POST.get('species_data')
+                if species_data_json:
                     try:
-                        qty_int = int(qty)
-                        if qty_int <= 0:
-                            messages.error(request, 'Quantity must be greater than 0')
-                            return render(request, 'cutting.html', {'form': form})
-                        total_trees += qty_int
-                        species_with_qty.append(f"{species} ({qty})")
-                    except ValueError:
-                        messages.error(request, 'Invalid quantity value')
-                        return render(request, 'cutting.html', {'form': form})
-            
-            cutting.species = ', '.join(species_with_qty)
-            cutting.no_of_trees = total_trees
-            
-            # Handle volume calculations
-            gross_volume = request.POST.get('gross_volume')
-            if gross_volume:
-                try:
-                    # Convert to Decimal instead of float
-                    cutting.gross_volume = Decimal(str(gross_volume))
-                    cutting.net_volume = cutting.gross_volume * Decimal('0.70')  # Use Decimal for multiplication
-                except ValueError:
-                    messages.error(request, 'Invalid gross volume value')
-                    return render(request, 'cutting.html', {'form': form})
-            
-            cutting.save()
-            messages.success(request, f'Successfully added cutting record for {cutting.permit_type}-{cutting.permit_number}')
-            return redirect('cutting')
+                        species_data = json.loads(species_data_json)
+                        
+                        # Build species string and calculate total trees
+                        species_list = []
+                        total_trees = 0
+                        
+                        for item in species_data:
+                            species_name = item.get('species', '')
+                            quantity = item.get('quantity', 0)
+                            
+                            if species_name and quantity > 0:
+                                species_list.append(f"{species_name} ({quantity})")
+                                total_trees += quantity
+                        
+                        # Update the cutting record with species info and total trees
+                        if species_list:
+                            cutting.species = ", ".join(species_list)
+                        
+                        cutting.no_of_trees = total_trees
+                        
+                    except json.JSONDecodeError:
+                        pass
+                
+                # Save the cutting record with updated fields
+                cutting.save()
+                
+                # Now create the TreeSpecies records
+                if species_data_json:
+                    try:
+                        species_data = json.loads(species_data_json)
+                        
+                        for item in species_data:
+                            species_name = item.get('species', '')
+                            quantity = item.get('quantity', 0)
+                            
+                            if species_name and quantity > 0:
+                                TreeSpecies.objects.create(
+                                    cutting=cutting,
+                                    species=species_name,
+                                    quantity=quantity
+                                )
+                                
+                    except json.JSONDecodeError:
+                        pass
+                
+                messages.success(request, 'Cutting record created successfully.')
+                return redirect('view_cutting', cutting.id)
+            except Exception as e:
+                messages.error(request, f'Error creating cutting record: {str(e)}')
+        else:
+            messages.error(request, 'Please correct the errors below.')
     else:
         form = CuttingForm()
     
-    return render(request, 'cutting.html', {'form': form})
+    context = {
+        'form': form,
+    }
+    
+    return render(request, 'cutting.html', context)
 
 @login_required
 def wood(request):
@@ -391,19 +412,59 @@ def edit_recordlumber(request, pk):
 @login_required
 def edit_cutting(request, pk):
     cutting = get_object_or_404(Cutting, id=pk)
-    species_choices = [
-        'Molave',
-        'Yemane',
-        'Mahogany',
-        'Narra',
-        # Add all your species choices here
-    ]
+    
+    # Get existing tree species data
+    tree_species = cutting.tree_species.all()
+    existing_species_data = json.dumps([
+        {'species': ts.species, 'quantity': ts.quantity} 
+        for ts in tree_species
+    ])
     
     if request.method == 'POST':
         form = CuttingForm(request.POST, request.FILES, instance=cutting)
         if form.is_valid():
             try:
+                # Save the form first to update the cutting record
                 cutting = form.save()
+                
+                # Process species data from the form
+                species_data_json = request.POST.get('species_data')
+                if species_data_json:
+                    try:
+                        species_data = json.loads(species_data_json)
+                        
+                        # Clear existing tree species records
+                        cutting.tree_species.all().delete()
+                        
+                        # Create new tree species records and build species string
+                        species_list = []
+                        for item in species_data:
+                            species_name = item.get('species', '')
+                            quantity = item.get('quantity', 0)
+                            
+                            if species_name and quantity > 0:
+                                TreeSpecies.objects.create(
+                                    cutting=cutting,
+                                    species=species_name,
+                                    quantity=quantity
+                                )
+                                
+                                # Add to species list for display
+                                species_list.append(f"{species_name} ({quantity})")
+                        
+                        # Update the total number of trees
+                        total_trees = sum(item.get('quantity', 0) for item in species_data)
+                        cutting.no_of_trees = total_trees
+                        
+                        # Update the species field with formatted string
+                        if species_list:
+                            cutting.species = ", ".join(species_list)
+                        
+                        cutting.save()
+                                
+                    except json.JSONDecodeError:
+                        pass
+                
                 messages.success(request, 'Cutting record updated successfully.')
                 return redirect('view_cutting', cutting.id)
             except Exception as e:
@@ -411,36 +472,14 @@ def edit_cutting(request, pk):
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
-        # Initialize form with current data
-        initial_data = {
-            'permit_type': cutting.permit_type,
-            'permit_number': cutting.permit_number,
-            'date_issued': cutting.date_issued,
-            'expiry_date': cutting.expiry_date,
-            'permittee': cutting.permittee,
-            'rep_by': cutting.rep_by,
-            'location': cutting.location,
-            'latitude': cutting.latitude,
-            'longitude': cutting.longitude,
-            'tct_oct_no': cutting.tct_oct_no,
-            'tax_dec_no': cutting.tax_dec_no,
-            'lot_no': cutting.lot_no,
-            'area': cutting.area,
-            'species': cutting.species,
-            'no_of_trees': cutting.no_of_trees,
-            'total_volume_granted': cutting.total_volume_granted,
-            'gross_volume': cutting.gross_volume,
-            'net_volume': cutting.net_volume,
-            'status': cutting.status,
-            'situation': cutting.situation,
-        }
-        form = CuttingForm(instance=cutting, initial=initial_data)
+        form = CuttingForm(instance=cutting)
     
     context = {
         'form': form,
         'cutting': cutting,
-        'species_choices': species_choices,
+        'existing_species_data': existing_species_data,
     }
+    
     return render(request, 'edit_cutting.html', context)
 
 @login_required

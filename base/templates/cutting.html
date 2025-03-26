@@ -545,6 +545,25 @@
                         {% endif %}
                     </div>
 
+                    <!-- Coordinates right after location - without validation -->
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="latitude" class="text-gray-700">Latitude</label>
+                        <input type="text" 
+                               name="latitude" 
+                               id="latitude" 
+                               class="form-input"
+                               value="">
+                    </div>
+
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="longitude" class="text-gray-700">Longitude</label>
+                        <input type="text" 
+                               name="longitude" 
+                               id="longitude" 
+                               class="form-input"
+                               value="">
+                    </div>
+
                     <!-- Property Information -->
                     <div class="form-group transition-all duration-200 hover:shadow-sm">
                         <label for="{{ form.tct_oct_no.id_for_label }}" class="text-gray-700">TCT/OCT No.</label>
@@ -709,6 +728,17 @@
                             <div class="text-red-600 text-sm mt-1">{{ form.permit_file.errors.0 }}</div>
                         {% endif %}
                     </div>
+
+                    <!-- Add this somewhere in your form, before the submit button -->
+                    <div class="form-group mb-4" style="display: none;">
+                        <label for="id_status" class="block text-sm font-medium text-gray-700">Status</label>
+                        <select name="status" id="id_status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="ACTIVE" selected>Active</option>
+                            <option value="EXPIRED">Expired</option>
+                            <option value="CONSUMED">Consumed</option>
+                            <option value="PENDING">Pending</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="flex justify-end pt-6 space-x-4">
@@ -756,6 +786,7 @@
             const totalVolumeInput = document.querySelector('input[name="total_volume_granted"]');
             const grossVolumeInput = document.querySelector('input[name="gross_volume"]');
             const netVolumeInput = document.querySelector('input[name="net_volume"]');
+            const statusSelect = document.getElementById('id_status');
             
             // Add event listener for total volume calculation
             if (totalVolumeInput) {
@@ -886,6 +917,7 @@
             if (dateIssuedField) {
                 dateIssuedField.onchange = function() {
                     calculateExpiryDate(this.value);
+                    updateStatus(); // Add this to update status when date changes
                 };
             }
             
@@ -912,11 +944,158 @@
                 var year = currentDate.getFullYear();
                 
                 expiryDateField.value = month + '/' + day + '/' + year;
+                
+                // After setting expiry date, update status
+                updateStatus();
+            }
+            
+            // New function to update status based on dates
+            function updateStatus() {
+                if (!statusSelect) return;
+                
+                const dateIssuedField = document.getElementById('date_issued_field');
+                const expiryDateField = document.getElementById('expiry_date_field');
+                
+                if (!dateIssuedField || !dateIssuedField.value || !expiryDateField || !expiryDateField.value) {
+                    statusSelect.value = 'PENDING';
+                    return;
+                }
+                
+                const today = new Date();
+                
+                // Parse MM/DD/YYYY format from expiry field
+                const expiryParts = expiryDateField.value.split('/');
+                const expiryDate = new Date(
+                    parseInt(expiryParts[2]), // Year
+                    parseInt(expiryParts[0]) - 1, // Month (0-indexed)
+                    parseInt(expiryParts[1]) // Day
+                );
+                
+                // Set status based on dates - simplified logic
+                if (expiryDate < today) {
+                    // If expiry date has passed
+                    statusSelect.value = 'EXPIRED';
+                } else {
+                    // If not expired, it's active
+                    statusSelect.value = 'ACTIVE';
+                }
+                
+                // For STCP, first record should always be pending
+                const permitType = permitTypeSelect ? permitTypeSelect.value : '';
+                if (permitType === 'STCP') {
+                    statusSelect.value = 'PENDING';
+                }
             }
             
             // Run initial calculations if values exist
             if (totalVolumeInput && totalVolumeInput.value) {
                 calculateVolumes();
+            }
+            
+            // Run initial status check
+            updateStatus();
+
+            // Add form submit handler to ensure status is set and validate species
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    updateStatus(); // Make sure status is updated before submission
+                    
+                    // Check if at least one species is added
+                    const speciesSelects = document.querySelectorAll('select[name="species[]"]');
+                    const speciesQuantities = document.querySelectorAll('input[name="species_quantity[]"]');
+                    
+                    // Clear any previously created hidden inputs to avoid duplicates
+                    document.querySelectorAll('input[name="species_data"]').forEach(el => el.remove());
+                    
+                    let hasValidSpecies = false;
+                    
+                    // Check if we have at least one valid species with quantity
+                    for (let i = 0; i < speciesSelects.length; i++) {
+                        const selectValue = speciesSelects[i].value;
+                        const quantityValue = speciesQuantities[i] ? speciesQuantities[i].value : null;
+                        const quantityInt = quantityValue ? parseInt(quantityValue) : 0;
+                        
+                        if (selectValue && quantityInt > 0) {
+                            hasValidSpecies = true;
+                            
+                            let speciesName = selectValue;
+                            
+                            // If "Others" is selected, use the specified value
+                            if (selectValue === 'Others') {
+                                const parentDiv = speciesSelects[i].closest('.w-full.relative');
+                                const otherSpeciesInput = parentDiv.querySelector('input[name="other_species[]"]');
+                                
+                                if (otherSpeciesInput && otherSpeciesInput.value.trim()) {
+                                    speciesName = otherSpeciesInput.value.trim();
+                                    
+                                    // Create a direct hidden input for the specific species
+                                    const specificSpeciesInput = document.createElement('input');
+                                    specificSpeciesInput.type = 'hidden';
+                                    specificSpeciesInput.name = 'specific_species';
+                                    specificSpeciesInput.value = speciesName;
+                                    form.appendChild(specificSpeciesInput);
+                                    
+                                    // Also create a hidden input for the quantity
+                                    const specificQuantityInput = document.createElement('input');
+                                    specificQuantityInput.type = 'hidden';
+                                    specificQuantityInput.name = 'specific_quantity';
+                                    specificQuantityInput.value = quantityInt;
+                                    form.appendChild(specificQuantityInput);
+                                } else {
+                                    speciesName = "Other (Unspecified)";
+                                }
+                            }
+                            
+                            // Create hidden input fields to ensure data is properly submitted
+                            const speciesInput = document.createElement('input');
+                            speciesInput.type = 'hidden';
+                            speciesInput.name = 'species_data';
+                            speciesInput.value = JSON.stringify({
+                                species: speciesName,
+                                quantity: quantityInt
+                            });
+                            
+                            form.appendChild(speciesInput);
+                            
+                            // Add individual fields for direct access
+                            const speciesNameInput = document.createElement('input');
+                            speciesNameInput.type = 'hidden';
+                            speciesNameInput.name = 'species_name[]';
+                            speciesNameInput.value = speciesName;
+                            form.appendChild(speciesNameInput);
+                            
+                            const speciesQuantityInput = document.createElement('input');
+                            speciesQuantityInput.type = 'hidden';
+                            speciesQuantityInput.name = 'species_quantity_value[]';
+                            speciesQuantityInput.value = quantityInt;
+                            form.appendChild(speciesQuantityInput);
+                        }
+                    }
+                    
+                    if (!hasValidSpecies) {
+                        e.preventDefault(); // Prevent form submission
+                        
+                        // Show error message
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'At least one tree species must be added with a valid quantity',
+                            icon: 'error',
+                            confirmButtonText: 'OK'
+                        });
+                        
+                        // Highlight the species section
+                        const speciesContainer = document.getElementById('species-container');
+                        if (speciesContainer) {
+                            speciesContainer.scrollIntoView({ behavior: 'smooth' });
+                            speciesContainer.classList.add('border', 'border-red-500', 'p-2', 'rounded');
+                            
+                            // Remove highlight after a few seconds
+                            setTimeout(() => {
+                                speciesContainer.classList.remove('border', 'border-red-500', 'p-2', 'rounded');
+                            }, 5000);
+                        }
+                    }
+                });
             }
 
             // Add uppercase transformation to text inputs
@@ -949,6 +1128,17 @@
                     this.value = this.value.toUpperCase();
                 });
             });
+
+            // Make sure we have at least one species row
+            const speciesRows = speciesContainer ? speciesContainer.querySelectorAll('.flex.items-center.gap-2') : [];
+            
+            if (speciesContainer && speciesRows.length === 0) {
+                // Trigger the add species button click to create the first row
+                const addSpeciesBtn = document.querySelector('.add-species-btn');
+                if (addSpeciesBtn) {
+                    addSpeciesBtn.click();
+                }
+            }
         });
     </script>
 

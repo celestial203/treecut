@@ -20,6 +20,26 @@
             content: " *";
             color: red;
         }
+        
+        /* Force species dropdown to be visible */
+        #species-container {
+            display: block !important;
+        }
+        
+        .species-select {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            width: 100% !important;
+            min-width: 200px !important;
+            z-index: 100 !important;
+            position: relative !important;
+        }
+        
+        /* Hide any numeric inputs that might be replacing the dropdown */
+        #species-container input[type="number"]:not([name="species_quantity[]"]) {
+            display: none !important;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -140,6 +160,206 @@
             </div>
             {% endif %}
 
+            <!-- Add this script section before the form content -->
+            <script>
+                // Function to toggle the "other species" input field
+                function toggleOtherSpecies(selectElement) {
+                    const otherField = selectElement.parentElement.querySelector('.other-species-field');
+                    if (selectElement.value === 'Others' || selectElement.value === 'Other') {
+                        otherField.style.display = 'block';
+                        otherField.setAttribute('required', 'required');
+                    } else {
+                        otherField.style.display = 'none';
+                        otherField.removeAttribute('required');
+                        otherField.value = '';
+                    }
+                }
+                
+                // Function to calculate total trees
+                function calculateTotalTrees() {
+                    let total = 0;
+                    const quantityInputs = document.querySelectorAll('input[name="species_quantity[]"]');
+                    quantityInputs.forEach(input => {
+                        if (input.value) {
+                            total += parseInt(input.value, 10);
+                        }
+                    });
+                    
+                    // Update the total trees field
+                    const noOfTreesInput = document.getElementById('no_of_trees');
+                    if (noOfTreesInput) {
+                        noOfTreesInput.value = total;
+                    }
+                }
+                
+                // Function to convert input to uppercase
+                function convertToUppercase(input) {
+                    input.value = input.value.toUpperCase();
+                }
+                
+                // Function to prepare form data before submission
+                function prepareFormData() {
+                    // For each species row, if "Others" is selected, use the other_species value as the actual species
+                    document.querySelectorAll('select[name="species[]"]').forEach((select, index) => {
+                        if (select.value === 'Others') {
+                            const otherField = select.parentElement.querySelector('.other-species-field');
+                            if (otherField && otherField.value.trim()) {
+                                // Create a hidden input to store the actual species value
+                                const hiddenInput = document.createElement('input');
+                                hiddenInput.type = 'hidden';
+                                hiddenInput.name = 'actual_species[]';
+                                hiddenInput.value = otherField.value.trim().toUpperCase();
+                                select.parentElement.appendChild(hiddenInput);
+                            }
+                        }
+                    });
+                    return true;
+                }
+                
+                // The rest of the script will be executed when the DOM is loaded
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Initialize other species fields
+                    document.querySelectorAll('select[name="species[]"]').forEach(select => {
+                        toggleOtherSpecies(select);
+                    });
+                    
+                    // Calculate initial total trees
+                    calculateTotalTrees();
+                    
+                    // Make all text inputs uppercase
+                    document.querySelectorAll('input[type="text"]').forEach(input => {
+                        input.addEventListener('input', function() {
+                            convertToUppercase(this);
+                        });
+                        // Convert existing values to uppercase
+                        convertToUppercase(input);
+                    });
+                    
+                    // Add event listeners to add species buttons
+                    document.querySelectorAll('.add-species').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const container = document.getElementById('species-container');
+                            const newRow = document.createElement('div');
+                            newRow.className = 'species-entry flex items-center space-x-2';
+                            newRow.innerHTML = `
+                                <div class="flex flex-col w-full">
+                                    <select name="species[]" class="species-select form-select flex-1" onchange="toggleOtherSpecies(this)">
+                                        <option value="">SELECT SPECIES</option>
+                                        <option value="Acacia">ACACIA</option>
+                                        <option value="Mahogany">MAHOGANY</option>
+                                        <option value="Gmelina">GMELINA</option>
+                                        <option value="Falcata">FALCATA</option>
+                                        <option value="Minepoles">MINEPOLES</option>
+                                        <option value="Coconut">COCONUT</option>
+                                        <option value="Ipil-ipil">IPIL-IPIL</option>
+                                        <option value="Gemelina">GEMELINA</option>
+                                        <option value="Rubber">RUBBER</option>
+                                        <option value="Mangium">MANGIUM</option>
+                                        <option value="Auri">AURI</option>
+                                        <option value="Bagras">BAGRAS</option>
+                                        <option value="Eucalyptus">EUCALYPTUS</option>
+                                        <option value="Narra">NARRA</option>
+                                        <option value="Molave">MOLAVE</option>
+                                        <option value="Teak">TEAK</option>
+                                        <option value="Yakal">YAKAL</option>
+                                        <option value="Dao">DAO</option>
+                                        <option value="Kamagong">KAMAGONG</option>
+                                        <option value="Apitong">APITONG</option>
+                                        <option value="Lauan">LAUAN</option>
+                                        <option value="Tanguile">TANGUILE</option>
+                                        <option value="Mayapis">MAYAPIS</option>
+                                        <option value="Almon">ALMON</option>
+                                        <option value="Bagtikan">BAGTIKAN</option>
+                                        <option value="Others">OTHERS</option>
+                                    </select>
+                                    
+                                    <input type="text" 
+                                           name="other_species[]" 
+                                           class="other-species-field mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+                                           placeholder="PLEASE SPECIFY SPECIES"
+                                           value="{% if not tree_species.species in 'Acacia,Mahogany,Gmelina,Falcata,Minepoles,Coconut,Ipil-ipil,Gemelina,Rubber,Mangium,Auri,Bagras,Eucalyptus,Narra,Molave,Teak,Yakal,Dao,Kamagong,Apitong,Lauan,Tanguile,Mayapis,Almon,Bagtikan' %}{{ tree_species.species }}{% endif %}"
+                                           style="{% if tree_species.species in 'Acacia,Mahogany,Gmelina,Falcata,Minepoles,Coconut,Ipil-ipil,Gemelina,Rubber,Mangium,Auri,Bagras,Eucalyptus,Narra,Molave,Teak,Yakal,Dao,Kamagong,Apitong,Lauan,Tanguile,Mayapis,Almon,Bagtikan' %}display: none;{% endif %}"
+                                           oninput="convertToUppercase(this)">
+                                </div>
+                                
+                                <input type="number" name="species_quantity[]" value="{{ tree_species.quantity }}" min="1" class="form-input w-24" placeholder="Qty" oninput="calculateTotalTrees()">
+                                <button type="button" class="remove-species px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            `;
+                            container.appendChild(newRow);
+                            
+                            // Add event listener to the remove button
+                            const removeBtn = newRow.querySelector('.remove-species');
+                            removeBtn.addEventListener('click', function() {
+                                newRow.remove();
+                                calculateTotalTrees();
+                            });
+                        });
+                    });
+                    
+                    // Add event listeners to existing remove buttons
+                    document.querySelectorAll('.remove-species').forEach(button => {
+                        button.addEventListener('click', function() {
+                            button.closest('.flex.items-center').remove();
+                            calculateTotalTrees();
+                        });
+                    });
+                    
+                    // Form submission validation
+                    document.getElementById('editForm').addEventListener('submit', function(e) {
+                        // Prepare form data
+                        prepareFormData();
+                        
+                        // Basic validation
+                        const requiredFields = document.querySelectorAll('input[required], select[required]');
+                        let isValid = true;
+                        
+                        requiredFields.forEach(field => {
+                            if (!field.value.trim()) {
+                                isValid = false;
+                                field.classList.add('border-red-500');
+                            } else {
+                                field.classList.remove('border-red-500');
+                            }
+                        });
+                        
+                        if (!isValid) {
+                            e.preventDefault();
+                            // Show error message
+                            const errorAlert = document.createElement('div');
+                            errorAlert.className = 'bg-red-50 text-red-700 p-4 mb-4 border border-red-200 rounded';
+                            errorAlert.innerHTML = '<p>Please fill in all required fields.</p>';
+                            
+                            // Insert at the top of the form
+                            const firstChild = this.firstChild;
+                            this.insertBefore(errorAlert, firstChild);
+                            
+                            // Scroll to the top of the form
+                            window.scrollTo(0, this.offsetTop - 100);
+                        } else {
+                            // Show loading indicator
+                            const loadingOverlay = document.createElement('div');
+                            loadingOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+                            loadingOverlay.innerHTML = `
+                                <div class="bg-white p-6 rounded-lg shadow-xl">
+                                    <div class="flex items-center">
+                                        <svg class="animate-spin h-8 w-8 text-green-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span class="text-lg font-medium">Updating record...</span>
+                                    </div>
+                                </div>
+                            `;
+                            document.body.appendChild(loadingOverlay);
+                        }
+                    });
+                });
+            </script>
+
             <form method="post" enctype="multipart/form-data" id="editForm" action="{% url 'edit_cutting' cutting.id %}">
                 {% csrf_token %}
                 <!-- Add this for debugging -->
@@ -167,9 +387,8 @@
                                 <input type="date" 
                                        name="date_issued"
                                        id="date_issued"
-                                       class="form-input datepicker"
+                                       class="form-input datepicker mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                        value="{{ cutting.date_issued|date:'Y-m-d' }}"
-                                       readonly
                                 >
                             </div>
                             <div class="form-group mb-4">
@@ -177,18 +396,36 @@
                                 <input type="date" 
                                        id="expiry_date"
                                        name="expiry_date"
-                                       class="form-input"
+                                       class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                        value="{{ cutting.expiry_date|date:'Y-m-d' }}"
-                                       readonly
                                 >
+                                {% if cutting.expiry_date and cutting.expiry_date < today %}
+                                    <p class="text-red-600 text-sm mt-1">This permit has expired</p>
+                                {% endif %}
                             </div>
-                            <div>
-                                <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700">Status</label>
-                                {{ form.status|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                            
+                            <!-- Display current status (read-only) -->
+                            <div class="form-group mb-4">
+                                <label class="block text-sm font-medium text-gray-700">Status</label>
+                                <div class="mt-1 py-2 px-3 bg-gray-100 rounded-md border border-gray-300">
+                                    <span class="{% if cutting.status == 'Active' %}text-green-600{% elif cutting.status == 'Expired' %}text-red-600{% else %}text-yellow-600{% endif %} font-medium">
+                                        {{ cutting.status }}
+                                    </span>
+                                    <p class="text-xs text-gray-500 mt-1">Status is automatically determined based on expiry date</p>
+                                </div>
                             </div>
-                            <div>
-                                <label for="{{ form.situation.id_for_label }}" class="block text-sm font-medium text-gray-700">Situation</label>
-                                {{ form.situation|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                            
+                            <!-- Add situation field for STCP permits -->
+                            <div id="situation_field_container" class="form-group mb-4" {% if cutting.permit_type != 'STCP' %}style="display: none;"{% endif %}>
+                                <label for="situation" class="block text-sm font-medium text-gray-700">Situation</label>
+                                <select name="situation" id="situation" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="Pending" {% if cutting.situation == 'Pending' %}selected{% endif %}>Pending</option>
+                                    <option value="Good" {% if cutting.situation == 'Good' %}selected{% endif %}>Good</option>
+                                    <option value="Bad" {% if cutting.situation == 'Bad' %}selected{% endif %}>Bad</option>
+                                </select>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    <span class="font-medium">Note:</span> For STCP permits, situation affects the status.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -225,11 +462,19 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="text-sm text-gray-600">Latitude</label>
-                                {{ form.latitude|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                                <input type="text" 
+                                       name="latitude" 
+                                       id="latitude" 
+                                       value="{{ cutting.latitude|default:'' }}" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="text-sm text-gray-600">Longitude</label>
-                                {{ form.longitude|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                                <input type="text" 
+                                       name="longitude" 
+                                       id="longitude" 
+                                       value="{{ cutting.longitude|default:'' }}" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
                         </div>
                     </div>
@@ -258,85 +503,60 @@
                     </div>
 
                     <!-- Tree Information -->
-                    <div class="mb-6">
-                        <h2 class="text-xl font-semibold mb-4 border-b pb-2">Tree Information</h2>
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Tree Information</h3>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Number of Trees Field -->
-                            <div>
-                                <label for="no_of_trees" class="block text-sm font-medium text-gray-700">Number of Trees</label>
-                                <input type="number" 
-                                       name="no_of_trees" 
-                                       id="no_of_trees" 
-                                       value="{{ cutting.no_of_trees|default:0 }}"
-                                       step="1"
-                                       min="0"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50 bg-gray-50" 
-                                       readonly>
-                            </div>
-                            
-                            <!-- Species Field -->
-                            <div>
-                                <label for="species" class="block text-sm font-medium text-gray-700 required">Species *</label>
-                                <input type="hidden" name="species" id="hidden_species" value="{{ cutting.species }}">
+                        <!-- Species Information Section -->
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Species Information</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Species Selection -->
+                                <div>
+                                    <label for="species" class="block text-sm font-medium text-gray-700 {% if form.species.field.required %}required{% endif %}">
+                                        Species {% if form.species.field.required %}*{% endif %}
+                                    </label>
+                                    <div class="flex space-x-2">
+                                        <select id="species" name="species" class="form-select rounded-md shadow-sm mt-1 block w-full">
+                                            <option value="">Select Species</option>
+                                            <option value="Molave">Molave</option>
+                                            <option value="Yemane">Yemane</option>
+                                            <option value="Mahogany">Mahogany</option>
+                                            <option value="Narra">Narra</option>
+                                            <option value="Minepoles">Minepoles</option>
+                                            <option value="Others">Others</option>
+                                        </select>
+                                        
+                                        <input type="text" id="quantity" name="quantity" placeholder="Quantity" 
+                                               class="form-input rounded-md shadow-sm mt-1 block w-1/3" />
+                                        
+                                        <button type="button" id="add-species-btn" class="mt-1 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Other Species field (initially hidden) -->
+                                    <div id="other-species-container" class="mt-2" style="display: none;">
+                                        <input type="text" id="other_species" name="other_species" 
+                                               placeholder="Specify species name" 
+                                               class="form-input rounded-md shadow-sm block w-full" />
+                                    </div>
+                                    
+                                    <!-- Species List Display -->
+                                    <div id="species-list" class="mt-4 space-y-2">
+                                        <!-- Species items will be added here dynamically -->
+                                    </div>
+                                    
+                                    <!-- Hidden input to store all species data -->
+                                    <input type="hidden" id="species_data" name="species_data" />
+                                </div>
                                 
-                                <div id="species-container" class="space-y-2">
-                                    {% if cutting.species %}
-                                        {% with species_list=cutting.species|split_species %}
-                                            {% for species_item in species_list %}
-                                                <div class="flex items-center gap-2">
-                                                    <select name="species[]" class="block w-1/2 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
-                                                        <option value="">Select Species</option>
-                                                        {% for species_choice in species_choices %}
-                                                            <option value="{{ species_choice }}" {% if species_choice == species_item.name %}selected{% endif %}>
-                                                                {{ species_choice }}
-                                                            </option>
-                                                        {% endfor %}
-                                                    </select>
-                                                    <input type="number" 
-                                                           name="species_quantity[]" 
-                                                           value="{{ species_item.quantity }}" 
-                                                           min="1" 
-                                                           class="block w-24 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" 
-                                                           placeholder="Qty">
-                                                    {% if forloop.first %}
-                                                        <button type="button" class="add-species p-2 bg-green-500 text-white rounded-md hover:bg-green-600">
-                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                                            </svg>
-                                                        </button>
-                                                    {% else %}
-                                                        <button type="button" class="remove-species p-2 bg-red-500 text-white rounded-md hover:bg-red-600">
-                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                            </svg>
-                                                        </button>
-                                                    {% endif %}
-                                                </div>
-                                            {% endfor %}
-                                        {% endwith %}
-                                    {% else %}
-                                        <!-- Default empty row if no species exist -->
-                                        <div class="flex items-center gap-2">
-                                            <select name="species[]" class="block w-1/2 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
-                                                <option value="">Select Species</option>
-                                                {% for species_choice in species_choices %}
-                                                    <option value="{{ species_choice }}">{{ species_choice }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <input type="number" 
-                                                   name="species_quantity[]" 
-                                                   value="1" 
-                                                   min="1" 
-                                                   class="block w-24 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" 
-                                                   placeholder="Qty">
-                                            <button type="button" class="add-species p-2 bg-green-500 text-white rounded-md hover:bg-green-600">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    {% endif %}
+                                <!-- Number of Trees (calculated automatically) -->
+                                <div class="mb-4">
+                                    <label for="no_of_trees" class="block text-sm font-medium text-gray-700">Total Number of Trees</label>
+                                    <input type="text" id="no_of_trees" name="no_of_trees" value="{{ cutting.no_of_trees|default:'0' }}" 
+                                           class="form-input rounded-md shadow-sm mt-1 block w-full" readonly />
                                 </div>
                             </div>
                         </div>
@@ -428,217 +648,248 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
+    <!-- Add this JavaScript to toggle STCP fields -->
+    <script>
+        function toggleSTCPFields() {
+            var permitType = document.getElementById('permit_type').value;
+            var situationContainer = document.getElementById('situation_field_container');
+            
+            if (permitType === 'STCP') {
+                situationContainer.style.display = 'block';
+                document.getElementById('situation').setAttribute('required', 'required');
+            } else {
+                situationContainer.style.display = 'none';
+                document.getElementById('situation').removeAttribute('required');
+            }
+        }
+        
+        // Add event listener to permit type dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            var permitTypeSelect = document.getElementById('permit_type');
+            if (permitTypeSelect) {
+                permitTypeSelect.addEventListener('change', toggleSTCPFields);
+                toggleSTCPFields(); // Initialize on page load
+            }
+        });
+    </script>
+
+    <!-- Add this JavaScript at the end of your file -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
-            const speciesContainer = document.getElementById('species-container');
-            const hiddenSpeciesField = document.getElementById('hidden_species');
-            const noOfTreesInput = document.getElementById('no_of_trees');
-            const totalVolumeInput = document.getElementById('total_volume_granted');
-            const grossVolumeInput = document.getElementById('gross_volume');
-            const netVolumeInput = document.getElementById('net_volume');
-
-            // Function to update total number of trees
+            const speciesSelect = document.getElementById('species');
+            const otherSpeciesContainer = document.getElementById('other-species-container');
+            const otherSpeciesInput = document.getElementById('other_species');
+            const totalTreesInput = document.getElementById('no_of_trees');
+            
+            // Keep track of the total trees
+            let totalTrees = parseInt(totalTreesInput.value) || 0;
+            
+            // Function to update the total trees display
             function updateTotalTrees() {
-                const quantityInputs = speciesContainer.querySelectorAll('input[name="species_quantity[]"]');
-                let total = 0;
-                quantityInputs.forEach(input => {
-                    total += parseInt(input.value) || 0;
-                });
-                noOfTreesInput.value = total;
+                totalTreesInput.value = totalTrees;
             }
-
-            // Add new species row
+            
+            // Show/hide other species field based on selection
+            speciesSelect.addEventListener('change', function() {
+                if (this.value === 'Others') {
+                    otherSpeciesContainer.style.display = 'block';
+                    otherSpeciesInput.setAttribute('required', 'required');
+                } else {
+                    otherSpeciesContainer.style.display = 'none';
+                    otherSpeciesInput.removeAttribute('required');
+                    otherSpeciesInput.value = '';
+                }
+            });
+            
+            // Initialize the other species field if needed
+            if (speciesSelect.value === 'Others') {
+                otherSpeciesContainer.style.display = 'block';
+            }
+            
+            // When adding a species, update the total trees
+            const addButton = document.getElementById('add-species-btn');
+            if (addButton) {
+                addButton.addEventListener('click', function() {
+                    const quantity = parseInt(quantityInput.value) || 0;
+                    
+                    if (quantity > 0) {
+                        // Add to total
+                        totalTrees += quantity;
+                        updateTotalTrees();
+                        
+                        // Your existing add button logic...
+                    }
+                });
+            }
+            
+            // When deleting a species, update the total trees
             document.addEventListener('click', function(e) {
-                if (e.target.closest('.add-species')) {
-                    const newRow = document.createElement('div');
-                    newRow.className = 'flex items-center gap-2';
-                    newRow.innerHTML = `
-                        <select name="species[]" class="block w-1/2 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
-                            <option value="">Select Species</option>
-                            {% for species_choice in species_choices %}
-                                <option value="{{ species_choice }}">{{ species_choice }}</option>
-                            {% endfor %}
-                        </select>
-                        <input type="number" 
-                               name="species_quantity[]" 
-                               value="1" 
-                               min="1"
-                               step="1"
-                               class="block w-24 rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50" 
-                               placeholder="Qty">
-                        <button type="button" class="remove-species p-2 bg-red-500 text-white rounded-md hover:bg-red-600">
+                if (e.target.closest('.delete-btn')) {
+                    const item = e.target.closest('[data-quantity]');
+                    if (item) {
+                        const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
+                        totalTrees -= quantity;
+                        updateTotalTrees();
+                    }
+                }
+            });
+            
+            // Initialize total from existing items
+            document.querySelectorAll('[data-quantity]').forEach(item => {
+                const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
+                totalTrees += quantity;
+            });
+            updateTotalTrees();
+        });
+    </script>
+
+    <!-- JavaScript to handle the species selection and addition -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const speciesSelect = document.getElementById('species');
+            const quantityInput = document.getElementById('quantity');
+            const addButton = document.getElementById('add-species-btn');
+            const otherSpeciesContainer = document.getElementById('other-species-container');
+            const otherSpeciesInput = document.getElementById('other_species');
+            const speciesList = document.getElementById('species-list');
+            const speciesDataInput = document.getElementById('species_data');
+            
+            // Array to store all species data
+            let speciesData = [];
+            
+            // Show/hide other species field based on selection
+            speciesSelect.addEventListener('change', function() {
+                if (this.value === 'Others') {
+                    otherSpeciesContainer.style.display = 'block';
+                    otherSpeciesInput.setAttribute('required', 'required');
+                } else {
+                    otherSpeciesContainer.style.display = 'none';
+                    otherSpeciesInput.removeAttribute('required');
+                    otherSpeciesInput.value = '';
+                }
+            });
+            
+            // Add species to the list
+            addButton.addEventListener('click', function() {
+                const selectedSpecies = speciesSelect.value;
+                const quantity = quantityInput.value.trim();
+                
+                // Validate inputs
+                if (!selectedSpecies) {
+                    alert('Please select a species');
+                    return;
+                }
+                
+                if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
+                    alert('Please enter a valid quantity');
+                    return;
+                }
+                
+                // Get the species name (handle 'Others' case)
+                let speciesName = selectedSpecies;
+                if (selectedSpecies === 'Others') {
+                    const otherSpeciesName = otherSpeciesInput.value.trim();
+                    if (!otherSpeciesName) {
+                        alert('Please specify the species name');
+                        return;
+                    }
+                    speciesName = otherSpeciesName;
+                }
+                
+                // Create a new species item
+                const speciesItem = {
+                    species: speciesName,
+                    quantity: parseInt(quantity)
+                };
+                
+                // Add to the array
+                speciesData.push(speciesItem);
+                
+                // Update the hidden input
+                speciesDataInput.value = JSON.stringify(speciesData);
+                
+                // Add to the display
+                const itemElement = document.createElement('div');
+                itemElement.className = 'flex justify-between items-center p-2 bg-gray-50 rounded-md';
+                itemElement.innerHTML = `
+                    <span>${speciesName}</span>
+                    <div class="flex items-center">
+                        <span class="mr-2">${quantity} trees</span>
+                        <button type="button" class="text-red-500 hover:text-red-700 delete-btn">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                             </svg>
                         </button>
-                    `;
-                    speciesContainer.appendChild(newRow);
+                    </div>
+                `;
+                
+                // Add delete functionality
+                const deleteBtn = itemElement.querySelector('.delete-btn');
+                deleteBtn.addEventListener('click', function() {
+                    // Remove from array
+                    const index = speciesData.findIndex(i => 
+                        i.species === speciesName && i.quantity === parseInt(quantity)
+                    );
+                    if (index !== -1) {
+                        speciesData.splice(index, 1);
+                        speciesDataInput.value = JSON.stringify(speciesData);
+                    }
                     
-                    const newQuantityInput = newRow.querySelector('input[name="species_quantity[]"]');
-                    newQuantityInput.addEventListener('input', updateTotalTrees);
-                    
-                    updateTotalTrees();
-                }
-            });
-            
-            // Remove species row
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.remove-species')) {
-                    const row = e.target.closest('.flex');
-                    row.remove();
-                    updateTotalTrees();
-                }
-            });
-            
-            // Add event listeners to existing quantity inputs
-            speciesContainer.querySelectorAll('input[name="species_quantity[]"]').forEach(input => {
-                input.addEventListener('input', updateTotalTrees);
-            });
-
-            // Simple form submission
-            if (form) {
-                form.addEventListener('submit', function() {
-                    const speciesRows = speciesContainer.querySelectorAll('.flex');
-                    let speciesData = [];
-                    
-                    speciesRows.forEach(row => {
-                        const select = row.querySelector('select[name="species[]"]');
-                        const quantity = row.querySelector('input[name="species_quantity[]"]');
-                        if (select.value && quantity.value) {
-                            const quantityValue = parseInt(quantity.value) || 0;
-                            speciesData.push(`${select.value} (${quantityValue})`);
-                        }
-                    });
-                    
-                    hiddenSpeciesField.value = speciesData.join(', ');
-
-                    // Ensure volume fields are properly formatted as decimal strings
-                    if (totalVolumeInput) {
-                        totalVolumeInput.value = parseFloat(totalVolumeInput.value || 0).toFixed(2);
-                    }
-                    if (grossVolumeInput) {
-                        grossVolumeInput.value = parseFloat(grossVolumeInput.value || 0).toFixed(2);
-                    }
-                    if (netVolumeInput) {
-                        netVolumeInput.value = parseFloat(netVolumeInput.value || 0).toFixed(2);
-                    }
-                });
-            }
-
-            // Keep date validation but remove automatic calculation
-            const dateIssued = document.getElementById('date_issued');
-            const expiryDate = document.getElementById('expiry_date');
-
-            if (dateIssued && expiryDate) {
-                dateIssued.addEventListener('change', function() {
-                    if (expiryDate.value) {
-                        const issued = new Date(this.value);
-                        const expiry = new Date(expiryDate.value);
-                        
-                        if (expiry < issued) {
-                            Swal.fire({
-                                title: 'Invalid Date',
-                                text: 'Expiry date cannot be earlier than issue date',
-                                icon: 'error',
-                                confirmButtonText: 'OK'
-                            }).then(() => {
-                                expiryDate.value = '';
-                            });
-                        }
-                    }
-                });
-
-                expiryDate.addEventListener('change', function() {
-                    if (this.value && dateIssued.value) {
-                        const issued = new Date(dateIssued.value);
-                        const expiry = new Date(this.value);
-                        
-                        if (expiry < issued) {
-                            Swal.fire({
-                                title: 'Invalid Date',
-                                text: 'Expiry date cannot be earlier than date issued',
-                                icon: 'error',
-                                confirmButtonText: 'OK'
-                            }).then(() => {
-                                this.value = '';
-                            });
-                        }
-                    }
-                });
-            }
-
-            // Toggle user menu
-            const userMenuButton = document.getElementById('user-menu-button');
-            const userMenu = document.getElementById('user-menu');
-            
-            if (userMenuButton && userMenu) {
-                userMenuButton.addEventListener('click', function(e) {
-                    e.stopPropagation(); // Prevent event from bubbling up
-                    userMenu.classList.toggle('hidden');
+                    // Remove from display
+                    speciesList.removeChild(itemElement);
                 });
                 
-                // Close menu when clicking outside
-                document.addEventListener('click', function(event) {
-                    if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
-                        userMenu.classList.add('hidden');
-                    }
-                });
-            }
+                speciesList.appendChild(itemElement);
+                
+                // Reset inputs
+                speciesSelect.value = '';
+                quantityInput.value = '';
+                otherSpeciesInput.value = '';
+                otherSpeciesContainer.style.display = 'none';
+            });
             
-            // Mobile menu toggle
-            const mobileMenuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.getElementById('mobile-menu');
-            
-            if (mobileMenuButton && mobileMenu) {
-                mobileMenuButton.addEventListener('click', function() {
-                    mobileMenu.style.display = mobileMenu.style.display === 'block' ? 'none' : 'block';
-                });
-            }
-
-            // Add date handling for edit form
-            const dateIssuedInput = document.getElementById('date_issued');
-            const expiryDateInput = document.getElementById('expiry_date');
-
-            if (dateIssuedInput && expiryDateInput) {
-                // Get the existing dates from the record
-                const existingDateIssued = dateIssuedInput.value;
-                const existingExpiryDate = "{{ cutting.expiry_date|date:'Y-m-d' }}";
-
-                // Set the values from the record
-                if (existingDateIssued) {
-                    dateIssuedInput.value = existingDateIssued;
+            // Initialize with existing data if available
+            if (speciesDataInput.value) {
+                try {
+                    speciesData = JSON.parse(speciesDataInput.value);
+                    
+                    // Populate the display
+                    speciesData.forEach(item => {
+                        const itemElement = document.createElement('div');
+                        itemElement.className = 'flex justify-between items-center p-2 bg-gray-50 rounded-md';
+                        itemElement.innerHTML = `
+                            <span>${item.species}</span>
+                            <div class="flex items-center">
+                                <span class="mr-2">${item.quantity} trees</span>
+                                <button type="button" class="text-red-500 hover:text-red-700 delete-btn">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        `;
+                        
+                        // Add delete functionality
+                        const deleteBtn = itemElement.querySelector('.delete-btn');
+                        deleteBtn.addEventListener('click', function() {
+                            // Remove from array
+                            const index = speciesData.findIndex(i => 
+                                i.species === item.species && i.quantity === item.quantity
+                            );
+                            if (index !== -1) {
+                                speciesData.splice(index, 1);
+                                speciesDataInput.value = JSON.stringify(speciesData);
+                            }
+                            
+                            // Remove from display
+                            speciesList.removeChild(itemElement);
+                        });
+                        
+                        speciesList.appendChild(itemElement);
+                    });
+                } catch (e) {
+                    console.error('Error parsing species data:', e);
                 }
-                if (existingExpiryDate) {
-                    expiryDateInput.value = existingExpiryDate;
-                }
-
-                // Add validation for date changes
-                dateIssuedInput.addEventListener('change', function() {
-                    if (existingDateIssued && this.value !== existingDateIssued) {
-                        // Reset to original date
-                        this.value = existingDateIssued;
-                        alert('Date Issued cannot be modified in edit mode.');
-                    }
-                });
-
-                expiryDateInput.addEventListener('change', function() {
-                    if (existingExpiryDate && this.value !== existingExpiryDate) {
-                        // Reset to original date
-                        this.value = existingExpiryDate;
-                        alert('Expiry Date cannot be modified in edit mode.');
-                    }
-                });
-            }
-
-            // Log form errors to console
-            const formErrors = document.querySelectorAll('.text-red-600');
-            if (formErrors.length > 0) {
-                console.log('Form has errors:');
-                formErrors.forEach(error => {
-                    console.log(error.textContent);
-                });
             }
         });
     </script>

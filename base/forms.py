@@ -10,6 +10,7 @@ from datetime import timedelta, date
 from django.contrib.auth.forms import AuthenticationForm
 from decimal import Decimal
 from django.core.validators import MinValueValidator, DecimalValidator
+import json
 
 
 # Get the user model
@@ -123,6 +124,11 @@ class LumberForm(forms.ModelForm):
 
 # CuttingForm
 class CuttingForm(forms.ModelForm):
+    species_data = forms.CharField(required=False, widget=forms.HiddenInput())
+    # Remove these fields if they don't exist in your Cutting model
+    # file = forms.FileField(required=False)
+    # other_species = forms.CharField(required=False)
+
     class Meta:
         model = Cutting
         fields = [
@@ -140,26 +146,138 @@ class CuttingForm(forms.ModelForm):
             'lot_no',
             'area',
             'species',
+            # Remove 'other_species' if it doesn't exist in your model
             'no_of_trees',
             'total_volume_granted',
             'gross_volume',
             'net_volume',
-            'permit_file',
             'status',
-            'situation'
+            'situation',
+            # Remove 'file' if it doesn't exist in your model
         ]
         widgets = {
-            'date_issued': forms.DateInput(attrs={'type': 'date'}),
-            'expiry_date': forms.DateInput(attrs={'type': 'date'}),
-            'gross_volume': forms.NumberInput(attrs={'step': '0.01'}),
-            'net_volume': forms.NumberInput(attrs={'step': '0.01', 'readonly': True}),
-            'total_volume_granted': forms.NumberInput(attrs={'step': '0.01'}),
+            'date_issued': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-input',
+                'required': True
+            }),
+            'expiry_date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-input',
+                'required': True
+            }),
+            'permit_number': forms.TextInput(attrs={
+                'class': 'form-input',
+                'required': True
+            }),
+            'permittee': forms.TextInput(attrs={
+                'class': 'form-input',
+                'required': True
+            }),
+            'gross_volume': forms.NumberInput(attrs={
+                'step': '0.01',
+                'class': 'form-input'
+            }),
+            'net_volume': forms.NumberInput(attrs={
+                'step': '0.01',
+                'class': 'form-input',
+                'readonly': True
+            }),
+            'total_volume_granted': forms.NumberInput(attrs={
+                'step': '0.01',
+                'class': 'form-input',
+                'required': True
+            }),
+            'species': forms.TextInput(attrs={
+                'class': 'form-input',
+                'readonly': True
+            }),
+            'no_of_trees': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'readonly': True
+            }),
+            'status': forms.Select(attrs={'class': 'form-select', 'required': False}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make species and no_of_trees not required since they'll be set programmatically
+        if 'species' in self.fields:
+            self.fields['species'].required = False
+        if 'no_of_trees' in self.fields:
+            self.fields['no_of_trees'].required = False
+        # Make status field not required
+        self.fields['status'].required = False
 
     def clean(self):
         cleaned_data = super().clean()
-        print("Form cleaned data:", cleaned_data)
+        
+        # Check if we're getting species data from the form
+        species_data = self.data.getlist('species_data')
+        
+        # If we have species_data, don't validate the species_list field
+        if species_data:
+            # We have species data, so we're good
+            return cleaned_data
+            
+        # Get species data from hidden fields (old method)
+        species_list = cleaned_data.get('species_list', '').split(',') if cleaned_data.get('species_list') else []
+        
+        # If we don't have species data from either method, raise error
+        if not species_list and not species_data:
+            raise forms.ValidationError("At least one tree species must be added")
+            
         return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        # Always save the main instance first
+        if commit:
+            instance.save()
+        
+        # Process species data if it exists in the form data
+        species_data = self.data.getlist('species_data')
+        
+        if species_data and commit:
+            # Clear existing tree species records to avoid duplicates
+            instance.tree_species.all().delete()
+            
+            try:
+                # Process the JSON species data
+                total_trees = 0
+                species_entries = []
+                
+                for item in species_data:
+                    try:
+                        data = json.loads(item)
+                        species_name = data.get('species', '').strip()
+                        quantity = int(data.get('quantity', 0))
+                        
+                        if species_name and quantity > 0:
+                            # Create TreeSpecies record - using 'species' field, not 'species_name'
+                            TreeSpecies.objects.create(
+                                cutting=instance,
+                                species=species_name,  # Changed from species_name to species
+                                quantity=quantity
+                            )
+                            
+                            total_trees += quantity
+                            species_entries.append(f"{species_name} ({quantity})")
+                    except (json.JSONDecodeError, ValueError) as e:
+                        print(f"Error processing species data item: {e}")
+                        continue
+                
+                # Update instance with totals
+                instance.no_of_trees = total_trees
+                instance.species = ", ".join(species_entries)
+                instance.save()
+                
+            except Exception as e:
+                print(f"Error saving species data: {e}")
+                # Don't raise the error - the main record is saved
+        
+        return instance
 
 # ChainsawForm
 class ChainsawForm(forms.ModelForm):
@@ -305,6 +423,7 @@ class VolumeRecordForm(forms.ModelForm):
         fields = [
             'date',
             'species',
+            'other_species',
             'volume',
             'number_of_trees',
             'remarks',
@@ -319,14 +438,36 @@ class VolumeRecordForm(forms.ModelForm):
             'remarks': forms.Textarea(attrs={'rows': 3}),
             'number_of_trees': forms.NumberInput(attrs={'class': 'form-input'}),
             'species': forms.Select(attrs={'class': 'form-select'}),
+            'other_species': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Specify species name',
+                'style': 'display: none;'
+            }),
             'attachment': forms.FileInput(attrs={
                 'class': 'form-control',
                 'accept': 'image/*,.pdf,.doc,.docx'
             })
         }
 
-    def clean_volume(self):
-        volume = self.cleaned_data.get('volume')
-        if volume and volume <= 0:
-            raise ValidationError("Volume must be greater than 0")
-        return volume
+    def clean(self):
+        cleaned_data = super().clean()
+        species = cleaned_data.get('species')
+        other_species = cleaned_data.get('other_species')
+        
+        if species == 'Others' and not other_species:
+            raise ValidationError({'other_species': 'Please specify the species name when selecting Others'})
+        
+        volume = cleaned_data.get('volume')
+        calculated_volume = cleaned_data.get('calculated_volume')
+        
+        if volume and species:
+            if species.endswith('Fuel Wood'):
+                cleaned_data['calculated_volume'] = volume
+            elif species.endswith('SL'):
+                calculated_volume = volume + (volume * Decimal('0.40'))
+                cleaned_data['calculated_volume'] = calculated_volume
+            else:
+                calculated_volume = volume + (volume * Decimal('0.30'))
+                cleaned_data['calculated_volume'] = calculated_volume
+            
+        return cleaned_data

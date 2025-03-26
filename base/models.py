@@ -217,14 +217,39 @@ class Cutting(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    other_species = models.CharField(max_length=255, blank=True, null=True)
+    file = models.FileField(upload_to='cutting_files/', blank=True, null=True)
 
     def __str__(self):
         return f"{self.permit_type} - {self.permit_number}"
 
     def save(self, *args, **kwargs):
-        print(f"Attempting to save cutting with data: {self.__dict__}")
+        # Auto-calculate expiry date if date_issued is provided and expiry_date is not
+        if self.date_issued and not self.expiry_date:
+            self.expiry_date = calculate_expiry_date(self.date_issued)
+        
+        # Auto-determine status based on expiry date
+        today = timezone.now().date()
+        if self.expiry_date:
+            if today > self.expiry_date:
+                self.status = 'Expired'
+            else:
+                if self.permit_type == 'STCP':
+                    # For STCP, use the situation field to determine status
+                    if self.situation == 'Pending':
+                        self.status = 'Pending'
+                    else:
+                        self.status = 'Active'
+                else:
+                    # For other permit types, use expiry date
+                    self.status = 'Active'
+        
+        # Calculate volumes if total_volume_granted is provided
+        if self.total_volume_granted and (not self.gross_volume or not self.net_volume):
+            self.gross_volume = self.total_volume_granted * Decimal('1.3')
+            self.net_volume = self.total_volume_granted * Decimal('1.7')
+        
         super().save(*args, **kwargs)
-        print("Save completed")
 
     def is_consumed(self):
         return self.gross_volume >= self.total_volume_granted
@@ -232,8 +257,14 @@ class Cutting(models.Model):
 @receiver(pre_save, sender=Cutting)
 def cutting_pre_save(sender, instance, **kwargs):
     print(f"Pre-save signal triggered for cutting: {instance.id}")
-    if instance.is_consumed():
+    
+    # Check if the cutting is consumed based on remaining balance
+    if hasattr(instance, 'remaining_balance') and instance.remaining_balance <= 0:
         print("Permit is consumed")
+        instance.status = 'CONSUMED'
+    elif instance.is_consumed():
+        print("Permit is consumed")
+        instance.status = 'CONSUMED'
 
 def chainsaw_file_path(instance, filename):
     # Generate file path: chainsaw_files/YYYY/MM/filename
@@ -503,21 +534,9 @@ class CuttingPermit(models.Model):
     # ... existing fields ...
     
     # Add these new fields
-    latitude = models.DecimalField(
-        max_digits=9, 
-        decimal_places=6,
-        null=True,
-        blank=True,
-        help_text="Latitude coordinates (e.g. 10.123456)"
-    )
-    longitude = models.DecimalField(
-        max_digits=9, 
-        decimal_places=6,
-        null=True,
-        blank=True,
-        help_text="Longitude coordinates (e.g. 123.456789)"
-    )
-
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    
     # ... rest of the model ...
 
 class VolumeRecord(models.Model):
@@ -565,6 +584,10 @@ class VolumeRecord(models.Model):
         # Calculate the volume if needed
         if self.calculated_volume is None:
             self.calculated_volume = self.volume
+
+        # Make sure the cutting instance is saved first
+        if self.cutting and not self.cutting.pk:
+            self.cutting.save()
 
         # Get the latest record for this cutting
         latest_record = VolumeRecord.objects.filter(
@@ -617,3 +640,17 @@ class WoodProcessingPlant(models.Model):
             self.status = 'ACTIVE_NEW'
             
         super().save(*args, **kwargs)
+
+class TreeSpecies(models.Model):
+    cutting = models.ForeignKey(Cutting, on_delete=models.CASCADE, related_name='tree_species')
+    species = models.CharField(max_length=100)
+    quantity = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Tree Species"
+        ordering = ['species']
+
+    def __str__(self):
+        return f"{self.species} ({self.quantity})"

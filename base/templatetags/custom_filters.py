@@ -72,3 +72,10 @@ def split_species(value):
         })
     
     return species_list
+
+@register.filter
+def split_comma(value):
+    """Split a string by comma and return a list."""
+    if not value:
+        return []
+    return [item.strip() for item in value.split(',')]

@@ -164,16 +164,16 @@
                         <div>
                             <p class="text-sm text-gray-600">Status</p>
                             <span class="px-2 py-1 text-sm rounded-full 
-                                {% if cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}
+                                {% if cutting.status == 'EXPIRED' %}
                                     bg-red-100 text-red-800
+                                {% elif cutting.status == 'CONSUMED' %}
+                                    bg-yellow-100 text-yellow-800
+                                {% elif cutting.status == 'PENDING' %}
+                                    bg-blue-100 text-blue-800
                                 {% else %}
                                     bg-green-100 text-green-800
                                 {% endif %}">
-                                {% if cutting.expiry_date|date:'Y-m-d' < today|date:'Y-m-d' %}
-                                    Expired
-                                {% else %}
-                                    Active
-                                {% endif %}
+                                {{ cutting.status }}
                             </span>
                         </div>
                         <div>
@@ -262,6 +262,40 @@
                             <p class="text-sm text-gray-600">Species</p>
                             <p class="font-medium">{{ cutting.species|default:"-" }}</p>
                         </div>
+                        
+                        <!-- Display Tree Species Records -->
+                        <div>
+                            <p class="text-sm text-gray-600">Tree Species Records</p>
+                            <div class="mt-2 space-y-2">
+                                {% for tree_species in cutting.tree_species.all %}
+                                <div class="flex justify-between items-center py-1 px-2 bg-gray-50 rounded">
+                                    <span>{{ tree_species.species }}</span>
+                                    <span class="font-medium">{{ tree_species.quantity }} trees</span>
+                                </div>
+                                {% empty %}
+                                <p class="text-sm text-gray-500">No detailed species records available</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Display Other/Custom Species -->
+                        {% if cutting.other_species %}
+                        <div>
+                            <p class="text-sm text-gray-600">Other Species</p>
+                            <div class="mt-2 space-y-2">
+                                {% for species in cutting.other_species|split_comma %}
+                                <div class="flex items-center py-1 px-2 bg-gray-50 rounded">
+                                    <span>{{ species }}</span>
+                                </div>
+                                {% empty %}
+                                <div class="flex items-center py-1 px-2 bg-gray-50 rounded">
+                                    <span>{{ cutting.other_species }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
                         <div>
                             <p class="text-sm text-gray-600">Number of Trees</p>
                             <p class="font-medium">{{ cutting.no_of_trees|default:"-" }}</p>

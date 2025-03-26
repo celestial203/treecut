@@ -482,6 +482,8 @@
                                     <tr class="hover:bg-gray-50 cursor-pointer"
                                         data-record-id="{{ cutting.id }}"
                                         data-is-consumed="{% if cutting.remaining_balance <= 0.0 or cutting.remaining_balance == '0.00' %}true{% else %}false{% endif %}"
+                                        data-date-issued="{{ cutting.date_issued|date:'Y-m-d' }}"
+                                        data-expiry-date="{{ cutting.expiry_date|date:'Y-m-d' }}"
                                         ondblclick="handleRowDoubleClick(this, '{% url 'view_cutting' cutting.id %}')"
                                         {% if cutting.remaining_balance <= 0.0 or cutting.remaining_balance == '0.00' %}style="background-color: #fee2e2;"{% endif %}>
                                         <td class="px-6 py-3 text-xs font-bold whitespace-nowrap {% if cutting.remaining_balance <= 0.0 or cutting.remaining_balance == '0.00' %}text-red-700 bg-red-100{% endif %}">{{ cutting.permit_type }}</td>
@@ -618,52 +620,98 @@
 
             function filterRecords() {
                 const rows = document.querySelectorAll('tbody tr');
-                const permitTerm = permitSearch.value.toLowerCase();
-                const startDateVal = startDate.value ? new Date(startDate.value) : null;
-                const endDateVal = endDate.value ? new Date(endDate.value) : null;
-                const yearVal = yearFilter.value;
-
+                const permitSearchValue = permitSearch.value.toLowerCase();
+                const startDateValue = startDate.value;
+                const endDateValue = endDate.value;
+                const yearFilterValue = yearFilter.value;
+                
                 let hasResults = false;
-
+                
                 rows.forEach((row) => {
                     if (!row.id || row.id !== 'noResultsRow') {
-                        // Get text from the permit number cell (2nd column)
-                        const permitText = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                        // Get permit number and other data from the row
+                        const permitNumber = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+                        const permitType = row.querySelector('td:nth-child(1)')?.textContent.trim() || '';
+                        const dateIssued = row.dataset.dateIssued || '';
+                        const expiryDate = row.dataset.expiryDate || '';
                         
-                        // Get the permit type for filtering (1st column)
-                        const permitType = row.querySelector('td:nth-child(1)').textContent.trim();
+                        // Check if the row is marked as consumed
+                        const isConsumed = row.style.backgroundColor === 'rgb(254, 226, 226)' || 
+                                          row.querySelector('td:last-child')?.textContent.includes('CONSUMED');
                         
-                        // Check permit type filter
-                        const matchesPermitType = currentPermitType === 'all' || permitType === currentPermitType;
+                        // Determine status based on expiry date
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0); // Set to beginning of day for comparison
                         
-                        // Check if the row matches the search term
-                        const matchesPermit = permitText.includes(permitTerm);
-                        
-                        // For status filtering, we'll need to get this from a data attribute since the column is no longer visible
-                        const isExpired = row.classList.contains('hover:bg-red-100');
-                        const isPending = row.classList.contains('hover:bg-yellow-100');
-                        
-                        let statusMatch = true;
-                        if (currentStatus !== 'all') {
-                            if (currentStatus === 'active' && isExpired) {
-                                statusMatch = false;
-                            } else if (currentStatus === 'expired' && !isExpired) {
-                                statusMatch = false;
-                            } else if (currentStatus === 'pending' && !isPending) {
-                                statusMatch = false;
+                        // Improved expiration check - parse permit number for expiration date if dataset is missing
+                        let expiry = null;
+                        if (expiryDate) {
+                            expiry = new Date(expiryDate);
+                        } else {
+                            // Try to extract date from permit number (format: C-ARGAO-01232024-001)
+                            const dateMatch = permitNumber.match(/(\d{2})(\d{2})(\d{4})/);
+                            if (dateMatch) {
+                                // Format is MMDDYYYY in the permit number
+                                const month = parseInt(dateMatch[1]) - 1; // JS months are 0-indexed
+                                const day = parseInt(dateMatch[2]);
+                                const year = parseInt(dateMatch[3]);
+                                expiry = new Date(year, month, day);
                             }
                         }
-
-                        if (matchesPermit && matchesPermitType && statusMatch) {
-                            row.style.display = '';
+                        
+                        const isExpired = expiry && expiry < today;
+                        // Update pending definition to only include STCP permits without volume
+                        const isPending = permitType === 'STCP' && row.querySelector('td:last-child')?.textContent.includes('VOL');
+                        const isActive = !isExpired && !isPending && !isConsumed;
+                        
+                        // Apply filters
+                        let showRow = true;
+                        
+                        // Filter by permit type
+                        if (currentPermitType !== 'all' && permitType !== currentPermitType) {
+                            showRow = false;
+                        }
+                        
+                        // Filter by status
+                        if (currentStatus === 'active' && !isActive) {
+                            showRow = false;
+                        } else if (currentStatus === 'expired' && !isExpired) {
+                            showRow = false;
+                        } else if (currentStatus === 'pending' && !isPending) {
+                            showRow = false;
+                        } else if (currentStatus === 'consumed' && !isConsumed) {
+                            showRow = false;
+                        }
+                        
+                        // Filter by permit number search
+                        if (permitSearchValue && !permitNumber.includes(permitSearchValue)) {
+                            showRow = false;
+                        }
+                        
+                        // Filter by date range
+                        if (startDateValue && dateIssued && new Date(dateIssued) < new Date(startDateValue)) {
+                            showRow = false;
+                        }
+                        
+                        if (endDateValue && dateIssued && new Date(dateIssued) > new Date(endDateValue)) {
+                            showRow = false;
+                        }
+                        
+                        // Filter by year
+                        if (yearFilterValue && dateIssued && !dateIssued.includes(yearFilterValue)) {
+                            showRow = false;
+                        }
+                        
+                        // Apply visibility
+                        row.style.display = showRow ? '' : 'none';
+                        
+                        if (showRow) {
                             hasResults = true;
-                        } else {
-                            row.style.display = 'none';
                         }
                     }
                 });
-
-                // Handle no results message
+                
+                // Show no results message if needed
                 const existingNoResults = document.getElementById('noResultsRow');
                 if (!hasResults) {
                     if (!existingNoResults) {
@@ -672,8 +720,7 @@
                         noResultsRow.id = 'noResultsRow';
                         noResultsRow.innerHTML = `
                             <td colspan="6" class="px-6 py-8 text-center">
-                                <div class="text-gray-500 text-lg">No matching records found</div>
-                                <div class="text-gray-400 text-sm mt-2">Try adjusting your search criteria</div>
+                                <div class="text-gray-500 text-lg">No records found</div>
                             </td>
                         `;
                         tbody.appendChild(noResultsRow);
