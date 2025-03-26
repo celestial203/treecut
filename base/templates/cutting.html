@@ -362,6 +362,11 @@
         .date-input-custom input[type="text"]:valid:before {
             display: none;
         }
+
+        /* Add this style for uppercase inputs */
+        .uppercase-input {
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body class="bg-white text-gray-900">
@@ -748,8 +753,29 @@
             const permitTypeSelect = document.getElementById('{{ form.permit_type.id_for_label }}');
             const speciesContainer = document.getElementById('species-container');
             const numberOfTreesInput = document.querySelector('input[name="no_of_trees"]');
+            const totalVolumeInput = document.querySelector('input[name="total_volume_granted"]');
             const grossVolumeInput = document.querySelector('input[name="gross_volume"]');
-            const netVolumeInput = document.getElementById('net_volume');
+            const netVolumeInput = document.querySelector('input[name="net_volume"]');
+            
+            // Add event listener for total volume calculation
+            if (totalVolumeInput) {
+                totalVolumeInput.addEventListener('input', calculateVolumes);
+            }
+            
+            // Function to calculate gross and net volumes
+            function calculateVolumes() {
+                if (!totalVolumeInput || !grossVolumeInput || !netVolumeInput) return;
+                
+                const totalVolume = parseFloat(totalVolumeInput.value) || 0;
+                
+                // Calculate gross volume (total volume granted × 30% + total volume granted)
+                const grossVolume = totalVolume * 0.3 + totalVolume;
+                grossVolumeInput.value = grossVolume.toFixed(2);
+                
+                // Calculate net volume (total volume granted × 70% + total volume granted)
+                const netVolume = totalVolume * 0.7 + totalVolume;
+                netVolumeInput.value = netVolume.toFixed(2);
+            }
             
             // Species handling functions
             window.toggleOtherSpecies = function(selectElement) {
@@ -855,14 +881,6 @@
                 });
             }
             
-            // Form submission handler
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    // Form submission logic remains the same
-                    // ...
-                });
-            }
-            
             // Date handling - using direct property assignment instead of addEventListener
             var dateIssuedField = document.getElementById('date_issued_field');
             if (dateIssuedField) {
@@ -895,47 +913,167 @@
                 
                 expiryDateField.value = month + '/' + day + '/' + year;
             }
+            
+            // Run initial calculations if values exist
+            if (totalVolumeInput && totalVolumeInput.value) {
+                calculateVolumes();
+            }
+
+            // Add uppercase transformation to text inputs
+            const textInputs = document.querySelectorAll('input[type="text"], textarea');
+            textInputs.forEach(input => {
+                // Skip date inputs and other special fields
+                if (!input.classList.contains('date-input') && 
+                    !input.id.includes('date') && 
+                    !input.readOnly) {
+                    
+                    input.classList.add('uppercase-input');
+                    
+                    // Convert to uppercase on input
+                    input.addEventListener('input', function() {
+                        this.value = this.value.toUpperCase();
+                    });
+                    
+                    // Also convert existing value to uppercase
+                    if (input.value) {
+                        input.value = input.value.toUpperCase();
+                    }
+                }
+            });
+            
+            // Also apply to select inputs that allow custom input
+            const otherSpeciesInputs = document.querySelectorAll('input[name="other_species[]"]');
+            otherSpeciesInputs.forEach(input => {
+                input.classList.add('uppercase-input');
+                input.addEventListener('input', function() {
+                    this.value = this.value.toUpperCase();
+                });
+            });
         });
     </script>
 
-    <!-- Add this script at the very end of the file, just before the closing </body> tag -->
+    <!-- Remove or fix the problematic script that's causing the error -->
     <script>
-        // Remove any script that tries to add event listeners to date_issued_display
-        // Instead, use this simplified approach
-        document.addEventListener('DOMContentLoaded', function() {
-            // Safely check if elements exist before using them
-            var dateIssuedField = document.getElementById('date_issued_field');
-            var expiryDateField = document.getElementById('expiry_date_field');
+        // Custom date handling script - FIXED to check for element existence
+        (function() {
+            // Use an IIFE to avoid any variable conflicts
             
-            if (dateIssuedField) {
-                dateIssuedField.onchange = function() {
-                    if (!this.value) return;
+            // Set up the date display functionality - CHECK IF ELEMENTS EXIST FIRST
+            var dateIssuedElement = document.getElementById('date_issued');
+            var dateIssuedDisplayElement = document.getElementById('date_issued_display');
+            
+            if (dateIssuedElement) {
+                dateIssuedElement.addEventListener('change', function() {
+                    const selectedDate = this.value;
+                    if (!selectedDate) return;
+                    
+                    const dateObj = new Date(selectedDate);
+                    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                    const day = String(dateObj.getDate()).padStart(2, '0');
+                    const year = dateObj.getFullYear();
+                    
+                    // Update the display field with MM/DD/YYYY format
+                    if (dateIssuedDisplayElement) {
+                        dateIssuedDisplayElement.value = `${month}/${day}/${year}`;
+                    }
                     
                     // Calculate expiry date (50 business days later)
-                    var date = new Date(this.value);
-                    var businessDays = 50;
-                    var currentDate = new Date(date);
+                    let businessDays = 50;
+                    let currentDate = new Date(dateObj);
                     
                     while (businessDays > 0) {
                         currentDate.setDate(currentDate.getDate() + 1);
-                        var dayOfWeek = currentDate.getDay();
-                        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                        const dayOfWeek = currentDate.getDay();
+                        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip weekends
                             businessDays--;
                         }
                     }
                     
-                    // Format expiry date
-                    var month = String(currentDate.getMonth() + 1).padStart(2, '0');
-                    var day = String(currentDate.getDate()).padStart(2, '0');
-                    var year = currentDate.getFullYear();
+                    // Format expiry date as MM/DD/YYYY
+                    const expMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+                    const expDay = String(currentDate.getDate()).padStart(2, '0');
+                    const expYear = currentDate.getFullYear();
                     
-                    // Update expiry date field if it exists
-                    if (expiryDateField) {
-                        expiryDateField.value = month + '/' + day + '/' + year;
+                    // Update expiry date field
+                    const expiryEl = document.getElementById('expiry_date');
+                    if (expiryEl) {
+                        expiryEl.value = `${expMonth}/${expDay}/${expYear}`;
+                        expiryEl.setAttribute('data-iso-date', `${expYear}-${expMonth}-${expDay}`);
                     }
-                };
+                });
             }
-        });
+            
+            // Make the display field clickable to open the date picker - CHECK IF ELEMENT EXISTS
+            if (dateIssuedDisplayElement) {
+                dateIssuedDisplayElement.addEventListener('click', function() {
+                    if (dateIssuedElement) {
+                        dateIssuedElement.click();
+                    }
+                });
+            }
+        })();
+    </script>
+
+    <script>
+    function handleDateChange(element) {
+        if (!element.value) return;
+        
+        var dateObj = new Date(element.value);
+        var month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        var day = String(dateObj.getDate()).padStart(2, '0');
+        var year = dateObj.getFullYear();
+        
+        // Update display
+        document.getElementById('date_issued_display').value = month + '/' + day + '/' + year;
+        
+        // Calculate expiry date
+        var businessDays = 50;
+        var currentDate = new Date(dateObj);
+        
+        while (businessDays > 0) {
+            currentDate.setDate(currentDate.getDate() + 1);
+            var dayOfWeek = currentDate.getDay();
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+                businessDays--;
+            }
+        }
+        
+        // Format expiry date
+        var expMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
+        var expDay = String(currentDate.getDate()).padStart(2, '0');
+        var expYear = currentDate.getFullYear();
+        
+        // Update expiry date field
+        var expiryField = document.getElementById('expiry_date');
+        if (expiryField) {
+            expiryField.value = expMonth + '/' + expDay + '/' + expYear;
+            expiryField.setAttribute('data-iso-date', expYear + '-' + expMonth + '-' + expDay);
+        }
+    }
+    </script>
+
+    <!-- Add this tiny script with a unique function name -->
+    <script>
+    // Simple function with a unique name to avoid conflicts
+    function calculateExpiry(dateStr) {
+        if (!dateStr) return;
+        
+        var date = new Date(dateStr);
+        var businessDays = 50;
+        
+        while (businessDays > 0) {
+            date.setDate(date.getDate() + 1);
+            if (date.getDay() !== 0 && date.getDay() !== 6) {
+                businessDays--;
+            }
+        }
+        
+        var month = (date.getMonth() + 1).toString().padStart(2, '0');
+        var day = date.getDate().toString().padStart(2, '0');
+        var year = date.getFullYear();
+        
+        document.getElementById('expiry_date').value = month + '/' + day + '/' + year;
+    }
     </script>
 </body>
 </html>

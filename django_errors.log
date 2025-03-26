@@ -15769,3 +15769,7 @@ WARNING 2025-03-25 09:31:07,273 log Not Found: /favicon.ico
 WARNING 2025-03-25 09:31:07,274 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
 WARNING 2025-03-25 10:14:59,039 log Not Found: /favicon.ico
 WARNING 2025-03-25 10:14:59,041 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
+WARNING 2025-03-25 14:47:06,583 log Not Found: /favicon.ico
+WARNING 2025-03-25 14:47:06,586 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
+WARNING 2025-03-26 09:30:56,859 log Not Found: /favicon.ico
+WARNING 2025-03-26 09:30:56,862 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
