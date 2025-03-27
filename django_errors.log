@@ -16894,3 +16894,7 @@ Traceback (most recent call last):
     )
 django.template.exceptions.TemplateSyntaxError: Could not parse the remainder: '(',')' from 'cutting.other_species.split(',')'
 ERROR 2025-03-26 23:35:01,502 basehttp "GET /cutting/19/view/ HTTP/1.1" 500 224522
+WARNING 2025-03-27 08:35:50,388 log Not Found: /favicon.ico
+WARNING 2025-03-27 08:35:50,390 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
+WARNING 2025-03-27 08:59:29,688 log Not Found: /favicon.ico
+WARNING 2025-03-27 08:59:29,691 basehttp "GET /favicon.ico HTTP/1.1" 404 10438

@@ -169,53 +169,49 @@ def cutting(request):
                 cutting = form.save(commit=False)
                 
                 # Process species data from the form
-                species_data_json = request.POST.get('species_data')
-                if species_data_json:
-                    try:
-                        species_data = json.loads(species_data_json)
-                        
-                        # Build species string and calculate total trees
-                        species_list = []
-                        total_trees = 0
-                        
-                        for item in species_data:
-                            species_name = item.get('species', '')
-                            quantity = item.get('quantity', 0)
-                            
-                            if species_name and quantity > 0:
-                                species_list.append(f"{species_name} ({quantity})")
-                                total_trees += quantity
-                        
-                        # Update the cutting record with species info and total trees
-                        if species_list:
-                            cutting.species = ", ".join(species_list)
-                        
-                        cutting.no_of_trees = total_trees
-                        
-                    except json.JSONDecodeError:
-                        pass
+                species_data = []
+                species_names = request.POST.getlist('species_name[]')
+                species_quantities = request.POST.getlist('species_quantity_value[]')
+                
+                # Combine the species names and quantities
+                for name, quantity in zip(species_names, species_quantities):
+                    if name and quantity:
+                        species_data.append({
+                            'species': name,
+                            'quantity': int(quantity)
+                        })
+                
+                # Build species string and calculate total trees
+                species_list = []
+                total_trees = 0
+                
+                for item in species_data:
+                    species_name = item['species']
+                    quantity = item['quantity']
+                    
+                    if species_name and quantity > 0:
+                        species_list.append(f"{species_name} ({quantity})")
+                        total_trees += quantity
+                
+                # Update the cutting record with species info and total trees
+                if species_list:
+                    cutting.species = ", ".join(species_list)
+                cutting.no_of_trees = total_trees
                 
                 # Save the cutting record with updated fields
                 cutting.save()
                 
                 # Now create the TreeSpecies records
-                if species_data_json:
-                    try:
-                        species_data = json.loads(species_data_json)
-                        
-                        for item in species_data:
-                            species_name = item.get('species', '')
-                            quantity = item.get('quantity', 0)
-                            
-                            if species_name and quantity > 0:
-                                TreeSpecies.objects.create(
-                                    cutting=cutting,
-                                    species=species_name,
-                                    quantity=quantity
-                                )
-                                
-                    except json.JSONDecodeError:
-                        pass
+                for item in species_data:
+                    species_name = item['species']
+                    quantity = item['quantity']
+                    
+                    if species_name and quantity > 0:
+                        TreeSpecies.objects.create(
+                            cutting=cutting,
+                            species=species_name,
+                            quantity=quantity
+                        )
                 
                 messages.success(request, 'Cutting record created successfully.')
                 return redirect('view_cutting', cutting.id)
@@ -425,10 +421,11 @@ def edit_cutting(request, pk):
         if form.is_valid():
             try:
                 # Save the form first to update the cutting record
-                cutting = form.save()
+                cutting = form.save(commit=False)
                 
                 # Process species data from the form
-                species_data_json = request.POST.get('species_data')
+                species_data_json = request.POST.get('all_species_data')  # Changed from 'species_data' to 'all_species_data'
+                
                 if species_data_json:
                     try:
                         species_data = json.loads(species_data_json)
@@ -438,9 +435,12 @@ def edit_cutting(request, pk):
                         
                         # Create new tree species records and build species string
                         species_list = []
+                        total_trees = 0
+                        
                         for item in species_data:
-                            species_name = item.get('species', '')
-                            quantity = item.get('quantity', 0)
+                            # Changed from item.get() to direct dictionary access since we know the structure
+                            species_name = item['species']
+                            quantity = int(item['quantity'])
                             
                             if species_name and quantity > 0:
                                 TreeSpecies.objects.create(
@@ -451,20 +451,23 @@ def edit_cutting(request, pk):
                                 
                                 # Add to species list for display
                                 species_list.append(f"{species_name} ({quantity})")
+                                total_trees += quantity
                         
-                        # Update the total number of trees
-                        total_trees = sum(item.get('quantity', 0) for item in species_data)
-                        cutting.no_of_trees = total_trees
-                        
-                        # Update the species field with formatted string
+                        # Update the cutting record with species info and total trees
                         if species_list:
                             cutting.species = ", ".join(species_list)
                         
+                        cutting.no_of_trees = total_trees
+                        
+                        # Save the cutting record with updated fields
                         cutting.save()
                                 
                     except json.JSONDecodeError:
                         pass
-                
+                else:
+                    # If no species data is provided, save the cutting record anyway
+                    cutting.save()
+                        
                 messages.success(request, 'Cutting record updated successfully.')
                 return redirect('view_cutting', cutting.id)
             except Exception as e:

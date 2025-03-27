@@ -255,16 +255,20 @@ class Cutting(models.Model):
         return self.gross_volume >= self.total_volume_granted
 
 @receiver(pre_save, sender=Cutting)
-def cutting_pre_save(sender, instance, **kwargs):
+def update_cutting_status(sender, instance, **kwargs):
     print(f"Pre-save signal triggered for cutting: {instance.id}")
     
-    # Check if the cutting is consumed based on remaining balance
-    if hasattr(instance, 'remaining_balance') and instance.remaining_balance <= 0:
-        print("Permit is consumed")
-        instance.status = 'CONSUMED'
-    elif instance.is_consumed():
-        print("Permit is consumed")
-        instance.status = 'CONSUMED'
+    # Check if this is an existing record
+    if instance.id:
+        # Check if the permit is consumed (remaining balance <= 0)
+        latest_volume_record = VolumeRecord.objects.filter(
+            cutting=instance
+        ).order_by('-date_added').first()
+        
+        if latest_volume_record and latest_volume_record.remaining_balance <= 0:
+            print("Permit is consumed")
+            # You might want to update the status or set a flag here
+            instance.is_consumed = True
 
 def chainsaw_file_path(instance, filename):
     # Generate file path: chainsaw_files/YYYY/MM/filename

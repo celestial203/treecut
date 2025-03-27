@@ -203,22 +203,20 @@
 
             // Move this function outside DOMContentLoaded to make it globally available
             function toggleOtherSpecies(selectElement) {
-                console.log('Toggle function called with value:', selectElement.value); // Debug log
-                
-                const parentDiv = selectElement.closest('.relative');
-                const otherSpeciesFields = parentDiv.querySelector('.other-species-fields');
-                const otherSpeciesInput = otherSpeciesFields.querySelector('input[name="other_species"]');
+                const otherSpeciesFields = document.querySelector('.other-species-fields');
+                const otherSpeciesInput = document.querySelector('input[name="other_species"]');
                 
                 if (selectElement.value === 'Others') {
-                    console.log('Showing other species field'); // Debug log
                     otherSpeciesFields.style.display = 'block';
                     otherSpeciesInput.required = true;
                 } else {
-                    console.log('Hiding other species field'); // Debug log
                     otherSpeciesFields.style.display = 'none';
                     otherSpeciesInput.required = false;
-                    otherSpeciesInput.value = '';
+                    otherSpeciesInput.value = '';  // Clear the input when not visible
                 }
+                
+                // Trigger calculations update when species changes
+                updateCalculations();
             }
 
             // Initialize the toggle state on page load
@@ -357,6 +355,12 @@
             // Initial calculation if needed
             if (document.getElementById('species').value) {
                 toggleOtherSpecies(document.getElementById('species'));
+            }
+
+            // Add event listener for other species input
+            const otherSpeciesInput = document.querySelector('input[name="other_species"]');
+            if (otherSpeciesInput) {
+                otherSpeciesInput.addEventListener('input', updateCalculations);
             }
         });
     </script>

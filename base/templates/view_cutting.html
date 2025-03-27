@@ -258,47 +258,24 @@
                 <div class="info-section">
                     <h3 class="section-title">Tree Information</h3>
                     <div class="space-y-3">
-                        <div>
-                            <p class="text-sm text-gray-600">Species</p>
-                            <p class="font-medium">{{ cutting.species|default:"-" }}</p>
-                        </div>
-                        
                         <!-- Display Tree Species Records -->
                         <div>
                             <p class="text-sm text-gray-600">Tree Species Records</p>
                             <div class="mt-2 space-y-2">
                                 {% for tree_species in cutting.tree_species.all %}
-                                <div class="flex justify-between items-center py-1 px-2 bg-gray-50 rounded">
-                                    <span>{{ tree_species.species }}</span>
-                                    <span class="font-medium">{{ tree_species.quantity }} trees</span>
+                                <div class="flex justify-between items-center py-2 px-3 bg-gray-50 rounded">
+                                    <span class="font-medium">{{ tree_species.species }}</span>
+                                    <span>{{ tree_species.quantity }} trees</span>
                                 </div>
                                 {% empty %}
-                                <p class="text-sm text-gray-500">No detailed species records available</p>
+                                <p class="text-sm text-gray-500">No tree species records available</p>
                                 {% endfor %}
                             </div>
                         </div>
-                        
-                        <!-- Display Other/Custom Species -->
-                        {% if cutting.other_species %}
-                        <div>
-                            <p class="text-sm text-gray-600">Other Species</p>
-                            <div class="mt-2 space-y-2">
-                                {% for species in cutting.other_species|split_comma %}
-                                <div class="flex items-center py-1 px-2 bg-gray-50 rounded">
-                                    <span>{{ species }}</span>
-                                </div>
-                                {% empty %}
-                                <div class="flex items-center py-1 px-2 bg-gray-50 rounded">
-                                    <span>{{ cutting.other_species }}</span>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endif %}
                         
                         <div>
                             <p class="text-sm text-gray-600">Number of Trees</p>
-                            <p class="font-medium">{{ cutting.no_of_trees|default:"-" }}</p>
+                            <p class="font-medium">{{ cutting.no_of_trees }}</p>
                         </div>
                     </div>
                 </div>

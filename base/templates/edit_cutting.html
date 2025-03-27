@@ -178,17 +178,16 @@
                 // Function to calculate total trees
                 function calculateTotalTrees() {
                     let total = 0;
-                    const quantityInputs = document.querySelectorAll('input[name="species_quantity[]"]');
-                    quantityInputs.forEach(input => {
-                        if (input.value) {
-                            total += parseInt(input.value, 10);
-                        }
+                    // Sum up quantities from the species list
+                    document.querySelectorAll('.species-item').forEach(item => {
+                        const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
+                        total += quantity;
                     });
                     
-                    // Update the total trees field
-                    const noOfTreesInput = document.getElementById('no_of_trees');
-                    if (noOfTreesInput) {
-                        noOfTreesInput.value = total;
+                    // Update the total trees input
+                    const totalTreesInput = document.getElementById('no_of_trees');
+                    if (totalTreesInput) {
+                        totalTreesInput.value = total;
                     }
                 }
                 
@@ -197,166 +196,183 @@
                     input.value = input.value.toUpperCase();
                 }
                 
+                // Function to add a species to the list
+                function addSpeciesToList() {
+                    const speciesSelect = document.getElementById('species');
+                    const quantityInput = document.getElementById('quantity');
+                    const otherSpeciesInput = document.getElementById('other_species');
+                    const speciesList = document.getElementById('species-list');
+                    
+                    // Get values
+                    const selectedSpecies = speciesSelect.value;
+                    const quantity = parseInt(quantityInput.value.trim(), 10);
+                    
+                    // Basic validation
+                    if (!selectedSpecies || isNaN(quantity) || quantity <= 0) {
+                        return;
+                    }
+                    
+                    // Get the species name (handle 'Others' case)
+                    let speciesName = selectedSpecies;
+                    if (selectedSpecies === 'Others') {
+                        const otherSpeciesValue = otherSpeciesInput.value.trim();
+                        if (!otherSpeciesValue) {
+                            return;
+                        }
+                        speciesName = otherSpeciesValue;
+                    }
+                    
+                    // Create a new item element
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'species-item flex justify-between items-center py-2 px-3 bg-gray-50 rounded mb-2';
+                    itemElement.setAttribute('data-species', speciesName);
+                    itemElement.setAttribute('data-quantity', quantity);
+                    
+                    itemElement.innerHTML = `
+                        <span>${speciesName}</span>
+                        <div class="flex items-center">
+                            <span class="mr-3">${quantity} trees</span>
+                            <button type="button" class="remove-species-item text-red-500 hover:text-red-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Add to the list
+                    speciesList.appendChild(itemElement);
+                    
+                    // Add remove event listener
+                    itemElement.querySelector('.remove-species-item').addEventListener('click', function() {
+                        itemElement.remove();
+                        calculateTotalTrees(); // Recalculate total after removal
+                    });
+                    
+                    // Reset inputs
+                    speciesSelect.value = '';
+                    quantityInput.value = '';
+                    if (otherSpeciesInput) {
+                        otherSpeciesInput.value = '';
+                        otherSpeciesInput.style.display = 'none';
+                    }
+                    
+                    // Calculate new total
+                    calculateTotalTrees();
+                }
+                
                 // Function to prepare form data before submission
                 function prepareFormData() {
-                    // For each species row, if "Others" is selected, use the other_species value as the actual species
-                    document.querySelectorAll('select[name="species[]"]').forEach((select, index) => {
-                        if (select.value === 'Others') {
-                            const otherField = select.parentElement.querySelector('.other-species-field');
-                            if (otherField && otherField.value.trim()) {
-                                // Create a hidden input to store the actual species value
-                                const hiddenInput = document.createElement('input');
-                                hiddenInput.type = 'hidden';
-                                hiddenInput.name = 'actual_species[]';
-                                hiddenInput.value = otherField.value.trim().toUpperCase();
-                                select.parentElement.appendChild(hiddenInput);
+                    // Get all species items from the list
+                    const speciesItems = document.querySelectorAll('#species-list .species-item');
+                    const speciesData = [];
+                    
+                    // Collect data from each item
+                    speciesItems.forEach(item => {
+                        const speciesName = item.getAttribute('data-species');
+                        const quantity = parseInt(item.getAttribute('data-quantity'), 10);
+                        
+                        if (speciesName && !isNaN(quantity) && quantity > 0) {
+                            speciesData.push({
+                                species: speciesName,
+                                quantity: quantity
+                            });
+                        }
+                    });
+                    
+                    // Also collect data from any species entries in the form
+                    document.querySelectorAll('.species-entry').forEach(entry => {
+                        const select = entry.querySelector('select[name="species[]"]');
+                        const quantityInput = entry.querySelector('input[name="species_quantity[]"]');
+                        
+                        if (select && quantityInput && select.value && quantityInput.value) {
+                            let speciesName = select.value;
+                            const quantity = parseInt(quantityInput.value, 10);
+                            
+                            // Handle 'Others' case
+                            if (speciesName === 'Others') {
+                                const otherField = entry.querySelector('input[name="other_species[]"]');
+                                if (otherField && otherField.value.trim()) {
+                                    speciesName = otherField.value.trim();
+                                }
+                            }
+                            
+                            if (speciesName && !isNaN(quantity) && quantity > 0) {
+                                speciesData.push({
+                                    species: speciesName,
+                                    quantity: quantity
+                                });
                             }
                         }
                     });
+                    
+                    // Update the hidden input with JSON data
+                    document.getElementById('species_data').value = JSON.stringify(speciesData);
+                    
                     return true;
                 }
                 
-                // The rest of the script will be executed when the DOM is loaded
+                // Add event listeners when the DOM is loaded
                 document.addEventListener('DOMContentLoaded', function() {
+                    // Add event listener to the add species button
+                    const addSpeciesBtn = document.getElementById('add-species-btn');
+                    if (addSpeciesBtn) {
+                        addSpeciesBtn.addEventListener('click', addSpeciesToList);
+                    }
+                    
+                    // Add event listener to the species select for showing/hiding the other species field
+                    const speciesSelect = document.getElementById('species');
+                    const otherSpeciesContainer = document.getElementById('other-species-container');
+                    
+                    if (speciesSelect && otherSpeciesContainer) {
+                        speciesSelect.addEventListener('change', function() {
+                            if (this.value === 'Others') {
+                                otherSpeciesContainer.style.display = 'block';
+                            } else {
+                                otherSpeciesContainer.style.display = 'none';
+                            }
+                        });
+                    }
+                    
                     // Initialize other species fields
                     document.querySelectorAll('select[name="species[]"]').forEach(select => {
                         toggleOtherSpecies(select);
-                    });
-                    
-                    // Calculate initial total trees
-                    calculateTotalTrees();
-                    
-                    // Make all text inputs uppercase
-                    document.querySelectorAll('input[type="text"]').forEach(input => {
-                        input.addEventListener('input', function() {
-                            convertToUppercase(this);
-                        });
-                        // Convert existing values to uppercase
-                        convertToUppercase(input);
-                    });
-                    
-                    // Add event listeners to add species buttons
-                    document.querySelectorAll('.add-species').forEach(button => {
-                        button.addEventListener('click', function() {
-                            const container = document.getElementById('species-container');
-                            const newRow = document.createElement('div');
-                            newRow.className = 'species-entry flex items-center space-x-2';
-                            newRow.innerHTML = `
-                                <div class="flex flex-col w-full">
-                                    <select name="species[]" class="species-select form-select flex-1" onchange="toggleOtherSpecies(this)">
-                                        <option value="">SELECT SPECIES</option>
-                                        <option value="Acacia">ACACIA</option>
-                                        <option value="Mahogany">MAHOGANY</option>
-                                        <option value="Gmelina">GMELINA</option>
-                                        <option value="Falcata">FALCATA</option>
-                                        <option value="Minepoles">MINEPOLES</option>
-                                        <option value="Coconut">COCONUT</option>
-                                        <option value="Ipil-ipil">IPIL-IPIL</option>
-                                        <option value="Gemelina">GEMELINA</option>
-                                        <option value="Rubber">RUBBER</option>
-                                        <option value="Mangium">MANGIUM</option>
-                                        <option value="Auri">AURI</option>
-                                        <option value="Bagras">BAGRAS</option>
-                                        <option value="Eucalyptus">EUCALYPTUS</option>
-                                        <option value="Narra">NARRA</option>
-                                        <option value="Molave">MOLAVE</option>
-                                        <option value="Teak">TEAK</option>
-                                        <option value="Yakal">YAKAL</option>
-                                        <option value="Dao">DAO</option>
-                                        <option value="Kamagong">KAMAGONG</option>
-                                        <option value="Apitong">APITONG</option>
-                                        <option value="Lauan">LAUAN</option>
-                                        <option value="Tanguile">TANGUILE</option>
-                                        <option value="Mayapis">MAYAPIS</option>
-                                        <option value="Almon">ALMON</option>
-                                        <option value="Bagtikan">BAGTIKAN</option>
-                                        <option value="Others">OTHERS</option>
-                                    </select>
-                                    
-                                    <input type="text" 
-                                           name="other_species[]" 
-                                           class="other-species-field mt-2 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                                           placeholder="PLEASE SPECIFY SPECIES"
-                                           value="{% if not tree_species.species in 'Acacia,Mahogany,Gmelina,Falcata,Minepoles,Coconut,Ipil-ipil,Gemelina,Rubber,Mangium,Auri,Bagras,Eucalyptus,Narra,Molave,Teak,Yakal,Dao,Kamagong,Apitong,Lauan,Tanguile,Mayapis,Almon,Bagtikan' %}{{ tree_species.species }}{% endif %}"
-                                           style="{% if tree_species.species in 'Acacia,Mahogany,Gmelina,Falcata,Minepoles,Coconut,Ipil-ipil,Gemelina,Rubber,Mangium,Auri,Bagras,Eucalyptus,Narra,Molave,Teak,Yakal,Dao,Kamagong,Apitong,Lauan,Tanguile,Mayapis,Almon,Bagtikan' %}display: none;{% endif %}"
-                                           oninput="convertToUppercase(this)">
-                                </div>
-                                
-                                <input type="number" name="species_quantity[]" value="{{ tree_species.quantity }}" min="1" class="form-input w-24" placeholder="Qty" oninput="calculateTotalTrees()">
-                                <button type="button" class="remove-species px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            `;
-                            container.appendChild(newRow);
-                            
-                            // Add event listener to the remove button
-                            const removeBtn = newRow.querySelector('.remove-species');
-                            removeBtn.addEventListener('click', function() {
-                                newRow.remove();
-                                calculateTotalTrees();
-                            });
-                        });
-                    });
-                    
-                    // Add event listeners to existing remove buttons
-                    document.querySelectorAll('.remove-species').forEach(button => {
-                        button.addEventListener('click', function() {
-                            button.closest('.flex.items-center').remove();
-                            calculateTotalTrees();
-                        });
-                    });
-                    
-                    // Form submission validation
-                    document.getElementById('editForm').addEventListener('submit', function(e) {
-                        // Prepare form data
-                        prepareFormData();
                         
-                        // Basic validation
-                        const requiredFields = document.querySelectorAll('input[required], select[required]');
-                        let isValid = true;
-                        
-                        requiredFields.forEach(field => {
-                            if (!field.value.trim()) {
-                                isValid = false;
-                                field.classList.add('border-red-500');
-                            } else {
-                                field.classList.remove('border-red-500');
+                        // Add change event listener
+                        select.addEventListener('change', function() {
+                            toggleOtherSpecies(this);
+                        });
+                    });
+                    
+                    // Add event listener to quantity input for real-time calculation
+                    const quantityInput = document.getElementById('quantity');
+                    if (quantityInput) {
+                        quantityInput.addEventListener('input', function() {
+                            const currentValue = parseInt(this.value) || 0;
+                            const totalTreesInput = document.getElementById('no_of_trees');
+                            if (totalTreesInput) {
+                                let existingTotal = 0;
+                                document.querySelectorAll('.species-item').forEach(item => {
+                                    existingTotal += parseInt(item.getAttribute('data-quantity')) || 0;
+                                });
+                                totalTreesInput.value = existingTotal;
                             }
                         });
-                        
-                        if (!isValid) {
-                            e.preventDefault();
-                            // Show error message
-                            const errorAlert = document.createElement('div');
-                            errorAlert.className = 'bg-red-50 text-red-700 p-4 mb-4 border border-red-200 rounded';
-                            errorAlert.innerHTML = '<p>Please fill in all required fields.</p>';
-                            
-                            // Insert at the top of the form
-                            const firstChild = this.firstChild;
-                            this.insertBefore(errorAlert, firstChild);
-                            
-                            // Scroll to the top of the form
-                            window.scrollTo(0, this.offsetTop - 100);
-                        } else {
-                            // Show loading indicator
-                            const loadingOverlay = document.createElement('div');
-                            loadingOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-                            loadingOverlay.innerHTML = `
-                                <div class="bg-white p-6 rounded-lg shadow-xl">
-                                    <div class="flex items-center">
-                                        <svg class="animate-spin h-8 w-8 text-green-500 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        <span class="text-lg font-medium">Updating record...</span>
-                                    </div>
-                                </div>
-                            `;
-                            document.body.appendChild(loadingOverlay);
-                        }
-                    });
+                    }
+                    
+                    // Calculate initial total
+                    calculateTotalTrees();
+                    
+                    // Add form submission handler
+                    const editForm = document.getElementById('editForm');
+                    if (editForm) {
+                        editForm.addEventListener('submit', function(e) {
+                            if (!prepareFormData()) {
+                                e.preventDefault();
+                                return false;
+                            }
+                        });
+                    }
                 });
             </script>
 
@@ -518,38 +534,45 @@
                                     <div class="flex space-x-2">
                                         <select id="species" name="species" class="form-select rounded-md shadow-sm mt-1 block w-full">
                                             <option value="">Select Species</option>
-                                            <option value="Molave">Molave</option>
-                                            <option value="Yemane">Yemane</option>
-                                            <option value="Mahogany">Mahogany</option>
-                                            <option value="Narra">Narra</option>
-                                            <option value="Minepoles">Minepoles</option>
-                                            <option value="Others">Others</option>
+                                            <option value="Molave" {% if species == 'Molave' %}selected{% endif %}>Molave</option>
+                                            <option value="Yemane" {% if species == 'Yemane' %}selected{% endif %}>Yemane</option>
+                                            <option value="Mahogany" {% if species == 'Mahogany' %}selected{% endif %}>Mahogany</option>
+                                            <option value="Narra" {% if species == 'Narra' %}selected{% endif %}>Narra</option>
+                                            <option value="Minepoles" {% if species == 'Minepoles' %}selected{% endif %}>Minepoles</option>
+                                            <option value="Others" {% if species == 'Others' %}selected{% endif %}>Others</option>
                                         </select>
                                         
                                         <input type="text" id="quantity" name="quantity" placeholder="Quantity" 
                                                class="form-input rounded-md shadow-sm mt-1 block w-1/3" />
                                         
                                         <button type="button" id="add-species-btn" class="mt-1 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                             </svg>
                                         </button>
                                     </div>
                                     
-                                    <!-- Other Species field (initially hidden) -->
-                                    <div id="other-species-container" class="mt-2" style="display: none;">
-                                        <input type="text" id="other_species" name="other_species" 
-                                               placeholder="Specify species name" 
-                                               class="form-input rounded-md shadow-sm block w-full" />
-                                    </div>
-                                    
                                     <!-- Species List Display -->
                                     <div id="species-list" class="mt-4 space-y-2">
-                                        <!-- Species items will be added here dynamically -->
+                                        {% for tree_species in cutting.tree_species.all %}
+                                        <div class="species-item flex justify-between items-center py-2 px-3 bg-gray-50 rounded mb-2"
+                                             data-species="{{ tree_species.species }}"
+                                             data-quantity="{{ tree_species.quantity }}">
+                                            <span>{{ tree_species.species }}</span>
+                                            <div class="flex items-center">
+                                                <span class="mr-3">{{ tree_species.quantity }} trees</span>
+                                                <button type="button" class="remove-species-item text-red-500 hover:text-red-700">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
                                     </div>
                                     
                                     <!-- Hidden input to store all species data -->
-                                    <input type="hidden" id="species_data" name="species_data" />
+                                    <input type="hidden" id="species_data" name="species_data" value="{{ species_data_json }}"/>
                                 </div>
                                 
                                 <!-- Number of Trees (calculated automatically) -->
@@ -774,78 +797,38 @@
                 const selectedSpecies = speciesSelect.value;
                 const quantity = quantityInput.value.trim();
                 
-                // Validate inputs
-                if (!selectedSpecies) {
-                    alert('Please select a species');
-                    return;
-                }
-                
-                if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
-                    alert('Please enter a valid quantity');
+                // Validate inputs silently without alerts
+                if (!selectedSpecies || !quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
                     return;
                 }
                 
                 // Get the species name (handle 'Others' case)
                 let speciesName = selectedSpecies;
                 if (selectedSpecies === 'Others') {
-                    const otherSpeciesName = otherSpeciesInput.value.trim();
-                    if (!otherSpeciesName) {
-                        alert('Please specify the species name');
+                    const otherSpeciesValue = otherSpeciesInput.value.trim();
+                    if (!otherSpeciesValue) {
                         return;
                     }
-                    speciesName = otherSpeciesName;
+                    speciesName = otherSpeciesValue;
                 }
                 
-                // Create a new species item
-                const speciesItem = {
+                // Add to the species data array
+                speciesData.push({
                     species: speciesName,
                     quantity: parseInt(quantity)
-                };
-                
-                // Add to the array
-                speciesData.push(speciesItem);
+                });
                 
                 // Update the hidden input
                 speciesDataInput.value = JSON.stringify(speciesData);
                 
-                // Add to the display
+                // Create a new item element
                 const itemElement = document.createElement('div');
-                itemElement.className = 'flex justify-between items-center p-2 bg-gray-50 rounded-md';
-                itemElement.innerHTML = `
-                    <span>${speciesName}</span>
-                    <div class="flex items-center">
-                        <span class="mr-2">${quantity} trees</span>
-                        <button type="button" class="text-red-500 hover:text-red-700 delete-btn">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </button>
-                    </div>
-                `;
+                itemElement.className = 'species-item flex justify-between items-center py-2 px-3 bg-gray-50 rounded mb-2';
+                itemElement.setAttribute('data-species', speciesName);
+                itemElement.setAttribute('data-quantity', quantity);
                 
-                // Add delete functionality
-                const deleteBtn = itemElement.querySelector('.delete-btn');
-                deleteBtn.addEventListener('click', function() {
-                    // Remove from array
-                    const index = speciesData.findIndex(i => 
-                        i.species === speciesName && i.quantity === parseInt(quantity)
-                    );
-                    if (index !== -1) {
-                        speciesData.splice(index, 1);
-                        speciesDataInput.value = JSON.stringify(speciesData);
-                    }
-                    
-                    // Remove from display
-                    speciesList.removeChild(itemElement);
-                });
-                
-                speciesList.appendChild(itemElement);
-                
-                // Reset inputs
-                speciesSelect.value = '';
-                quantityInput.value = '';
-                otherSpeciesInput.value = '';
-                otherSpeciesContainer.style.display = 'none';
+                // Rest of the code for creating the item element
+                // ...
             });
             
             // Initialize with existing data if available
@@ -892,6 +875,178 @@
                 }
             }
         });
+    </script>
+
+    <!-- Add this function to properly handle species data in the edit form -->
+    <script>
+        function prepareEditSpeciesData() {
+            const speciesData = [];
+            
+            // First, collect data from the species list (if using that UI pattern)
+            document.querySelectorAll('#species-list .species-item').forEach(item => {
+                const speciesName = item.getAttribute('data-species');
+                const quantity = parseInt(item.getAttribute('data-quantity'), 10);
+                
+                if (speciesName && !isNaN(quantity) && quantity > 0) {
+                    speciesData.push({
+                        species: speciesName,
+                        quantity: quantity
+                    });
+                }
+            });
+            
+            // Also collect data from any species entries in the form
+            document.querySelectorAll('select[name="species[]"]').forEach(select => {
+                if (!select.value) return;
+                
+                const parentDiv = select.closest('.w-full.relative');
+                if (!parentDiv) return;
+                
+                const quantityInput = parentDiv.parentElement.querySelector('input[name="species_quantity[]"]');
+                if (!quantityInput || !quantityInput.value) return;
+                
+                let speciesName = select.value;
+                const quantity = parseInt(quantityInput.value);
+                
+                // Handle "Others" case
+                if (speciesName === 'Others') {
+                    const otherInput = parentDiv.querySelector('input[name="other_species[]"]');
+                    if (otherInput && otherInput.value.trim()) {
+                        speciesName = otherInput.value.trim().toUpperCase();
+                    } else {
+                        return; // Skip if no other species specified
+                    }
+                }
+                
+                speciesData.push({
+                    species: speciesName,
+                    quantity: quantity
+                });
+            });
+            
+            return speciesData;
+        }
+
+        // Find the form submission handler in your edit_cutting.html and replace/modify it
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... existing code ...
+            
+            // Get the form element
+            const editForm = document.getElementById('editForm');
+            
+            if (editForm) {
+                editForm.addEventListener('submit', function(e) {
+                    // Clear any previously created hidden inputs
+                    document.querySelectorAll('input[name="species_data"]').forEach(el => el.remove());
+                    document.querySelectorAll('input[name="all_species_data"]').forEach(el => el.remove());
+                    document.querySelectorAll('input[name="species_name[]"]').forEach(el => el.remove());
+                    document.querySelectorAll('input[name="species_quantity_value[]"]').forEach(el => el.remove());
+                    
+                    // Get properly formatted species data
+                    const speciesData = prepareEditSpeciesData();
+                    let hasValidSpecies = speciesData.length > 0;
+                    
+                    if (hasValidSpecies) {
+                        // Create a hidden input with all species data as JSON
+                        const speciesDataInput = document.createElement('input');
+                        speciesDataInput.type = 'hidden';
+                        speciesDataInput.name = 'species_data';
+                        speciesDataInput.value = JSON.stringify(speciesData);
+                        editForm.appendChild(speciesDataInput);
+                        
+                        // Also create a hidden input with all species data as JSON under a different name
+                        const allSpeciesInput = document.createElement('input');
+                        allSpeciesInput.type = 'hidden';
+                        allSpeciesInput.name = 'all_species_data';
+                        allSpeciesInput.value = JSON.stringify(speciesData);
+                        editForm.appendChild(allSpeciesInput);
+                        
+                        // Create individual inputs for each species
+                        speciesData.forEach(item => {
+                            // Add individual fields for direct access
+                            const speciesNameInput = document.createElement('input');
+                            speciesNameInput.type = 'hidden';
+                            speciesNameInput.name = 'species_name[]';
+                            speciesNameInput.value = item.species;
+                            editForm.appendChild(speciesNameInput);
+                            
+                            const speciesQuantityInput = document.createElement('input');
+                            speciesQuantityInput.type = 'hidden';
+                            speciesQuantityInput.name = 'species_quantity_value[]';
+                            speciesQuantityInput.value = item.quantity;
+                            editForm.appendChild(speciesQuantityInput);
+                        });
+                        
+                        // Update the total trees field if it exists
+                        const totalTreesInput = document.querySelector('input[name="no_of_trees"]');
+                        if (totalTreesInput) {
+                            let totalTrees = 0;
+                            speciesData.forEach(item => {
+                                totalTrees += item.quantity;
+                            });
+                            totalTreesInput.value = totalTrees;
+                        }
+                    } else {
+                        e.preventDefault(); // Prevent form submission
+                        
+                        // Show error message
+                        alert('At least one tree species must be added with a valid quantity');
+                        
+                        // Highlight the species section if it exists
+                        const speciesContainer = document.getElementById('species-container');
+                        if (speciesContainer) {
+                            speciesContainer.scrollIntoView({ behavior: 'smooth' });
+                            speciesContainer.classList.add('border', 'border-red-500', 'p-2', 'rounded');
+                            
+                            // Remove highlight after a few seconds
+                            setTimeout(() => {
+                                speciesContainer.classList.remove('border', 'border-red-500', 'p-2', 'rounded');
+                            }, 5000);
+                        }
+                    }
+                });
+            }
+            
+            // ... rest of your existing code ...
+        });
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize existing species data
+        const speciesList = document.getElementById('species-list');
+        
+        {% for tree_species in cutting.tree_species.all %}
+        // Create species item for each existing record
+        const itemElement = document.createElement('div');
+        itemElement.className = 'species-item flex justify-between items-center py-2 px-3 bg-gray-50 rounded mb-2';
+        itemElement.setAttribute('data-species', '{{ tree_species.species }}');
+        itemElement.setAttribute('data-quantity', '{{ tree_species.quantity }}');
+        
+        itemElement.innerHTML = `
+            <span>{{ tree_species.species }}</span>
+            <div class="flex items-center">
+                <span class="mr-3">{{ tree_species.quantity }} trees</span>
+                <button type="button" class="remove-species-item text-red-500 hover:text-red-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+        
+        // Add remove functionality
+        itemElement.querySelector('.remove-species-item').addEventListener('click', function() {
+            itemElement.remove();
+            calculateTotalTrees();
+        });
+        
+        speciesList.appendChild(itemElement);
+        {% endfor %}
+        
+        // Calculate initial total
+        calculateTotalTrees();
+    });
     </script>
 </body>
 </html>
