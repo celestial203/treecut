@@ -1048,5 +1048,55 @@
         calculateTotalTrees();
     });
     </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add uppercase transformation to all text inputs and textareas
+        const textInputs = document.querySelectorAll('input[type="text"], textarea');
+        textInputs.forEach(input => {
+            // Skip date inputs, number inputs, and file inputs
+            if (!input.classList.contains('date-input') && 
+                !input.id.includes('date') && 
+                input.type !== 'number' &&
+                input.type !== 'file' &&
+                !input.readOnly) {
+                
+                // Add class for styling
+                input.classList.add('uppercase-input');
+                
+                // Convert to uppercase on input
+                input.addEventListener('input', function() {
+                    this.value = this.value.toUpperCase();
+                });
+                
+                // Also convert existing value to uppercase
+                if (input.value) {
+                    input.value = input.value.toUpperCase();
+                }
+            }
+        });
+
+        // Also apply to select inputs that allow custom input (like the other species field)
+        const otherSpeciesInputs = document.querySelectorAll('input[name="other_species[]"]');
+        otherSpeciesInputs.forEach(input => {
+            input.classList.add('uppercase-input');
+            input.addEventListener('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+        });
+
+        // Add CSS for uppercase inputs
+        const style = document.createElement('style');
+        style.textContent = `
+            .uppercase-input {
+                text-transform: uppercase;
+            }
+            .uppercase-input::placeholder {
+                text-transform: none;
+            }
+        `;
+        document.head.appendChild(style);
+    });
+    </script>
 </body>
 </html>
