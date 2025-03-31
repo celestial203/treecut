@@ -470,6 +470,7 @@
                                 <tr>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Permit Type</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Permit Number</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Expiry Date</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Permittee</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Representative</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider whitespace-nowrap">Location</th>
@@ -485,9 +486,24 @@
                                         data-date-issued="{{ cutting.date_issued|date:'Y-m-d' }}"
                                         data-expiry-date="{{ cutting.expiry_date|date:'Y-m-d' }}"
                                         ondblclick="handleRowDoubleClick(this, '{% url 'view_cutting' cutting.id %}')"
-                                        {% if cutting.remaining_balance <= 0.0 or cutting.remaining_balance == '0.00' %}style="background-color: #fee2e2;"{% endif %}>
-                                        <td class="px-6 py-3 text-xs font-bold whitespace-nowrap {% if cutting.remaining_balance <= 0.0 or cutting.remaining_balance == '0.00' %}text-red-700 bg-red-100{% endif %}">{{ cutting.permit_type }}</td>
-                                        <td class="px-6 py-3 text-xs font-bold whitespace-nowrap {% if cutting.remaining_balance <= 0.0 or cutting.remaining_balance == '0.00' %}text-red-700 bg-red-100{% endif %}">{{ cutting.permit_number }}</td>
+                                        {% if cutting.remaining_balance <= 0.0 or cutting.remaining_balance == '0.00' %}
+                                            style="background-color: #fee2e2;"
+                                        {% elif cutting.remaining_balance > 0 and cutting.remaining_balance < 1 %}
+                                            style="background-color: #ffedd5;"
+                                        {% endif %}>
+                                        <td class="px-6 py-3 text-xs font-bold whitespace-nowrap 
+                                            {% if cutting.remaining_balance <= 0.0 or cutting.remaining_balance == '0.00' %}
+                                                text-red-700 bg-red-100
+                                            {% elif cutting.remaining_balance > 0 and cutting.remaining_balance < 1 %}
+                                                text-orange-700 bg-orange-100
+                                            {% endif %}">{{ cutting.permit_type }}</td>
+                                        <td class="px-6 py-3 text-xs font-bold whitespace-nowrap 
+                                            {% if cutting.remaining_balance <= 0.0 or cutting.remaining_balance == '0.00' %}
+                                                text-red-700 bg-red-100
+                                            {% elif cutting.remaining_balance > 0 and cutting.remaining_balance < 1 %}
+                                                text-orange-700 bg-orange-100
+                                            {% endif %}">{{ cutting.permit_number }}</td>
+                                        <td class="px-6 py-3 text-xs whitespace-nowrap">{{ cutting.expiry_date|date:"F d, Y" }}</td>
                                         <td class="px-6 py-3 text-xs whitespace-nowrap">{{ cutting.permittee }}</td>
                                         <td class="px-6 py-3 text-xs whitespace-nowrap">{{ cutting.rep_by|default:"-" }}</td>
                                         <td class="px-6 py-3 text-xs whitespace-nowrap">{{ cutting.location|default:"-" }}</td>
@@ -974,6 +990,51 @@
                     }
                 } else if (existingNoResults) {
                     existingNoResults.remove();
+                }
+            });
+
+            // Add sorting function for expiry dates
+            function sortTableByExpiryDate() {
+                const tbody = document.querySelector('tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                
+                // Filter out the "no results" row if it exists
+                const dataRows = rows.filter(row => !row.id?.includes('noResultsRow'));
+                
+                // Sort rows by expiry date
+                dataRows.sort((a, b) => {
+                    const dateA = new Date(a.getAttribute('data-expiry-date'));
+                    const dateB = new Date(b.getAttribute('data-expiry-date'));
+                    
+                    // Check if dates are valid
+                    if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+                    
+                    // Sort by closest expiry date first
+                    return dateA - dateB;
+                });
+                
+                // Clear tbody and append sorted rows
+                tbody.innerHTML = '';
+                dataRows.forEach(row => tbody.appendChild(row));
+            }
+
+            // Call sorting function when page loads
+            sortTableByExpiryDate();
+            
+            // Add sorting when filter buttons are clicked
+            const filterButtons = [
+                'allRecordsBtn', 'activeRecordsBtn', 'expiredRecordsBtn', 
+                'pendingRecordsBtn', 'consumedRecordsBtn'
+            ];
+            
+            filterButtons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    const originalClick = btn.onclick;
+                    btn.onclick = function(e) {
+                        if (originalClick) originalClick.call(this, e);
+                        setTimeout(sortTableByExpiryDate, 0);
+                    };
                 }
             });
         });

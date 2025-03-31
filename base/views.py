@@ -930,8 +930,25 @@ def edit_cutting_record(request, record_id):
 
 @login_required
 def cutting_records(request):
-    # Get all cutting records with their related volume records
-    cuttings = Cutting.objects.prefetch_related('volume_records').all()
+    filter_type = request.GET.get('filter')
+    current_date = timezone.now().date()
+
+    # Base queryset with prefetch_related
+    base_queryset = Cutting.objects.prefetch_related('volume_records')
+
+    # Apply filters based on request
+    if filter_type == 'active_only':
+        cuttings = base_queryset.filter(
+            Q(permit_type__in=['TCP', 'PLTP', 'SPLTP'], expiry_date__gte=current_date) |
+            Q(permit_type='STCP', situation='Good')
+        )
+    elif filter_type == 'pending_volume':
+        cuttings = base_queryset.filter(
+            permit_type='STCP',
+            situation='Pending'
+        )
+    else:
+        cuttings = base_queryset.all()
     
     # Update remaining balance for each cutting based on latest volume record
     for cutting in cuttings:
@@ -1769,42 +1786,43 @@ def wood_dashboard(request):
 @login_required
 def wood_dash(request):
     current_date = timezone.now().date()
+    three_months_from_now = current_date + timedelta(days=90)
     
-    # Get QuerySets using WoodProcessingPlant model instead of Wood
-    all_plants = WoodProcessingPlant.objects.all()
+    # Get all records
+    all_records = Wood.objects.all()
     
-    # Active plants
-    active_plants = all_plants.filter(
-        status__in=['ACTIVE_NEW', 'ACTIVE_RENEWED'],
-        expiry_date__gt=current_date
-    )
+    # Active records (not expired)
+    active_count = all_records.filter(
+        expiry_date__gte=current_date,
+        wood_status__in=['ACTIVE (NEW)', 'ACTIVE (RENEWED)']
+    ).exclude(
+        wood_status__in=['EXPIRED', 'SUSPENDED', 'CANCELLED']
+    ).count()
     
-    # Expiring plants
-    expiring_plants = active_plants.filter(
-        expiry_date__lte=current_date + timedelta(days=90)
-    )
+    # Records to expire within 3 months (but still active)
+    expiring_soon_count = all_records.filter(
+        expiry_date__gt=current_date,
+        expiry_date__lte=three_months_from_now,
+        wood_status__in=['ACTIVE (NEW)', 'ACTIVE (RENEWED)']
+    ).exclude(
+        wood_status__in=['EXPIRED', 'SUSPENDED', 'CANCELLED']
+    ).count()
     
-    # Expired plants
-    expired_plants = all_plants.filter(
+    # Expired records
+    expired_count = all_records.filter(
         Q(expiry_date__lt=current_date) |
-        Q(status='EXPIRED')
-    )
+        Q(wood_status='EXPIRED')
+    ).count()
     
-    # Get counts
-    total_count = all_plants.count()
-    active_count = active_plants.count()
-    expiring_soon_count = expiring_plants.count()
-    expired_count = expired_plants.count()
+    # Total records count (all records regardless of status)
+    total_count = all_records.count()
     
-    # Debug print
-    print(f"""
-DEBUG COUNTS:
-Total Records: {total_count}
-Active Records: {active_count}
-Expiring Soon: {expiring_soon_count}
-Expired: {expired_count}
-Current Date: {current_date}
-    """)
+    # Debug prints
+    print(f"Debug - Current date: {current_date}")
+    print(f"Debug - Active count: {active_count}")
+    print(f"Debug - To Expire count: {expiring_soon_count}")
+    print(f"Debug - Expired count: {expired_count}")
+    print(f"Debug - Total count: {total_count}")
     
     context = {
         'total_count': total_count,

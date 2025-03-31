@@ -108,19 +108,23 @@
                     </div>
                 </a>
 
-                <a href="{% url 'cutting_records' %}?status=active" class="block">
+                <a href="{% url 'cutting_records' %}?filter=active_only" class="block">
                     <div class="bg-transparent border-2 border-green-600 rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-green-50">
                         <div class="text-4xl font-bold text-black">{{ active_cutting_count }}</div>
                         <div class="text-green-900">Active Cutting Permits</div>
-                        <div class="mt-2 text-sm text-black">Out of {{ cutting_count }} total permits</div>
+                        {% if active_cutting_count == 0 %}
+                            <div class="mt-2 text-sm text-black">No active permits</div>
+                        {% else %}
+                            <div class="mt-2 text-sm text-black">Out of {{ cutting_count }} total permits</div>
+                        {% endif %}
                     </div>
                 </a>
 
-                <a href="{% url 'cutting_records' %}?status=pending&no_volume=true" class="block">
+                <a href="{% url 'cutting_records' %}?filter=pending_volume" class="block">
                     <div class="bg-transparent border-2 border-green-600 rounded-lg shadow-xl p-6 transform hover:scale-105 transition duration-300 hover:shadow-2xl hover:bg-green-50">
                         <div class="text-4xl font-bold text-black">{{ pending_cutting_count }}</div>
                         <div class="text-green-900">Pending STCP</div>
-                        <div class="mt-2 text-sm text-black">Waiting for Volume</div>
+                        <div class="mt-2 text-sm text-black">No Volume Added</div>
                     </div>
                 </a>
 

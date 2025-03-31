@@ -192,7 +192,7 @@ class Cutting(models.Model):
     expiry_date = models.DateField()
     permittee = models.CharField(max_length=200)
     rep_by = models.CharField(max_length=200, blank=True, null=True)
-    location = models.CharField(max_length=200, null=True, blank=True)
+    location = models.TextField(null=True, blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     tct_oct_no = models.CharField(max_length=100, blank=True, null=True)

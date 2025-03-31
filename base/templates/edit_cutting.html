@@ -102,7 +102,6 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18"></path>
                         </svg>
                     </button>
-                    </button>
                 </div>
             </div>
         </div>
@@ -467,7 +466,12 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="text-sm text-gray-600">Location</label>
-                                {{ form.location|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
+                                <textarea name="location" 
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 resize-none overflow-hidden transition-height duration-200"
+                                    style="min-height: 80px; height: auto;"
+                                    oninput="this.style.height = '80px'; this.style.height = Math.max(80, this.scrollHeight + 2) + 'px';"
+                                    maxlength=""
+                                >{{ cutting.location }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -1012,38 +1016,60 @@
     </script>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
+
+document.addEventListener('DOMContentLoaded', function() {
         // Initialize existing species data
         const speciesList = document.getElementById('species-list');
-        
+        if (!speciesList) return; // Guard clause if element doesn't exist
+
+        // Function to calculate total trees
+        function calculateTotalTrees() {
+            const totalTreesInput = document.querySelector('input[name="no_of_trees"]');
+            if (!totalTreesInput) return;
+
+            let total = 0;
+            document.querySelectorAll('.species-item').forEach(item => {
+                const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
+                total += quantity;
+            });
+            totalTreesInput.value = total;
+        }
+
         {% for tree_species in cutting.tree_species.all %}
-        // Create species item for each existing record
-        const itemElement = document.createElement('div');
-        itemElement.className = 'species-item flex justify-between items-center py-2 px-3 bg-gray-50 rounded mb-2';
-        itemElement.setAttribute('data-species', '{{ tree_species.species }}');
-        itemElement.setAttribute('data-quantity', '{{ tree_species.quantity }}');
-        
-        itemElement.innerHTML = `
-            <span>{{ tree_species.species }}</span>
-            <div class="flex items-center">
-                <span class="mr-3">{{ tree_species.quantity }} trees</span>
-                <button type="button" class="remove-species-item text-red-500 hover:text-red-700">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-        `;
-        
-        // Add remove functionality
-        itemElement.querySelector('.remove-species-item').addEventListener('click', function() {
-            itemElement.remove();
-            calculateTotalTrees();
-        });
-        
-        speciesList.appendChild(itemElement);
+        (function() {
+            const speciesItem = document.createElement('div');
+            speciesItem.className = 'species-item flex justify-between items-center py-2 px-3 bg-gray-50 rounded mb-2';
+            speciesItem.setAttribute('data-species', '{{ tree_species.species }}');
+            speciesItem.setAttribute('data-quantity', '{{ tree_species.quantity }}');
+            
+            speciesItem.innerHTML = `
+                <span>{{ tree_species.species }}</span>
+                <div class="flex items-center">
+                    <span class="mr-3">{{ tree_species.quantity }} trees</span>
+                    <button type="button" class="remove-species-item text-red-500 hover:text-red-700">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            
+            speciesList.appendChild(speciesItem);
+        })();
         {% endfor %}
-        
+
+        // Add global event listener for remove buttons
+        document.addEventListener('click', function(e) {
+            const removeButton = e.target.closest('.remove-species-item');
+            if (removeButton) {
+                const itemToRemove = removeButton.closest('.species-item');
+                if (itemToRemove) {
+                    itemToRemove.remove();
+                    calculateTotalTrees();
+                }
+            }
+        });
+
         // Calculate initial total
         calculateTotalTrees();
     });
@@ -1053,49 +1079,37 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Add uppercase transformation to all text inputs and textareas
         const textInputs = document.querySelectorAll('input[type="text"], textarea');
-        textInputs.forEach(input => {
-            // Skip date inputs, number inputs, and file inputs
-            if (!input.classList.contains('date-input') && 
-                !input.id.includes('date') && 
-                input.type !== 'number' &&
-                input.type !== 'file' &&
-                !input.readOnly) {
-                
-                // Add class for styling
+        if (textInputs) {
+            textInputs.forEach(input => {
+                if (!input.classList.contains('date-input') && 
+                    !input.id.includes('date') && 
+                    input.type !== 'number' &&
+                    input.type !== 'file' &&
+                    !input.readOnly) {
+                    
+                    input.classList.add('uppercase-input');
+                    
+                    input.addEventListener('input', function() {
+                        this.value = this.value.toUpperCase();
+                    });
+                    
+                    if (input.value) {
+                        input.value = input.value.toUpperCase();
+                    }
+                }
+            });
+        }
+
+        // Handle other species inputs
+        const otherSpeciesInputs = document.querySelectorAll('input[name="other_species[]"]');
+        if (otherSpeciesInputs) {
+            otherSpeciesInputs.forEach(input => {
                 input.classList.add('uppercase-input');
-                
-                // Convert to uppercase on input
                 input.addEventListener('input', function() {
                     this.value = this.value.toUpperCase();
                 });
-                
-                // Also convert existing value to uppercase
-                if (input.value) {
-                    input.value = input.value.toUpperCase();
-                }
-            }
-        });
-
-        // Also apply to select inputs that allow custom input (like the other species field)
-        const otherSpeciesInputs = document.querySelectorAll('input[name="other_species[]"]');
-        otherSpeciesInputs.forEach(input => {
-            input.classList.add('uppercase-input');
-            input.addEventListener('input', function() {
-                this.value = this.value.toUpperCase();
             });
-        });
-
-        // Add CSS for uppercase inputs
-        const style = document.createElement('style');
-        style.textContent = `
-            .uppercase-input {
-                text-transform: uppercase;
-            }
-            .uppercase-input::placeholder {
-                text-transform: none;
-            }
-        `;
-        document.head.appendChild(style);
+        }
     });
     </script>
 </body>
