@@ -528,6 +528,36 @@
                         {% endif %}
                     </div>
 
+                    <!-- Add after the permittee information, before location -->
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.contact_number.id_for_label }}" class="text-gray-700">Contact Number</label>
+                        {{ form.contact_number|add_class:"form-input" }}
+                        {% if form.contact_number.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.contact_number.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.or_number.id_for_label }}" class="text-gray-700">OR Number</label>
+                        {{ form.or_number|add_class:"form-input" }}
+                        {% if form.or_number.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.or_number.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group transition-all duration-200 hover:shadow-sm">
+                        <label for="{{ form.payment_date.id_for_label }}" class="text-gray-700">Payment Date</label>
+                        <input type="date" 
+                               name="payment_date"
+                               id="payment_date_field"
+                               class="form-input w-full"
+                               value="{{ payment_date|default:'' }}"
+                        >
+                        {% if form.payment_date.errors %}
+                            <div class="text-red-600 text-sm mt-1">{{ form.payment_date.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
                     <!-- Representative moved here -->
                     <div class="form-group transition-all duration-200 hover:shadow-sm">
                         <label for="{{ form.rep_by.id_for_label }}" class="text-gray-700">Representative</label>
@@ -539,7 +569,7 @@
                     
                     <div class="form-group transition-all duration-200 hover:shadow-sm col-span-2">
                         <label for="{{ form.location.id_for_label }}" class="text-gray-700">Location</label>
-                        {{ form.location|add_class:"form-input" }}
+                        {{ form.location|add_class:"form-input h-20 resize-y" }}
                         {% if form.location.errors %}
                             <div class="text-red-600 text-sm mt-1">{{ form.location.errors.0 }}</div>
                         {% endif %}
@@ -721,12 +751,18 @@
                     </div>
 
                     <!-- File Upload -->
-                    <div class="form-group transition-all duration-200 hover:shadow-sm">
-                        <label for="{{ form.permit_file.id_for_label }}" class="text-gray-700">Attach File</label>
-                        {{ form.permit_file|add_class:"form-input" }}
-                        {% if form.permit_file.errors %}
-                            <div class="text-red-600 text-sm mt-1">{{ form.permit_file.errors.0 }}</div>
-                        {% endif %}
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-gray-700">Attach File *</label>
+                        <input type="file" 
+                               name="permit_file" 
+                               id="permit_file"
+                               class="mt-1 block w-full text-sm text-gray-500
+                                      file:mr-4 file:py-2 file:px-4
+                                      file:rounded-md file:border-0
+                                      file:text-sm file:font-semibold
+                                      file:bg-blue-50 file:text-blue-700
+                                      hover:file:bg-blue-100"
+                               required>
                     </div>
 
                     <!-- Add this somewhere in your form, before the submit button -->

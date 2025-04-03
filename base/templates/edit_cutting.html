@@ -457,6 +457,27 @@
                                 <label class="text-sm text-gray-600">Representative</label>
                                 {{ form.rep_by|add_class:"mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" }}
                             </div>
+                            <div>
+                                <label class="text-sm text-gray-600">Contact Number</label>
+                                <input type="text" 
+                                       name="contact_number" 
+                                       value="{{ cutting.contact_number|default:'' }}" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-600">OR Number</label>
+                                <input type="text" 
+                                       name="or_number" 
+                                       value="{{ cutting.or_number|default:'' }}" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="text-sm text-gray-600">Payment Date</label>
+                                <input type="date" 
+                                       name="payment_date" 
+                                       value="{{ cutting.payment_date|date:'Y-m-d'|default:'' }}" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            </div>
                         </div>
                     </div>
 

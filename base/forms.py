@@ -138,6 +138,9 @@ class CuttingForm(forms.ModelForm):
             'expiry_date',
             'permittee',
             'rep_by',
+            'contact_number',
+            'or_number',
+            'payment_date',
             'location',
             'latitude',
             'longitude',
@@ -153,7 +156,7 @@ class CuttingForm(forms.ModelForm):
             'net_volume',
             'status',
             'situation',
-            # Remove 'file' if it doesn't exist in your model
+            'permit_file'
         ]
         widgets = {
             'date_issued': forms.DateInput(attrs={
@@ -197,6 +200,22 @@ class CuttingForm(forms.ModelForm):
                 'readonly': True
             }),
             'status': forms.Select(attrs={'class': 'form-select', 'required': False}),
+            'contact_number': forms.TextInput(attrs={
+                'class': 'form-input',
+                'pattern': '^09\\d{9}$',
+                'title': 'Phone number must start with 09 and be 11 digits long'
+            }),
+            'or_number': forms.TextInput(attrs={
+                'class': 'form-input'
+            }),
+            'payment_date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-input'
+            }),
+            'permit_file': forms.FileInput(attrs={
+                'class': 'form-input',
+                'accept': '.pdf,.doc,.docx,.jpg,.jpeg,.png'
+            })
         }
 
     def __init__(self, *args, **kwargs):
@@ -278,6 +297,17 @@ class CuttingForm(forms.ModelForm):
                 # Don't raise the error - the main record is saved
         
         return instance
+
+    def clean_contact_number(self):
+        contact_number = self.cleaned_data.get('contact_number')
+        if contact_number:
+            if not contact_number.startswith('09'):
+                raise forms.ValidationError("Contact number must start with '09'")
+            if len(contact_number) != 11:
+                raise forms.ValidationError("Contact number must be 11 digits long")
+            if not contact_number.isdigit():
+                raise forms.ValidationError("Contact number must contain only digits")
+        return contact_number
 
 # ChainsawForm
 class ChainsawForm(forms.ModelForm):

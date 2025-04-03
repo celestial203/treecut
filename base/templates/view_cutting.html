@@ -164,18 +164,19 @@
                         <div>
                             <p class="text-sm text-gray-600">Status</p>
                             <span class="px-2 py-1 text-sm rounded-full 
-                                {% if cutting.status == 'EXPIRED' %}
-                                    bg-red-100 text-red-800
+                                {% if cutting.status|upper == 'EXPIRED' or cutting.status|lower == 'expired' %}
+                                    bg-red-100 text-red-800 border border-red-500
                                 {% elif cutting.status == 'CONSUMED' %}
                                     bg-yellow-100 text-yellow-800
-                                {% elif cutting.status == 'PENDING' %}
+                                {% elif cutting.status == 'PENDING' and cutting.permit_type == 'STCP' %}
                                     bg-blue-100 text-blue-800
                                 {% else %}
-                                    bg-green-100 text-green-800
+                                    bg-green-100 text-green-700
                                 {% endif %}">
                                 {{ cutting.status }}
                             </span>
                         </div>
+                        {% if cutting.permit_type == 'STCP' %}
                         <div>
                             <p class="text-sm text-gray-600">Situation</p>
                             <span class="px-2 py-1 text-sm rounded-full 
@@ -187,13 +188,14 @@
                                 {{ cutting.situation|default:"Not Specified" }}
                             </span>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
 
                 <!-- Permittee Information -->
                 <div class="info-section">
                     <h3 class="section-title">Permittee Information</h3>
-                    <div class="space-y-3">
+                    <div class="space-y-4">
                         <div>
                             <p class="text-sm text-gray-600">Permittee Name</p>
                             <p class="font-medium">{{ cutting.permittee }}</p>
@@ -201,6 +203,18 @@
                         <div>
                             <p class="text-sm text-gray-600">Representative</p>
                             <p class="font-medium">{{ cutting.rep_by|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Contact Number</p>
+                            <p class="font-medium">{{ cutting.contact_number|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">OR Number</p>
+                            <p class="font-medium">{{ cutting.or_number|default:"-" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600">Payment Date</p>
+                            <p class="font-medium">{{ cutting.payment_date|date:"M d, Y"|default:"-" }}</p>
                         </div>
                     </div>
                 </div>
@@ -304,17 +318,21 @@
                     <h3 class="section-title">Permit Document</h3>
                     <div class="space-y-3">
                         {% if cutting.permit_file %}
-                            <a href="{{ cutting.permit_file.url }}" 
-                               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                </svg>
-                                View Permit Document
-                            </a>
-                            <img src="{{ cutting.permit_file.url }}" 
-                                 alt="Permit Document" 
-                                 class="hidden print:block max-w-full h-auto mx-auto"
-                                 style="page-break-inside: avoid;">
+                            <div class="flex flex-col items-start gap-3">
+                                <a href="{{ cutting.permit_file.url }}" 
+                                   class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    View Permit Document
+                                </a>
+                                <a href="{{ cutting.permit_file.url }}" target="_blank">
+                                    <img src="{{ cutting.permit_file.url }}" 
+                                         alt="Permit Document" 
+                                         class="w-48 h-auto object-cover rounded-lg shadow-md hover:opacity-90 transition-opacity"
+                                         style="page-break-inside: avoid;">
+                                </a>
+                            </div>
                         {% else %}
                             <p class="text-sm text-gray-500">No permit document available</p>
                         {% endif %}
