@@ -637,65 +637,78 @@
                         {% endif %}
                     </div>
 
-                    <!-- Replace your existing species and number of trees fields with this -->
+                    <!-- Tree Information Section with swapped order -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Number of Trees field -->
-                        <div>
-                            <label class="text-sm text-gray-600 required">Number of Trees</label>
-                            <input type="number" 
-                                   name="no_of_trees" 
-                                   id="no_of_trees" 
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                                   readonly>
+                        <!-- Tree Information Header -->
+                        <div class="col-span-2">
+                            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">TREE Information</h3>
                         </div>
 
-                        <!-- Species field -->
-                        <div>
-                            <label class="text-sm text-gray-600 required">Species</label>
-                            <div id="species-container">
-                                <div class="space-y-2">
-                                    <div class="flex items-center gap-2">
+                        <!-- Species section with modified buttons -->
+                        <div class="col-span-2 mt-4">
+                            <label class="text-sm font-medium text-gray-700 block mb-2">Species</label>
+                            <div id="species-container" class="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-4">
                                         <div class="w-full relative">
-                                            <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required onchange="toggleOtherSpecies(this)">
-                                                <option value="">Select Species</option>
-                                                <option value="Molave">Molave</option>
-                                                <option value="Yemane">Yemane</option>
-                                                <option value="Mahogany">Mahogany</option>
-                                                <option value="Narra">Narra</option>
-                                                <option value="Minepoles">Minepoles</option>
-                                                <option value="Others">Others</option>
-                                            </select>
-                                            <div class="other-species-fields" style="display: none;">
-                                                <input type="text" 
-                                                       name="other_species[]" 
-                                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                                                       placeholder="Please specify species">
+                                            <div class="grid grid-cols-12 gap-4">
+                                                <div class="col-span-5">
+                                                    <select name="species[]" class="species-select w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg py-3" required onchange="toggleOtherSpecies(this)">
+                                                        <option value="">Select Species</option>
+                                                        <option value="Molave">Molave</option>
+                                                        <option value="Yemane">Yemane</option>
+                                                        <option value="Mahogany">Mahogany</option>
+                                                        <option value="Narra">Narra</option>
+                                                        <option value="Minepoles">Minepoles</option>
+                                                        <option value="Others">Others</option>
+                                                    </select>
+                                                    <div class="other-species-fields mt-2" style="display: none;">
+                                                        <input type="text" 
+                                                               name="other_species[]" 
+                                                               list="previous-species"
+                                                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg py-3" 
+                                                               placeholder="Please specify species">
+                                                        <datalist id="previous-species">
+                                                        </datalist>
+                                                    </div>
+                                                </div>
+                                                <div class="col-span-3">
+                                                    <input type="number" name="species_quantity[]" class="quantity-input w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Quantity" required min="1" oninput="calculateTotals()">
+                                                </div>
+                                                <div class="col-span-3">
+                                                    <input type="number" name="species_volume[]" class="volume-input w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Volume" required min="0.01" step="0.01" oninput="calculateTotals()">
+                                                </div>
+                                                <div class="col-span-1">
+                                                    <button type="button" class="add-species-btn bg-green-500 text-white p-2 rounded-md hover:bg-green-600">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                                        </svg>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="w-32">
-                                            <input type="number" 
-                                                   name="species_quantity[]" 
-                                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                                                   placeholder="Quantity"
-                                                   min="1"
-                                                   required
-                                                   oninput="calculateTotalTrees()">
-                                        </div>
-                                        <button type="button" class="add-species-btn px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                            </svg>
-                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Total Trees and Volume Display -->
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Total Trees</label>
+                                <input type="number" id="no_of_trees" name="no_of_trees" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" readonly>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-700">Total Volume</label>
+                                <input type="number" id="total_volume" name="total_volume" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" readonly step="0.01">
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Volume Information -->
-                    <div class="space-y-4">
+                    <!-- Volume Information section remains unchanged -->
+                    <div class="col-span-2">
                         <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Volume Information</h3>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-3 gap-4 mt-4">
                             <div>
                                 <label class="text-sm text-gray-600">Total Volume Granted</label>
                                 <input type="number" 
@@ -871,12 +884,11 @@
             
             // Calculate total trees
             window.calculateTotalTrees = function() {
-                var quantities = document.querySelectorAll('input[name="species_quantity[]"]');
-                var total = 0;
+                const quantities = document.querySelectorAll('input[name="species_quantity[]"]');
+                let total = 0;
                 
                 quantities.forEach(function(input) {
-                    var value = parseInt(input.value) || 0;
-                    total += value;
+                    total += parseInt(input.value) || 0;
                 });
                 
                 if (numberOfTreesInput) {
@@ -889,7 +901,7 @@
                 toggleOtherSpecies(select);
             });
             
-            // Add species button - check if it exists before adding event listener
+            // Modified add species button click handler
             const addSpeciesBtn = document.querySelector('.add-species-btn');
             if (addSpeciesBtn) {
                 addSpeciesBtn.addEventListener('click', function() {
@@ -897,45 +909,59 @@
                     if (!container) return;
                     
                     const newRow = document.createElement('div');
-                    newRow.className = 'flex items-center gap-2 mt-2';
+                    newRow.className = 'flex items-center gap-4 mt-2';
                     newRow.innerHTML = `
                         <div class="w-full relative">
-                            <select name="species[]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required onchange="toggleOtherSpecies(this)">
-                                <option value="">Select Species</option>
-                                <option value="Molave">Molave</option>
-                                <option value="Yemane">Yemane</option>
-                                <option value="Mahogany">Mahogany</option>
-                                <option value="Narra">Narra</option>
-                                <option value="Minepoles">Minepoles</option>
-                                <option value="Others">Others</option>
-                            </select>
-                            <div class="other-species-fields" style="display: none;">
-                                <input type="text" 
-                                       name="other_species[]" 
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                                       placeholder="Please specify species">
+                            <div class="grid grid-cols-12 gap-4">
+                                <div class="col-span-5">
+                                    <select name="species[]" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg py-3" required onchange="toggleOtherSpecies(this)">
+                                        <option value="">Select Species</option>
+                                        <option value="Molave">Molave</option>
+                                        <option value="Yemane">Yemane</option>
+                                        <option value="Mahogany">Mahogany</option>
+                                        <option value="Narra">Narra</option>
+                                        <option value="Minepoles">Minepoles</option>
+                                        <option value="Others">Others</option>
+                                    </select>
+                                    <div class="other-species-fields mt-2" style="display: none;">
+                                        <input type="text" 
+                                               name="other_species[]" 
+                                               list="previous-species"
+                                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg py-3" 
+                                               placeholder="Please specify species">
+                                    </div>
+                                </div>
+                                <div class="col-span-3">
+                                    <input type="number" 
+                                           name="species_quantity[]" 
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg py-3" 
+                                           placeholder="Quantity" 
+                                           required
+                                           oninput="calculateTotalTrees()">
+                                </div>
+                                <div class="col-span-3">
+                                    <input type="number" 
+                                           name="species_volume[]" 
+                                           step="0.01"
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg py-3" 
+                                           placeholder="Volume" 
+                                           required>
+                                </div>
+                                <div class="col-span-1 flex items-center justify-center">
+                                    <button type="button" class="remove-species-btn p-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div class="w-32">
-                            <input type="number" 
-                                   name="species_quantity[]" 
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
-                                   placeholder="Quantity"
-                                   min="1"
-                                   required
-                                   oninput="calculateTotalTrees()">
-                        </div>
-                        <button type="button" class="remove-species-btn px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
                     `;
                     
-                    container.appendChild(newRow);
+                    container.querySelector('.space-y-3').appendChild(newRow);
                     
                     // Add event listener to the remove button
-                    var removeBtn = newRow.querySelector('.remove-species-btn');
+                    const removeBtn = newRow.querySelector('.remove-species-btn');
                     if (removeBtn) {
                         removeBtn.addEventListener('click', function() {
                             newRow.remove();
@@ -1036,37 +1062,53 @@
                 const speciesSelects = document.querySelectorAll('select[name="species[]"]');
                 const speciesData = [];
                 
+                // Create a Set to store unique custom species
+                const customSpecies = new Set();
+                
                 for (let i = 0; i < speciesSelects.length; i++) {
                     const select = speciesSelects[i];
-                    if (!select.value) continue;
-                    
                     const parentDiv = select.closest('.w-full.relative');
-                    const quantityInput = parentDiv.parentElement.querySelector('input[name="species_quantity[]"]');
-                    if (!quantityInput || !quantityInput.value) continue;
+                    if (!parentDiv) continue;
+                    
+                    const quantityInput = parentDiv.querySelector('input[name="species_quantity[]"]');
+                    const volumeInput = parentDiv.querySelector('input[name="species_volume[]"]');
+                    
+                    if (!quantityInput || !quantityInput.value || !volumeInput || !volumeInput.value) continue;
                     
                     let speciesName = select.value;
                     const quantity = parseInt(quantityInput.value);
+                    const volume = parseFloat(volumeInput.value);
                     
                     // Handle "Others" case
                     if (speciesName === 'Others') {
                         const otherInput = parentDiv.querySelector('input[name="other_species[]"]');
                         if (otherInput && otherInput.value.trim()) {
                             speciesName = otherInput.value.trim().toUpperCase();
+                            customSpecies.add(speciesName);
                         } else {
-                            continue; // Skip if no other species specified
+                            continue;
                         }
                     }
                     
                     speciesData.push({
                         species: speciesName,
-                        quantity: quantity
+                        quantity: quantity,
+                        volume: volume
                     });
                 }
+                
+                // Update datalists with custom species
+                const datalists = document.querySelectorAll('#previous-species');
+                datalists.forEach(datalist => {
+                    datalist.innerHTML = Array.from(customSpecies)
+                        .map(species => `<option value="${species}">`)
+                        .join('');
+                });
                 
                 return speciesData;
             }
             
-            // Modify the form submit handler around line 1000
+            // Modify the form submit handler
             if (form) {
                 form.addEventListener('submit', function(e) {
                     updateStatus(); // Make sure status is updated before submission
@@ -1082,24 +1124,14 @@
                     const speciesData = prepareSpeciesData();
                     let hasValidSpecies = speciesData.length > 0;
                     
-                    // Create a single hidden input with all species data as JSON
                     if (hasValidSpecies) {
-                        const allSpeciesInput = document.createElement('input');
-                        allSpeciesInput.type = 'hidden';
-                        allSpeciesInput.name = 'all_species_data';
-                        allSpeciesInput.value = JSON.stringify(speciesData);
-                        form.appendChild(allSpeciesInput);
+                        const speciesDataInput = document.createElement('input');
+                        speciesDataInput.type = 'hidden';
+                        speciesDataInput.name = 'species_data';
+                        speciesDataInput.value = JSON.stringify(speciesData);
+                        form.appendChild(speciesDataInput);
                         
-                        // Also create individual inputs for each species
                         speciesData.forEach(item => {
-                            // Create hidden input for the species data
-                            const speciesInput = document.createElement('input');
-                            speciesInput.type = 'hidden';
-                            speciesInput.name = 'species_data';
-                            speciesInput.value = JSON.stringify(item);
-                            form.appendChild(speciesInput);
-                            
-                            // Add individual fields for direct access
                             const speciesNameInput = document.createElement('input');
                             speciesNameInput.type = 'hidden';
                             speciesNameInput.name = 'species_name[]';
@@ -1112,25 +1144,11 @@
                             speciesQuantityInput.value = item.quantity;
                             form.appendChild(speciesQuantityInput);
                             
-                            // Special handling for "Others" species
-                            if (item.species !== "Molave" && 
-                                item.species !== "Yemane" && 
-                                item.species !== "Mahogany" && 
-                                item.species !== "Narra" && 
-                                item.species !== "Minepoles") {
-                                
-                                const specificSpeciesInput = document.createElement('input');
-                                specificSpeciesInput.type = 'hidden';
-                                specificSpeciesInput.name = 'specific_species';
-                                specificSpeciesInput.value = item.species;
-                                form.appendChild(specificSpeciesInput);
-                                
-                                const specificQuantityInput = document.createElement('input');
-                                specificQuantityInput.type = 'hidden';
-                                specificQuantityInput.name = 'specific_quantity';
-                                specificQuantityInput.value = item.quantity;
-                                form.appendChild(specificQuantityInput);
-                            }
+                            const speciesVolumeInput = document.createElement('input');
+                            speciesVolumeInput.type = 'hidden';
+                            speciesVolumeInput.name = 'species_volume_value[]';
+                            speciesVolumeInput.value = item.volume;
+                            form.appendChild(speciesVolumeInput);
                         });
                     }
                     
@@ -1326,6 +1344,52 @@
         
         document.getElementById('expiry_date').value = month + '/' + day + '/' + year;
     }
+    </script>
+
+    <script>
+    function calculateTotals() {
+        const quantities = document.querySelectorAll('input[name="species_quantity[]"]');
+        const volumes = document.querySelectorAll('input[name="species_volume[]"]');
+        let totalTrees = 0;
+        let totalVolume = 0;
+        
+        quantities.forEach(function(input) {
+            totalTrees += parseInt(input.value) || 0;
+        });
+        
+        volumes.forEach(function(input) {
+            totalVolume += parseFloat(input.value) || 0;
+        });
+        
+        document.getElementById('no_of_trees').value = totalTrees;
+        document.getElementById('total_volume').value = totalVolume.toFixed(2);
+    }
+
+    // Add event listener to the container for dynamic inputs
+    document.addEventListener('DOMContentLoaded', function() {
+        const speciesContainer = document.getElementById('species-container');
+        if (speciesContainer) {
+            speciesContainer.addEventListener('input', function(e) {
+                if (e.target.matches('input[name="species_quantity[]"]') || 
+                    e.target.matches('input[name="species_volume[]"]')) {
+                    calculateTotals();
+                }
+            });
+        }
+
+        // Also add event listener when adding new rows
+        const addSpeciesBtn = document.querySelector('.add-species-btn');
+        if (addSpeciesBtn) {
+            addSpeciesBtn.addEventListener('click', function() {
+                // ... existing add button code ...
+                
+                // Add input event listeners to the new inputs
+                setTimeout(function() {
+                    calculateTotals();
+                }, 100);
+            });
+        }
+    });
     </script>
 </body>
 </html>

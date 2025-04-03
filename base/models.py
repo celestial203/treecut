@@ -651,7 +651,14 @@ class WoodProcessingPlant(models.Model):
 class TreeSpecies(models.Model):
     cutting = models.ForeignKey(Cutting, on_delete=models.CASCADE, related_name='tree_species')
     species = models.CharField(max_length=100)
-    quantity = models.IntegerField(default=0)
+    quantity = models.IntegerField()
+    volume = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        null=True,  # Allow null values initially
+        blank=True,  # Allow blank in forms
+        default=0.00  # Default value for existing records
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -660,4 +667,4 @@ class TreeSpecies(models.Model):
         ordering = ['species']
 
     def __str__(self):
-        return f"{self.species} ({self.quantity})"
+        return f"{self.species} ({self.quantity} trees, {self.volume} cu.m)"
