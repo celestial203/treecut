@@ -641,7 +641,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Tree Information Header -->
                         <div class="col-span-2">
-                            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">TREE Information</h3>
+                            <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Tree Information</h3>
                         </div>
 
                         <!-- Species section with modified buttons -->
@@ -901,7 +901,7 @@
                 toggleOtherSpecies(select);
             });
             
-            // Modified add species button click handler
+            // Modify the add species button click handler
             const addSpeciesBtn = document.querySelector('.add-species-btn');
             if (addSpeciesBtn) {
                 addSpeciesBtn.addEventListener('click', function() {
@@ -948,7 +948,7 @@
                                            required>
                                 </div>
                                 <div class="col-span-1 flex items-center justify-center">
-                                    <button type="button" class="remove-species-btn p-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors">
+                                    <button type="button" class="remove-species-btn p-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors" onclick="removeSpeciesRow(this)">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                         </svg>
@@ -1217,6 +1217,43 @@
                 const addSpeciesBtn = document.querySelector('.add-species-btn');
                 if (addSpeciesBtn) {
                     addSpeciesBtn.click();
+                }
+            }
+
+            // When deleting a species, update both total trees and volume
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.delete-btn') || e.target.closest('.remove-species-item')) {
+                    const item = e.target.closest('[data-quantity]');
+                    if (item) {
+                        const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
+                        const volume = parseFloat(item.getAttribute('data-volume')) || 0;
+                        
+                        // Update total trees
+                        const totalTreesInput = document.getElementById('no_of_trees');
+                        if (totalTreesInput) {
+                            const currentTotal = parseInt(totalTreesInput.value) || 0;
+                            totalTreesInput.value = currentTotal - quantity;
+                        }
+                        
+                        // Update total volume
+                        const totalVolumeInput = document.getElementById('total_volume');
+                        if (totalVolumeInput) {
+                            const currentVolume = parseFloat(totalVolumeInput.value) || 0;
+                            totalVolumeInput.value = (currentVolume - volume).toFixed(2);
+                        }
+                        
+                        // Remove the item
+                        item.remove();
+                    }
+                }
+            });
+
+            // Add this new function to handle row removal and recalculation
+            function removeSpeciesRow(button) {
+                const row = button.closest('.flex.items-center.gap-4');
+                if (row) {
+                    row.remove();
+                    calculateTotals(); // Recalculate totals after removing the row
                 }
             }
         });

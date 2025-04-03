@@ -199,15 +199,18 @@
                 function addSpeciesToList() {
                     const speciesSelect = document.getElementById('species');
                     const quantityInput = document.getElementById('quantity');
+                    const volumeInput = document.getElementById('volume');
                     const otherSpeciesInput = document.getElementById('other_species');
                     const speciesList = document.getElementById('species-list');
                     
                     // Get values
                     const selectedSpecies = speciesSelect.value;
                     const quantity = parseInt(quantityInput.value.trim(), 10);
+                    const volume = parseFloat(volumeInput.value.trim()) || 0;
                     
                     // Basic validation
-                    if (!selectedSpecies || isNaN(quantity) || quantity <= 0) {
+                    if (!selectedSpecies || isNaN(quantity) || quantity <= 0 || !volume) {
+                        // Replace alert with custom validation message or silent return
                         return;
                     }
                     
@@ -226,11 +229,13 @@
                     itemElement.className = 'species-item flex justify-between items-center py-2 px-3 bg-gray-50 rounded mb-2';
                     itemElement.setAttribute('data-species', speciesName);
                     itemElement.setAttribute('data-quantity', quantity);
+                    itemElement.setAttribute('data-volume', volume);
                     
                     itemElement.innerHTML = `
                         <span>${speciesName}</span>
                         <div class="flex items-center">
                             <span class="mr-3">${quantity} trees</span>
+                            <span class="mr-3">${volume} cu.m</span>
                             <button type="button" class="remove-species-item text-red-500 hover:text-red-700">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -313,62 +318,72 @@
                 
                 // Add event listeners when the DOM is loaded
                 document.addEventListener('DOMContentLoaded', function() {
-                    // Add event listener to the add species button
-                    const addSpeciesBtn = document.getElementById('add-species-btn');
-                    if (addSpeciesBtn) {
-                        addSpeciesBtn.addEventListener('click', addSpeciesToList);
-                    }
-                    
-                    // Add event listener to the species select for showing/hiding the other species field
-                    const speciesSelect = document.getElementById('species');
-                    const otherSpeciesContainer = document.getElementById('other-species-container');
-                    
-                    if (speciesSelect && otherSpeciesContainer) {
-                        speciesSelect.addEventListener('change', function() {
-                            if (this.value === 'Others') {
-                                otherSpeciesContainer.style.display = 'block';
-                            } else {
-                                otherSpeciesContainer.style.display = 'none';
+                    // Add event delegation for delete buttons
+                    document.addEventListener('click', function(e) {
+                        const deleteBtn = e.target.closest('.delete-btn');
+                        if (deleteBtn) {
+                            const speciesItem = deleteBtn.closest('.species-item');
+                            if (speciesItem) {
+                                speciesItem.remove();
+                                calculateTotals();
                             }
-                        });
-                    }
-                    
-                    // Initialize other species fields
-                    document.querySelectorAll('select[name="species[]"]').forEach(select => {
-                        toggleOtherSpecies(select);
-                        
-                        // Add change event listener
-                        select.addEventListener('change', function() {
-                            toggleOtherSpecies(this);
-                        });
+                        }
                     });
-                    
-                    // Add event listener to quantity input for real-time calculation
-                    const quantityInput = document.getElementById('quantity');
-                    if (quantityInput) {
-                        quantityInput.addEventListener('input', function() {
-                            const currentValue = parseInt(this.value) || 0;
-                            const totalTreesInput = document.getElementById('no_of_trees');
-                            if (totalTreesInput) {
-                                let existingTotal = 0;
-                                document.querySelectorAll('.species-item').forEach(item => {
-                                    existingTotal += parseInt(item.getAttribute('data-quantity')) || 0;
+
+                    // Add species to the list
+                    const addButton = document.getElementById('add-species-btn');
+                    if (addButton) {
+                        addButton.addEventListener('click', function() {
+                            const speciesSelect = document.getElementById('species');
+                            const volumeInput = document.getElementById('volume');
+                            const quantityInput = document.getElementById('quantity');
+                            const otherSpeciesInput = document.getElementById('other_species');
+                            
+                            // Validation check
+                            if (!speciesSelect.value || !quantityInput.value || !volumeInput.value) {
+                                Swal.fire({
+                                    title: 'Validation Error',
+                                    text: 'Please fill in all fields (Species, Quantity, and Volume)',
+                                    icon: 'warning',
+                                    confirmButtonColor: '#10B981',
+                                    confirmButtonText: 'OK'
                                 });
-                                totalTreesInput.value = existingTotal;
+                                return;
                             }
-                        });
-                    }
-                    
-                    // Calculate initial total
-                    calculateTotalTrees();
-                    
-                    // Add form submission handler
-                    const editForm = document.getElementById('editForm');
-                    if (editForm) {
-                        editForm.addEventListener('submit', function(e) {
-                            if (!prepareFormData()) {
-                                e.preventDefault();
-                                return false;
+                            
+                            let speciesName = speciesSelect.value;
+                            const quantity = parseInt(quantityInput.value) || 0;
+                            const volume = parseFloat(volumeInput.value) || 0;
+                            
+                            // Create new species item
+                            const itemElement = document.createElement('div');
+                            itemElement.className = 'species-item flex justify-between items-center p-2 bg-gray-50 rounded-md';
+                            itemElement.setAttribute('data-quantity', quantity);
+                            itemElement.setAttribute('data-volume', volume);
+                            
+                            itemElement.innerHTML = `
+                                <span>${speciesName}</span>
+                                <div class="flex items-center">
+                                    <span class="mr-4">${quantity} trees</span>
+                                    <span class="mr-4">${volume} cu.m</span>
+                                    <button type="button" class="text-red-500 hover:text-red-700 delete-btn">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            `;
+                            
+                            const speciesList = document.getElementById('species-list');
+                            if (speciesList) {
+                                speciesList.appendChild(itemElement);
+                                calculateTotals();
+                                
+                                // Clear inputs
+                                quantityInput.value = '';
+                                volumeInput.value = '';
+                                if (otherSpeciesInput) otherSpeciesInput.value = '';
+                                speciesSelect.value = '';
                             }
                         });
                     }
@@ -543,70 +558,76 @@
                         </div>
                     </div>
 
-                    <!-- Tree Information -->
-                    <div class="space-y-4">
+                    <!-- Tree Information Section -->
+                    <div class="space-y-4 col-span-3">
                         <h3 class="text-lg font-semibold text-gray-800 border-b pb-2">Tree Information</h3>
                         
-                        <!-- Species Information Section -->
+                        <!-- Species Selection - Now Full Width -->
                         <div class="mb-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Species Information</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <!-- Species Selection -->
-                                <div>
-                                    <label for="species" class="block text-sm font-medium text-gray-700 {% if form.species.field.required %}required{% endif %}">
-                                        Species {% if form.species.field.required %}*{% endif %}
-                                    </label>
-                                    <div class="flex space-x-2">
-                                        <select id="species" name="species" class="form-select rounded-md shadow-sm mt-1 block w-full">
-                                            <option value="">Select Species</option>
-                                            <option value="Molave" {% if species == 'Molave' %}selected{% endif %}>Molave</option>
-                                            <option value="Yemane" {% if species == 'Yemane' %}selected{% endif %}>Yemane</option>
-                                            <option value="Mahogany" {% if species == 'Mahogany' %}selected{% endif %}>Mahogany</option>
-                                            <option value="Narra" {% if species == 'Narra' %}selected{% endif %}>Narra</option>
-                                            <option value="Minepoles" {% if species == 'Minepoles' %}selected{% endif %}>Minepoles</option>
-                                            <option value="Others" {% if species == 'Others' %}selected{% endif %}>Others</option>
-                                        </select>
-                                        
-                                        <input type="text" id="quantity" name="quantity" placeholder="Quantity" 
-                                               class="form-input rounded-md shadow-sm mt-1 block w-1/3" />
-                                        
-                                        <button type="button" id="add-species-btn" class="mt-1 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Species List Display -->
-                                    <div id="species-list" class="mt-4 space-y-2">
-                                        {% for tree_species in cutting.tree_species.all %}
-                                        <div class="species-item flex justify-between items-center py-2 px-3 bg-gray-50 rounded mb-2"
-                                             data-species="{{ tree_species.species }}"
-                                             data-quantity="{{ tree_species.quantity }}"
-                                             data-volume="{{ tree_species.volume }}">
-                                            <span>{{ tree_species.species }}</span>
-                                            <div class="flex items-center">
-                                                <span class="mr-3">{{ tree_species.quantity }} trees</span>
-                                                <span class="mr-3">{{ tree_species.volume }} cu.m</span>
-                                                <button type="button" class="remove-species-item text-red-500 hover:text-red-700">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </div>
-                                        {% endfor %}
-                                    </div>
-                                    
-                                    <!-- Hidden input to store all species data -->
-                                    <input type="hidden" id="species_data" name="species_data" value="{{ species_data_json }}"/>
+                            <label class="text-sm text-gray-600">Species</label>
+                            <div class="flex items-center gap-4 w-full">
+                                <select id="species" class="w-1/3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">Select Species</option>
+                                    <option value="Molave">Molave</option>
+                                    <option value="Yemane">Yemane</option>
+                                    <option value="Mahogany">Mahogany</option>
+                                    <option value="Narra">Narra</option>
+                                    <option value="Minepoles">Minepoles</option>
+                                    <option value="Others">Others</option>
+                                </select>
+                                
+                                <!-- Other Species Input (hidden by default) -->
+                                <div id="other-species-container" class="hidden w-1/3">
+                                    <input type="text" 
+                                           id="other_species"
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                           placeholder="Specify species">
                                 </div>
                                 
-                                <!-- Number of Trees (calculated automatically) -->
+                                <input type="number" 
+                                       id="quantity"
+                                       class="w-1/3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                       placeholder="Quantity">
+
+                                <input type="number" 
+                                       id="volume"
+                                       class="w-1/3 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                       placeholder="Volume (cu.m)"
+                                       step="0.01">
+                                
+                                <button type="button" 
+                                        id="add-species-btn"
+                                        class="bg-green-500 text-white p-2 rounded-md hover:bg-green-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Species List -->
+                            <div id="species-list" class="mt-4 space-y-2">
+                                <!-- Species items will be added here dynamically -->
+                            </div>
+
+                            <!-- Totals Display - Below Species List -->
+                            <div class="grid grid-cols-2 gap-6 mt-6">
                                 <div class="mb-4">
-                                    <label for="no_of_trees" class="block text-sm font-medium text-gray-700">Total Number of Trees</label>
-                                    <input type="text" id="no_of_trees" name="no_of_trees" value="{{ cutting.no_of_trees|default:'0' }}" 
-                                           class="form-input rounded-md shadow-sm mt-1 block w-full" readonly />
+                                    <label class="block text-sm font-medium text-gray-700">Total Number of Trees</label>
+                                    <input type="text" 
+                                           id="no_of_trees" 
+                                           name="no_of_trees" 
+                                           value="{{ cutting.no_of_trees|default:'0' }}" 
+                                           class="form-input rounded-md shadow-sm mt-1 block w-full bg-gray-50" 
+                                           readonly>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700">Total Volume (cu.m)</label>
+                                    <input type="text" 
+                                           id="total_volume" 
+                                           name="total_volume" 
+                                           value="{{ cutting.total_volume|default:'0.00' }}" 
+                                           class="form-input rounded-md shadow-sm mt-1 block w-full bg-gray-50" 
+                                           readonly>
                                 </div>
                             </div>
                         </div>
@@ -760,14 +781,46 @@
             const addButton = document.getElementById('add-species-btn');
             if (addButton) {
                 addButton.addEventListener('click', function() {
-                    const quantity = parseInt(quantityInput.value) || 0;
+                    const speciesSelect = document.getElementById('species');
+                    const quantityInput = document.getElementById('quantity');
+                    const volumeInput = document.getElementById('volume');
+                    const otherSpeciesInput = document.getElementById('other_species');
                     
-                    if (quantity > 0) {
-                        // Add to total
-                        totalTrees += quantity;
-                        updateTotalTrees();
+                    if (!speciesSelect || !quantityInput || !volumeInput) return;
+                    
+                    let speciesName = speciesSelect.value;
+                    const quantity = parseInt(quantityInput.value) || 0;
+                    const volume = parseFloat(volumeInput.value) || 0;
+                    
+                    // Create new species item
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'species-item flex justify-between items-center p-2 bg-gray-50 rounded-md';
+                    itemElement.setAttribute('data-quantity', quantity);
+                    itemElement.setAttribute('data-volume', volume);
+                    
+                    itemElement.innerHTML = `
+                        <span>${speciesName}</span>
+                        <div class="flex items-center">
+                            <span class="mr-4">${quantity} trees</span>
+                            <span class="mr-4">${volume} cu.m</span>
+                            <button type="button" class="text-red-500 hover:text-red-700 delete-btn">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    
+                    const speciesList = document.getElementById('species-list');
+                    if (speciesList) {
+                        speciesList.appendChild(itemElement);
+                        calculateTotals();
                         
-                        // Your existing add button logic...
+                        // Clear inputs
+                        quantityInput.value = '';
+                        volumeInput.value = '';
+                        if (otherSpeciesInput) otherSpeciesInput.value = '';
+                        speciesSelect.value = '';
                     }
                 });
             }
@@ -821,41 +874,45 @@
             
             // Add species to the list
             addButton.addEventListener('click', function() {
-                const selectedSpecies = speciesSelect.value;
-                const quantity = quantityInput.value.trim();
+                const speciesSelect = document.getElementById('species');
+                const volumeInput = document.getElementById('volume');
+                const otherSpeciesInput = document.getElementById('other_species');
                 
-                // Validate inputs silently without alerts
-                if (!selectedSpecies || !quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
-                    return;
-                }
+                if (!speciesSelect || !quantityInput || !volumeInput) return;
                 
-                // Get the species name (handle 'Others' case)
-                let speciesName = selectedSpecies;
-                if (selectedSpecies === 'Others') {
-                    const otherSpeciesValue = otherSpeciesInput.value.trim();
-                    if (!otherSpeciesValue) {
-                        return;
-                    }
-                    speciesName = otherSpeciesValue;
-                }
+                let speciesName = speciesSelect.value;
+                const quantity = parseInt(quantityInput.value) || 0;
+                const volume = parseFloat(volumeInput.value) || 0;
                 
-                // Add to the species data array
-                speciesData.push({
-                    species: speciesName,
-                    quantity: parseInt(quantity)
-                });
-                
-                // Update the hidden input
-                speciesDataInput.value = JSON.stringify(speciesData);
-                
-                // Create a new item element
+                // Create new species item
                 const itemElement = document.createElement('div');
-                itemElement.className = 'species-item flex justify-between items-center py-2 px-3 bg-gray-50 rounded mb-2';
-                itemElement.setAttribute('data-species', speciesName);
+                itemElement.className = 'species-item flex justify-between items-center p-2 bg-gray-50 rounded-md';
                 itemElement.setAttribute('data-quantity', quantity);
+                itemElement.setAttribute('data-volume', volume);
                 
-                // Rest of the code for creating the item element
-                // ...
+                itemElement.innerHTML = `
+                    <span>${speciesName}</span>
+                    <div class="flex items-center">
+                        <span class="mr-4">${quantity} trees</span>
+                        <span class="mr-4">${volume} cu.m</span>
+                        <button type="button" class="text-red-500 hover:text-red-700 delete-btn">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                
+                if (speciesList) {
+                    speciesList.appendChild(itemElement);
+                    calculateTotals();
+                    
+                    // Clear inputs
+                    quantityInput.value = '';
+                    volumeInput.value = '';
+                    if (otherSpeciesInput) otherSpeciesInput.value = '';
+                    speciesSelect.value = '';
+                }
             });
             
             // Initialize with existing data if available
@@ -1039,8 +1096,7 @@
     </script>
 
     <script>
-
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
         // Initialize existing species data
         const speciesList = document.getElementById('species-list');
         if (!speciesList) return; // Guard clause if element doesn't exist
@@ -1064,11 +1120,13 @@ document.addEventListener('DOMContentLoaded', function() {
             speciesItem.className = 'species-item flex justify-between items-center py-2 px-3 bg-gray-50 rounded mb-2';
             speciesItem.setAttribute('data-species', '{{ tree_species.species }}');
             speciesItem.setAttribute('data-quantity', '{{ tree_species.quantity }}');
+            speciesItem.setAttribute('data-volume', '{{ tree_species.volume|default:"0.00" }}');
             
             speciesItem.innerHTML = `
                 <span>{{ tree_species.species }}</span>
                 <div class="flex items-center">
                     <span class="mr-3">{{ tree_species.quantity }} trees</span>
+                    <span class="mr-3">{{ tree_species.volume|default:"0.00" }} cu.m</span>
                     <button type="button" class="remove-species-item text-red-500 hover:text-red-700">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -1149,6 +1207,7 @@ document.addEventListener('DOMContentLoaded', function() {
             totalVolume += volume;
         });
         
+        // Update both total trees and total volume
         document.getElementById('no_of_trees').value = totalTrees;
         document.getElementById('total_volume').value = totalVolume.toFixed(2);
     }
@@ -1160,6 +1219,109 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(calculateTotals, 100); // Calculate after removal
         }
     });
+    </script>
+
+    <!-- Add this JavaScript before the closing </body> tag -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addButton = document.getElementById('add-species-btn');
+            const speciesList = document.getElementById('species-list');
+            const totalTreesInput = document.getElementById('no_of_trees');
+            const totalVolumeInput = document.getElementById('total_volume');
+            const quantityInput = document.getElementById('quantity');
+            
+            // Function to calculate totals
+            function calculateTotals() {
+                let totalTrees = 0;
+                let totalVolume = 0;
+                
+                document.querySelectorAll('.species-item').forEach(item => {
+                    totalTrees += parseInt(item.getAttribute('data-quantity')) || 0;
+                    totalVolume += parseFloat(item.getAttribute('data-volume')) || 0;
+                });
+                
+                if (totalTreesInput) totalTreesInput.value = totalTrees;
+                if (totalVolumeInput) totalVolumeInput.value = totalVolume.toFixed(2);
+            }
+            
+            // Add species to the list
+            if (addButton) {
+                addButton.addEventListener('click', function() {
+                    const speciesSelect = document.getElementById('species');
+                    const volumeInput = document.getElementById('volume');
+                    const otherSpeciesInput = document.getElementById('other_species');
+                    
+                    if (!speciesSelect || !quantityInput || !volumeInput) return;
+                    
+                    let speciesName = speciesSelect.value;
+                    const quantity = parseInt(quantityInput.value) || 0;
+                    const volume = parseFloat(volumeInput.value) || 0;
+                    
+                    // Create new species item
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'species-item flex justify-between items-center p-2 bg-gray-50 rounded-md';
+                    itemElement.setAttribute('data-quantity', quantity);
+                    itemElement.setAttribute('data-volume', volume);
+                    
+                    itemElement.innerHTML = `
+                        <span>${speciesName}</span>
+                        <div class="flex items-center">
+                            <span class="mr-4">${quantity} trees</span>
+                            <span class="mr-4">${volume} cu.m</span>
+                            <button type="button" class="text-red-500 hover:text-red-700 delete-btn">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    
+                    if (speciesList) {
+                        speciesList.appendChild(itemElement);
+                        calculateTotals();
+                        
+                        // Clear inputs
+                        quantityInput.value = '';
+                        volumeInput.value = '';
+                        if (otherSpeciesInput) otherSpeciesInput.value = '';
+                        speciesSelect.value = '';
+                    }
+                });
+            }
+            
+            // Initialize totals
+            calculateTotals();
+        });
+    </script>
+
+    <!-- Add this script for volume calculations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const volumeInput = document.getElementById('volume');
+            const quantityInput = document.getElementById('quantity');
+            const totalVolumeGrantedInput = document.getElementById('total_volume_granted');
+            
+            // Calculate gross and net volume
+            function calculateVolumes() {
+                const totalVolume = parseFloat(totalVolumeInput.value) || 0;
+                const totalVolumeGranted = parseFloat(totalVolumeGrantedInput.value) || 0;
+                
+                // Calculate gross volume (85% of total volume)
+                const grossVolume = totalVolume * 0.85;
+                document.getElementById('gross_volume').value = grossVolume.toFixed(2);
+                
+                // Calculate net volume (60% of gross volume)
+                const netVolume = grossVolume * 0.60;
+                document.getElementById('net_volume').value = netVolume.toFixed(2);
+            }
+            
+            // Add event listeners for volume calculations
+            totalVolumeInput.addEventListener('change', calculateVolumes);
+            totalVolumeGrantedInput.addEventListener('change', calculateVolumes);
+            
+            // Initialize calculations
+            calculateVolumes();
+        });
     </script>
 </body>
 </html>
