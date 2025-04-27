@@ -910,6 +910,13 @@
                     
                     const newRow = document.createElement('div');
                     newRow.className = 'flex items-center gap-4 mt-2';
+                    
+                    // Get custom species for the new select
+                    const customSpecies = JSON.parse(localStorage.getItem('customSpecies') || '[]');
+                    const customOptionsHtml = customSpecies.map(species => 
+                        `<option value="${species}">${species}</option>`
+                    ).join('');
+                    
                     newRow.innerHTML = `
                         <div class="w-full relative">
                             <div class="grid grid-cols-12 gap-4">
@@ -921,6 +928,7 @@
                                         <option value="Mahogany">Mahogany</option>
                                         <option value="Narra">Narra</option>
                                         <option value="Minepoles">Minepoles</option>
+                                        ${customOptionsHtml}
                                         <option value="Others">Others</option>
                                     </select>
                                     <div class="other-species-fields mt-2" style="display: none;">
@@ -934,21 +942,24 @@
                                 <div class="col-span-3">
                                     <input type="number" 
                                            name="species_quantity[]" 
-                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg py-3" 
+                                           class="quantity-input w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
                                            placeholder="Quantity" 
-                                           required
-                                           oninput="calculateTotalTrees()">
+                                           required 
+                                           min="1" 
+                                           oninput="calculateTotals()">
                                 </div>
                                 <div class="col-span-3">
                                     <input type="number" 
                                            name="species_volume[]" 
-                                           step="0.01"
-                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg py-3" 
+                                           class="volume-input w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
                                            placeholder="Volume" 
-                                           required>
+                                           required 
+                                           min="0.01" 
+                                           step="0.01" 
+                                           oninput="calculateTotals()">
                                 </div>
-                                <div class="col-span-1 flex items-center justify-center">
-                                    <button type="button" class="remove-species-btn p-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors" onclick="removeSpeciesRow(this)">
+                                <div class="col-span-1">
+                                    <button type="button" onclick="removeSpeciesRow(this)" class="remove-species-btn bg-red-500 text-white p-2 rounded-md hover:bg-red-600">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                         </svg>
@@ -960,19 +971,18 @@
                     
                     container.querySelector('.space-y-3').appendChild(newRow);
                     
-                    // Add event listener to the remove button
-                    const removeBtn = newRow.querySelector('.remove-species-btn');
-                    if (removeBtn) {
-                        removeBtn.addEventListener('click', function() {
-                            newRow.remove();
-                            calculateTotalTrees();
-                        });
-                    }
-                    
                     // Initialize the new select element
                     toggleOtherSpecies(newRow.querySelector('select[name="species[]"]'));
                 });
             }
+            
+            // Add event delegation for remove buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.remove-species-btn')) {
+                    const button = e.target.closest('.remove-species-btn');
+                    removeSpeciesRow(button);
+                }
+            });
             
             // Date handling - using direct property assignment instead of addEventListener
             var dateIssuedField = document.getElementById('date_issued_field');
@@ -1085,6 +1095,17 @@
                         if (otherInput && otherInput.value.trim()) {
                             speciesName = otherInput.value.trim().toUpperCase();
                             customSpecies.add(speciesName);
+                            
+                            // Add the custom species to the datalist
+                            const datalist = document.getElementById('previous-species');
+                            if (datalist) {
+                                const optionExists = Array.from(datalist.options).some(opt => opt.value === speciesName);
+                                if (!optionExists) {
+                                    const option = document.createElement('option');
+                                    option.value = speciesName;
+                                    datalist.appendChild(option);
+                                }
+                            }
                         } else {
                             continue;
                         }
@@ -1097,23 +1118,70 @@
                     });
                 }
                 
-                // Update datalists with custom species
-                const datalists = document.querySelectorAll('#previous-species');
-                datalists.forEach(datalist => {
-                    datalist.innerHTML = Array.from(customSpecies)
-                        .map(species => `<option value="${species}">`)
-                        .join('');
-                });
-                
                 return speciesData;
             }
             
-            // Modify the form submit handler
+            // Add this new function to handle custom species storage
+            function storeCustomSpecies(speciesName) {
+                if (!speciesName) return;
+                
+                // Get existing custom species from localStorage
+                let customSpecies = JSON.parse(localStorage.getItem('customSpecies') || '[]');
+                
+                // Add new species if it doesn't exist
+                if (!customSpecies.includes(speciesName)) {
+                    customSpecies.push(speciesName);
+                    localStorage.setItem('customSpecies', JSON.stringify(customSpecies));
+                    
+                    // Add to all select dropdowns
+                    const selects = document.querySelectorAll('select[name="species[]"]');
+                    selects.forEach(select => {
+                        // Check if option already exists
+                        if (!Array.from(select.options).some(opt => opt.value === speciesName)) {
+                            const option = document.createElement('option');
+                            option.value = speciesName;
+                            option.textContent = speciesName;
+                            // Insert before the "Others" option
+                            const othersOption = Array.from(select.options).find(opt => opt.value === 'Others');
+                            if (othersOption) {
+                                select.insertBefore(option, othersOption);
+                            } else {
+                                select.add(option);
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Add this function to initialize select options with custom species
+            function initializeCustomSpeciesOptions() {
+                const customSpecies = JSON.parse(localStorage.getItem('customSpecies') || '[]');
+                const selects = document.querySelectorAll('select[name="species[]"]');
+                
+                selects.forEach(select => {
+                    customSpecies.forEach(species => {
+                        if (!Array.from(select.options).some(opt => opt.value === species)) {
+                            const option = document.createElement('option');
+                            option.value = species;
+                            option.textContent = species;
+                            // Insert before the "Others" option
+                            const othersOption = Array.from(select.options).find(opt => opt.value === 'Others');
+                            if (othersOption) {
+                                select.insertBefore(option, othersOption);
+                            } else {
+                                select.add(option);
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Modify the form submit handler to store custom species
             if (form) {
                 form.addEventListener('submit', function(e) {
-                    updateStatus(); // Make sure status is updated before submission
+                    updateStatus();
                     
-                    // Clear any previously created hidden inputs to avoid duplicates
+                    // Clear any previously created hidden inputs
                     document.querySelectorAll('input[name="species_data"]').forEach(el => el.remove());
                     document.querySelectorAll('input[name="species_name[]"]').forEach(el => el.remove());
                     document.querySelectorAll('input[name="species_quantity_value[]"]').forEach(el => el.remove());
@@ -1125,6 +1193,17 @@
                     let hasValidSpecies = speciesData.length > 0;
                     
                     if (hasValidSpecies) {
+                        // Store custom species
+                        speciesData.forEach(item => {
+                            if (item.species !== 'Molave' && 
+                                item.species !== 'Yemane' && 
+                                item.species !== 'Mahogany' && 
+                                item.species !== 'Narra' && 
+                                item.species !== 'Minepoles') {
+                                storeCustomSpecies(item.species);
+                            }
+                        });
+                        
                         const speciesDataInput = document.createElement('input');
                         speciesDataInput.type = 'hidden';
                         speciesDataInput.name = 'species_data';
@@ -1153,9 +1232,7 @@
                     }
                     
                     if (!hasValidSpecies) {
-                        e.preventDefault(); // Prevent form submission
-                        
-                        // Show error message
+                        e.preventDefault();
                         Swal.fire({
                             title: 'Error!',
                             text: 'At least one tree species must be added with a valid quantity',
@@ -1163,13 +1240,11 @@
                             confirmButtonText: 'OK'
                         });
                         
-                        // Highlight the species section
                         const speciesContainer = document.getElementById('species-container');
                         if (speciesContainer) {
                             speciesContainer.scrollIntoView({ behavior: 'smooth' });
                             speciesContainer.classList.add('border', 'border-red-500', 'p-2', 'rounded');
                             
-                            // Remove highlight after a few seconds
                             setTimeout(() => {
                                 speciesContainer.classList.remove('border', 'border-red-500', 'p-2', 'rounded');
                             }, 5000);
@@ -1177,6 +1252,20 @@
                     }
                 });
             }
+
+            // Load custom species from localStorage when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                const customSpecies = JSON.parse(localStorage.getItem('customSpecies') || '[]');
+                const datalists = document.querySelectorAll('#previous-species');
+                
+                datalists.forEach(datalist => {
+                    customSpecies.forEach(species => {
+                        const option = document.createElement('option');
+                        option.value = species;
+                        datalist.appendChild(option);
+                    });
+                });
+            });
 
             // Add uppercase transformation to text inputs
             const textInputs = document.querySelectorAll('input[type="text"], textarea');
@@ -1220,40 +1309,12 @@
                 }
             }
 
-            // When deleting a species, update both total trees and volume
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.delete-btn') || e.target.closest('.remove-species-item')) {
-                    const item = e.target.closest('[data-quantity]');
-                    if (item) {
-                        const quantity = parseInt(item.getAttribute('data-quantity')) || 0;
-                        const volume = parseFloat(item.getAttribute('data-volume')) || 0;
-                        
-                        // Update total trees
-                        const totalTreesInput = document.getElementById('no_of_trees');
-                        if (totalTreesInput) {
-                            const currentTotal = parseInt(totalTreesInput.value) || 0;
-                            totalTreesInput.value = currentTotal - quantity;
-                        }
-                        
-                        // Update total volume
-                        const totalVolumeInput = document.getElementById('total_volume');
-                        if (totalVolumeInput) {
-                            const currentVolume = parseFloat(totalVolumeInput.value) || 0;
-                            totalVolumeInput.value = (currentVolume - volume).toFixed(2);
-                        }
-                        
-                        // Remove the item
-                        item.remove();
-                    }
-                }
-            });
-
-            // Add this new function to handle row removal and recalculation
+            // Add this function to handle row removal
             function removeSpeciesRow(button) {
                 const row = button.closest('.flex.items-center.gap-4');
                 if (row) {
                     row.remove();
-                    calculateTotals(); // Recalculate totals after removing the row
+                    calculateTotals(); // Recalculate totals after removing
                 }
             }
         });
@@ -1430,3 +1491,4 @@
     </script>
 </body>
 </html>
+

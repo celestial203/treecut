@@ -16988,3 +16988,11 @@ WARNING 2025-04-03 13:20:15,671 log Not Found: /favicon.ico
 WARNING 2025-04-03 13:20:15,673 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
 WARNING 2025-04-03 13:25:20,989 log Not Found: /favicon.ico
 WARNING 2025-04-03 13:25:20,991 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
+WARNING 2025-04-05 13:50:48,244 log Not Found: /favicon.ico
+WARNING 2025-04-05 13:50:48,246 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
+WARNING 2025-04-21 10:11:03,709 log Not Found: /favicon.ico
+WARNING 2025-04-21 10:11:03,710 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
+WARNING 2025-04-21 10:44:33,604 log Not Found: /favicon.ico
+WARNING 2025-04-21 10:44:33,605 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
+WARNING 2025-04-21 11:18:23,880 log Not Found: /media/wood_files/pic_XcfL17M.jpg
+WARNING 2025-04-21 11:18:23,890 basehttp "GET /media/wood_files/pic_XcfL17M.jpg HTTP/1.1" 404 10573
