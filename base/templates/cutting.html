@@ -827,6 +827,32 @@
     <!-- Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Add this function to initialize select options with custom species
+            function initializeCustomSpeciesOptions() {
+                const customSpecies = JSON.parse(localStorage.getItem('customSpecies') || '[]');
+                const selects = document.querySelectorAll('select[name="species[]"]');
+                
+                selects.forEach(select => {
+                    customSpecies.forEach(species => {
+                        if (!Array.from(select.options).some(opt => opt.value === species)) {
+                            const option = document.createElement('option');
+                            option.value = species;
+                            option.textContent = species;
+                            // Insert before the "Others" option
+                            const othersOption = Array.from(select.options).find(opt => opt.value === 'Others');
+                            if (othersOption) {
+                                select.insertBefore(option, othersOption);
+                            } else {
+                                select.add(option);
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Call this function when the page loads
+            initializeCustomSpeciesOptions();
+
             // Avoid using the name 'dateInput' completely
             const form = document.querySelector('form');
             const permitTypeSelect = document.getElementById('{{ form.permit_type.id_for_label }}');
@@ -1153,27 +1179,69 @@
                 }
             }
 
-            // Add this function to initialize select options with custom species
-            function initializeCustomSpeciesOptions() {
+            // Load custom species from localStorage when page loads
+            document.addEventListener('DOMContentLoaded', function() {
                 const customSpecies = JSON.parse(localStorage.getItem('customSpecies') || '[]');
-                const selects = document.querySelectorAll('select[name="species[]"]');
+                const datalists = document.querySelectorAll('#previous-species');
                 
-                selects.forEach(select => {
+                datalists.forEach(datalist => {
                     customSpecies.forEach(species => {
-                        if (!Array.from(select.options).some(opt => opt.value === species)) {
-                            const option = document.createElement('option');
-                            option.value = species;
-                            option.textContent = species;
-                            // Insert before the "Others" option
-                            const othersOption = Array.from(select.options).find(opt => opt.value === 'Others');
-                            if (othersOption) {
-                                select.insertBefore(option, othersOption);
-                            } else {
-                                select.add(option);
-                            }
-                        }
+                        const option = document.createElement('option');
+                        option.value = species;
+                        datalist.appendChild(option);
                     });
                 });
+            });
+
+            // Add uppercase transformation to text inputs
+            const textInputs = document.querySelectorAll('input[type="text"], textarea');
+            textInputs.forEach(input => {
+                // Skip date inputs and other special fields
+                if (!input.classList.contains('date-input') && 
+                    !input.id.includes('date') && 
+                    !input.readOnly) {
+                    
+                    input.classList.add('uppercase-input');
+                    
+                    // Convert to uppercase on input
+                    input.addEventListener('input', function() {
+                        this.value = this.value.toUpperCase();
+                    });
+                    
+                    // Also convert existing value to uppercase
+                    if (input.value) {
+                        input.value = input.value.toUpperCase();
+                    }
+                }
+            });
+            
+            // Also apply to select inputs that allow custom input
+            const otherSpeciesInputs = document.querySelectorAll('input[name="other_species[]"]');
+            otherSpeciesInputs.forEach(input => {
+                input.classList.add('uppercase-input');
+                input.addEventListener('input', function() {
+                    this.value = this.value.toUpperCase();
+                });
+            });
+
+            // Make sure we have at least one species row
+            const speciesRows = speciesContainer ? speciesContainer.querySelectorAll('.flex.items-center.gap-2') : [];
+            
+            if (speciesContainer && speciesRows.length === 0) {
+                // Trigger the add species button click to create the first row
+                const addSpeciesBtn = document.querySelector('.add-species-btn');
+                if (addSpeciesBtn) {
+                    addSpeciesBtn.click();
+                }
+            }
+
+            // Add this function to handle row removal
+            function removeSpeciesRow(button) {
+                const row = button.closest('.flex.items-center.gap-4');
+                if (row) {
+                    row.remove();
+                    calculateTotals(); // Recalculate totals after removing
+                }
             }
 
             // Modify the form submit handler to store custom species
@@ -1251,71 +1319,6 @@
                         }
                     }
                 });
-            }
-
-            // Load custom species from localStorage when page loads
-            document.addEventListener('DOMContentLoaded', function() {
-                const customSpecies = JSON.parse(localStorage.getItem('customSpecies') || '[]');
-                const datalists = document.querySelectorAll('#previous-species');
-                
-                datalists.forEach(datalist => {
-                    customSpecies.forEach(species => {
-                        const option = document.createElement('option');
-                        option.value = species;
-                        datalist.appendChild(option);
-                    });
-                });
-            });
-
-            // Add uppercase transformation to text inputs
-            const textInputs = document.querySelectorAll('input[type="text"], textarea');
-            textInputs.forEach(input => {
-                // Skip date inputs and other special fields
-                if (!input.classList.contains('date-input') && 
-                    !input.id.includes('date') && 
-                    !input.readOnly) {
-                    
-                    input.classList.add('uppercase-input');
-                    
-                    // Convert to uppercase on input
-                    input.addEventListener('input', function() {
-                        this.value = this.value.toUpperCase();
-                    });
-                    
-                    // Also convert existing value to uppercase
-                    if (input.value) {
-                        input.value = input.value.toUpperCase();
-                    }
-                }
-            });
-            
-            // Also apply to select inputs that allow custom input
-            const otherSpeciesInputs = document.querySelectorAll('input[name="other_species[]"]');
-            otherSpeciesInputs.forEach(input => {
-                input.classList.add('uppercase-input');
-                input.addEventListener('input', function() {
-                    this.value = this.value.toUpperCase();
-                });
-            });
-
-            // Make sure we have at least one species row
-            const speciesRows = speciesContainer ? speciesContainer.querySelectorAll('.flex.items-center.gap-2') : [];
-            
-            if (speciesContainer && speciesRows.length === 0) {
-                // Trigger the add species button click to create the first row
-                const addSpeciesBtn = document.querySelector('.add-species-btn');
-                if (addSpeciesBtn) {
-                    addSpeciesBtn.click();
-                }
-            }
-
-            // Add this function to handle row removal
-            function removeSpeciesRow(button) {
-                const row = button.closest('.flex.items-center.gap-4');
-                if (row) {
-                    row.remove();
-                    calculateTotals(); // Recalculate totals after removing
-                }
             }
         });
     </script>
