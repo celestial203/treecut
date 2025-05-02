@@ -16998,3 +16998,5 @@ WARNING 2025-04-21 11:18:23,880 log Not Found: /media/wood_files/pic_XcfL17M.jpg
 WARNING 2025-04-21 11:18:23,890 basehttp "GET /media/wood_files/pic_XcfL17M.jpg HTTP/1.1" 404 10573
 WARNING 2025-04-30 08:43:53,652 log Not Found: /favicon.ico
 WARNING 2025-04-30 08:43:53,654 basehttp "GET /favicon.ico HTTP/1.1" 404 10438
+WARNING 2025-05-02 10:34:20,553 log Not Found: /favicon.ico
+WARNING 2025-05-02 10:34:20,556 basehttp "GET /favicon.ico HTTP/1.1" 404 10438

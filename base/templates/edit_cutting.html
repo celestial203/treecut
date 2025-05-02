@@ -392,11 +392,32 @@
 
             <form method="post" enctype="multipart/form-data" id="editForm" action="{% url 'edit_cutting' cutting.id %}">
                 {% csrf_token %}
-                <!-- Add this for debugging -->
-                <input type="hidden" name="debug_timestamp" value="{{ now|date:'U' }}">
+                <!-- Add these hidden inputs to store initial values -->
+                <input type="hidden" id="initial_total_volume" value="{{ cutting.total_volume|default:'0.00' }}">
+                <input type="hidden" id="initial_volume_granted" value="{{ cutting.total_volume_granted|default:'0.00' }}">
+                <input type="hidden" id="initial_gross_volume" value="{{ cutting.gross_volume|default:'0.00' }}">
+                <input type="hidden" id="initial_net_volume" value="{{ cutting.net_volume|default:'0.00' }}">
                 
                 <!-- Add a hidden input for the cutting ID -->
                 <input type="hidden" name="cutting_id" value="{{ cutting.id }}">
+
+                <!-- Add this hidden div to store tree species data -->
+                <div id="tree-species-data">
+                    {% if cutting.tree_species.all %}
+                        <script type="application/json" id="species-json">
+                            [
+                                {% for tree_species in cutting.tree_species.all %}
+                                    {
+                                        "species": "{{ tree_species.species|escapejs }}",
+                                        "quantity": {{ tree_species.quantity|default:0 }},
+                                        "volume": {{ tree_species.volume|default:"0.00" }},
+                                        "id": {{ tree_species.id }}
+                                    }{% if not forloop.last %},{% endif %}
+                                {% endfor %}
+                            ]
+                        </script>
+                    {% endif %}
+                </div>
 
                 <!-- Form Content -->
                 <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1092,35 +1113,47 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Get all required elements
-        const elements = {
-            speciesList: document.getElementById('species-list'),
-            totalTrees: document.getElementById('no_of_trees'),
-            totalVolume: document.getElementById('total_volume'),
-            grossVolume: document.getElementById('gross_volume'),
-            netVolume: document.getElementById('net_volume')
-        };
+        // Initialize elements with null checks
+        const elements = {};
+        
+        // Safely get elements with null checks
+        function getElement(id) {
+            const element = document.getElementById(id);
+            return element || null;
+        }
 
-        // Check if required elements exist
-        if (!elements.speciesList) return;
+        // Initialize all required elements
+        elements.speciesList = getElement('species-list');
+        elements.totalTrees = getElement('no_of_trees');
+        elements.totalVolume = getElement('total_volume');
+        elements.grossVolume = getElement('gross_volume');
+        elements.netVolume = getElement('net_volume');
+        elements.totalVolumeGranted = getElement('total_volume_granted');
+        elements.volumeInput = getElement('volume');
+        elements.quantityInput = getElement('quantity');
+        elements.speciesJson = getElement('species-json');
 
-        // Function to update volume calculations
-        function updateVolumes(totalVolume) {
-            if (elements.totalVolume) {
-                elements.totalVolume.value = totalVolume.toFixed(2);
+        // Function to safely parse JSON
+        function safeJSONParse(str) {
+            if (!str) return [];
+            try {
+                return JSON.parse(str);
+            } catch (e) {
+                console.error('Error parsing JSON:', e);
+                return [];
             }
-            
-            if (elements.grossVolume && elements.netVolume) {
-                const grossVolume = totalVolume * 0.85;
-                const netVolume = grossVolume * 0.60;
-                elements.grossVolume.value = grossVolume.toFixed(2);
-                elements.netVolume.value = netVolume.toFixed(2);
+        }
+
+        // Function to safely set input value
+        function safeSetValue(element, value) {
+            if (element && typeof element.value !== 'undefined') {
+                element.value = value;
             }
         }
 
         // Function to calculate total trees and volume
         function calculateTotals() {
-            if (!elements.totalTrees) return;
+            if (!elements.totalTrees && !elements.totalVolume) return;
 
             let totalTrees = 0;
             let totalVolume = 0;
@@ -1132,65 +1165,101 @@
                 totalVolume += volume;
             });
             
-            // Update totals
-            elements.totalTrees.value = totalTrees;
-            updateVolumes(totalVolume);
+            // Update totals safely
+            safeSetValue(elements.totalTrees, totalTrees);
+            safeSetValue(elements.totalVolume, totalVolume.toFixed(2));
+
+            // Trigger volume calculations
+            calculateVolumes(totalVolume);
         }
 
-        // Initialize species data
-        console.log('Starting to load tree species...');
-        {% for tree_species in cutting.tree_species.all %}
-        (function() {
-            // Log raw data first
-            const rawData = {
-                species: '{{ tree_species.species }}',
-                quantity: '{{ tree_species.quantity }}',
-                volume: '{{ tree_species.volume|default_if_none:"0.00" }}',
-                id: '{{ tree_species.id }}'
-            };
-            console.log('Raw tree_species data:', rawData);
+        // Function to calculate volumes
+        function calculateVolumes(totalVolume) {
+            if (!elements.grossVolume && !elements.netVolume) return;
 
-            const speciesItem = document.createElement('div');
-            speciesItem.className = 'species-item flex justify-between items-center py-2 px-3 bg-gray-50 rounded mb-2';
-            const speciesName = rawData.species;
-            const quantity = parseInt(rawData.quantity) || 0;
+            // Calculate gross volume (85% of total volume)
+            const grossVolume = totalVolume * 0.85;
+            safeSetValue(elements.grossVolume, grossVolume.toFixed(2));
             
-            // Parse volume with more robust error handling
-            let volume = 0;
+            // Calculate net volume (60% of gross volume)
+            const netVolume = grossVolume * 0.60;
+            safeSetValue(elements.netVolume, netVolume.toFixed(2));
+        }
+
+        // Add species item function
+        function addSpeciesItem(speciesData) {
+            if (!elements.speciesList || !speciesData) return;
+            
             try {
-                volume = parseFloat(rawData.volume.replace(/[^\d.-]/g, '')) || 0;
-                console.log(`Successfully parsed volume for ${speciesName}: ${volume}`);
-            } catch (e) {
-                console.error(`Error parsing volume for ${speciesName}:`, e);
-                volume = 0;
+                const speciesItem = document.createElement('div');
+                speciesItem.className = 'species-item flex justify-between items-center py-2 px-3 bg-gray-50 rounded mb-2';
+                
+                const speciesName = speciesData.species || '';
+                const quantity = parseInt(speciesData.quantity) || 0;
+                const volume = parseFloat(speciesData.volume) || 0;
+                
+                speciesItem.setAttribute('data-species', speciesName);
+                speciesItem.setAttribute('data-quantity', quantity);
+                speciesItem.setAttribute('data-volume', volume);
+                speciesItem.setAttribute('data-id', speciesData.id || '');
+                
+                speciesItem.innerHTML = `
+                    <span>${speciesName}</span>
+                    <div class="flex items-center">
+                        <span class="mr-3">${quantity} trees</span>
+                        <span class="mr-3">${volume.toFixed(2)} cu.m</span>
+                        <button type="button" class="remove-species-item text-red-500 hover:text-red-700">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                
+                elements.speciesList.appendChild(speciesItem);
+            } catch (error) {
+                console.error('Error adding species item:', error);
             }
-            
-            speciesItem.setAttribute('data-species', speciesName);
-            speciesItem.setAttribute('data-quantity', quantity);
-            speciesItem.setAttribute('data-volume', volume);
-            
-            speciesItem.innerHTML = `
-                <span>${speciesName}</span>
-                <div class="flex items-center">
-                    <span class="mr-3">${quantity} trees</span>
-                    <span class="mr-3">${volume.toFixed(2)} cu.m</span>
-                    <button type="button" class="remove-species-item text-red-500 hover:text-red-700">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-            `;
-            
-            elements.speciesList.appendChild(speciesItem);
-            
-            // Log the final parsed values
-            console.log(`Added species item: ${speciesName}, Quantity: ${quantity}, Volume: ${volume}`);
-        })();
-        {% endfor %}
-        console.log('Finished loading tree species');
+        }
 
-        // Add global event listener for remove buttons
+        // Load initial tree species data
+        try {
+            if (elements.speciesJson) {
+                const jsonContent = elements.speciesJson.textContent.trim();
+                if (jsonContent) {
+                    const speciesArray = safeJSONParse(jsonContent);
+                    if (Array.isArray(speciesArray) && speciesArray.length > 0) {
+                        speciesArray.forEach(speciesData => {
+                            if (speciesData && typeof speciesData === 'object') {
+                                addSpeciesItem(speciesData);
+                            }
+                        });
+                        // Calculate totals after loading all species
+                        calculateTotals();
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error loading tree species data:', error);
+        }
+
+        // Add event listeners with null checks
+        if (elements.totalVolume) {
+            elements.totalVolume.addEventListener('change', function() {
+                calculateVolumes(parseFloat(this.value) || 0);
+            });
+        }
+
+        if (elements.totalVolumeGranted) {
+            elements.totalVolumeGranted.addEventListener('change', function() {
+                const totalVolumeGranted = parseFloat(this.value) || 0;
+                if (elements.totalVolume) {
+                    calculateVolumes(totalVolumeGranted);
+                }
+            });
+        }
+
+        // Add event listener for remove buttons
         document.addEventListener('click', function(e) {
             const removeButton = e.target.closest('.remove-species-item');
             if (removeButton) {
@@ -1202,8 +1271,10 @@
             }
         });
 
-        // Calculate initial totals
-        calculateTotals();
+        // Initial calculation with safety check
+        if (elements.speciesList) {
+            calculateTotals();
+        }
     });
     </script>
 
@@ -1348,30 +1419,63 @@
     <!-- Add this script for volume calculations -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const volumeInput = document.getElementById('volume');
-            const quantityInput = document.getElementById('quantity');
-            const totalVolumeGrantedInput = document.getElementById('total_volume_granted');
-            
-            // Calculate gross and net volume
+            const elements = {
+                totalVolume: document.getElementById('total_volume'),
+                totalVolumeGranted: document.getElementById('total_volume_granted'),
+                grossVolume: document.getElementById('gross_volume'),
+                netVolume: document.getElementById('net_volume'),
+                initialTotalVolume: document.getElementById('initial_total_volume'),
+                initialVolumeGranted: document.getElementById('initial_volume_granted'),
+                initialGrossVolume: document.getElementById('initial_gross_volume'),
+                initialNetVolume: document.getElementById('initial_net_volume')
+            };
+
+            // Function to initialize volume values from database
+            function initializeVolumes() {
+                if (elements.totalVolume) {
+                    elements.totalVolume.value = elements.initialTotalVolume.value;
+                }
+                if (elements.totalVolumeGranted) {
+                    elements.totalVolumeGranted.value = elements.initialVolumeGranted.value;
+                }
+                if (elements.grossVolume) {
+                    elements.grossVolume.value = elements.initialGrossVolume.value;
+                }
+                if (elements.netVolume) {
+                    elements.netVolume.value = elements.initialNetVolume.value;
+                }
+            }
+
+            // Function to calculate volumes
             function calculateVolumes() {
-                const totalVolume = parseFloat(totalVolumeInput.value) || 0;
-                const totalVolumeGranted = parseFloat(totalVolumeGrantedInput.value) || 0;
+                const totalVolume = parseFloat(elements.totalVolume.value) || 0;
                 
                 // Calculate gross volume (85% of total volume)
                 const grossVolume = totalVolume * 0.85;
-                document.getElementById('gross_volume').value = grossVolume.toFixed(2);
+                if (elements.grossVolume) {
+                    elements.grossVolume.value = grossVolume.toFixed(2);
+                }
                 
                 // Calculate net volume (60% of gross volume)
                 const netVolume = grossVolume * 0.60;
-                document.getElementById('net_volume').value = netVolume.toFixed(2);
+                if (elements.netVolume) {
+                    elements.netVolume.value = netVolume.toFixed(2);
+                }
             }
-            
-            // Add event listeners for volume calculations
-            totalVolumeInput.addEventListener('change', calculateVolumes);
-            totalVolumeGrantedInput.addEventListener('change', calculateVolumes);
-            
-            // Initialize calculations
-            calculateVolumes();
+
+            // Initialize volumes from database values
+            initializeVolumes();
+
+            // Add event listeners for recalculation
+            if (elements.totalVolume) {
+                elements.totalVolume.addEventListener('change', calculateVolumes);
+            }
+            if (elements.totalVolumeGranted) {
+                elements.totalVolumeGranted.addEventListener('change', calculateVolumes);
+            }
+
+            // Calculate initial totals
+            calculateTotals();
         });
     </script>
 
