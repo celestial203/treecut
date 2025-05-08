@@ -172,13 +172,15 @@ def cutting(request):
                 species_data = []
                 species_names = request.POST.getlist('species_name[]')
                 species_quantities = request.POST.getlist('species_quantity_value[]')
+                species_volumes = request.POST.getlist('species_volume_value[]')
                 
-                # Combine the species names and quantities
-                for name, quantity in zip(species_names, species_quantities):
+                # Combine the species names, quantities, and volumes
+                for name, quantity, volume in zip(species_names, species_quantities, species_volumes):
                     if name and quantity:
                         species_data.append({
                             'species': name,
-                            'quantity': int(quantity)
+                            'quantity': int(quantity),
+                            'volume': float(volume) if volume else 0
                         })
                 
                 # Build species string and calculate total trees
@@ -188,6 +190,7 @@ def cutting(request):
                 for item in species_data:
                     species_name = item['species']
                     quantity = item['quantity']
+                    volume = item.get('volume', 0)
                     
                     if species_name and quantity > 0:
                         species_list.append(f"{species_name} ({quantity})")
@@ -205,12 +208,14 @@ def cutting(request):
                 for item in species_data:
                     species_name = item['species']
                     quantity = item['quantity']
+                    volume = item.get('volume', 0)
                     
                     if species_name and quantity > 0:
                         TreeSpecies.objects.create(
                             cutting=cutting,
                             species=species_name,
-                            quantity=quantity
+                            quantity=quantity,
+                            volume=volume
                         )
                 
                 messages.success(request, 'Cutting record created successfully.')
@@ -430,13 +435,15 @@ def edit_cutting(request, pk):
                 species_data = []
                 species_names = request.POST.getlist('species_name[]')
                 species_quantities = request.POST.getlist('species_quantity_value[]')
+                species_volumes = request.POST.getlist('species_volume_value[]')
                 
-                # Combine the species names and quantities
-                for name, quantity in zip(species_names, species_quantities):
+                # Combine the species names, quantities, and volumes
+                for name, quantity, volume in zip(species_names, species_quantities, species_volumes):
                     if name and quantity:
                         species_data.append({
                             'species': name,
-                            'quantity': int(quantity)
+                            'quantity': int(quantity),
+                            'volume': float(volume) if volume else 0
                         })
                 
                 # Build species string and calculate total trees
@@ -446,6 +453,7 @@ def edit_cutting(request, pk):
                 for item in species_data:
                     species_name = item['species']
                     quantity = item['quantity']
+                    volume = item.get('volume', 0)
                     
                     if species_name and quantity > 0:
                         species_list.append(f"{species_name} ({quantity})")
@@ -463,12 +471,14 @@ def edit_cutting(request, pk):
                 for item in species_data:
                     species_name = item['species']
                     quantity = item['quantity']
+                    volume = item.get('volume', 0)
                     
                     if species_name and quantity > 0:
                         TreeSpecies.objects.create(
                             cutting=cutting,
                             species=species_name,
-                            quantity=quantity
+                            quantity=quantity,
+                            volume=volume
                         )
                 
                 messages.success(request, 'Cutting record updated successfully.')

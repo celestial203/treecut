@@ -295,6 +295,20 @@
                     </div>
                 </div>
                 
+                <!-- Additional Fields Box -->
+                <div class="p-4 border-2 border-green-500 rounded-xl bg-green-50 relative mb-8">
+                    <!-- Add Button -->
+                    <button type="button" id="addRowBtn"
+                        class="absolute top-4 right-4 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-green-500 hover:bg-green-600 text-white text-3xl font-bold shadow transition duration-200"
+                        title="Add">
+                        +
+                    </button>
+                    <!-- Where input rows will appear -->
+                    <div id="inputRows" class="space-y-6">
+                        <!-- The first input row will be added by JS on page load -->
+                    </div>
+                </div>
+                
                 <!-- Form Actions -->
                 <div class="mt-8 flex justify-end space-x-3">
                     <a href="{% url 'lumber_records' %}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
@@ -466,6 +480,61 @@
                     }
                 });
             }
+
+            function createInputRow(isFirstRow = false) {
+                const row = document.createElement('div');
+                row.className = "relative grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 bg-green-50 p-2 rounded-xl border border-green-200";
+
+                row.innerHTML = `
+                    ${!isFirstRow ? `
+                    <button type="button" class="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white text-xl font-bold shadow transition duration-200 delete-row-btn" title="Remove">&times;</button>
+                    ` : ''}
+                    <div>
+                        <label class="block text-base font-medium text-gray-700 mb-1">Name of Owner <span class="text-red-500">*</span></label>
+                        <input type="text" name="owner_name[]" class="w-full rounded-xl border border-gray-200 bg-gray-50 text-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 transition py-3 px-4" required>
+                    </div>
+                    <div>
+                        <label class="block text-base font-medium text-gray-700 mb-1">Location of Plantation <span class="text-red-500">*</span></label>
+                        <input type="text" name="plantation_location[]" class="w-full rounded-xl border border-gray-200 bg-gray-50 text-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 transition py-3 px-4" required>
+                    </div>
+                    <div>
+                        <label class="block text-base font-medium text-gray-700 mb-1">Vol (m³) <span class="text-red-500">*</span></label>
+                        <input type="number" name="volume_m3[]" class="w-full rounded-xl border border-gray-200 bg-gray-50 text-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 transition py-3 px-4" step="0.01" min="0" required>
+                    </div>
+                    <div>
+                        <label class="block text-base font-medium text-gray-700 mb-1">Species <span class="text-red-500">*</span></label>
+                        <input type="text" name="additional_species[]" class="w-full rounded-xl border border-gray-200 bg-gray-50 text-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 transition py-3 px-4" required>
+                    </div>
+                    <div>
+                        <label class="block text-base font-medium text-gray-700 mb-1">CTPO# <span class="text-red-500">*</span></label>
+                        <input type="text" name="ctpo_number[]" class="w-full rounded-xl border border-gray-200 bg-gray-50 text-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 transition py-3 px-4" required>
+                    </div>
+                    <div>
+                        <label class="block text-base font-medium text-gray-700 mb-1">Date Issued <span class="text-red-500">*</span></label>
+                        <input type="date" name="ctpo_date_issued[]" class="w-full rounded-xl border border-gray-200 bg-gray-50 text-gray-700 shadow-sm focus:border-green-500 focus:ring-green-500 transition py-3 px-4" required>
+                    </div>
+                `;
+
+                // Only add delete event if not the first row
+                if (!isFirstRow) {
+                    row.querySelector('.delete-row-btn').addEventListener('click', function() {
+                        row.remove();
+                    });
+                }
+
+                return row;
+            }
+
+            const inputRows = document.getElementById('inputRows');
+            const addRowBtn = document.getElementById('addRowBtn');
+
+            // Add the first input row on page load (no X button)
+            inputRows.appendChild(createInputRow(true));
+
+            // Add new rows with X button on + click
+            addRowBtn.addEventListener('click', function() {
+                inputRows.appendChild(createInputRow());
+            });
         });
     </script>
 

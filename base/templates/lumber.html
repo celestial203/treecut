@@ -526,13 +526,8 @@
                         <input type="text" name="source_supplier" class="form-input" required>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Volume (cubic meter) </label>
-                        <input type="number" 
-                               name="volume_cubic_meter" 
-                               class="form-input" 
-                               step="0.01" 
-                               min="0.01" 
-                               required>
+                        <label class="block text-sm font-medium text-gray-700">Volume (m³)</label>
+                        <input type="number" name="volume_cubic_meter" class="form-input" step="0.01" min="0.01" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Species</label>
@@ -544,6 +539,39 @@
                 <div class="mt-6">
                     <label class="block text-sm font-medium text-gray-700">Attach File</label>
                     <input type="file" name="file" id="id_file" class="form-input mt-1 block w-full" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                </div>
+
+                <!-- Additional Fields Box -->
+                <div class="mt-6 p-4 border-2 border-green-500 rounded-lg bg-white shadow-sm relative">
+                    <button type="button" id="addRowBtn" class="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-green-500 hover:bg-green-600 text-white text-lg font-bold transition duration-200" title="Add">+</button>
+                    <div id="fieldsRow" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                        <div>
+                            <label for="owner_name" class="block text-xs text-gray-500 mb-1">Name of Owner *</label>
+                            <input type="text" id="owner_name" class="form-input rounded-xl bg-gray-50 border border-gray-200 text-gray-700 shadow-sm" required>
+                        </div>
+                        <div>
+                            <label for="plantation_location" class="block text-xs text-gray-500 mb-1">Location of Plantation *</label>
+                            <input type="text" id="plantation_location" class="form-input rounded-xl bg-gray-50 border border-gray-200 text-gray-700 shadow-sm" required>
+                        </div>
+                        <div>
+                            <label for="volume_m3" class="block text-xs text-gray-500 mb-1">Vol (m³) *</label>
+                            <input type="number" id="volume_m3" class="form-input rounded-xl bg-gray-50 border border-gray-200 text-gray-700 shadow-sm" step="0.01" min="0" required>
+                        </div>
+                        <div>
+                            <label for="additional_species" class="block text-xs text-gray-500 mb-1">Species *</label>
+                            <input type="text" id="additional_species" class="form-input rounded-xl bg-gray-50 border border-gray-200 text-gray-700 shadow-sm" required>
+                        </div>
+                        <div>
+                            <label for="ctpo_number" class="block text-xs text-gray-500 mb-1">CTPO# *</label>
+                            <input type="text" id="ctpo_number" class="form-input rounded-xl bg-gray-50 border border-gray-200 text-gray-700 shadow-sm" required>
+                        </div>
+                        <div>
+                            <label for="ctpo_date_issued" class="block text-xs text-gray-500 mb-1">Date Issued *</label>
+                            <input type="text" id="ctpo_date_issued" onfocus="(this.type='date')" onblur="if(this.value==''){this.type='text'}" class="form-input rounded-xl bg-gray-50 border border-gray-200 text-gray-700 shadow-sm" required>
+                        </div>
+                    </div>
+                    <!-- Where added rows will appear -->
+                    <div id="addedRows" class="mt-4 space-y-2"></div>
                 </div>
 
                 <!-- Submit Button -->
@@ -857,6 +885,66 @@
             return false;
         }
         
+    </script>
+
+    <script>
+    document.getElementById('addRowBtn').addEventListener('click', function() {
+        // Get field values
+        const owner = document.getElementById('owner_name').value;
+        const location = document.getElementById('plantation_location').value;
+        const vol = document.getElementById('volume_m3').value;
+        const species = document.getElementById('additional_species').value;
+        const ctpo = document.getElementById('ctpo_number').value;
+        const date = document.getElementById('ctpo_date_issued').value;
+
+        // Create a new row with the same style and labels
+        const row = document.createElement('div');
+        row.className = "relative grid grid-cols-1 md:grid-cols-2 gap-4 items-center p-2 border border-green-300 rounded-xl bg-gray-50";
+
+        row.innerHTML = `
+            <button type="button" class="absolute top-2 right-2 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white text-lg font-bold transition duration-200 delete-row-btn" title="Remove">&times;</button>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Name of Owner</label>
+                <input type="text" name="additional_fields[][owner_name]" value="${owner}" class="form-input rounded-xl bg-gray-50 border border-gray-200 text-gray-700 shadow-sm" readonly>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Location of Plantation</label>
+                <input type="text" name="additional_fields[][plantation_location]" value="${location}" class="form-input rounded-xl bg-gray-50 border border-gray-200 text-gray-700 shadow-sm" readonly>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Vol (m³)</label>
+                <input type="number" name="additional_fields[][volume_m3]" value="${vol}" class="form-input rounded-xl bg-gray-50 border border-gray-200 text-gray-700 shadow-sm" readonly>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Species</label>
+                <input type="text" name="additional_fields[][species]" value="${species}" class="form-input rounded-xl bg-gray-50 border border-gray-200 text-gray-700 shadow-sm" readonly>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">CTPO#</label>
+                <input type="text" name="additional_fields[][ctpo_number]" value="${ctpo}" class="form-input rounded-xl bg-gray-50 border border-gray-200 text-gray-700 shadow-sm" readonly>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Date Issued</label>
+                <input type="text" name="additional_fields[][ctpo_date_issued]" value="${date}" class="form-input rounded-xl bg-gray-50 border border-gray-200 text-gray-700 shadow-sm" readonly>
+            </div>
+        `;
+
+        // Add event listener to the delete (X) button
+        row.querySelector('.delete-row-btn').addEventListener('click', function() {
+            row.remove();
+        });
+
+        document.getElementById('addedRows').appendChild(row);
+
+        // Clear the fields
+        document.getElementById('owner_name').value = '';
+        document.getElementById('plantation_location').value = '';
+        document.getElementById('volume_m3').value = '';
+        document.getElementById('additional_species').value = '';
+        document.getElementById('ctpo_number').value = '';
+        document.getElementById('ctpo_date_issued').value = '';
+        document.getElementById('ctpo_date_issued').type = 'text';
+    });
     </script>
 </body>
 </html>

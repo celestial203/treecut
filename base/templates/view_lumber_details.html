@@ -312,6 +312,39 @@
                                 <p class="font-medium">{{ lumber.species }}</p>
                             </div>
                         </div>
+
+                        <!-- Additional Owner/Plantation Info -->
+                        {% if lumber.additional_fields.all %}
+                        <div class="mt-6">
+                            <h4 class="text-md font-semibold text-green-700 mb-2">Additional Owner/Plantation Info</h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full bg-white border border-green-200 rounded-lg">
+                                    <thead>
+                                        <tr class="bg-green-50">
+                                            <th class="px-2 py-1 text-xs text-green-800">Owner</th>
+                                            <th class="px-2 py-1 text-xs text-green-800">Location</th>
+                                            <th class="px-2 py-1 text-xs text-green-800">Vol (m³)</th>
+                                            <th class="px-2 py-1 text-xs text-green-800">Species</th>
+                                            <th class="px-2 py-1 text-xs text-green-800">CTPO#</th>
+                                            <th class="px-2 py-1 text-xs text-green-800">Date Issued</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for field in lumber.additional_fields.all %}
+                                        <tr>
+                                            <td class="px-2 py-1 text-xs">{{ field.owner_name }}</td>
+                                            <td class="px-2 py-1 text-xs">{{ field.plantation_location }}</td>
+                                            <td class="px-2 py-1 text-xs">{{ field.volume_m3 }}</td>
+                                            <td class="px-2 py-1 text-xs">{{ field.species }}</td>
+                                            <td class="px-2 py-1 text-xs">{{ field.ctpo_number }}</td>
+                                            <td class="px-2 py-1 text-xs">{{ field.ctpo_date_issued|date:"F d, Y" }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
 
